@@ -36,6 +36,47 @@ for theme in ["light", "dark"]
 end
 
 # documentation
+lecture_01 = [
+]
+
+lecture_02 = [
+]
+
+lecture_03 = [
+]
+
+lecture_04 = [
+]
+
+lecture_05 = [
+]
+
+lecture_06 = [
+]
+
+lecture_07 = [
+    "Macros" => "./lecture_07/macros.md"
+]
+
+lecture_08 = [
+]
+
+lecture_09 = [
+]
+
+lecture_10 = [
+]
+
+lecture_11 = [
+]
+
+lecture_12 = [
+]
+
+lecture_13 = [
+]
+
+
 makedocs(;
     modules = [Scientific_Programming_in_Julia],
     authors = "JuliaTeachingCTU",
@@ -45,10 +86,24 @@ makedocs(;
         prettyurls = get(ENV, "CI", "false") == "true",
         canonical = "https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia",
         assets = ["assets/favicon.ico"],
+        collapselevel = 1,
     ),
     pages = [
         "Home" => "index.md",
         "How To ..." => "howto.md",
+        "1: Introduction" => lecture_01,
+        "2: The power of Type System & multiple dispatch" => lecture_02,
+        "3: Packages, environments, etc..." => lecture_03,
+        "4: Design patterns" => lecture_04,
+        "5: Benchmarking, profiling, and performance gotchas" => lecture_05,
+        "6: Language introspection" => lecture_06,
+        "7: Macros" => lecture_07,
+        "8: Introduction to automatic differentiation" => lecture_08,
+        "9: Manipulating intermediate representation" => lecture_09,
+        "10: Different levels of parallel programming" => lecture_10,
+        "11: Julia for GPU programming" => lecture_11,
+        "12: Uncertainty propagation in ODE" => lecture_12,
+        "13: Learning ODE from data" => lecture_12,
     ],
 )
 
