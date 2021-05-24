@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>How To ... · Scientific Programming in Julia</title><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/howto/"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img class="docs-light-only" src="../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit">Scientific Programming in Julia</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>How To ...</a><ul class="internal"><li><a class="tocitem" href="#Additional-admonition-types"><span>Additional admonition types</span></a></li><li><a class="tocitem" href="#Exercise-with-solution"><span>Exercise with solution</span></a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>How To ...</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>How To ...</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/howto.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="How-to-use-admonitions"><a class="docs-heading-anchor" href="#How-to-use-admonitions">How to use admonitions</a><a id="How-to-use-admonitions-1"></a><a class="docs-heading-anchor-permalink" href="#How-to-use-admonitions" title="Permalink"></a></h1><p>Documenter.jl provides five special styles for admonitions and one style for custom admonition types</p><table><tr><th style="text-align: left">Admonition type</th><th style="text-align: left">html class</th></tr><tr><td style="text-align: left"><code>info</code></td><td style="text-align: left"><code>&quot;admonition is-info&quot;</code></td></tr><tr><td style="text-align: left"><code>compat</code></td><td style="text-align: left"><code>&quot;admonition is-compat&quot;</code></td></tr><tr><td style="text-align: left"><code>dange</code></td><td style="text-align: left"><code>&quot;admonition is-danger&quot;</code></td></tr><tr><td style="text-align: left"><code>warning</code></td><td style="text-align: left"><code>&quot;admonition is-warning&quot;</code></td></tr><tr><td style="text-align: left"><code>tip</code></td><td style="text-align: left"><code>&quot;admonition is-success&quot;</code></td></tr><tr><td style="text-align: left"><code>custom</code></td><td style="text-align: left"><code>&quot;admonition is-category-custom&quot;</code></td></tr></table><p>All these admonitions can be used in the following way</p><pre><code class="language-markdown">!!! tip &quot;Header&quot;
+    Text ...
+    ```@repl
+    a = 1
+    b = 2
+    a + b
+    ```</code></pre><p>The resulting admonition looks as follows</p><div class="admonition is-success"><header class="admonition-header">Header</header><div class="admonition-body"><p>Text ...</p><pre><code class="language-">a = 1
+b = 2
+a + b</code></pre></div></div><p>The problem is, that the evaluation of the block of code inside admonitions is not currently supported. To allow code evaluation inside admonitions, we can use two raw HTML blocks to wrap the admonition body. The syntax of the code between the HTML block is the same as everywhere else in the document.</p><pre><code class="language-html">```@raw html
+&lt;div class=&quot;admonition is-success&quot;&gt;
+&lt;header class=&quot;admonition-header&quot;&gt;Header&lt;/header&gt;
+&lt;div class=&quot;admonition-body&quot;&gt;&lt;p&gt;
+```
+
+Text ...
+
+```@repl
+a = 1
+b = 2
+a + b
+```
+
+```@raw html
+&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
+```</code></pre><p>The resulting admonition then looks as follows</p><div class="admonition is-success">
+<header class="admonition-header">Header</header>
+<div class="admonition-body"><p><p>Text ...</p><pre><code class="language-julia-repl">julia&gt; a = 1
+1
+
+julia&gt; b = 2
+2
+
+julia&gt; a + b
+3</code></pre></p></div></div><h2 id="Additional-admonition-types"><a class="docs-heading-anchor" href="#Additional-admonition-types">Additional admonition types</a><a id="Additional-admonition-types-1"></a><a class="docs-heading-anchor-permalink" href="#Additional-admonition-types" title="Permalink"></a></h2><p>The css style downloaded in the <code>make.jl</code> provides three additional admonition types</p><table><tr><th style="text-align: left">Admonition type</th><th style="text-align: left">html class</th></tr><tr><td style="text-align: left"><code>theorem</code></td><td style="text-align: left"><code>&quot;admonition is-category-theorem&quot;</code></td></tr><tr><td style="text-align: left"><code>exercise</code></td><td style="text-align: left"><code>&quot;admonition is-category-exercise&quot;</code></td></tr><tr><td style="text-align: left"><code>homework</code></td><td style="text-align: left"><code>&quot;admonition is-category-homework&quot;</code></td></tr></table><p>Currently, the first two types use the style of the default admonitions types. However, it may change in the future.</p><div class="admonition is-category-theorem"><header class="admonition-header">Theorem</header><div class="admonition-body"><p>Text...</p></div></div><div class="admonition is-category-exercise"><header class="admonition-header">Exercise</header><div class="admonition-body"><p>Text...</p></div></div><div class="admonition is-category-homework"><header class="admonition-header">Homework</header><div class="admonition-body"><p>Text...</p></div></div><h2 id="Exercise-with-solution"><a class="docs-heading-anchor" href="#Exercise-with-solution">Exercise with solution</a><a id="Exercise-with-solution-1"></a><a class="docs-heading-anchor-permalink" href="#Exercise-with-solution" title="Permalink"></a></h2><p>The used css style also provides style for collapsible admonition that can be used for example to define exercise with the hidden solution. To use this feature, we have to use raw HTML blocks.</p><pre><code class="language-html">```@raw html
+&lt;div class=&quot;admonition is-category-exercise&quot;&gt;
+&lt;header class=&quot;admonition-header&quot;&gt;Header&lt;/header&gt;
+&lt;div class=&quot;admonition-body&quot;&gt;&lt;p&gt;
+```
+
+Some text that describes the exercise
+
+```@raw html
+&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;details class = &quot;solution-body&quot;&gt;
+&lt;summary class = &quot;solution-header&quot;&gt;Solution:&lt;/summary&gt;&lt;p&gt;
+```
+
+Solution
+
+```@raw html
+&lt;/p&gt;&lt;/details&gt;
+```</code></pre><p>The result is following</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Header</header>
+<div class="admonition-body"><p><p>Some text that describes the exercise</p></p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>Solution</p></p></details></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 24 May 2021 10:08">Monday 24 May 2021</span>. Using Julia version 1.6.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
