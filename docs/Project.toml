@@ -1,3 +1,4 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
 Scientific_Programming_in_Julia = "ff288558-a322-4c39-84bc-85bf6acf7e03"
