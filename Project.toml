@@ -1,0 +1,7 @@
+name = "Scientific_Programming_in_Julia"
+uuid = "ff288558-a322-4c39-84bc-85bf6acf7e03"
+authors = ["JuliaTeachingCTU"]
+version = "0.1.0"
+
+[compat]
+julia = "1.6"
