@@ -1,5 +1,5 @@
 <p align="center">
- <img src="https://raw.githubusercontent.com/JuliaTeachingCTU/JuliaCTUGraphics/main/logo/Scientific-Programming-in-Julia-logo.svg" alt="Course logo"/>
+ <img src="https://raw.githubusercontent.com/JuliaTeachingCTU/JuliaCTUGraphics/main/logo/Scientific-Programming-in-Julia-logo.svg"; alt="Course logo"; max-width: 100%; height: auto;/>
 </p>
 
 ---
