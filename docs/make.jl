@@ -48,6 +48,7 @@ makedocs(;
     ),
     pages = [
         "Home" => "index.md",
+        "How To ..." => "howto.md",
     ],
 )
 
