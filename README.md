@@ -4,9 +4,9 @@
 
 ---
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/JuliaTeachingCTU/Scientific_Programming_in_Julia.jl/blob/master/LICENSE)
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaTeachingCTU.github.io/Scientific_Programming_in_Julia.jl/stable)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaTeachingCTU.github.io/Scientific_Programming_in_Julia.jl/dev)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/LICENSE)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/stable)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/dev)
 
 
 This repository will contain all the course materials for the Julia course taught at FEL.

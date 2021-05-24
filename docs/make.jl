@@ -39,11 +39,11 @@ end
 makedocs(;
     modules = [Scientific_Programming_in_Julia],
     authors = "JuliaTeachingCTU",
-    repo = "https://github.com/JuliaTeachingCTU/Scientific_Programming_in_Julia.jl/blob/{commit}{path}#{line}",
+    repo = "https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/{commit}{path}#{line}",
     sitename = "Scientific Programming in Julia",
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
-        canonical = "https://JuliaTeachingCTU.github.io/Scientific_Programming_in_Julia.jl",
+        canonical = "https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia",
         assets = ["assets/favicon.ico"],
     ),
     pages = [
@@ -53,5 +53,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo = "github.com/JuliaTeachingCTU/Scientific_Programming_in_Julia.jl",
+    repo = "github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia",
 )
