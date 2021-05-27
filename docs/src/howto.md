@@ -39,7 +39,7 @@ The problem is, that the evaluation of the block of code inside admonitions is n
 ```@raw html
 <div class="admonition is-success">
 <header class="admonition-header">Header</header>
-<div class="admonition-body"><p>
+<div class="admonition-body">
 ```
 
 Text ...
@@ -51,7 +51,7 @@ a + b
 ```
 
 ```@raw html
-</p></div></div>
+</div></div>
 ```
 ````
 
@@ -60,7 +60,7 @@ The resulting admonition then looks as follows
 ```@raw html
 <div class="admonition is-success">
 <header class="admonition-header">Header</header>
-<div class="admonition-body"><p>
+<div class="admonition-body">
 ```
 
 Text ...
@@ -72,7 +72,7 @@ a + b
 ```
 
 ```@raw html
-</p></div></div>
+</div></div>
 ```
 
 ## Additional admonition types
@@ -104,13 +104,13 @@ The used css style also provides style for collapsible admonition that can be us
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Header</header>
-<div class="admonition-body"><p>
+<div class="admonition-body">
 ```
 
 Some text that describes the exercise
 
 ```@raw html
-</p></div></div>
+</div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
@@ -127,13 +127,13 @@ The result is following
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Header</header>
-<div class="admonition-body"><p>
+<div class="admonition-body">
 ```
 
 Some text that describes the exercise
 
 ```@raw html
-</p></div></div>
+</div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
