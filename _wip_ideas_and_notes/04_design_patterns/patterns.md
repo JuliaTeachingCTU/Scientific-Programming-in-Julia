@@ -8,3 +8,7 @@
   - LABS
     + Small examples (GD?, Minibatching, )
     +  Performance issues ()
+
+
+### Performance of captured variables
+ - https://github.com/JuliaLang/julia/issues/15276    
