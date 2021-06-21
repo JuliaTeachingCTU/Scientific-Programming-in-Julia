@@ -9330,3 +9330,12 @@ html.theme--documenter-dark .admonition.is-category-homework {
 html.theme--documenter-dark .admonition.is-category-homework > .admonition-header {
   background-color: #6c3483;
   color: #fff; }
+
+/* Bonus class */
+html.theme--documenter-dark .admonition.is-category-bonus {
+  background-color: #282f2f;
+  border-color: #137886; }
+
+html.theme--documenter-dark .admonition.is-category-bonus > .admonition-header {
+  background-color: #137886;
+  color: #fff; }

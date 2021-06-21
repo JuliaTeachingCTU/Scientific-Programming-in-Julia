@@ -9020,3 +9020,12 @@ Original highlight.js style (c) Ivan Sagalaev <maniac@softwaremaniacs.org>
 .admonition.is-category-homework > .admonition-header {
   background-color: #8e44ad;
   color: #fff; }
+
+/* Bonus class */
+.admonition.is-category-bonus {
+  background-color: #99e6f0;
+  border-color: #1db5c9; }
+
+.admonition.is-category-bonus > .admonition-header {
+  background-color: #1db5c9;
+  color: #fff; }
