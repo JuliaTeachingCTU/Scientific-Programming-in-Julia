@@ -30,11 +30,19 @@ Vector{Number} is concrete, even though Number is not a concrete type. That’s 
 What you can do instead is [1, 2, 3] isa Vector{<:Number} which is true. That’s because <:Number is a sort of placeholder which means “any type which is a subtype of Number”. This is often needed for dispatching on containers where you want to allow set of element types. f(x::Vector{Number}) can take only arguments of type Vector{Number}, whereas g(x::Vector{<:Number}) can take e.g. Vector{Int}, Vector{Float64}, Vector{Real}, Vector{Number}, etc.
 
 
-https://youtu.be/Y95fAipREHQ?t=958
+https://youtu.be/Y95fAipREHQ?t=958c
 ### Alignment in the memory
 * Super-importnat for speed, cache utilization
 * Know if you are row or column major 
 * Vector{Vector{Float}} is a really bad idea over 
+
+### A Headache examples
+* 
+```
+function Base.reduce(::typeof(hcat), xs::Vector{TV})  where {T, L, TV<:OneHotLike{T, L}}
+  OneHotMatrix(reduce(vcat, map(_indices, xs)), L)
+end
+```
 
 ### Alocation 
 * show reduction of `Vector{Vector{Int}}`
@@ -49,3 +57,6 @@ https://stackoverflow.com/questions/39133424/how-to-create-a-single-dispatch-obj
 ### conversion among variables
 
 reinterpret(Float32, ref_sketch)
+
+### Trivia 
+why this is false Vector{Int} <: AbstractVector{<:Any}

@@ -5,3 +5,7 @@
   - ReverseDiff with operator overloading
   - **LABS:**
     + Implement forward diff with Dual Numbers
+
+
+### Mike's intro
+- https://aviatesk.github.io/diff-zoo/dev/
