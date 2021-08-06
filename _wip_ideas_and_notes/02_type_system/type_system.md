@@ -7,6 +7,11 @@
       + Number type-tree
       + Design Interval Aritmetics (for ODES)
 
+### VS NOtes: 
+Basics:
+ - type hierarchy
+ - subtyping
+ - Unions
 
 ### Mutable struct
 

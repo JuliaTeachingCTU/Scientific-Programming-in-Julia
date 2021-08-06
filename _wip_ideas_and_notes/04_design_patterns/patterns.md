@@ -9,13 +9,66 @@
     + Small examples (GD?, Minibatching, )
     +  Performance issues ()
 
+### Implementation of closeres in julia: documentation
 
-### Performance of captured variables
+```
+function adder(x)
+    return y->x+y
+end
+```
+is lowered to (roughly):
+
+```
+struct ##1{T}
+    x::T
+end
+
+(_::##1)(y) = _.x + y
+
+function adder(x)
+    return ##1(x)
+end
+```
+
+### Beware: Performance of captured variables
  - https://github.com/JuliaLang/julia/issues/15276    
 
 ### Performance gotcha of global variables (make them const)
 
-### Traits
+### Expression Problem 
+Matrix of methods/types(data-structures)
+
+| data \ methods | add | scalarmult | vecmult | matmul | new |
+| --- | ---- | ---- | --- | ---- | -- |
+| Full |  | | | | |
+| Sparse | | | | | |
+| diagonal | | | | | |
+| SVD | | | | | |
+| new |
+
+We want to multiply matrices of different types.
+
+Matmul make sense for all other types! matmul(Full,Full), matmul(Sparse,SVD)
+
+OOP = define classes of matrices (maybe inheriting from abstract class Matrix)
+FP = define operations "add", "scalarmult", etc.
+
+Solutions:
+1. multiple-dispatch = julia
+2. open classes (monkey patching) = add methods to classes on the fly
+3. visitor pattern = partial fix for OOP [extended visitor pattern using dynamic_cast]
+
+Julia multiple dispatch:
+ - special cases: 
+   + method A^T*A: straightforward in general, specialized for SVD.
+   + diagonal: 
+   + multiplication by a permutation matrix
+
+### Subtyping, Unions
+
+ - the power of subtyping: Array{Float64} </: Array{Real}
+
+### Traits = multiple inheritance
 
 https://github.com/JuliaLang/julia/issues/2345#issuecomment-54537633
 https://github.com/andyferris/Traitor.jl
