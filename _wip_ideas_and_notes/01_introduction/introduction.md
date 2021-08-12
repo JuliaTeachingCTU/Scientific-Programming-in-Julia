@@ -1,7 +1,4 @@
-### Recap what has be taught in Lukas Adam
-
-
-### Introduction to Scientific Programming
+# Introduction to Scientific Programming
 
 https://en.wikipedia.org/wiki/Scientific_programming_language
 
@@ -19,6 +16,100 @@ Key requirements:
 Contrast to general-purpose language:
 - less concern with public/private separation
 - less concern with ABI 
+
+## Example
+In many applications, we encounter the task of optimization a function given by a routine (e.g. engineering, finance, etc.)
+
+```
+using Optim
+
+P(x,y) = x^2 - 3x*y + 5y^2 - 7y + 3
+
+z₀ = [ 0.0
+       0.0 ]     # starting point for optimization algorithm
+
+optimize(z -> P(z...), z₀, Newton())
+#optimize(z -> P(z...), z₀, Newton();autodiff = :forward)
+#optimize(z -> P(z...), z₀, ConjugateGradient())
+
+```
+
+## Quest for Speed
+Great speed of computation can be achieved if we utilize full power of cuurent machines. This is very hard in reality. 
+
+Consider a problem of multiplication of two dense matrices.
+Technically trivial in C:
+```
+multiAB(const double *A, const double *B, double &AB)
+{
+    int i, j, l;
+
+//clear result
+    for (l=0; l<MR*NR; ++l) {
+        AB[l] = 0;
+    }
+//tripple loop
+    for (l=0; l<N; ++l) {
+        for (j=0; j<N; ++j) {
+            for (i=0; i<M; ++i) {
+                AB[i+j*N] += A[i]*B[j];
+            }
+        }
+        A += N;
+        B += N;
+    }
+}
+```
+
+Depends on a compiler but this will be very slow.
+
+Is it fast?
+Depends a lot on size of the matrix 
+
+![](processor.gif)
+
+cache misses.
+
+
+Other reason: no threads, poor use of SSE...
+
+### Can be done much better
+
+Development of speed for matrix multiplication:
+![](bench_incremental.svg)
+
+### Blas matrix multiplication routines
+gemm | 
+float, double, std::complex<float>, std::complex<double>
+|
+Computes a matrix-matrix product with general matrices.
+
+hemm
+|
+std::complex<float>, std::complex<double>
+|
+Computes a matrix-matrix product where one input matrix is Hermitian and one is general.
+
+symm
+|
+float, double, std::complex<float>, std::complex<double>
+|
+Computes a matrix-matrix product where one input matrix is symmetric and one matrix is general.
+
+trmm
+|
+float, double, std::complex<float>, std::complex<double>
+|
+Computes a matrix-matrix product where one input matrix is triangular and one input matrix is general.
+
+
+## Quest for generality
+
+Consider implementation of quadratic form:
+$$
+Q = A*P*A'
+$$
+ For general matrices: 
 
 
 ### 2 language problem
@@ -46,9 +137,6 @@ Why si BLAS so fast??
 - memory alignment (cache utilization)
 
 http://www.mathematik.uni-ulm.de/~lehn/apfel/sghpc/gemm/
-
-Development of speed for matrix multiplication:
-![](bench_incremental.svg)
 
 
 
