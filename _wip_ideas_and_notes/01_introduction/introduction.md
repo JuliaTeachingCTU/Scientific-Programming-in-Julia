@@ -2,7 +2,7 @@
 
 https://en.wikipedia.org/wiki/Scientific_programming_language
 
-Loose def: a scientific programming language is one that is designed and optimized for the use of mathematical formula and matrices.[2] 
+Loose def: a scientific programming language is designed and optimized for the use of mathematical formula and matrices.[2] 
 
 Scientific programming languages in the stronger sense include ALGOL, APL, Fortran, J, Julia, Maple, MATLAB and R.
 
@@ -17,13 +17,15 @@ Contrast to general-purpose language:
 - less concern with public/private separation
 - less concern with ABI 
 
-## Example
+
+
+### Example
 In many applications, we encounter the task of optimization a function given by a routine (e.g. engineering, finance, etc.)
 
 ```
 using Optim
 
-P(x,y) = x^2 - 3x*y + 5y^2 - 7y + 3
+P(x,y) = x^2 - 3x*y + 5y^2 - 7y + 3   # user defined function
 
 z₀ = [ 0.0
        0.0 ]     # starting point for optimization algorithm
@@ -34,37 +36,49 @@ optimize(z -> P(z...), z₀, Newton())
 
 ```
 
-## Quest for Speed
-Great speed of computation can be achieved if we utilize full power of cuurent machines. This is very hard in reality. 
+Very simple for a user, very complicated for a programmer. The program should:
+ - compute gradient (Hessian) of a user function
+ - pick the right optimization method
 
-Consider a problem of multiplication of two dense matrices.
-Technically trivial in C:
+Classical thinking: create a library, call it.
+
+Think of an experiment: ```main``` taking a configuration file. The configuration file can be simple: ```input file```, what to do with it, ```output file```.
+
+The more complicated experiments you want to do, the more complex your configuration file becomes. Sooner or later, you will create a new *configuration language*, or *scripting language*.
+
+Ending up in *2 language problem*. 
+
+
+1.  Low-level programming = computer centric
+    - close to the hardware
+    - allows excellent optimization for fast execution
+
+2. High-level programming = user centric
+    - experimenting = running multiple configurations
+    - running code with many different parameters as easily as possible
+
+In scientific programming the most well known scipting languages are: Python,  Matlab, R
+
+- If you care about standard "configurations" they are just perfect. 
+- You hit a problem with more complex experiments. 
+
+The scripting language typically makes decisions (```if```) at runtime. Becomes slow.
+
+![](julia-scope.pdf)
+
+## Other approaches
+1. Just in time compilation (HL -> LL)
+2. automatic typing (auto in C++) (LL->HL)
+
+
+
+## Example integer division
+
+Indexing array x:
 ```
-multiAB(const double *A, const double *B, double &AB)
-{
-    int i, j, l;
-
-//clear result
-    for (l=0; l<MR*NR; ++l) {
-        AB[l] = 0;
-    }
-//tripple loop
-    for (l=0; l<N; ++l) {
-        for (j=0; j<N; ++j) {
-            for (i=0; i<M; ++i) {
-                AB[i+j*N] += A[i]*B[j];
-            }
-        }
-        A += N;
-        B += N;
-    }
-}
+y=x[4/2]
 ```
 
-Depends on a compiler but this will be very slow.
-
-Is it fast?
-Depends a lot on size of the matrix 
 
 ![](processor.gif)
 
@@ -75,41 +89,63 @@ Other reason: no threads, poor use of SSE...
 
 ### Can be done much better
 
-Development of speed for matrix multiplication:
+Different algorithms: 
+https://en.wikipedia.org/wiki/Matrix_multiplication_algorithm
+Architecture sepcific optimizations:
 ![](bench_incremental.svg)
 
-### Blas matrix multiplication routines
-gemm | 
-float, double, std::complex<float>, std::complex<double>
-|
-Computes a matrix-matrix product with general matrices.
+Microkenels from oepnblas:
+dgemm_kernel_16x2_haswell.S     
+dgemm_kernel_4x4_haswell.S  
+dgemm_kernel_4x8_haswell.S  
+dgemm_kernel_4x8_sandy.S    
+dgemm_kernel_6x4_piledriver.S   
+dgemm_kernel_8x2_bulldozer.S    
+dgemm_kernel_8x2_piledriver.S
 
-hemm
-|
-std::complex<float>, std::complex<double>
-|
-Computes a matrix-matrix product where one input matrix is Hermitian and one is general.
+### Blas specializes matrix multiplication routines
 
-symm
-|
-float, double, std::complex<float>, std::complex<double>
-|
-Computes a matrix-matrix product where one input matrix is symmetric and one matrix is general.
+Depending on shape:
+gemm | Computes a matrix-matrix product with general matrices.
+symm | Computes a matrix-matrix product where one input matrix is symmetric and one matrix is general.
 
-trmm
-|
-float, double, std::complex<float>, std::complex<double>
-|
-Computes a matrix-matrix product where one input matrix is triangular and one input matrix is general.
+trmm | Computes a matrix-matrix product where one input matrix is triangular and one input matrix is general.
 
+Depending on type:
+Short-precision real	SGEMM
+Long-precision real  	DGEMM
+Short-precision complex	CGEMM
+Long-precision complex	ZGEMM
+
+Full syntax:
+```
+void cblas_dgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA,
+                 const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
+                 const int K, const double alpha, const double *A,
+                 const int lda, const double *B, const int ldb,
+                 const double beta, double *C, const int ldc);
+```
 
 ## Quest for generality
 
-Consider implementation of quadratic form:
+BLAS is fast. Is it general?
+
+Consider implementation of a quadratic form:
 $$
 Q = A*P*A'
 $$
- For general matrices: 
+ You should call:
+ -  ```gemm``` for general matrices.
+ -  ```symm``` for symmetric matrices.
+ -  ```trmm``` for triangular matrices.
+
+
+ If you know what your types are you can write it by hand. General code in C is hard.
+
+ Python to the rescue:
+ Wrapper object ndarry 
+
+
 
 
 ### 2 language problem
@@ -139,5 +175,33 @@ Why si BLAS so fast??
 http://www.mathematik.uni-ulm.de/~lehn/apfel/sghpc/gemm/
 
 
+# Advantages and disadvantages
+ 1. compilation
+    + very fast code
+    - slow interaction (caching...)
+    - libraries are harder
+    - debugging will be harder
+    -  ![](julia-compilation.png)
+
+
+ 2. Multiple dispatch
+    + allows great extensibility and code composition
+    - not (yet) mainstream thinking
+
+
+# Syntax
+
+Syntactic Sugar:
+Cheat sheet: https://cheatsheets.quantecon.org/
+
+# Typing -> Lecture 2
+
+- static
+- dynamic
+
+# 
+
+# Packages
+Alternative to libraries in C, metadata
 
 ### tough lab session
