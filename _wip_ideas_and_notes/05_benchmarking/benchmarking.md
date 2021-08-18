@@ -4,6 +4,7 @@
   - The pitfalls of global variables
   - heap / stack allocation, (mutable) struct
   - The use of profiler and visualization PProf / Flamegraphs
+  - detecting type stability, linting using JET.jl
   - profiling memory usage
   - **LABS:**
     + fix broken examples
