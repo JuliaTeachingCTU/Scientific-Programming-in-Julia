@@ -37,6 +37,10 @@ end
 
 # documentation
 lecture_01 = [
+    "Motivation" => "./lecture_01/motivation.md",
+    "Outline" => "./lecture_01/outline.md",
+    "HOMEWORK" => "./lecture_01/hw.md",
+    "LABS" => "./lecture_01/labs.md",
 ]
 
 lecture_02 = [
@@ -90,11 +94,10 @@ makedocs(;
     ),
     pages = [
         "Home" => "index.md",
-        "How To ..." => "howto.md",
         "1: Introduction" => lecture_01,
         "2: The power of Type System & multiple dispatch" => lecture_02,
-        "3: Packages, environments, etc..." => lecture_03,
-        "4: Design patterns" => lecture_04,
+        "3: Design patterns" => lecture_03,
+        "4: Packages development, environments, etc..." => lecture_04,
         "5: Benchmarking, profiling, and performance gotchas" => lecture_05,
         "6: Language introspection" => lecture_06,
         "7: Macros" => lecture_07,
@@ -103,7 +106,9 @@ makedocs(;
         "10: Different levels of parallel programming" => lecture_10,
         "11: Julia for GPU programming" => lecture_11,
         "12: Uncertainty propagation in ODE" => lecture_12,
-        "13: Learning ODE from data" => lecture_12,
+        "13: Learning ODE from data" => lecture_13,
+        "How to submit homeworks" => "how_to_submit_hw.md",
+        "How To ..." => "howto.md", ## temporary
     ],
 )
 

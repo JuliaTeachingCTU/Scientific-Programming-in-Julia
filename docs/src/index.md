@@ -8,7 +8,7 @@ CurrentModule = Scientific_Programming_in_Julia
 ```
 ---
 
-Documentation for [Scientific_Programming_in_Julia](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia).
+Documentation for the course [Scientific Programming in Julia](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia).
 
 ```@index
 ```
