@@ -79,4 +79,6 @@ https://stackoverflow.com/questions/39133424/how-to-create-a-single-dispatch-obj
 reinterpret(Float32, ref_sketch)
 
 ### Trivia 
-why this is false Vector{Int} <: AbstractVector{<:Any}
+why this is true Vector{Int} <: AbstractVector{<:Any}
+why this is false Vector{Int} <: Vector{Any}
+why this is true Vector{Int} <: Vector{<:Any}

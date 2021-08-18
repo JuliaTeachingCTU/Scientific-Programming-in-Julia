@@ -17,6 +17,8 @@ Contrast to general-purpose language:
 - less concern with public/private separation
 - less concern with ABI 
 
+## TODO
+Zero cost abstraction - Rackcaucas
 
 
 ### Example
