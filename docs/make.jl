@@ -44,6 +44,7 @@ lecture_01 = [
 ]
 
 lecture_02 = [
+    "Lab" => "./lecture_02/lab.md"
 ]
 
 lecture_03 = [
