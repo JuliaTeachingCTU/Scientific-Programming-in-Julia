@@ -6,7 +6,7 @@ What Wikipedia tells about type and type system?
 
 *In computer science and computer programming, a **data type** or simply **type** is an attribute of data which tells the compiler or interpreter how the programmer intends to use the data (see ![wiki](https://en.wikipedia.org/wiki/Data_type])).* 
 
-*A **type system** is a logical system comprising a set of rules that assigns a property called a type to the various constructs of a computer program, such as variables, expressions, functions or modules.[1] These types formalize and enforce the otherwise implicit categories the programmer uses for algebraic data types, data structures, or other components (see ![wiki](https://en.wikipedia.org/wiki/Type_system])).*
+*A **type system** is a logical system comprising a set of rules that assigns a property called a type to the various constructs of a computer program, such as variables, expressions, functions or modules. These types formalize and enforce the otherwise implicit categories the programmer uses for algebraic data types, data structures, or other components (see ![wiki](https://en.wikipedia.org/wiki/Type_system])).*
 
 ## Structuring the code
 The main role is therefore aiding help to **structure** the code and impose semantic restriction.
@@ -21,20 +21,20 @@ struct Cat
 end
 ```
 This allows us to define functions applicable only to the corresponding type
-```
+```julia
 bark(dog::Dog) = println(dog.name, " has barked.")
 meow(cat::Cat) = println(cat.name, " have meowed.")
 ```
 and therefore the compiler (or interpretter) enforces that dog can only `bark` and never `meow` and vice versa can cat only `meow`. In this sense, it ensures that `bark(cat)` and `meow(dog)` never happen. Unlike if we define 
 those functions as 
-```
+```julia
 bark(dog::String) = println(dog.name, " has barked.")
 meow(cat::String) = println(cat.name, " have meowed.")
 ```
 
 ## Intention of use and restrictions on compilers
 The *intention of use* in types is tightly related to how efficient code can compiler produce for that given intention. As an example, consider a following two variables `a` and `b` and function `inc` which increments the content by one and return the array.
-```
+```julia
 a = [1, 2, 3]
 b = (1, 2, 3)
 inc(x) = x .+ 1
@@ -61,13 +61,76 @@ julia> @btime inc($(c));
   865.304 ns (9 allocations: 464 bytes)
 ```
 
-Does it mean that we should always use `Tuples` instead of `Arrays`, it is just that each is better for different use-case. Arrays allows us to reuse the space, for example
+Does it mean that we should always use `Tuples` instead of `Arrays`? Surely not, it is just that each is better for different use-case. Arrays allows us for example to reuse space, which Tuples do not permit. For example
 ```julia
 inc!(x) = x .= x .+ 1
 ```
-will work for `a` but not for `b`, as Tuples are "immutable". This gives the compiler freedom to allocate them where he wishes (typically on Stack), while arrays are (at the time of writing) allocated strinctly on heap (needless to say that non-allocating version `inc!` of `inc` is much faster).
+will work for `a` but not for `b`, as Tuples are "immutable". This gives the compiler freedom to allocate (typically on Stack), while arrays are (at the time of writing) allocated strinctly on heap (needless to say that non-allocating version `inc!` of `inc` is much faster).
 
 # The type system
+
+## Julia is dynamicaly typed
+Julia's type system is dynamic, which means that all types are resolved during runtime. But, if the compiler can infer type of all variables of a function, it can specialize it leading to a very efficient code. Consider again the above example
+```
+a = [1,2,3]
+c = Vector{Number}([1,2,3])
+inc!(x) = x .= x .+ 1
+```
+where in case of calling `inc(a)`, the compiler precisely knows types of items of `a` (all are `Int64`, which allow it to compile `inc(a)` for a vector if Integers. In case of `c`, the compiler does not know, what to expect, therefore he has to create a generic version of `inc` where for each item he has to decide the type. This way more complex leading to drop in performance
+```julia
+julia> @btime inc!($(a))
+  4.322 ns (0 allocations: 0 bytes)
+julia> @btime inc!($(c))
+  132.294 ns (6 allocations: 96 bytes)  
+```
+
+## Types of types
+Julia divides types into three classes.
+
+### Abstract Type
+(![Julia documentation](https://docs.julialang.org/en/v1/manual/types/#man-abstract-types))
+Abstract types cannot be instantiated, which means that we cannot create a variable that would have an abstract type (try `typeof(Number(1f0))`). The most important use of abstract type is for structuring the code and defining general functions over semantically similar entities with different implementation. 
+
+An abstract type is define by preceding a definition of a type (declared using `struct` keyword) with a keyword `abstract`. For example following set of abstract types defines the part number system in julia.
+```julia
+abstract type Number end
+abstract type Real     <: Number end
+abstract type AbstractFloat <: Real end
+abstract type Integer  <: Real end
+abstract type Signed   <: Integer end
+abstract type Unsigned <: Integer end
+```
+The <: means "is a subtype of" and it is used in declarations where the right-hand is an immediate sypertype of a given type (`Integer` has an immediate supertype `Real`.) The abstract type `Number` is derived from `Any` which is a default supertype of any type (this means all subtypes are derived from `Any`).  
+
+Recall the structure is used mainly for defining functions, that are known to provide a correct output on all subtypes of a given abstract type. Consider for example a `sgn` function, which can be defined as 
+```julia
+sgn(x::Real) = x > 0 ? 1 : x < 0 ? -1 : 0
+sgn(x::Unsigned) = Int(x > 0)
+```
+and where the first function is defined for any subtype of a real, where the latter is used for subtypes of Unsigned.
+
+```markdown
+!!! info "Header"
+
+How does the julia decides which function to use when two possible function definitions are possible? For example `sgn(UInt8(0))` can call a definition `sgn(x::Real)` or a definition `sgn(x::Unsigned)`. The answer is that it chooses the most specific version, and therefore for `sgn(UInt8(0))` it takes `sgn(x::Unsinged)`. If the compiler cannot decide, it throws an error.
+```
+
+A hierarchy of abstract types allows to define default implementation of some function over subtypes and specialize it for concrete types. A prime example is matrix multiplication, which has a generic implementation with many specializations for various types of matrices (sparse, dense, banded, etc.)
+
+All abstract types, except `Any` are defined by core libraries. This means that Julia does not make a difference between abstract types that are shipped with the language and those defined by the user. All are treated the same.
+
+### Primitive types
+Citing the ![documentation](https://docs.julialang.org/en/v1/manual/types/#Primitive-Types): *A primitive type is a concrete type whose data consists of plain old bits. Classic examples of primitive types are integers and floating-point values. Unlike most languages, Julia lets you declare your own primitive types, rather than providing only a fixed set of built-in ones. In fact, the standard primitive types are all defined in the language itself:*
+```julia
+primitive type Float16 <: AbstractFloat 16 end
+primitive type Float32 <: AbstractFloat 32 end
+primitive type Float64 <: AbstractFloat 64 end
+```
+We refer the reader to the original documentation, as we will not use them. They are mentioned to assure the reader that there is very little in Julia of what is not defined in it.
+
+### Composite types
+
+
 
 
 
@@ -141,7 +204,7 @@ What you can do instead is [1, 2, 3] isa Vector{<:Number} which is true. That’
 
 ### A Headache examples
 * This is a great example for type resolution.
-```
+```julia
 function Base.reduce(::typeof(hcat), xs::Vector{TV})  where {T, L, TV<:OneHotLike{T, L}}
   OneHotMatrix(reduce(vcat, map(_indices, xs)), L)
 end
