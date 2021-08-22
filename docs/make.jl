@@ -39,8 +39,8 @@ end
 lecture_01 = [
     "Motivation" => "./lecture_01/motivation.md",
     "Outline" => "./lecture_01/outline.md",
-    "HOMEWORK" => "./lecture_01/hw.md",
-    "LABS" => "./lecture_01/labs.md",
+    "Lab" => "./lecture_01/lab.md",
+    "Homework" => "./lecture_01/hw.md",
 ]
 
 lecture_02 = [
