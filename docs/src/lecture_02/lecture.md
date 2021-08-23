@@ -119,6 +119,12 @@ A hierarchy of abstract types allows to define default implementation of some fu
 
 All abstract types, except `Any` are defined by core libraries. This means that Julia does not make a difference between abstract types that are shipped with the language and those defined by the user. All are treated the same.
 
+Abstract types can have parameters, for we have for example 
+```julia
+abstract struct AbstractArray{T,N} end
+```
+which defines arrays of arbitrary dimentions with an element type `T`. Naturaly `AbstractArray{Float32,2}` is different from `AbstractArray{Float64,2}` and from `AbstractArray{Real,2}` (more on this later).
+
 ### Primitive types
 Citing the ![documentation](https://docs.julialang.org/en/v1/manual/types/#Primitive-Types): *A primitive type is a concrete type whose data consists of plain old bits. Classic examples of primitive types are integers and floating-point values. Unlike most languages, Julia lets you declare your own primitive types, rather than providing only a fixed set of built-in ones. In fact, the standard primitive types are all defined in the language itself:*
 ```julia
@@ -129,9 +135,92 @@ primitive type Float64 <: AbstractFloat 64 end
 We refer the reader to the original documentation, as we will not use them. They are mentioned to assure the reader that there is very little in Julia of what is not defined in it.
 
 ### Composite types
+The composite types are similar to `struct` in C (they even have the same memory layout). It is not a great idea to think about them as objects (in OOP sense), because objects tie together *data* and *functions* over the data. Contrary in Julia (and in C), the function operates over data, but are not tied to them. Composite types are a powerhorse of Julia's type system, as most user-defined types are composite.
+
+The composite type is defined as
+```julia
+struct Position
+  x::Float64
+  y::Float64
+end
+```
+which defines a structure with two fields `x` and `y` of type `Float64`. Julia compiler creates a default constructor, where both (but generally all) arguments are converted using `(convert(Float64, x), convert(Float64, y)` to the correct type. This means that we can construct a Position with numbers of different type that are convertable to Float, e.g. `Position(1,1//2)`.
+
+Composite types do not have to have a specified type, e.g.
+```julia
+struct VaguePosition
+  x 
+  y 
+end
+```
+which would work as the definition above and allows to store different values in `x`, for example `String`. But it would limit compiler's ability to specialize, which can have a negative impact on the performance. For example
+```julia
+using BenchmarkTools
+move(a::T, b::T) where {T} = T(a.x + b.x, a.y + b.y)
+x = [Position(rand(), rand()) for _ in 1:100]
+y = [VaguePosition(rand(), rand()) for _ in 1:100]
+julia> @btime reduce(move, x);
+  114.105 ns (1 allocation: 32 bytes)
+
+julia> @btime reduce(move, y);
+  3.879 μs (199 allocations: 3.12 KiB)
+```
+
+The same holds if the Composite type contains field with AbstractType, for example
+```julia
+struct LessVaguePosition
+  x::Real
+  y::Real 
+end
+z = [LessVaguePosition(rand(), rand()) for _ in 1:100];
+julia> @btime reduce(move, z);
+  16.260 μs (496 allocations: 9.31 KiB)
+```
+
+A recommended way to fix this is to parametrize the struct is to parametrize the type definition as follows
+```julia
+struct Position2{T}
+  x::T
+  y::T 
+end
+u = [Position2(rand(), rand()) for _ in 1:100];
+julia> @btime reduce(move, u);
+  110.043 ns (1 allocation: 32 bytes)
+```
+and notice that the compiler can take advantage of specializing for differenty types (which does not have effect as in modern processrs have addition of Float and Int takes the same time)
+```julia
+v = [Position2(rand(1:100), rand(1:100)) for _ in 1:100];
+@btime reduce(move, v);
+  110.043 ns (1 allocation: 32 bytes)
+```
+
+All structs defined above are immutable (as we have seen above in the case of `Tuple`), which means that one cannot change a field (unless the struct wraps a container, like and array, which allows that). For example this raises an error
+```julia
+a = Position(1, 2)
+a.x = 2
+```
+
+If one needs to make a struct mutable, use the keyword `mutable` as follows
+```julia
+mutable struct MutablePosition{T}
+  x::T
+  y::T
+
+end
+
+a = MutablePosition(1e0, 2e0)
+a.x = 2
+```
+
+but there might be some performance penalty(not observable at this simple demo).
+
+### Type hierarchy
 
 
 
+Depending on the variance of the type constructor, the subtyping relation of the simple types may be either preserved, reversed, or ignored for the respective complex types. In the OCaml programming language, for example, "list of Cat" is a subtype of "list of Animal" because the list type constructor is covariant. This means that the subtyping relation of the simple types are preserved for the complex types. 
+
+On the other hand, "function from Animal to String" is a subtype of "function from Cat to String" because the function type constructor is contravariant in the parameter type. Here the subtyping relation of the simple types is reversed for the complex types. 
 
 
 ### The power of Type System \& multiple dispatch
