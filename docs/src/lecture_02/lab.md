@@ -360,7 +360,7 @@ Plot the agent count after each iteration of the previous exercise.
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
-```@repl load_ecosystem
+```@example load_ecosystem
 grass = [Grass(true,5.0,5.0) for _ in 1:2];
 sheep = [Sheep(10.0,5.0,1.0,1.0) for _ in 1:5];
 wolf  = Wolf(20.0,10.0,1.0,1.0);
@@ -381,10 +381,8 @@ plt = plot();
 for T in Ts
     plot!(plt, counts[T], label=T, lw=2, ylims=(0,5))
 end
-savefig("plot.svg")  # ignore; just for plot in webpage
-nothing              # ignore
+plt
 ```
-![](plot.svg)
 
 ```@raw html
 </p></details>
