@@ -376,15 +376,14 @@ for i in 1:7
     end
 end
 
-using Plots
-plt = plot();
-for T in Ts
-    plot!(plt, counts[T], label=T, lw=2, ylims=(0,5))
-end
-savefig("plot.svg")  # ignore; just for plot in webpage
-nothing              # ignore
+# using Plots
+# plt = plot();
+# for T in Ts
+#     plot!(plt, counts[T], label=T, lw=2, ylims=(0,5))
+# end
+# savefig("plot.svg")  # ignore; just for plot in webpage
+# nothing              # ignore
 ```
-![](plot.svg)
 
 ```@raw html
 </p></details>
