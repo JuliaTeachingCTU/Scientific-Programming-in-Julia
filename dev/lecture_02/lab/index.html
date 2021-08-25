@@ -1,75 +1,87 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_02/lab/"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit">Scientific Programming in Julia</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox"/><label class="tocitem" for="menuitem-2"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/hw/">HOMEWORK</a></li><li><a class="tocitem" href="../../lecture_01/labs/">LABS</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox" checked/><label class="tocitem" for="menuitem-3"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>Lab</a></li></ul></li><li><span class="tocitem">3: Design patterns</span></li><li><span class="tocitem">4: Packages development, environments, etc...</span></li><li><span class="tocitem">5: Benchmarking, profiling, and performance gotchas</span></li><li><span class="tocitem">6: Language introspection</span></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/macros/">Macros</a></li></ul></li><li><span class="tocitem">8: Introduction to automatic differentiation</span></li><li><span class="tocitem">9: Manipulating intermediate representation</span></li><li><span class="tocitem">10: Different levels of parallel programming</span></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><span class="tocitem">12: Uncertainty propagation in ODE</span></li><li><span class="tocitem">13: Learning ODE from data</span></li><li><a class="tocitem" href="../../how_to_submit_hw/">How to submit homeworks</a></li><li><a class="tocitem" href="../../howto/">How To ...</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">2: The power of Type System &amp; multiple dispatch</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_02/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Lab-02:-Predator-Prey-Agents"><a class="docs-heading-anchor" href="#Lab-02:-Predator-Prey-Agents">Lab 02: Predator-Prey Agents</a><a id="Lab-02:-Predator-Prey-Agents-1"></a><a class="docs-heading-anchor-permalink" href="#Lab-02:-Predator-Prey-Agents" title="Permalink"></a></h1><p>To practice Julia&#39;s multiple dispatch you will implement your own, simplified, agent-based simulation of a <em>predator-prey model</em>.  The model will contain <em>wolves</em>, <em>sheep</em>, and - to feed your sheep - some <em>grass</em>. Your final result could look something like the plot below.</p><p><img src="../pred-prey.png" alt="img"/></p><p>As you can see, in this model, the wolves unfortunately died out :(.</p><p>To get started we need a type hierarchy. In order to be able to extend this model in later lectures we will structure them like this</p><pre><code class="language-julia">abstract type AbstractAgent end
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_02/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><input class="collapse-toggle" id="menuitem-2" type="checkbox"/><label class="tocitem" for="menuitem-2"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/hw/">HOMEWORK</a></li><li><a class="tocitem" href="../../lecture_01/labs/">LABS</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox" checked/><label class="tocitem" for="menuitem-3"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li></ul></li><li><span class="tocitem">4: Packages development, environments, etc...</span></li><li><span class="tocitem">5: Benchmarking, profiling, and performance gotchas</span></li><li><span class="tocitem">6: Language introspection</span></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/macros/">Macros</a></li></ul></li><li><span class="tocitem">8: Introduction to automatic differentiation</span></li><li><span class="tocitem">9: Manipulating intermediate representation</span></li><li><span class="tocitem">10: Different levels of parallel programming</span></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><span class="tocitem">12: Uncertainty propagation in ODE</span></li><li><span class="tocitem">13: Learning ODE from data</span></li><li><a class="tocitem" href="../../how_to_submit_hw/">How to submit homeworks</a></li><li><a class="tocitem" href="../../howto/">How To ...</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">2: The power of Type System &amp; multiple dispatch</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_02/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Lab-02:-Predator-Prey-Agents"><a class="docs-heading-anchor" href="#Lab-02:-Predator-Prey-Agents">Lab 02: Predator-Prey Agents</a><a id="Lab-02:-Predator-Prey-Agents-1"></a><a class="docs-heading-anchor-permalink" href="#Lab-02:-Predator-Prey-Agents" title="Permalink"></a></h1><p>In the next two labs you will implement your own, simplified, agent-based simulation of a <em>predator-prey model</em>.  The model will contain <em>wolves</em>, <em>sheep</em>, and - to feed your sheep - some <em>grass</em>.  Running and plotting your final result could look something like the plot below.</p><p><img src="../pred-prey.png" alt="img"/></p><p>As you can see, in this model, the wolves unfortunately died out :(.</p><p>To get started we need a type hierarchy. In order to be able to extend this model in later labs we will structure them like this</p><pre><code class="language-julia hljs">abstract type AbstractAgent end
 abstract type AbstractAnimal &lt;: AbstractAgent end
-abstract type AbstractPlant &lt;: AbstractAgent end</code></pre><p>Our <code>Grass</code> will be growing over time and it will need a certain amount of time steps to fully grow such that it can be eaten. This has to be reflected in the fields of our grass struct:</p><pre><code class="language-julia">mutable struct Grass &lt;: AbstractPlant
+abstract type AbstractPlant &lt;: AbstractAgent end</code></pre><p>Our <code>Grass</code> will be growing over time and it will need a certain amount of time steps to fully grow such that it can be eaten. This has to be reflected in the fields of our grass struct:</p><pre><code class="language-julia hljs">mutable struct Grass &lt;: AbstractPlant
     fully_grown::Bool
     regrowth_time::Int
     countdown::Int
 end
-Grass(t) = Grass(true,t,t)</code></pre><p>Most of the logic of our agent simulation will be located in the function <code>agent_step!(::AbstractAgent, ::World)</code>. Grass cannot grow in a void, hence we need the <code>World</code> in the <code>agent_step!</code>. In our case this world will be simply a container for all our agents.</p><div class="admonition is-category-exercise">
-<header class="admonition-header">Header</header>
-<div class="admonition-body"><p>Define a <code>World</code> struct that will hold all your <code>AbstractAgents</code> in a <code>Vector</code>. Try to avoid fields with abstract types. Julia&#39;s compiler will not be able to infer the type for those (which leads to type instabilities and performance losses).</p><p>TODO: linking to the lecture would be nice here.</p><p>After that, implement the <code>agent_step!</code> method for <code>Grass</code>. It should decrease the <code>countdown</code> until the <code>Grass</code> is fully grown.</p></div></div>
+# constructor for grass with random growth countdown
+Grass(t) = Grass(false, t, rand(1:t))</code></pre><p>Grass cannot grow in a void, hence we need a <code>World</code>.  In our simple case this world will be simply a container for all our agents.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Define a <code>World</code> struct that will hold all your <code>AbstractAgents</code> in a <code>Vector</code>. Try to avoid fields with abstract types. Julia&#39;s compiler will not be able to infer the type for those (which leads to type instabilities and performance losses; see the <a href="../lecture/#composite_types">composite types section in the lecture</a>).</p></div></div>
 <details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia">struct World{V&lt;:Vector{&lt;:AbstractAgent}}
-    agents::V
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">struct World{T&lt;:AbstractAgent}
+    agents::Vector{T}
 end
 
-function agent_step!(a::Grass, w::World)
-    if !a.fully_grown
-        if a.countdown &lt;= 0
-            a.fully_grown = true
-            a.countdown = a.regrowth_time
-        else
-            a.countdown -= 1
-        end
+# if you want you can overload the `show` method to get custom printing of you World
+function Base.show(io::IO, w::World)
+    println(io, typeof(w))
+    map(a-&gt;println(io,&quot;  $a&quot;),w.agents)
+end</code></pre></p></details><p>Now you should be able to create a world and grow some grass!</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = Grass(5)</code><code class="nohighlight hljs ansi" style="display:block;">Grass(false, 5, 1)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World([grass])</code><code class="nohighlight hljs ansi" style="display:block;">World{Grass}
+  Grass(false, 5, 1)</code></pre><p>Our simulated <code>Sheep</code> will have a certain amount of energy <span>$E$</span>, a reproduction probability <span>$p_r$</span>, and a probablity to find food <span>$p_f$</span> in each iteration of our simulation. Additionally, each sheep with get a certain amout of energy <span>$\Delta E$</span> from eating a <code>Grass</code>. The corresponding struct then looks like this</p><pre><code class="language-julia hljs">mutable struct Sheep{T&lt;:Real} &lt;: AbstractAnimal
+    energy::T
+    Δenergy::T
+    reproduction_prob::T
+    food_prob::T
+end</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement a function <code>eat!(::Sheep, ::Grass, ::World)</code> which increases the sheep&#39;s energy by <span>$\Delta E$</span> and sets <code>fully_grown</code> of the grass to <code>false</code>.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function eat!(sheep::Sheep, grass::Grass, w::World)
+    if grass.fully_grown
+        grass.fully_grown = false
+        sheep.energy += sheep.Δenergy
     end
-end</code></pre></p></details><p>Now you should be able to create a world and grow some grass!</p><pre><code class="language-julia">grass = Grass(false,2,2)
-world = World([grass])
-
-agent_step!(grass, world)
-agent_step!(grass, world)</code></pre><p>And so on and so forth. Probably first create <code>agent_step!</code> just for <code>Sheep</code> then generalize to <code>AbstractAnimal</code>. Not sure if this is the best example. The only parts that make use of dispatch are <code>eats!</code> and <code>agent_step!</code>...</p><pre><code class="language-julia">mutable struct Sheep{T&lt;:Real} &lt;: AbstractAnimal
+end</code></pre></p></details><p>Below you can see how a fully grown grass is eaten by a sheep.  The sheep&#39;s energy changes and the <code>fully_grown</code> field of the grass becomes <code>false</code>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = Grass(true,5.0,5.0);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep = Sheep(10.0,5.0,0.1,0.1);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World([grass, sheep])</code><code class="nohighlight hljs ansi" style="display:block;">World{Scientific_Programming_in_Julia.Ecosystem.AbstractAgent}
+  Grass(true, 5, 5)
+  Sheep{Float64}(10.0, 5.0, 0.1, 0.1)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eat!(sheep,grass,world);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world</code><code class="nohighlight hljs ansi" style="display:block;">World{Scientific_Programming_in_Julia.Ecosystem.AbstractAgent}
+  Grass(false, 5, 5)
+  Sheep{Float64}(15.0, 5.0, 0.1, 0.1)</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Next, implement a <code>Wolf</code> with the same properties as the sheep (<span>$E$</span>, <span>$\Delta E$</span>, <span>$p_r$</span>, and <span>$p_f$</span>) as well as the correspoding <code>eat!</code> method which increases the wolf&#39;s energy and kills the sheep (i.e. removes the sheep from the world).</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">mutable struct Wolf{T&lt;:Real} &lt;: AbstractAnimal
     energy::T
     Δenergy::T
     reproduction_prob::T
     food_prob::T
 end
-Sheep() = Sheep(10.0, 5.0, 0.5)
 
-mutable struct Wolf{T&lt;:Real} &lt;: AbstractAnimal
-    energy::T
-    Δenergy::T
-    reproduction_prob::T
-    food_prob::T
-end
-Wolf() = Wolf(10.0, 2.0, 0.01)
-
-function agent_step!(a::Grass, w::World)
-    if !a.fully_grown
-        if a.countdown &lt;= 0
-            a.fully_grown = true
-            a.countdown = a.regrowth_time
-        else
-            a.countdown -= 1
-        end
-    end
-    return a
+function eat!(wolf::Wolf, sheep::Sheep, w::World)
+    kill_agent!(sheep,w)
+    wolf.energy += wolf.Δenergy
 end
 
-function agent_step!(a::A, w::World) where A&lt;:AbstractAnimal
-    a.energy -= 1
-    dinner = find_food(a,w)
-    eat!(a, dinner, w)
-    if a.energy &lt; 0
-        kill_agent!(a,w)
-        return
+kill_agent!(a::AbstractAnimal, w::World) = deleteat!(w.agents, findall(x-&gt;x==a, w.agents))</code></pre></p></details><p>With a correct <code>eat!</code> method you should get results like this:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = Grass(true,5.0,5.0);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep = Sheep(10.0,5.0,0.1,0.1);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; wolf  = Wolf(20.0,10.0,0.1,0.1);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World([grass, sheep, wolf])</code><code class="nohighlight hljs ansi" style="display:block;">World{Scientific_Programming_in_Julia.Ecosystem.AbstractAgent}
+  Grass(true, 5, 5)
+  Sheep{Float64}(10.0, 5.0, 0.1, 0.1)
+  Wolf{Float64}(20.0, 10.0, 0.1, 0.1)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eat!(wolf,sheep,world);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world</code><code class="nohighlight hljs ansi" style="display:block;">World{Scientific_Programming_in_Julia.Ecosystem.AbstractAgent}
+  Grass(true, 5, 5)
+  Wolf{Float64}(30.0, 10.0, 0.1, 0.1)</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement a function <code>find_food(::Sheep, ::World)</code> which returns either a <code>Grass</code> (sampled from all <code>Grass</code>es with the given food probability <span>$p_f$</span>) or returns <code>nothing</code>.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function find_food(a::Sheep, w::World)
+    if rand() &lt;= a.food_prob
+        as = filter(x-&gt;isa(x,Grass), w.agents)
+        isempty(as) ? nothing : sample(as)
     end
-    if rand() &lt;= a.reproduction_prob
-        reproduce!(a,w)
+end</code></pre></p></details><p>A sheep with <span>$p_f=1$</span> will always find some food if there is some in the world, so you should get a result like below.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = Grass(true,5.0,5.0);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep = Sheep(10.0,5.0,1.0,1.0);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; wolf  = Wolf(20.0,10.0,1.0,1.0);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World([grass, sheep, wolf]);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; dinner = find_food(sheep,world)</code><code class="nohighlight hljs ansi" style="display:block;">Grass(true, 5, 5)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eat!(sheep,dinner,world);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep</code><code class="nohighlight hljs ansi" style="display:block;">Sheep{Float64}(15.0, 5.0, 1.0, 1.0)</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement a function <code>find_food(::Wolf, ::World)</code> which returns either a <code>Sheep</code> (with the given food probability <span>$p_f$</span>) or returns <code>nothing</code>.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function find_food(a::Wolf, w::World)
+    if rand() &lt;= a.food_prob
+        as = filter(x-&gt;isa(x,Sheep), w.agents)
+        isempty(as) ? nothing : sample(as)
     end
-    return a
-end
-
-function find_food(a::T, w::World) where T&lt;:AbstractAnimal
+end</code></pre></p></details><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Identify the code duplications between <code>find_food(::Sheep,::World)</code> and <code>find_food(::Wolf,::World)</code> and generalize the function to <code>find_food(::AbstractAnimal, ::World)</code></p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function find_food(a::T, w::World) where T&lt;:AbstractAnimal
     if rand() &lt;= a.food_prob
         as = filter(x-&gt;isa(x,eats(T)), w.agents)
         isempty(as) ? nothing : sample(as)
@@ -77,23 +89,46 @@ function find_food(a::T, w::World) where T&lt;:AbstractAnimal
 end
 
 eats(::Type{&lt;:Sheep}) = Grass
-eats(::Type{&lt;:Wolf}) = Sheep
+eats(::Type{&lt;:Wolf}) = Sheep</code></pre></p></details><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>What happens if you call <code>eat!(wolf, find_food(wolf,world), world)</code> and there are no sheep anymore? Or if the wolf&#39;s <span>$p_f&lt;1$</span>?</p><p>Write a simple for loop that runs <code>7</code> iterations of a simple simulation that lets a wolf eat one sheep in each iteration with this given world:</p><pre><code class="language-julia hljs">sheep = [Sheep(10.0,5.0,1.0,1.0) for _ in 1:10]
+wolf  = Wolf(20.0,10.0,1.0,0.0)
+world = World(vcat(sheep, [wolf]))</code></pre><p>Hint: You can try to overload the <code>eat!</code> function appropriately.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs"># make sure any animal can also eat `nothing`
+eat!(a::AbstractAnimal,b::Nothing,w::World) = nothing
 
-function eat!(wolf::Wolf, sheep::Sheep, w::World)
-    kill_agent!(sheep,w)
-    wolf.energy += wolf.Δenergy
-end
-function eat!(sheep::Sheep, grass::Grass, w::World)
-    if grass.fully_grown
-        grass.fully_grown = false
-        sheep.energy += sheep.Δenergy
+for _ in 1:10
+    dinner = find_food(wolf,world)
+    eat(wolf,dinner,world)
+end</code></pre></p></details><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement a function <code>count(::Vector{AbstractAgent})</code> that returns a dictionary that contains pairs of agent types and the agent count e.g.</p><pre><code class="language-julia hljs">julia&gt; count(world)
+Dict(Sheep =&gt; 2, Wolf =&gt; 1, Grass =&gt; 10)</code></pre><p>Use as much dispatch as you can! ;)</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">count(g::AbstractPlant) = g.fully_grown ? 1 : 0
+count(::AbstractAnimal) = 1
+
+count(as::Vector{&lt;:AbstractAgent}) = map(count,as) |&gt; sum
+
+function count(as::Vector{AbstractAgent})
+    Ts = unique(typeof.(as))
+    cs = map(Ts) do T
+        _as = Vector{T}(filter(x-&gt;isa(x,T), as))
+        T =&gt; count(_as)
     end
-end
-eat!(a,b,w) = nothing
-
-function reproduce!(a::AbstractAnimal, w::World)
-    a.energy /= 2
-    push!(w.agents, deepcopy(a))
-end
-
-kill_agent!(a::AbstractAnimal, w::World) = deleteat!(w.agents, findall(x-&gt;x==a, w.agents))</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_01/labs/">« LABS</a><a class="docs-footer-nextpage" href="../../lecture_07/macros/">Macros »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 25 August 2021 09:32">Wednesday 25 August 2021</span>. Using Julia version 1.6.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+    Dict(cs...)
+end</code></pre></p></details><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Plot the agent count after each iteration of the previous exercise.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = [Grass(true,5.0,5.0) for _ in 1:2];</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep = [Sheep(10.0,5.0,1.0,1.0) for _ in 1:5];</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; wolf  = Wolf(20.0,10.0,1.0,1.0);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World(vcat([wolf], sheep, grass));</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ts = unique(typeof.(world.agents))</code><code class="nohighlight hljs ansi" style="display:block;">3-element Vector{DataType}:
+ Wolf{Float64}
+ Sheep{Float64}
+ Grass</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; counts = Dict(T=&gt;[] for T in Ts);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for i in 1:7
+           cs = count(world.agents)
+           eat!(wolf, find_food(wolf,world), world)
+           for (T,c) in cs
+               push!(counts[T], c)
+           end
+       end</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre></p></details></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../../lecture_03/lab/">Lab »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.5 on <span class="colophon-date" title="Wednesday 25 August 2021 10:01">Wednesday 25 August 2021</span>. Using Julia version 1.6.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
