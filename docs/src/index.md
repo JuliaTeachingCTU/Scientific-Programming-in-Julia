@@ -2,7 +2,14 @@
 <img class="docs-light-only"; src="https://raw.githubusercontent.com/JuliaTeachingCTU/JuliaCTUGraphics/master/logo/Scientific-Programming-in-Julia-logo.svg"; alt="Scientific Programming in Julia logo"; max-width: 100%; height: auto>
 <img class="docs-dark-only"; src="https://raw.githubusercontent.com/JuliaTeachingCTU/JuliaCTUGraphics/master/logo/Scientific-Programming-in-Julia-logo-dark.svg"; alt="Scientific Programming in Julia logo"; max-width: 100%; height: auto;>
 ```
+
 ---
+
+```@setup grsetup
+using Plots
+ENV["GKSwstype"] = "100"
+gr()
+```
 
 Welcome to our course *Scientific Programming in Julia*.
 
@@ -11,7 +18,7 @@ Welcome to our course *Scientific Programming in Julia*.
 - Labs: Niklas Heim and Jan Franců
 - Credits: 4
 - Format: 2+2
-- Enrollment: search code [XXX](http://bilakniha.cvut.cz/cs/predmet6606806.html) in KOS
+- Enrollment: search code [XXX](https://) in KOS
 - Requirements for the course:
     - Homeworks (after every lab)
     - Final project on a topic agreed with the lecturers
@@ -30,7 +37,7 @@ The main goals of the course are the following: (make it longer? Split into two.
 
 ## Recommended courses
 - [Julia for Optimization and Learning](https://github.com/JuliaTeachingCTU/Julia-for-Optimization-and-Learning) - bachelor course on Julia, which we recommend for beginners before enrolling to this course
-- [Functional Programming]() - TODO fill in the url
+- [Functional Programming](https://) - TODO fill in the url
 
 
 ## References
