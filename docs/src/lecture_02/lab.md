@@ -381,7 +381,7 @@ plt = plot();
 for T in Ts
     plot!(plt, counts[T], label=T, lw=2, ylims=(0,5))
 end
-plt
+savefig("plot.svg"); nothing
 ```
 
 ```@raw html
