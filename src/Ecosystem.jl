@@ -2,8 +2,8 @@ module Ecosystem
 
 using StatsBase
 
-export Grass, Sheep, Wolf, World
-export agent_step!, agent_count
+export Grass, Sheep, Wolf, World, PoisonedGrass
+export agent_step!, agent_count, simulate!, every_nth
 
 abstract type AbstractAgent end
 abstract type AbstractPlant <: AbstractAgent end
@@ -16,6 +16,15 @@ mutable struct Grass <: AbstractPlant
 end
 Grass(t) = Grass(false, t, rand(1:t))
 Grass() = Grass(2)
+
+mutable struct PoisonedGrass <: AbstractPlant
+    fully_grown::Bool
+    regrowth_time::Int
+    countdown::Int
+end
+PoisonedGrass(t) = PoisonedGrass(false, t, rand(1:t))
+PoisonedGrass() = PoisonedGrass(2)
+
 
 mutable struct Sheep{T<:Real} <: AbstractAnimal
     energy::T
@@ -39,7 +48,7 @@ function Base.show(io::IO, w::World)
     map(a->println(io,"  $a"),w.agents)
 end
 
-function agent_step!(a::Grass, w::World)
+function agent_step!(a::AbstractPlant, w::World)
     if !a.fully_grown
         if a.countdown <= 0
             a.fully_grown = true
@@ -73,6 +82,7 @@ function find_food(a::T, w::World) where T<:AbstractAnimal
 end
 
 eats(::Sheep,::Grass) = true
+eats(::Sheep,::PoisonedGrass) = true
 eats(::Wolf,::Sheep) = true
 eats(::AbstractAgent,::AbstractAgent) = false
 
@@ -84,6 +94,12 @@ function eat!(sheep::Sheep, grass::Grass, w::World)
     if grass.fully_grown
         grass.fully_grown = false
         sheep.energy += sheep.Δenergy
+    end
+end
+function eat!(sheep::Sheep, grass::PoisonedGrass, w::World)
+     if grass.fully_grown
+        grass.fully_grown = false
+        sheep.energy -= sheep.Δenergy
     end
 end
 eat!(::AbstractAnimal,::Nothing,::World) = nothing
@@ -118,6 +134,30 @@ function agent_count(w::World)
         return d
     end
     foldl(op, w.agents, init=Dict{Symbol,Int}())
+end
+
+function simulate!(w::World, iters::Int; callbacks=[])
+    for i in 1:iters
+        for a in w.agents
+            agent_step!(a,w)
+        end
+        for cb in callbacks
+            cb(w)
+        end
+    end
+end
+
+function every_nth(f::Function, n::Int)
+    i = 1
+    function callback(w::World)
+        # display(i) # comment this out to see out the counter increases
+        if i == n
+            f(w)
+            i = 1
+        else
+            i += 1
+        end
+    end
 end
 
 end
