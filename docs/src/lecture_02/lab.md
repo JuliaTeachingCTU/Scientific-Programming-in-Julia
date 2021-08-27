@@ -14,6 +14,7 @@ final result could look something like the plot below.
 
 As you can see, in this model, the wolves unfortunately died out :(.
 
+## Creating the world
 To get started we need a type hierarchy. In order to be able to extend this model
 in later labs we will structure them like this
 
@@ -44,18 +45,15 @@ world will be simply a container for all our agents.
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-
 Define a `World` struct that will hold all your `AbstractAgents` in a `Vector`.
 Try to avoid fields with abstract types. Julia's compiler will not be able to
 infer the type for those (which leads to type instabilities and performance
 losses; see the [composite types section in the lecture](@ref composite_types)).
-
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-
 ```julia
 struct World{T<:AbstractAgent}
     agents::Vector{T}
@@ -67,7 +65,6 @@ function Base.show(io::IO, w::World)
     map(a->println(io,"  $a"),w.agents)
 end
 ```
-
 ```@raw html
 </p></details>
 ```
@@ -78,6 +75,7 @@ grass = Grass(5)
 world = World([grass])
 ```
 
+## Sheep eat grass
 Our simulated `Sheep` will have a certain amount of energy $E$, a reproduction
 probability $p_r$, and a probablity to find food $p_f$ in each iteration of our
 simulation. Additionally, each sheep with get a certain amout of energy $\Delta
@@ -126,7 +124,7 @@ world
 
 
 
-
+## Wolves eat sheep
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
@@ -173,7 +171,7 @@ world
 ```
 
 
-
+## Finding food for sheep
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
@@ -215,6 +213,7 @@ sheep
 ```
 
 
+## Finding food for wolves
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
@@ -242,6 +241,7 @@ end
 ```
 
 
+## General food finding
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
@@ -274,6 +274,7 @@ eats(::AbstractAgent,::AbstractAgent) = false
 ```
 
 
+## Eating nothing
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
