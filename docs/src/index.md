@@ -25,6 +25,13 @@ Welcome to our course *Scientific Programming in Julia*.
 - Grading: 60% final project defended at exam and 40% homework 
 - Location: TBD
 
+Some homeworks are harder than others, so each of them is rewarded with a
+different amount of points:
+
+| Homework | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   | 9   | 10  | 11  | 12  | 13  |
+| :--      | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
+| Points   | -   | 2   | -   | -   | -   | -   | -   | -   | -   | -   | -   | -   | -   |
+
 
 ## What will we emphasize? / What will you learn?
 The main goals of the course are the following: (make it longer? Split into two.)

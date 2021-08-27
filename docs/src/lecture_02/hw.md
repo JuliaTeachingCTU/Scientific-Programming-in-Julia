@@ -17,8 +17,8 @@ many of each type are currently in our `World`. In the case of `AbstractPlant`s
 we only want to count the ones that are fully grown.
 
 ```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
+<div class="admonition is-category-homework">
+<header class="admonition-header">Homework (2 points)</header>
 <div class="admonition-body">
 ```
 1. Implement a function `agent_count` that can be called on a single
