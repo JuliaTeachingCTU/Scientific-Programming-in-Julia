@@ -119,8 +119,8 @@ countsym(::T) where T<:AbstractAnimal = nameof(T)
 #     delete!(cs,:NoCount)
 # end
 
-agent_count(g::Ecosystem.AbstractPlant) = g.fully_grown ? 1 : 0
-agent_count(::Ecosystem.AbstractAnimal) = 1
+agent_count(g::AbstractPlant) = g.fully_grown ? 1 : 0
+agent_count(::AbstractAnimal) = 1
 agent_count(as::Vector{<:AbstractAgent}) = sum(agent_count,as)
 
 function agent_count(w::World)

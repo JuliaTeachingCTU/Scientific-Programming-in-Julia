@@ -54,8 +54,8 @@ Use as much dispatch as you can! ;)
 
 ```julia
 # first solution using foldl instead of a for loop
-agent_count(g::Ecosystem.AbstractPlant) = g.fully_grown ? 1 : 0
-agent_count(::Ecosystem.AbstractAnimal) = 1
+agent_count(g::AbstractPlant) = g.fully_grown ? 1 : 0
+agent_count(::AbstractAnimal) = 1
 agent_count(as::Vector{<:AbstractAgent}) = sum(agent_count,as)
 
 function agent_count(w::World)
