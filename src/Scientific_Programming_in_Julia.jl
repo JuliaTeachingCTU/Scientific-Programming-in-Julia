@@ -4,6 +4,6 @@ include("Ecosystem.jl")
 
 using .Ecosystem
 export Grass, Sheep, Wolf, World
-export agent_step!
+export agent_step!, agent_count
 
 end

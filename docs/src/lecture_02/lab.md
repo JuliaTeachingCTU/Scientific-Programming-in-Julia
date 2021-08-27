@@ -1,4 +1,4 @@
-# Lab 02: Predator-Prey Agents
+# [Lab 2: Predator-Prey Agents](@id lab02)
 
 ```@setup load_ecosystem
 using Scientific_Programming_in_Julia
@@ -61,7 +61,7 @@ struct World{T<:AbstractAgent}
     agents::Vector{T}
 end
 
-# if you want you can overload the `show` method to get custom printing of you World
+# if you want you can overload the `show` method to get custom printing of your World
 function Base.show(io::IO, w::World)
     println(io, typeof(w))
     map(a->println(io,"  $a"),w.agents)
@@ -136,6 +136,8 @@ Next, implement a `Wolf` with the same properties as the sheep ($E$, $\Delta
 E$, $p_r$, and $p_f$) as well as the correspoding `eat!` method which increases
 the wolf's energy and kills the sheep (i.e. removes the sheep from the world).
 
+Hint: You can use `findall` and `deleteat!` to remove agents from your world.
+
 ```@raw html
 </div></div>
 <details class = "solution-body">
@@ -179,6 +181,8 @@ world
 ```
 Implement a function `find_food(::Sheep, ::World)` which returns either a
 `Grass` (sampled from all `Grass`es with the given food probability $p_f$) or returns `nothing`.
+
+Hint: You can use `StatsBase.sample` to choose a random element from a vector.
 
 ```@raw html
 </div></div>
@@ -256,13 +260,14 @@ Identify the code duplications between `find_food(::Sheep,::World)` and
 ```julia
 function find_food(a::T, w::World) where T<:AbstractAnimal
     if rand() <= a.food_prob
-        as = filter(x->isa(x,eats(T)), w.agents)
+        as = filter(x->eats(a,x), w.agents)
         isempty(as) ? nothing : sample(as)
     end
 end
 
-eats(::Type{<:Sheep}) = Grass
-eats(::Type{<:Wolf}) = Sheep
+eats(::Sheep,::Grass) = true
+eats(::Wolf,::Sheep) = true
+eats(::AbstractAgent,::AbstractAgent) = false
 ```
 ```@raw html
 </p></details>
@@ -280,7 +285,7 @@ are no sheep anymore? Or if the wolf's $p_f<1$?
 Write a simple for loop that runs `7` iterations of a simple simulation that
 lets a wolf eat one sheep in each iteration with this given world:
 ```julia
-sheep = [Sheep(10.0,5.0,1.0,1.0) for _ in 1:10]
+sheep = [Sheep(10.0,5.0,1.0,1.0) for _ in 1:5]
 wolf  = Wolf(20.0,10.0,1.0,0.0)
 world = World(vcat(sheep, [wolf]))
 ```
@@ -298,90 +303,8 @@ eat!(a::AbstractAnimal,b::Nothing,w::World) = nothing
 
 for _ in 1:10
     dinner = find_food(wolf,world)
-    eat(wolf,dinner,world)
+    eat!(wolf,dinner,world)
 end
-```
-
-```@raw html
-</p></details>
-```
-
-
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Implement a function `count(::Vector{AbstractAgent})` that returns a dictionary
-that contains pairs of agent types and the agent count e.g.
-```julia
-julia> count(world)
-Dict(Sheep => 2, Wolf => 1, Grass => 10)
-```
-Use as much dispatch as you can! ;)
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-```julia
-count(g::AbstractPlant) = g.fully_grown ? 1 : 0
-count(::AbstractAnimal) = 1
-
-count(as::Vector{<:AbstractAgent}) = map(count,as) |> sum
-
-function count(as::Vector{AbstractAgent})
-    Ts = unique(typeof.(as))
-    cs = map(Ts) do T
-        _as = Vector{T}(filter(x->isa(x,T), as))
-        T => count(_as)
-    end
-    Dict(cs...)
-end
-```
-
-```@raw html
-</p></details>
-```
-
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Plot the agent count after each iteration of the previous exercise.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-```@example load_ecosystem
-grass = [Grass(true,5.0,5.0) for _ in 1:2];
-sheep = [Sheep(10.0,5.0,1.0,1.0) for _ in 1:5];
-wolf  = Wolf(20.0,10.0,1.0,1.0);
-world = World(vcat([wolf], sheep, grass));
-
-Ts = unique(typeof.(world.agents))
-counts = Dict(T=>[] for T in Ts);
-for i in 1:7
-    cs = count(world.agents)
-    eat!(wolf, find_food(wolf,world), world)
-    for (T,c) in cs
-        push!(counts[T], c)
-    end
-end
-
-using Plots
-plt = plot();
-for T in Ts
-    plot!(plt, counts[T], label=T, lw=2, ylims=(0,5))
-end
-savefig("plot.svg"); nothing
 ```
 
 ```@raw html

@@ -3,7 +3,7 @@ module Ecosystem
 using StatsBase
 
 export Grass, Sheep, Wolf, World
-export agent_step!
+export agent_step!, agent_count
 
 abstract type AbstractAgent end
 abstract type AbstractPlant <: AbstractAgent end
@@ -67,13 +67,14 @@ end
 
 function find_food(a::T, w::World) where T<:AbstractAnimal
     if rand() <= a.food_prob
-        as = filter(x->isa(x,eats(T)), w.agents)
+        as = filter(x->eats(a,x), w.agents)
         isempty(as) ? nothing : sample(as)
     end
 end
 
-eats(::Type{<:Sheep}) = Grass
-eats(::Type{<:Wolf}) = Sheep
+eats(::Sheep,::Grass) = true
+eats(::Wolf,::Sheep) = true
+eats(::AbstractAgent,::AbstractAgent) = false
 
 function eat!(wolf::Wolf, sheep::Sheep, w::World)
     kill_agent!(sheep,w)
@@ -94,18 +95,29 @@ end
 
 kill_agent!(a::AbstractAnimal, w::World) = deleteat!(w.agents, findall(x->x==a, w.agents))
 
-count(g::Ecosystem.AbstractPlant) = g.fully_grown ? 1 : 0
-count(::Ecosystem.AbstractAnimal) = 1
+countsym(g::T) where T<:AbstractPlant = g.fully_grown ? nameof(T) : :NoCount
+countsym(::T) where T<:AbstractAnimal = nameof(T)
 
-count(as::Vector{<:Ecosystem.AbstractAgent}) = map(count,as) |> sum
+# function agent_count(as::Vector{AbstractAgent})
+#     cs = StatsBase.countmap(map(countsym,as))
+#     delete!(cs,:NoCount)
+# end
 
-function count(as::Vector{Ecosystem.AbstractAgent})
-    Ts = unique(typeof.(as))
-    cs = map(Ts) do T
-        _as = Vector{T}(filter(x->isa(x,T), as))
-        T => count(_as)
+agent_count(g::Ecosystem.AbstractPlant) = g.fully_grown ? 1 : 0
+agent_count(::Ecosystem.AbstractAnimal) = 1
+agent_count(as::Vector{<:AbstractAgent}) = sum(agent_count,as)
+
+function agent_count(w::World)
+    function op(d::Dict,a::T) where T<:AbstractAgent
+        n = nameof(T)
+        if n in keys(d)
+            d[n] += agent_count(a)
+        else
+            d[n] = agent_count(a)
+        end
+        return d
     end
-    Dict(cs...)
+    foldl(op, w.agents, init=Dict{Symbol,Int}())
 end
 
 end
