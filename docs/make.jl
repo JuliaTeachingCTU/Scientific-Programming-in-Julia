@@ -39,15 +39,19 @@ end
 lecture_01 = [
     "Motivation" => "./lecture_01/motivation.md",
     "Outline" => "./lecture_01/outline.md",
-    "HOMEWORK" => "./lecture_01/hw.md",
-    "LABS" => "./lecture_01/labs.md",
+    "Lab" => "./lecture_01/lab.md",
+    "Homework" => "./lecture_01/hw.md",
 ]
 
 lecture_02 = [
+    "Lecture" => "./lecture_02/lecture.md"
     "Lab" => "./lecture_02/lab.md"
+    "Homework" => "./lecture_02/hw.md"
 ]
 
 lecture_03 = [
+    "Lab" => "./lecture_03/lab.md"
+    "Homework" => "./lecture_03/hw.md"
 ]
 
 lecture_04 = [
@@ -95,6 +99,7 @@ makedocs(;
     ),
     pages = [
         "Home" => "index.md",
+        "Installation" => "installation.md", 
         "1: Introduction" => lecture_01,
         "2: The power of Type System & multiple dispatch" => lecture_02,
         "3: Design patterns" => lecture_03,

@@ -94,8 +94,8 @@ In the first case it works, in the second throws an error.
 ## Example:
 Function recursion with arbitrary number of arguments:
 ```
-fsum(x::Number) = x
-fsum(x::Number,p...) = x+fsum(p[1],p[2:end]...)
+fsum(x) = x
+fsum(x,p...) = x+fsum(p[1],p[2:end]...)
 
 fsum(1,2,3)
 @code_llvm fsum(1,2,3)

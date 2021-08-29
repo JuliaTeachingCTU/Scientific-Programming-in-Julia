@@ -134,7 +134,7 @@ primitive type Float64 <: AbstractFloat 64 end
 ```
 We refer the reader to the original documentation, as we will not use them. They are mentioned to assure the reader that there is very little in Julia of what is not defined in it.
 
-### Composite types
+### [Composite types](@id composite_types)
 The composite types are similar to `struct` in C (they even have the same memory layout). It is not a great idea to think about them as objects (in OOP sense), because objects tie together *data* and *functions* over the data. Contrary in Julia (and in C), the function operates over data, but are not tied to them. Composite types are a powerhorse of Julia's type system, as most user-defined types are composite.
 
 The composite type is defined as
