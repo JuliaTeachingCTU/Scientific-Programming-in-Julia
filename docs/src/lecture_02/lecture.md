@@ -216,6 +216,10 @@ but there might be some performance penalty(not observable at this simple demo).
 
 ### Type hierarchy
 
+Let's now
+
+
+
 
 
 Depending on the variance of the type constructor, the subtyping relation of the simple types may be either preserved, reversed, or ignored for the respective complex types. In the OCaml programming language, for example, "list of Cat" is a subtype of "list of Animal" because the list type constructor is covariant. This means that the subtyping relation of the simple types are preserved for the complex types. 
