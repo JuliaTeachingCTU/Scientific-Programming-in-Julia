@@ -103,7 +103,7 @@ Though there are libraries/IDEs that allow us to step through Julia code (`Rebug
 
 Evaluate the following pieces of code and check their type with `typeof` function, e.g. `typeof(a)` or `typeof([-19, 7, -4, 6])`
 
-*BONUS*: Try to "call for help" by accessing the build in help terminal by typing `?` followed by a keyword to explain. Use this for basic functions such as `length`, `typeof`, `^`.
+**BONUS**: Try to "call for help" by accessing the build in help terminal by typing `?` followed by a keyword to explain. Use this for basic functions such as `length`, `typeof`, `^`.
 ```julia
 a = [-19, 7, -4, 6]
 x = 3
@@ -131,11 +131,11 @@ behavior in Python, where the output of `a = [-19, 7, -4, 6]`, prints nothing. I
 julia> a = [-19, 7, -4, 6]
 julia> display(a) # should return the same thing as the line above
 ```
-As you can see, the string that is being displayed contains information about the contents of a variable along with it's type in this case this is a `Vector` of `Int` types. Which can be checked further with the `typeof` function
-
+As you can see, the string that is being displayed contains information about the contents of a variable along with it's type in this case this is a `Vector` of `Int` types. Which can be checked further with the `typeof` function:
 ```@repl 1
 typeof(a)
 ```
+In most cases variables store just a reference to a place in memory either stack/heap (exceptions are primitive types such as `Int`, `Float`) and therefore creating an array `a`, storing the reference in `b` with `b = a` and changing elements of `b`, e.g. `b[1] = 2`, changes also the values in `a`.
 
 The other two assignments are exactly the same as they both generate an instance of `Int` type with different values. Though now one has to call for hell the `typeof` function, because by default this information is omitted in the display of simple types.
 ```@repl 1
@@ -174,11 +174,19 @@ typeof(polynomial) <: Function
 ```
 These concepts will be expanded further in the type [lecture](@ref type_lecture), however for now note that this construction is quite useful for example if we wanted to create derivative rules for our function `derivativeof(::typeof(polynomial), ...)`.
 
-Looking at the last two functions `+`, `*`
+Looking at the last two expersions `+`, `*`, we can see that in Julia, operators are also functions. 
+```@repl 1
++
+*
+```
+The main difference from our `polynomial` function is that there are multiple methods, for each of these functions. Each one of the methods coresponds to a specific combination of arguments, for which the function can be specialized to. You can see the list by calling a `methods` function:
+```@repl 1
+methods(+)
+```
+One other notable difference is that these functions allow using both infix and postfix notation `a + b` and `+(a,b)`, which is a speciality of elementary functions such as arithmetic operators or set operation such as `∩, ∪, ∈`.
 
 
-
-*BONUS*: Accessing help terminal `?` and looking up a keyword, searches for documentation of individual methods/functions in the source code. When creating a pkg, it is desirable to create so called `docstrings` for each method that is going to be exported. `docstrings` are multiline strings written above a function. More on this in [lecture](@ref pkg_lecture) on pkg development.
+**BONUS**: Accessing help terminal `?` and looking up a keyword, searches for documentation of individual methods/functions in the source code. When creating a pkg, it is desirable to create so called `docstrings` for each method that is going to be exported. `docstrings` are multiline strings written above a function. More on this in [lecture](@ref pkg_lecture) on pkg development.
 
 ```julia
 """
@@ -217,26 +225,34 @@ nothing #hide
 
 Check first the types of each of these coefficients by calling `typeof` and `eltype`.
 
-*BONUS*: In the case of `ag`, use the `collect` function to get the desirable result. What does it do? Check again the type of the result.
+**BONUS**: In the case of `ag`, use the `collect` function to get the desirable result. What does it do? Check again the type of the result.
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
+```@repl 1
+typeof(af), eltype(af)
+polynomial(af, x)
+```
 As opposed to the basic definition of `a` type the array is filled with `Float64` types and the resulting value gets promoted as well to the `Float64`.
+
+
 ```@repl 1
 typeof(at), eltype(at)
 polynomial(at, x)
 ```
-
 With round brackets over a fixed length vector we get the `Tuple` type, which is a fixed size, so called immutable "array" of a fixed size (its elements cannot be changed, unless initialized from scratch). Each element can be of a different type, but here we have only one and thus the `Tuple` is aliased into `NTuple`. There are some performance benefits for using immutable structure, which will be discussed [later](@ref type_lecture) or [even later](@ref perf_lecture).
+
+
+Defining `key=value` pairs inside round brackets creates a structure called `NamedTuple`, which has the same properties as `Tuple` and furthermore it's elements can be conveniently accessed by dot syntax, e.g. `ant.a₀`.
 ```@repl 1
 typeof(ant), eltype(ant)
 polynomial(ant, x)
 ```
 
-Defining a 2D array is a simple change of syntax, which initialized a matrix row by row separated by `;` with spaces between individual elements. The function works in the same way because linear indexing works in 2d arrays in column major fashion.
+Defining a 2D array is a simple change of syntax, which initialized a matrix row by row separated by `;` with spaces between individual elements. The function works in the same way because linear indexing works in 2d arrays in the column major order.
 ```@repl 1
 typeof(a2d), eltype(a2d)
 polynomial(a2d, x)
@@ -261,17 +277,25 @@ typeof(ag), eltype(ag)
 polynomial(ag, x)
 ```
 
-*BONUS*: In general generators may have unknown length which is useful, for example in batch processing of files, where we do not know beforehand how many files are in a folder. However the problem here originated from the problem of missing indexing operation `getindex`, which can be easily solved by collecting the generator with `collect` and thus transforming it into and array.
+**BONUS**: In general generators may have unknown length, this can be useful for example in batch processing of files, where we do not know beforehand how many files are in a given folder. However the problem here originated from a missing indexing operation `getindex`, which can be easily solved by collecting the generator with `collect` and thus transforming it into and array.
 ```@repl 1
 agc = ag |> collect # pipe syntax, equivalent to collect(ag)
 typeof(agc), eltype(agc)
 ```
 
-You can see now that `eltype` is no longer `Any` and a proper type for the whole container has been found in the `collect` function.
+You can see now that `eltype` is no longer `Any`, as a proper type for the whole container has been found in the `collect` function, however we have lost the advantage of not allocating an array.
 
 ```@raw html
 </p></details>
 ```
+
+## Extending/limiting the polynomial example
+We have seen the 
+
+
+```
+```
+
 
 ## How to use code from other people
 The script that we have run at the beginning of this lab has created a folder `test` with the following files.
@@ -282,7 +306,7 @@ The script that we have run at the beginning of this lab has created a folder `t
     └── src
         └── test.jl
 ```
-Every folder with a toml file called `Project.toml`, can be used by Julia's pkg manager into setting so called environment. Each of these environments has a specific name, unique identifier and most importantly a list of pkgs to be installed. Setting up or more often called activating an environment can be done either before starting Julia itself by running julia with the `--project XXX` flag or from withing the Julia REPL, by switching to Pkg mode with `]` key (similar to the help mode activated by pressing `?`).
+Every folder with a toml file called `Project.toml`, can be used by Julia's pkg manager into setting so called environment. Each of these environments has a specific name, unique identifier and most importantly a list of pkgs to be installed. Setting up or more often called activating an environment can be done either before starting Julia itself by running julia with the `--project XXX` flag or from withing the Julia REPL, by switching to Pkg mode with `]` key (similar to the help mode activated by pressing `?`) and running command `activate`.
 
 So far we have used the general environment, which by default does not come with any 3rd party packages and includes only the base and standard libraries - [already](https://docs.julialang.org/en/v1/base/arrays/) [quite](https://docs.julialang.org/en/v1/base/multi-threading/) [powerful](https://docs.julialang.org/en/v1/stdlib/Distributed/) [on its own](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/). 
 
@@ -290,12 +314,12 @@ In order to find which environment is currently active, run the following:
 ```julia
 ] status
 ```
-And the output of such command usually indicates the general environment located at `.julia/` folder (`${HOME}/.julia/` or `${APPDATA}/.julia/` in case of Unix/Windows based systems respectively)
+The output of such command usually indicates the general environment located at `.julia/` folder (`${HOME}/.julia/` or `${APPDATA}/.julia/` in case of Unix/Windows based systems respectively)
 ```julia
 (@v1.6) pkg> status
 Status `~/.julia/environments/v1.6/Project.toml` (empty project)
 ```
-Generally one should avoid installing project specific pkg into general environment with the exception of some generic pkgs, which do not create much conflics such as `PkgTemplates.jl`, which is used for generating pkg templates/folder structure like the one above ([link](https://github.com/invenia/PkgTemplates.jl)), more on this in the [lecture](@ref pkg_lecture) on pkg development. 
+Generally one should avoid working in the general environment, with the exception using some generic pkgs, such as `PkgTemplates.jl`, which is used for generating pkg templates/folder structure like the one above ([link](https://github.com/invenia/PkgTemplates.jl)), more on this in the [lecture](@ref pkg_lecture) on pkg development. 
 
 
 ```@raw html
@@ -310,9 +334,12 @@ x = 1.1
 nothing #hide
 ```
 
-In pkg mode use the command `activate` and `status` to check the presence. In order to import the functionality from other package, lookup the keyword `using` in the repl help mode `?`. The functionality that we want to use is the `@btime` macro (it acts almost like a function but with a different syntax `@macro arg1 arg2 arg3 ...`). More on macros in the corresponding [lecture](@ref macro_lecture).
+**HINTS:**
+- In pkg mode use the command `activate` and `status` to check the presence. 
+- In order to import the functionality from other package, lookup the keyword `using` in the repl help mode `?`. 
+- The functionality that we want to use is the `@btime` macro (it acts almost like a function but with a different syntax `@macro arg1 arg2 arg3 ...`). More on macros in the corresponding [lecture](@ref macro_lecture).
 
-*BONUS*: Compare the output of `polynomial(aexp, x)` with the value of `exp(x)`, which it approximates.
+**BONUS**: Compare the output of `polynomial(aexp, x)` with the value of `exp(x)`, which it approximates.
 
 ```@raw html
 </div></div>
@@ -328,7 +355,7 @@ using BenchmarkTools
 The output gives us the time of execution averaged over multiple runs (the number of samples is defined automatically based on run time) as well as the number of allocations and the output of the function, that is being benchmarked.
 
 
-*BONUS*: The difference between our approximation and the "actual" function value computed as a difference of the two. 
+**BONUS**: The difference between our approximation and the "actual" function value computed as a difference of the two. 
 ```@repl 1
 polynomial(aexp, x) - exp(x)
 ```
@@ -345,3 +372,68 @@ The apostrophes in the previous sentece are on purpose, because implementation o
 - Bachelor course for refreshing your knowledge - [Course](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/)
 - Stylistic conventions - [Style Guide](https://docs.julialang.org/en/v1/manual/style-guide/#Style-Guide)
 - Reserved keywords - [List](https://docs.julialang.org/en/v1/base/base/#Keywords)
+
+
+### Various errors and how to read them
+This section summarizes most commonly encountered types of errors in Julia and shows how to read them. [Documentation](https://docs.julialang.org/en/v1/base/base/#Errors) contains the complete list and each individual error can be queried against the `?` mode of the REPL.
+
+#### `MethodError`
+This type of error is most commonly thrown by Julia's multiple dispatch system with a message like `no method matching X(args...)`, seen in two examples bellow.
+```@repl 2
+2 * 'a'                       # many candidates
+getindex((i for i in 1:4), 3) # no candidates
+```
+Both of these examples have a short stacktrace, showing that the execution failed on the top most level in `REPL`, however if this code is a part of some function in a separate file, the stacktrace will reflect it. What this error tells us is that the dispatch system could not find a method for a given function, that would be suitable for the type of arguments, that it has been given. In the first case Julia offers also a list of candidate methods, that match at least some of the arguments
+
+When dealing with basic Julia functions and types, this behavior can be treated as something given and though one could locally add a method for example for multiplication of `Char` and `Int`, there is usually a good reason why Julia does not support such functionality by default. On the other hand when dealing with user defined code, this error may suggest the developer, that either the functions are too strictly typed or that another method definition is needed in order to satisfy the desired functionality.
+
+#### `InexactError`
+This type of error is most commonly thrown by the type conversion system (centered around `convert` function), informing the user that it cannot exactly convert a value of some type to match arguments of a function being called.
+```@repl 2
+Int(1.2)                      # root cause
+append!([1,2,3], 1.2)         # same as above but shows the root cause deeper in the stack trace
+```
+In this case the function being `Int` and the value a floating point. The second example shows `InexactError` may be caused deeper inside an inconspicuous function call, where we want to extend an array by another value, which is unfortunately incompatible.
+
+#### `ArgumentError`
+As opposed to the previous two errors, `ArgumentError` can contain user specified error message and thus can serve multiple purposes. It is however recommended to throw this type of error, when the parameters to a function call do not match a valid signature, e.g. when `factorial` were given negative or non-integer argument (note that this is being handled in Julia by multiple dispatch and specific `DomainError`).
+
+This example shows a concatenation of two 2d arrays of incompatible sizes 3x3 and 2x2.
+```@repl 2
+hcat(ones(3,3), zeros(2,2))
+```
+
+#### `KeyError`
+This error is specific to hash table based objects such as the `Dict` type and tells the user that and indexing operation into such structure tried to access or delete a non-existent element.
+```@repl 2
+d = Dict(:a => [1,2,3], :b => [1,23])
+d[:c]
+```
+
+#### `TypeError`
+Type assertion failure, or calling an intrinsic function (inside LLVM, where code is strictly typed) with incorrect argument type. In practice this error comes up most often when comparing value of a type against the `Bool` type as seen in the example bellow.
+```@repl 2
+if 1 end                # calls internally typeassert(1, Bool)
+typeassert(1, Bool)
+```
+In order to compare inside conditional statements such as `if-elseif-else` or the ternary operator `x ? a : b` the condition has to be always of `Bool` type, thus the example above can be fixed by the comparison operator: `if 1 == 1 end` (in reality either the left or the right side of the expression contains an expression or a variable to compare against).
+
+#### `UndefVarError`
+While this error is quite self-explanatory, the exact causes are often quite puzzling for the user. The reason behind the confusion is to do with *code scoping*, which comes into play for example when trying to access a local variable from outside of a given function or just updating a global variable from within a simple loop. 
+
+In the first example we show the former case, where variable is declared from within a function and accessed from outside afterwards.
+```@repl 2
+function plusone(x)
+    uno = 1
+    return x + uno
+end
+uno # defined only within plusone
+```
+
+Unless there is variable `I_am_not_defined` in the global scope, the following should throw an error.
+```@repl 2
+I_am_not_defined
+```
+Often these kind of errors arise as a result of bad code practices, such as long running sessions of Julia having long forgotten global variables, that do not exist upon new execution (this one in particular has been addressed by the authors of the reactive Julia notebooks [Pluto.jl](https://github.com/fonsp/Pluto.jl)).
+
+For more details on code scoping we recommend particular places in the bachelor course lectures [here](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/lecture_02/scope/#Soft-local-scope) and [there](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/lecture_03/scope/#Scope-of-variables).
