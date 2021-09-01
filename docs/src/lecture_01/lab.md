@@ -290,10 +290,160 @@ You can see now that `eltype` is no longer `Any`, as a proper type for the whole
 ```
 
 ## Extending/limiting the polynomial example
-We have seen the 
+Following up on the polynomial example, let's us expand it a little further in order to facilitate the the arguments, that have been throwing exceptions. The first direction, that we will move forward to, is providing the user with more detailed error message when an incorrect type of coefficients has been provided.
 
-
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
 ```
+
+Design an `if-else` condition such that the array of `Char` example throws an error with custom string message, telling the user what went wrong and printing the incorrect input alongside it. Confirm that we have not broken the functionality of other examples from previous exercise.
+
+**HINTS:**
+- Throw the `ArgumentError(msg)` with `throw` function and string message `msg`. More details in help mode `?` or at the end of this [document](@ref lab_errors).
+- Strings are defined like this `s = "Hello!"`
+- Use string interpolation to create the error message. It allows injecting an expresion into a string with the `$` syntax `b = 1; s = "Hellow Number $(b)"`
+- Compare `eltype` of the coefficients with `Char` type.
+- The syntax for `if-else`:
+```julia
+if condition
+    println("true") # true branch code
+else
+    println("false") # false branch code
+end
+```
+- Not equal condition can be written as `a != b`.
+- Throwing an exception automatically returns from the function. Use return inside one of the branches to return the correct value.
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+
+The simplest way is to wrap the whole function inside an `if-else` condition and returning only when the input is "correct" (it will still fail in some cases).
+```@repl 1
+function polynomial(a, x)
+    if eltype(a) != Char
+        accumulator = 0
+        for i in length(a):-1:1
+            accumulator += x^(i-1) * a[i] # ! 1-based indexing for arrays
+        end
+        return accumulator
+    else
+        throw(ArgumentError("Invalid coefficients $(a) of type Char!"))
+    end
+end
+nothing #hide
+```
+
+Now this should show our predefined error message.
+```@repl 1
+polynomial(ach, x)
+```
+
+Testing on other examples should pass without errors and give the same output as before.
+```@repl 1
+polynomial(a, x)
+polynomial(af, x)
+polynomial(at, x)
+polynomial(ant, x)
+polynomial(a2d, x)
+polynomial(ac, x)
+```
+
+```@raw html
+</p></details>
+```
+
+The second direction concerns the limitation to index-able structures, which the generator example is not. For this we will have to rewrite the whole loop in a more functional programming approach using `map`, anonymous function and other concepts.
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+
+Rewrite the following code inside our original `polynomial` function with `map`, `enumerate` and anonymous function.
+```julia
+accumulator = 0
+for i in length(a):-1:1
+    accumulator += x^(i-1) * a[i] # ! 1-based indexing for arrays
+end
+```
+**Anonymous functions reminder**:
+```@repl 3
+x -> x + 1              # unless the reference is stored it cannot be called
+plusone = x -> x + 1    # the reference can be stored inside a variable
+plusone(x)              # calling with the same syntax
+```
+
+**HINTS:**
+- Use `enumerate` to obtain iterator over `a` that returns a tuple of `ia = (i, aᵢ)`. With Julia 1-based indexing `i` starts also from 1 and goes up to `length(a)`.
+- Pass this into a `map` with either in-place or predefined anonymous function that does the operation of `x^(i-1) * aᵢ`.
+- Use `sum` to collect the resulting array into `accumulator` variable or directly into the `return` command.
+
+**BONUS:**
+There is even shorter way how to write this using one line function syntax and recently added options to the `sum` function. See entry in the help mode `?`.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+
+Ordered from the longest to the shortest, here are three (and there are definitely more) examples with the same functionality.
+Using the `map(iterable) do itervar ... end` syntax, that creates anonymous function from the block of code.
+```@repl 1
+function polynomial(a, x)
+    powers = map(enumerate(a)) do (i, aᵢ)
+        x^(i-1) * aᵢ
+    end
+    accumulator = sum(powers)
+    return accumulator
+end
+nothing #hide
+```
+
+Using the default syntax for `map` and storing the anonymous into a variable
+```@repl 1
+function polynomial(a, x)
+    polypow = ia -> x^(ia[1]-1) * ia[2] # 
+    powers = map(polypow, enumerate(a))
+    return sum(powers)
+end
+nothing #hide
+```
+
+As the function `polypow` is used only once, there is no need to assign it to a local variable.
+```@repl 1
+function polynomial(a, x)
+    powers = map(ia -> x^(ia[1]-1) * ia[2], enumerate(a))
+    sum(powers)
+end
+nothing #hide
+```
+
+Checking the behavior on all the inputs.
+```@repl 1
+polynomial(a, x)
+polynomial(af, x)
+polynomial(at, x)
+polynomial(ant, x)
+polynomial(a2d, x)
+polynomial(ach, x)
+polynomial(ac, x)
+polynomial(ag, x)
+```
+
+**BONUS:** Using one line function definition and the recently added option of a function in the first argument of sum:
+```@repl 1
+polynomial(a, x) = sum(ia -> x^(ia[1]-1) * ia[2], enumerate(a))
+nothing #hide
+```
+
+```@raw html
+</p></details>
 ```
 
 
@@ -374,7 +524,7 @@ The apostrophes in the previous sentece are on purpose, because implementation o
 - Reserved keywords - [List](https://docs.julialang.org/en/v1/base/base/#Keywords)
 
 
-### Various errors and how to read them
+### [Various errors and how to read them](@id lab_errors)
 This section summarizes most commonly encountered types of errors in Julia and shows how to read them. [Documentation](https://docs.julialang.org/en/v1/base/base/#Errors) contains the complete list and each individual error can be queried against the `?` mode of the REPL.
 
 #### `MethodError`
