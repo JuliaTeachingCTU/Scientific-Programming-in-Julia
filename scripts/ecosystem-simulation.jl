@@ -14,8 +14,9 @@ wolf_foodprob = 0.02
 sheep_foodprob = 0.4
 
 gs = [Grass(true,regrowth_time,regrowth_time) for _ in 1:n_grass]
-pgs = [PoisonedGrass(true,regrowth_time,regrowth_time) for _ in 1:65]
-ss = [Sheep(2*Δenergy_sheep,Δenergy_sheep,sheep_reproduce, sheep_foodprob) for _ in 1:n_sheep]
+pgs = [PoisonedGrass(true,regrowth_time,regrowth_time) for _ in 1:1]
+#ss = [Sheep(2*Δenergy_sheep,Δenergy_sheep,sheep_reproduce, sheep_foodprob) for _ in 1:n_sheep]
+ss = [GenderedSheep(2*Δenergy_sheep,Δenergy_sheep,sheep_reproduce, sheep_foodprob) for _ in 1:n_sheep]
 ws = [Wolf(2*Δenergy_wolf,Δenergy_wolf,wolf_reproduce, wolf_foodprob) for _ in 1:n_wolves]
 as = vcat(gs,pgs,ss,ws)
 

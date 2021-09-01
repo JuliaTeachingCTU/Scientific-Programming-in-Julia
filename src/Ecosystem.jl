@@ -2,12 +2,17 @@ module Ecosystem
 
 using StatsBase
 
-export Grass, Sheep, Wolf, World, PoisonedGrass
+export Grass, Sheep, Wolf, World, PoisonedGrass, GenderedSheep
 export agent_step!, agent_count, simulate!, every_nth
 
 abstract type AbstractAgent end
 abstract type AbstractPlant <: AbstractAgent end
 abstract type AbstractAnimal <: AbstractAgent end
+
+energy(a::AbstractAnimal) = a.energy
+energy!(a::AbstractAnimal, ΔE) = a.energy += ΔE
+reproduction_prob(a::AbstractAnimal) = a.reproduction_prob
+food_prob(a::AbstractAnimal) = a.food_prob
 
 mutable struct Grass <: AbstractPlant
     fully_grown::Bool
@@ -61,21 +66,21 @@ function agent_step!(a::AbstractPlant, w::World)
 end
 
 function agent_step!(a::A, w::World) where A<:AbstractAnimal
-    a.energy -= 1
+    energy!(a, -1)
     dinner = find_food(a,w)
     eat!(a, dinner, w)
-    if a.energy < 0
+    if energy(a) < 0
         kill_agent!(a,w)
         return
     end
-    if rand() <= a.reproduction_prob
+    if rand() <= reproduction_prob(a)
         reproduce!(a,w)
     end
     return a
 end
 
 function find_food(a::T, w::World) where T<:AbstractAnimal
-    if rand() <= a.food_prob
+    if rand() <= food_prob(a)
         as = filter(x->eats(a,x), w.agents)
         isempty(as) ? nothing : sample(as)
     end
@@ -157,6 +162,40 @@ function every_nth(f::Function, n::Int)
         else
             i += 1
         end
+    end
+end
+
+
+struct GenderedSheep{T<:Real} <: AbstractAnimal
+    sheep::Sheep{T}
+    gender::Symbol
+end
+GenderedSheep(E,ΔE,pr,pf,gender) = GenderedSheep(Sheep(E,ΔE,pr,pf),sample([:male,:female]))
+GenderedSheep(E,ΔE,pr,pf) = GenderedSheep(E,ΔE,pr,pf,sample([:male,:female]))
+
+energy(g::GenderedSheep) = energy(g.sheep)
+energy!(g::GenderedSheep, ΔE) = energy!(g.sheep, ΔE)
+reproduction_prob(g::GenderedSheep) = reproduction_prob(g.sheep)
+food_prob(g::GenderedSheep) = food_prob(g.sheep)
+
+eats(::GenderedSheep, ::Grass) = true
+eats(::GenderedSheep, ::PoisonedGrass) = true
+eat!(s::GenderedSheep, g::AbstractPlant, w::World) = eat!(s.sheep, g, w)
+
+mates(a::AbstractPlant, ::GenderedSheep) = false
+mates(a::AbstractAnimal, ::GenderedSheep) = false
+mates(g1::GenderedSheep, g2::GenderedSheep) = g1.gender != g2.gender
+function find_mate(g::GenderedSheep, w::World)
+    ms = filter(a->mates(a,g), w.agents)
+    isempty(ms) ? nothing : sample(ms)
+end
+
+function reproduce!(s::GenderedSheep, w::World)
+    m = find_mate(s,w)
+    if !isnothing(m)
+        s.sheep.energy /= 2
+        # TODO: should probably mix s/m
+        push!(w.agents, deepcopy(s))
     end
 end
 
