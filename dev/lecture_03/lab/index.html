@@ -67,16 +67,16 @@ ws = [Wolf(2*Δenergy_wolf,Δenergy_wolf,wolf_reproduce, wolf_foodprob) for _ in
 w = World(vcat(gs,ss,ws))
 
 cbs = [w-&gt;(@info agent_count(w))]
-simulate!(w, 10, callbacks=cbs)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">[ Info: Dict(:Wolf =&gt; 8, :Grass =&gt; 437, :Sheep =&gt; 178)
-[ Info: Dict(:Wolf =&gt; 8, :Grass =&gt; 336, :Sheep =&gt; 293)
-[ Info: Dict(:Wolf =&gt; 9, :Grass =&gt; 246, :Sheep =&gt; 409)
-[ Info: Dict(:Wolf =&gt; 9, :Grass =&gt; 165, :Sheep =&gt; 505)
-[ Info: Dict(:Wolf =&gt; 9, :Grass =&gt; 111, :Sheep =&gt; 528)
-[ Info: Dict(:Wolf =&gt; 9, :Grass =&gt; 78, :Sheep =&gt; 496)
-[ Info: Dict(:Wolf =&gt; 9, :Grass =&gt; 48, :Sheep =&gt; 455)
-[ Info: Dict(:Wolf =&gt; 9, :Grass =&gt; 36, :Sheep =&gt; 381)
-[ Info: Dict(:Wolf =&gt; 9, :Grass =&gt; 25, :Sheep =&gt; 311)
-[ Info: Dict(:Wolf =&gt; 9, :Grass =&gt; 23, :Sheep =&gt; 238)</code></pre><h2 id="Smarter-callbacks-through-closures"><a class="docs-heading-anchor" href="#Smarter-callbacks-through-closures">Smarter callbacks through closures</a><a id="Smarter-callbacks-through-closures-1"></a><a class="docs-heading-anchor-permalink" href="#Smarter-callbacks-through-closures" title="Permalink"></a></h2><div class="admonition is-category-exercise">
+simulate!(w, 10, callbacks=cbs)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">[ Info: Dict(:Wolf =&gt; 8, :Grass =&gt; 411, :Sheep =&gt; 211)
+[ Info: Dict(:Wolf =&gt; 8, :Grass =&gt; 294, :Sheep =&gt; 368)
+[ Info: Dict(:Wolf =&gt; 8, :Grass =&gt; 220, :Sheep =&gt; 477)
+[ Info: Dict(:Wolf =&gt; 8, :Grass =&gt; 156, :Sheep =&gt; 495)
+[ Info: Dict(:Wolf =&gt; 8, :Grass =&gt; 101, :Sheep =&gt; 528)
+[ Info: Dict(:Wolf =&gt; 8, :Grass =&gt; 70, :Sheep =&gt; 492)
+[ Info: Dict(:Wolf =&gt; 8, :Grass =&gt; 56, :Sheep =&gt; 410)
+[ Info: Dict(:Wolf =&gt; 8, :Grass =&gt; 45, :Sheep =&gt; 333)
+[ Info: Dict(:Wolf =&gt; 8, :Grass =&gt; 38, :Sheep =&gt; 257)
+[ Info: Dict(:Wolf =&gt; 9, :Grass =&gt; 33, :Sheep =&gt; 205)</code></pre><h2 id="Smarter-callbacks-through-closures"><a class="docs-heading-anchor" href="#Smarter-callbacks-through-closures">Smarter callbacks through closures</a><a id="Smarter-callbacks-through-closures-1"></a><a class="docs-heading-anchor-permalink" href="#Smarter-callbacks-through-closures" title="Permalink"></a></h2><div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body"><p>Often we want our callbacks to be executed only every <span>$N$</span>th step.  Implement a function <code>every_nth(f::Function,n::Int)</code> that takes a function and uses a closure to construct another function that only calls <code>f</code> every <code>n</code> calls to the function <code>fn</code> that is returned by <code>every_nth(f,n)</code>.</p><p>Use <code>every_nth</code> to log the agent count every 5th step of your simulation and to save every second agent count.</p></div></div>
 <details class = "solution-body">
@@ -132,4 +132,4 @@ function eat!(sheep::Sheep, grass::PoisonedGrass, w::World)
     end
 end
 
-eats(::Sheep,::PoisonedGrass) = true</code></pre></p></details></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_02/hw/">« Homework</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.5 on <span class="colophon-date" title="Wednesday 1 September 2021 09:25">Wednesday 1 September 2021</span>. Using Julia version 1.6.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+eats(::Sheep,::PoisonedGrass) = true</code></pre></p></details></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_02/hw/">« Homework</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.5 on <span class="colophon-date" title="Wednesday 1 September 2021 13:11">Wednesday 1 September 2021</span>. Using Julia version 1.6.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
