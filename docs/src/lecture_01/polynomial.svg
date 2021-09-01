@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="207.33405mm"
+   height="110.98485mm"
+   viewBox="0 0 207.33405 110.98485"
+   version="1.1"
+   id="svg5"
+   sodipodi:docname="polynomial.svg"
+   inkscape:version="1.1 (ce6663b3b7, 2021-05-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#dadada"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="true"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.4378367"
+     inkscape:cx="486.49475"
+     inkscape:cy="209.69002"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid178784"
+       originx="-2.0522264"
+       originy="-1.6499846" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2">
+    <linearGradient
+       id="linearGradient81071"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop81069" />
+    </linearGradient>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-2.0522264,-1.6499847)">
+    <rect
+       style="fill:#cccccc;fill-opacity:1;stroke:#008000;stroke-width:0.264583"
+       id="rect31"
+       width="207.06946"
+       height="110.72027"
+       x="2.1845179"
+       y="1.7822762"
+       ry="4.3337793" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:1.25;font-family:'Tlwg Mono';-inkscape-font-specification:'Tlwg Mono';letter-spacing:0px;stroke-width:0.264583"
+       x="12.609528"
+       y="43.414696"
+       id="text6063"><tspan
+         sodipodi:role="line"
+         id="tspan6061"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="12.609528"
+         y="43.414696"><tspan
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Tlwg Mono';-inkscape-font-specification:'Tlwg Mono Bold'"
+   id="tspan17491">function</tspan> polynomial(a, x)</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="12.609528"
+         y="48.70636"
+         id="tspan6065">    accumulator = <tspan
+   style="fill:#800000"
+   id="tspan92774">0</tspan></tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="12.609528"
+         y="53.99802"
+         id="tspan6067">    <tspan
+   style="font-weight:bold"
+   id="tspan27073">for</tspan> i <tspan
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Tlwg Mono';-inkscape-font-specification:'Tlwg Mono Bold'"
+   id="tspan117362">in</tspan> length(a):-<tspan
+   style="fill:#800000"
+   id="tspan101802">1</tspan>:<tspan
+   style="fill:#800000"
+   id="tspan104380">1</tspan></tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="12.609528"
+         y="59.28968"
+         id="tspan6069">        accumulator += x^(i-<tspan
+   style="fill:#800000"
+   id="tspan111702">1</tspan>) * a[i] <tspan
+   style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Tlwg Mono';-inkscape-font-specification:'Tlwg Mono Oblique';fill:#666666"
+   id="tspan128192"># ! 1-based indexing for arrays</tspan></tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="12.609528"
+         y="64.581345"
+         id="tspan6071">    <tspan
+   style="font-weight:bold"
+   id="tspan24955">end</tspan></tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;stroke-width:0.264583"
+         x="12.609528"
+         y="69.873009"
+         id="tspan6073">    <tspan
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:'Tlwg Mono';-inkscape-font-specification:'Tlwg Mono Bold'"
+   id="tspan22419">return</tspan> accumulator</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:'Tlwg Mono';-inkscape-font-specification:'Tlwg Mono Bold';stroke-width:0.264583"
+         x="12.609528"
+         y="75.164673"
+         id="tspan6075">end</tspan></text>
+    <rect
+       style="fill:none;stroke:#00ff00;stroke-width:0.264583"
+       id="rect137524"
+       width="21.334658"
+       height="4.9435554"
+       x="12.16784"
+       y="40.051949" />
+    <rect
+       style="fill:none;stroke:#00ff00;stroke-width:0.264583"
+       id="rect137526"
+       width="8.4883461"
+       height="5.6067519"
+       x="12.447008"
+       y="71.121895" />
+    <rect
+       style="fill:none;stroke:#ff00ff;stroke-width:0.264583"
+       id="rect137528"
+       width="46.74617"
+       height="4.5582938"
+       x="22.539484"
+       y="66.936485" />
+    <rect
+       style="fill:none;stroke:#ff00ff;stroke-width:0.264583"
+       id="rect137530"
+       width="38.706909"
+       height="3.8232787"
+       x="22.535191"
+       y="45.752552"
+       ry="0" />
+    <rect
+       style="fill:none;stroke:#ff00ff;stroke-width:0.264583"
+       id="rect137573"
+       width="25.677576"
+       height="4.5695982"
+       x="35.113373"
+       y="39.957111" />
+    <rect
+       style="fill:none;stroke:#ff00ff;stroke-width:0.264583"
+       id="rect137575"
+       width="13.058782"
+       height="4.9426017"
+       x="62.149986"
+       y="39.911434" />
+    <rect
+       style="fill:none;stroke:#ff00ff;stroke-width:0.264583"
+       id="rect137618"
+       width="79.36879"
+       height="6.6314859"
+       x="108.81197"
+       y="54.759476" />
+    <rect
+       style="fill:none;stroke:#ff00ff;stroke-width:0.264583"
+       id="rect137620"
+       width="7.0721707"
+       height="7.4493303"
+       x="99.270447"
+       y="54.492126" />
+    <rect
+       style="fill:none;stroke:#ff00ff;stroke-width:0.264583"
+       id="rect137622"
+       width="5.4413733"
+       height="4.4893227"
+       x="63.403248"
+       y="55.996952" />
+    <rect
+       style="fill:none;stroke:#ff00ff;stroke-width:0.264583"
+       id="rect137669"
+       width="14.563306"
+       height="5.6650481"
+       x="73.654091"
+       y="55.59259" />
+    <rect
+       style="fill:none;stroke:#008000;stroke-width:0.264583"
+       id="rect178580"
+       width="58.380825"
+       height="4.1012774"
+       x="22.581675"
+       y="50.667473" />
+    <rect
+       style="fill:none;stroke:#008000;stroke-width:0.264583"
+       id="rect178582"
+       width="8.1140366"
+       height="4.3201661"
+       x="22.541626"
+       y="60.912811" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 11.90625,42.333333 H 9.2604166 V 74.083332 H 11.90625 9.2604166 V 13.229167 H 81.066818"
+       id="path178918"
+       sodipodi:nodetypes="ccccccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 103.1875,60.854166 V 71.4375 h 68.79167"
+       id="path179033"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 58.762189,39.6875 V 31.75 H 13.787132"
+       id="path185372"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 68.791666,39.6875 v -15.875 l 87.905404,0"
+       id="path185374"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 116.41667,55.562499 v -5.291666 h 55.90582"
+       id="path185376"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 42.333333,71.437499 V 103.1875 h 62.659817"
+       id="path185378"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 80.697917,52.916667 14.552082,-10e-7 V 39.6875 l 93.761041,0"
+       id="path185470"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 60.854166,47.624999 H 87.312499 L 87.3125,31.75 l 114.26135,0"
+       id="path185472"
+       sodipodi:nodetypes="cccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 66.145832,60.854166 v 2.645833 h 7.9375 v 26.458333 l 49.257728,0"
+       id="path186537"
+       sodipodi:nodetypes="ccccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 82.020832,60.854166 V 79.374999 H 153.38755"
+       id="path186539"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 22.489583,63.499999 H 19.84375 V 52.916666 h 2.645833"
+       id="path186899" />
+    <text
+       xml:space="preserve"
+       style="font-size:5.64444px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.264583"
+       x="124.28588"
+       y="49.483269"
+       id="text3443"><tspan
+         sodipodi:role="line"
+         id="tspan3441"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="124.28588"
+         y="49.483269">inline comment</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.64444px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.264583"
+       x="88.712395"
+       y="30.960478"
+       id="text10577"><tspan
+         sodipodi:role="line"
+         id="tspan10575"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="88.712395"
+         y="30.960478">creation/assignment of integer variable</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.64444px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.264583"
+       x="71.933533"
+       y="23.25672"
+       id="text20463"><tspan
+         sodipodi:role="line"
+         id="tspan20461"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="71.933533"
+         y="23.25672">function arguments untyped</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.64444px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.264583"
+       x="15.506387"
+       y="30.874941"
+       id="text27991"><tspan
+         sodipodi:role="line"
+         id="tspan27989"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="15.506387"
+         y="30.874941">function name</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.64444px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.264583"
+       x="12.552546"
+       y="12.517385"
+       id="text30635"><tspan
+         sodipodi:role="line"
+         id="tspan30633"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="12.552546"
+         y="12.517385">function body keywords</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.64444px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.264583"
+       x="44.19109"
+       y="102.37225"
+       id="text33399"><tspan
+         sodipodi:role="line"
+         id="tspan33397"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="44.19109"
+         y="102.37225">function return value</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.64444px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.264583"
+       x="75.606613"
+       y="88.679794"
+       id="text44847"><tspan
+         sodipodi:role="line"
+         id="tspan44845"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="75.606613"
+         y="88.679794">update operator</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.64444px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.264583"
+       x="83.863838"
+       y="78.487434"
+       id="text50463"><tspan
+         sodipodi:role="line"
+         id="tspan50461"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="83.863838"
+         y="78.487434">exponentiation operator</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.64444px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.264583"
+       x="106.60011"
+       y="70.403694"
+       id="text59357"><tspan
+         sodipodi:role="line"
+         id="tspan59355"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="106.60011"
+         y="70.403694">array/iterator indexing</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.64444px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;stroke-width:0.264583"
+       x="96.918808"
+       y="39.06287"
+       id="text61581"><tspan
+         sodipodi:role="line"
+         id="tspan61579"
+         style="font-size:5.64444px;stroke-width:0.264583"
+         x="96.918808"
+         y="39.06287">for loop specification with range</tspan></text>
+  </g>
+</svg>
