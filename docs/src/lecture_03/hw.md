@@ -5,21 +5,21 @@ using Scientific_Programming_in_Julia
 using Scientific_Programming_in_Julia.Ecosystem: eat!, find_food, count
 ```
 
-The goal of this homework is to demonstrate the *forwarding method* by
+The goal of this homework is to demonstrate the [forwarding method](@ref forwarding_method) by
 implementing a gendered sheep that can only reproduce with another sheep of
 opposite gender.
 
 The gendered sheep need an additonal field `gender::Symbol` which can be either
 `:male` or `:female`.
 In OOP we would now simply inherit from `Sheep` and create a `GenderedSheep`
-with an additional field. In Julia there is no inheritance (only subtyping of
-abstract types).
+with an additional field. In Julia there is no inheritance - only subtyping of
+abstract types.
 As you cannot inherit from a concrete type in Julia, we will have to create a
 wrapper type and forward all necessary methods. This is typically a sign of
 unfortunate type tree design and should be avoided, but if you want to extend a
 code base by a type that was not thought of during the inital design, this
-forwarding of methods can be an acceptable work-around.  Our `GenderedSheep`
-type will simply contain a classic `sheep` and a `gender` field
+forwarding of methods is a nice work-around.  Our `GenderedSheep` type will
+simply contain a classic `sheep` and a `gender` field
 ```julia
 struct GenderedSheep{T<:Real} <: AbstractAnimal
     sheep::Sheep{T}
@@ -98,8 +98,3 @@ end
 ```@raw html
 </p></details>
 ```
-
-## TODO
-- add accessor functions to previous labs
-- or add them now and use this as an example of why they are useful?
-- mention `Lazy.jl`/`MacroTools.jl` and the `@forward` macro?

@@ -9,8 +9,17 @@ abstract type AbstractAgent end
 abstract type AbstractPlant <: AbstractAgent end
 abstract type AbstractAnimal <: AbstractAgent end
 
+fully_grown(a::AbstractPlant) = a.fully_grown
+fully_grown!(a::AbstractPlant, b::Bool) = a.fully_grown = b
+countdown(a::AbstractPlant) = a.countdown
+countdown!(a::AbstractPlant, c::Int) = a.countdown = c
+incr_countdown!(a::AbstractPlant, Δc::Int) = countdown!(a, countdown(a)+Δc)
+reset!(a::AbstractPlant) = a.countdown = a.regrowth_time
+
 energy(a::AbstractAnimal) = a.energy
-energy!(a::AbstractAnimal, ΔE) = a.energy += ΔE
+energy!(a::AbstractAnimal, e) = a.energy = e
+incr_energy!(a::AbstractAnimal, Δe) = energy!(a, energy(a)+Δe)
+Δenergy(a::AbstractAnimal) = a.Δenergy
 reproduction_prob(a::AbstractAnimal) = a.reproduction_prob
 food_prob(a::AbstractAnimal) = a.food_prob
 
@@ -54,19 +63,19 @@ function Base.show(io::IO, w::World)
 end
 
 function agent_step!(a::AbstractPlant, w::World)
-    if !a.fully_grown
-        if a.countdown <= 0
-            a.fully_grown = true
-            a.countdown = a.regrowth_time
+    if !fully_grown(a)
+        if countdown(a) <= 0
+            fully_grown!(a,true)
+            reset!(a)
         else
-            a.countdown -= 1
+            incr_countdown!(a,-1)
         end
     end
     return a
 end
 
 function agent_step!(a::A, w::World) where A<:AbstractAnimal
-    energy!(a, -1)
+    incr_energy!(a,-1)
     dinner = find_food(a,w)
     eat!(a, dinner, w)
     if energy(a) < 0
@@ -93,30 +102,30 @@ eats(::AbstractAgent,::AbstractAgent) = false
 
 function eat!(wolf::Wolf, sheep::Sheep, w::World)
     kill_agent!(sheep,w)
-    wolf.energy += wolf.Δenergy
+    incr_energy!(wolf, Δenergy(wolf))
 end
 function eat!(sheep::Sheep, grass::Grass, w::World)
-    if grass.fully_grown
-        grass.fully_grown = false
-        sheep.energy += sheep.Δenergy
+    if fully_grown(grass)
+        fully_grown!(grass, false)
+        incr_energy!(sheep, Δenergy(sheep))
     end
 end
 function eat!(sheep::Sheep, grass::PoisonedGrass, w::World)
-     if grass.fully_grown
-        grass.fully_grown = false
-        sheep.energy -= sheep.Δenergy
+     if fully_grown(grass)
+        fully_grown!(grass, false)
+        incr_energy!(sheep, -Δenergy(sheep))
     end
 end
 eat!(::AbstractAnimal,::Nothing,::World) = nothing
 
 function reproduce!(a::AbstractAnimal, w::World)
-    a.energy /= 2
+    energy!(a, energy(a)/2)
     push!(w.agents, deepcopy(a))
 end
 
 kill_agent!(a::AbstractAnimal, w::World) = deleteat!(w.agents, findall(x->x==a, w.agents))
 
-countsym(g::T) where T<:AbstractPlant = g.fully_grown ? nameof(T) : :NoCount
+countsym(g::T) where T<:AbstractPlant = fully_grown(g) ? nameof(T) : :NoCount
 countsym(::T) where T<:AbstractAnimal = nameof(T)
 
 # function agent_count(as::Vector{AbstractAgent})
@@ -124,7 +133,7 @@ countsym(::T) where T<:AbstractAnimal = nameof(T)
 #     delete!(cs,:NoCount)
 # end
 
-agent_count(g::AbstractPlant) = g.fully_grown ? 1 : 0
+agent_count(g::AbstractPlant) = fully_grown(g) ? 1 : 0
 agent_count(::AbstractAnimal) = 1
 agent_count(as::Vector{<:AbstractAgent}) = sum(agent_count,as)
 
@@ -170,11 +179,13 @@ struct GenderedSheep{T<:Real} <: AbstractAnimal
     sheep::Sheep{T}
     gender::Symbol
 end
-GenderedSheep(E,ΔE,pr,pf,gender) = GenderedSheep(Sheep(E,ΔE,pr,pf),sample([:male,:female]))
+GenderedSheep(E,ΔE,pr,pf,gender) = GenderedSheep(Sheep(E,ΔE,pr,pf),gender)
 GenderedSheep(E,ΔE,pr,pf) = GenderedSheep(E,ΔE,pr,pf,sample([:male,:female]))
 
 energy(g::GenderedSheep) = energy(g.sheep)
-energy!(g::GenderedSheep, ΔE) = energy!(g.sheep, ΔE)
+energy!(g::GenderedSheep, e) = energy!(g.sheep, e)
+Δenergy(g::GenderedSheep, e) = Δenergy(g.sheep, e)
+incr_energy!(g::GenderedSheep, Δe) = incr_energy!(g.sheep, Δe)
 reproduction_prob(g::GenderedSheep) = reproduction_prob(g.sheep)
 food_prob(g::GenderedSheep) = food_prob(g.sheep)
 
@@ -193,7 +204,7 @@ end
 function reproduce!(s::GenderedSheep, w::World)
     m = find_mate(s,w)
     if !isnothing(m)
-        s.sheep.energy /= 2
+        energy!(s, energy(s)/2)
         # TODO: should probably mix s/m
         push!(w.agents, deepcopy(s))
     end

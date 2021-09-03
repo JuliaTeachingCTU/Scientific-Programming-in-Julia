@@ -16,16 +16,21 @@ As you can see, in this model, the wolves unfortunately died out :(.
 
 ## Creating the world
 To get started we need a type hierarchy. In order to be able to extend this model
-in later labs we will structure them like this
-
+in later labs we will create an `AbstractAgent` that acts as the root of our tree.
+All animals and plants will be subtypes of `AbstractAgent`.
+There are different kinds of animals and plants so it makes sense to create an
+`AbstractAnimal` type which will be the supertype of all animals. The same is
+true for `AbstractPlant`s:
 ```julia
 abstract type AbstractAgent end
 abstract type AbstractAnimal <: AbstractAgent end
 abstract type AbstractPlant <: AbstractAgent end
 ```
 
+The first concrete type we implement is the basis life in our simulation and
+source of all energy: `Grass`.
 Our `Grass` will be growing over time and it will need a certain amount of time
-steps to fully grow such that it can be eaten. This has to be reflected in the
+steps to fully grow before it can be eaten. This has to be reflected in the
 fields of our grass struct:
 ```julia
 mutable struct Grass <: AbstractPlant
@@ -36,6 +41,21 @@ end
 # constructor for grass with random growth countdown
 Grass(t) = Grass(false, t, rand(1:t))
 ```
+Note that `Grass` is a subtype of `AbstractPlant`. Let us assume that all plants
+have at least the fields `fully_grown`, `regrowth_time`, and `countdown`,
+because all plants need some time to grow. If this is the case we can define
+a common interface for all `AbstractPlant`s.
+```julia
+# get field values
+fully_grown(a::AbstractPlant) = a.fully_grown
+countdown(a::AbstractPlant) = a.countdown
+# set field values
+fully_grown!(a::AbstractPlant, b::Bool) = a.fully_grown = b
+countdown!(a::AbstractPlant, c::Int) = a.countdown = c
+incr_countdown!(a::AbstractPlant, Δc::Int) = countdown!(a, countdown(a)+Δc)
+# reset plant couter once its grown (used later)
+reset!(a::AbstractPlant) = a.countdown = a.regrowth_time
+```
 
 Grass cannot grow in a void, hence we need a `World`.  In our simple case this
 world will be simply a container for all our agents.
@@ -45,7 +65,8 @@ world will be simply a container for all our agents.
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Define a `World` struct that will hold all your `AbstractAgents` in a `Vector`.
+Define a `World` struct that will hold all your `AbstractAgents` in a `Vector`
+called `agents`.
 Try to avoid fields with abstract types. Julia's compiler will not be able to
 infer the type for those (which leads to type instabilities and performance
 losses; see the [composite types section in the lecture](@ref composite_types)).
@@ -88,6 +109,20 @@ mutable struct Sheep{T<:Real} <: AbstractAnimal
     food_prob::T
 end
 ```
+Again we will use `Sheep` as a generic example for an `AbstractAnimal` which
+leaves us with the interface below. We only have setters for `energy` because
+all other fields of our animals will stay constant.
+```julia
+# get field values
+energy(a::AbstractAnimal) = a.energy
+Δenergy(a::AbstractAnimal) = a.Δenergy
+reproduction_prob(a::AbstractAnimal) = a.reproduction_prob
+food_prob(a::AbstractAnimal) = a.food_prob
+# set field values
+energy!(a::AbstractAnimal, e) = a.energy = e
+incr_energy!(a::AbstractAnimal, Δe) = energy!(a, energy(a)+Δe)
+```
+
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -103,9 +138,9 @@ energy by $\Delta E$ and sets `fully_grown` of the grass to `false`.
 ```
 ```julia
 function eat!(sheep::Sheep, grass::Grass, w::World)
-    if grass.fully_grown
-        grass.fully_grown = false
-        sheep.energy += sheep.Δenergy
+    if fully_grown(grass)
+        fully_grown!(grass, false)
+        incr_energy!(sheep, Δenergy(sheep))
     end
 end
 ```
@@ -152,7 +187,7 @@ end
 
 function eat!(wolf::Wolf, sheep::Sheep, w::World)
     kill_agent!(sheep,w)
-    wolf.energy += wolf.Δenergy
+    incr_energy!(wolf, Δenergy(wolf))
 end
 
 kill_agent!(a::AbstractAnimal, w::World) = deleteat!(w.agents, findall(x->x==a, w.agents))
@@ -190,7 +225,7 @@ Hint: You can use `StatsBase.sample` to choose a random element from a vector.
 
 ```julia
 function find_food(a::Sheep, w::World)
-    if rand() <= a.food_prob
+    if rand() <= food_prob(a)
         as = filter(x->isa(x,Grass), w.agents)
         isempty(as) ? nothing : sample(as)
     end
@@ -230,7 +265,7 @@ Implement a function `find_food(::Wolf, ::World)` which returns either a
 
 ```julia
 function find_food(a::Wolf, w::World)
-    if rand() <= a.food_prob
+    if rand() <= food_prob(a)
         as = filter(x->isa(x,Sheep), w.agents)
         isempty(as) ? nothing : sample(as)
     end
@@ -259,7 +294,7 @@ Identify the code duplications between `find_food(::Sheep,::World)` and
 
 ```julia
 function find_food(a::T, w::World) where T<:AbstractAnimal
-    if rand() <= a.food_prob
+    if rand() <= food_prob(a)
         as = filter(x->eats(a,x), w.agents)
         isempty(as) ? nothing : sample(as)
     end
