@@ -17,7 +17,8 @@ As you can see, in this model, the wolves unfortunately died out :(.
 ## Creating the world
 To get started we need a type hierarchy. In order to be able to extend this model
 in later labs we will create an `AbstractAgent` that acts as the root of our tree.
-All animals and plants will be subtypes of `AbstractAgent`.
+All animals and plants will be subtypes of `AbstractAgent` (it is a good
+convention to start the name of an abstract type with `Abstract...`).
 There are different kinds of animals and plants so it makes sense to create an
 `AbstractAnimal` type which will be the supertype of all animals. The same is
 true for `AbstractPlant`s:
@@ -27,7 +28,7 @@ abstract type AbstractAnimal <: AbstractAgent end
 abstract type AbstractPlant <: AbstractAgent end
 ```
 
-The first concrete type we implement is the basis life in our simulation and
+The first concrete type we implement is the basis of life in our simulation and
 source of all energy: `Grass`.
 Our `Grass` will be growing over time and it will need a certain amount of time
 steps to fully grow before it can be eaten. This has to be reflected in the
@@ -49,16 +50,19 @@ a common interface for all `AbstractPlant`s.
 # get field values
 fully_grown(a::AbstractPlant) = a.fully_grown
 countdown(a::AbstractPlant) = a.countdown
+
 # set field values
+# (exclamation marks `!` indicate that the function is mutating its arguments)
 fully_grown!(a::AbstractPlant, b::Bool) = a.fully_grown = b
 countdown!(a::AbstractPlant, c::Int) = a.countdown = c
 incr_countdown!(a::AbstractPlant, Δc::Int) = countdown!(a, countdown(a)+Δc)
-# reset plant couter once its grown (used later)
+
+# reset plant couter once its grown
 reset!(a::AbstractPlant) = a.countdown = a.regrowth_time
 ```
 
 Grass cannot grow in a void, hence we need a `World`.  In our simple case this
-world will be simply a container for all our agents.
+world will just be a container for all our agents.
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -90,7 +94,8 @@ end
 </p></details>
 ```
 
-Now you should be able to create a world and grow some grass!
+Now you should be able to create a world some grass in it that will soon be
+eaten by sheep:
 ```@repl load_ecosystem
 grass = Grass(5)
 world = World([grass])
@@ -118,11 +123,21 @@ energy(a::AbstractAnimal) = a.energy
 Δenergy(a::AbstractAnimal) = a.Δenergy
 reproduction_prob(a::AbstractAnimal) = a.reproduction_prob
 food_prob(a::AbstractAnimal) = a.food_prob
+
 # set field values
 energy!(a::AbstractAnimal, e) = a.energy = e
 incr_energy!(a::AbstractAnimal, Δe) = energy!(a, energy(a)+Δe)
 ```
 
+In every iteration of the simulation each sheep will get a chance to eat some
+grass. The process of one animal eating a plant (or another animal) will be
+implemented via the `eat!(a::AbstractAgent,b::AbstractAgent,::World)` function.
+Calling the function will cause agent `a` to eat agent `b`, possibly mutating
+them and the world. The `eat!` function will do something different for different
+input types and is our first practical example of [multiple dispatch](@ref
+multiple_dispatch).
+The `eat!` function is part of our interface and we will have to implement a
+special methods for each new type that we introduce.
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -155,6 +170,15 @@ sheep = Sheep(10.0,5.0,0.1,0.1);
 world = World([grass, sheep])
 eat!(sheep,grass,world);
 world
+```
+Note that the order of the arguments has a meaning here. Calling
+`eat!(grass,sheep,world)` results in a `MethodError` which is great, because
+`Grass` cannot eat `Sheep`.
+```@repl load_ecosystem
+grass = Grass(true,5.0,5.0);     # hide
+sheep = Sheep(10.0,5.0,0.1,0.1); # hide
+world = World([grass, sheep]);   # hide
+eat!(grass,sheep,world);
 ```
 
 
@@ -204,16 +228,26 @@ world = World([grass, sheep, wolf])
 eat!(wolf,sheep,world);
 world
 ```
+The sheep is removed from the world and the wolf's energy increased by $\Delta E$.
 
 
 ## Finding food for sheep
+
+The next mechanism in our simulation models an animal's search for food.  For
+example, a sheep can only try to eat if the world currently holds some grass.
+The process of finding food for a given animal will be implemented by the
+function `find_food(a::AbstractAnimal, ::World)`. This function will either
+return `nothing` or another animal that can be eaten by `a` with the given food
+probability $p_f$.
+
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Implement a function `find_food(::Sheep, ::World)` which returns either a
-`Grass` (sampled from all `Grass`es with the given food probability $p_f$) or returns `nothing`.
+Implement the method `find_food(::Sheep, ::World)` which returns either a
+`Grass` (sampled randomly from all `Grass`es with the given food probability
+$p_f$) or returns `nothing`.
 
 Hint: You can use `StatsBase.sample` to choose a random element from a vector.
 
@@ -234,6 +268,7 @@ end
 ```@raw html
 </p></details>
 ```
+To test your function your can create sheep with different $p_f$.
 A sheep with $p_f=1$ will always find some food if there is some in the world,
 so you should get a result like below.
 ```@repl load_ecosystem
@@ -293,7 +328,7 @@ Identify the code duplications between `find_food(::Sheep,::World)` and
 ```
 
 ```julia
-function find_food(a::T, w::World) where T<:AbstractAnimal
+function find_food(a::AbstractAnimal, w::World)
     if rand() <= food_prob(a)
         as = filter(x->eats(a,x), w.agents)
         isempty(as) ? nothing : sample(as)
@@ -318,7 +353,7 @@ eats(::AbstractAgent,::AbstractAgent) = false
 What happens if you call `eat!(wolf, find_food(wolf,world), world)` and there
 are no sheep anymore? Or if the wolf's $p_f<1$?
 
-Write a simple for loop that runs `7` iterations of a simple simulation that
+Write a simple for-loop that runs `7` iterations of a simple simulation that
 lets a wolf eat one sheep in each iteration with this given world:
 ```julia
 sheep = [Sheep(10.0,5.0,1.0,1.0) for _ in 1:5]

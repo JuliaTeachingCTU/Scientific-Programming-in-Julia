@@ -88,7 +88,7 @@ function agent_step!(a::A, w::World) where A<:AbstractAnimal
     return a
 end
 
-function find_food(a::T, w::World) where T<:AbstractAnimal
+function find_food(a::AbstractAnimal, w::World)
     if rand() <= food_prob(a)
         as = filter(x->eats(a,x), w.agents)
         isempty(as) ? nothing : sample(as)
