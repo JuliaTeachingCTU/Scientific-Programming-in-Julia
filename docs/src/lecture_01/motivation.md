@@ -15,7 +15,7 @@ Contrast to general-purpose language:
 - less concern with public/private separation
 
 
-!!! tip "Example of a *scientific* task"
+!!! tip "Example of a scientific task"
     In many applications, we encounter the task of     optimization a function given by a routine (e.g.     engineering, finance, etc.)
     
     ```julia
@@ -53,7 +53,7 @@ Ending up in *2 language problem*.
     - running code with many different parameters as easily as possible
     - allowing high level of abstraction
 
-In scientific programming, the most well known scipting languages are: Python,  Matlab, R
+In scientific programming, the most well known scripting languages are: Python,  Matlab, R
 
 - If you care about standard "configurations" they are just perfect.  (PyTorch)
 - You hit a problem with more complex experiments. 
@@ -70,13 +70,17 @@ The scripting language typically makes decisions (```if```) at runtime. Becomes 
 Translate high-level thinking with as much abstraction as possible into *fast* machine code.
 
 
-Indexing array x in Matlab:
-```matlab
-y=x(4/2)
-y=x(5/2)
-```
-In the first case it works, in the second throws an error.
- - function inde(x,n,m)=x(n/m) can never be fast.
+!!! theorem Indexing array x in Matlab:
+    ```matlab
+    y=x(4/2)
+    y=x(5/2)
+    ```
+    In the first case it works, in the second throws an error.
+     - function inde(x,n,m)=x(n/m) can never be fast.
+     - in python 3: ```3/2 = 1.5```, ```3//2 = 1```
+
+Julia was designed with speed as *primary* concern: 
+![](benchmarks.svg)
 
 ## Julia way
 Design principle: abstraction should have *zero* runtime  cost
@@ -119,8 +123,9 @@ f(x)=3x+1
 
 Fuctions can act either as regular functions or like templates in C++.
 
-## Advantages and disadvantages
- 1. **compilation** of everything to as specialized for as possible
+## Language characteristics:
+
+ 1. **compilation** of everything to as specialized as possible
     + very fast code
     - slow interaction (caching...)
     - generating libraries is harder 
@@ -128,7 +133,9 @@ Fuctions can act either as regular functions or like templates in C++.
         - everything is ".h" file
     - debugging is different to matlab/python
 
- 2. Multiple dispatch
+ 2. **Multiple dispatch**, multi-functions
     + allows great extensibility and code composition
     - not (yet) mainstream thinking
+    - Julia is not Object-oriented
+    - Julia is (not pure) functional language
 
