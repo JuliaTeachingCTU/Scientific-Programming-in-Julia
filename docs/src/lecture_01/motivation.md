@@ -14,26 +14,23 @@ Contrast to general-purpose language:
 - less concern with ABI 
 - less concern with public/private separation
 
-## TODO
-Zero cost abstraction - Rackcaucas
 
-
-### Example
-In many applications, we encounter the task of optimization a function given by a routine (e.g. engineering, finance, etc.)
-
-```
-using Optim
-
-P(x,y) = x^2 - 3x*y + 5y^2 - 7y + 3   # user defined function
-
-z₀ = [ 0.0
-       0.0 ]     # starting point for optimization algorithm
-
-optimize(z -> P(z...), z₀, Newton())
-#optimize(z -> P(z...), z₀, Newton();autodiff = :forward)
-#optimize(z -> P(z...), z₀, ConjugateGradient())
-
-```
+!!! tip "Example of a *scientific* task"
+    In many applications, we encounter the task of     optimization a function given by a routine (e.g.     engineering, finance, etc.)
+    
+    ```julia
+    using Optim
+    
+    P(x,y) = x^2 - 3x*y + 5y^2 - 7y + 3   # user defined     function
+    
+    z₀ = [ 0.0
+           0.0 ]     # starting point 
+    
+    optimize(z -> P(z...), z₀, ConjugateGradient())
+    optimize(z -> P(z...), z₀, Newton())
+    optimize(z -> P(z...), z₀, Newton();autodiff = :forward)
+    
+    ```
 
 Very simple for a user, very complicated for a programmer. The program should:
  - pick the right optimization method (easy by config-like approach)
@@ -58,7 +55,7 @@ Ending up in *2 language problem*.
 
 In scientific programming, the most well known scipting languages are: Python,  Matlab, R
 
-- If you care about standard "configurations" they are just perfect. 
+- If you care about standard "configurations" they are just perfect.  (PyTorch)
 - You hit a problem with more complex experiments. 
 
 The scripting language typically makes decisions (```if```) at runtime. Becomes slow.
@@ -74,26 +71,28 @@ Translate high-level thinking with as much abstraction as possible into *fast* m
 
 
 Indexing array x in Matlab:
-```
+```matlab
 y=x(4/2)
 y=x(5/2)
 ```
 In the first case it works, in the second throws an error.
- - function inde(x,n,m), x(n/m) can never be fast.
+ - function inde(x,n,m)=x(n/m) can never be fast.
 
 ## Julia way
+Design principle: abstraction should have *zero* runtime  cost
+
 - strong but flexible type system
 - multiple dispatch
 - single language from high to low levels (as much as possible)
 - optimize execution as much as you can during *runtime*
-    - functions are symbolic abstract layers
-    - abstraction should have zero computational cost
+    - functions as symbolic abstraction layers
+
 
 ![](julia-compilation.png)
 
 ## Example:
 Function recursion with arbitrary number of arguments:
-```
+```@example
 fsum(x) = x
 fsum(x,p...) = x+fsum(p[1],p[2:end]...)
 
@@ -104,24 +103,30 @@ fz()=fsum(1,2,3)
 @code_llvm fz()
 ```
 
-More involved example:
+How it works:
+```julia
+f('c',1)
+f([1,2],[3,4],[5,6])
 ```
+
+More involved example:
+```julia
 using Zygote
 
 f(x)=3x+1
 @code_llvm f'(10)
 ```
 
-Fuctions can act eiter as regular functions or like templates in C++.
+Fuctions can act either as regular functions or like templates in C++.
 
 ## Advantages and disadvantages
- 1. compilation of everything to 
+ 1. **compilation** of everything to as specialized for as possible
     + very fast code
     - slow interaction (caching...)
     - generating libraries is harder 
         - think of ```fsum```, 
         - everything is ".h" file
-    - debugging will be harder
+    - debugging is different to matlab/python
 
  2. Multiple dispatch
     + allows great extensibility and code composition
