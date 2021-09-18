@@ -108,16 +108,18 @@ you will see that it is just as easy to add a completely new type to our
 hierarchy and reuse the methods that we have already defined (similar to
 inheritance in OOP).
 
-We have a few essential functions: `agent_step!`, `reproduce!`, `find_food`, `eats`,
+
+As an example, lets implement a `PoisonedGrass` which will *decrease* the
+energy of a sheep that ate it.
+Apart from the accessors (like `energy`, `energy!`, etc.) we have a few
+essential functions: `agent_step!`, `reproduce!`, `find_food`, `eats`,
 and `eat!`. If you look at their type signatures you can see that the first
-three already operate on any `AbstractAnimal`/`AbstractPlant`. The same is true
-for the accessors like `energy`/`energ!`. This means that
+three already operate on any `AbstractAnimal`/`AbstractPlant`. This means that
 for any subtype that has the expected fields (i.e. `energy`,
 `reproduction_prob`, etc.) these functions already work.
 
 Therefore, the only methods we have to implement for a new animal or plant are the `eats`
-and `eat!` methods.  So, lets implement a `PoisonedGrass` which will *decrease*
-the energy of a sheep that ate it.
+and `eat!` methods because they are specific for each concrete type.
 
 ```@raw html
 <div class="admonition is-category-homework">
@@ -156,10 +158,4 @@ eats(::Sheep,::PoisonedGrass) = true
 ```
 ```@raw html
 </p></details>
-```
-
-
-```@setup load_ecosystem
-using Scientific_Programming_in_Julia
-using Scientific_Programming_in_Julia.Ecosystem: eat!, find_food, count
 ```

@@ -6,6 +6,7 @@ version = "0.1.0"
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
+EcosystemCore = "3e0d8730-8ea0-4ee2-afe6-c85384c618a2"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
