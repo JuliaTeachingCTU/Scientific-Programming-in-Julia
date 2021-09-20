@@ -43,7 +43,7 @@ The main goals of the course are the following: (make it longer? Split into two.
 
 
 ## Recommended courses
-- [Julia for Optimization and Learning](https://github.com/JuliaTeachingCTU/Julia-for-Optimization-and-Learning) - bachelor course on Julia, which we recommend for beginners before enrolling to this course
+- [Julia for Optimization and Learning](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/dev/) - bachelor course on Julia, which we recommend for beginners before enrolling to this course
 - [Functional Programming](https://) - TODO fill in the url
 
 

@@ -1,39 +1,50 @@
 # Course outline
 
 
-1. type system
+2. Type system
    - user: tool for abstraction
    - compiler: tool for memory layout
 
-2. design patterns (mental setup)
+3. Design patterns (mental setup)
     - julia is a type-based language
     - generalizes OOP and FP
 
-3. Packages
+4. Packages
     - way how to organize code
     - code reuse (alternative to libraries)
     - experiment reproducibility
 
-4. 
+5. Benchmarking
+    - how to measure code efficiency
 
-## How to write fast code:
+6. Introspection
+    - understand how the compiler process the data
+    
+7. Macros
+    - automate writing of boring boilerplate code
+    - good macro create cleaner code
 
+8. Automatic Differentiation
+    - Theory: difference between forward and backward mode
+    - Implementation techniques
 
+9. Intermediate representation
+    - how to use internal representation of the code 
+    - example in automatic differentiation
 
-![](processor.gif)
+10. Parallel computing
+    - threads, processes
 
-cache misses.
+11. Graphics card coding
+    - types for GPU
+    - specifics of architectures
 
+12. Ordinary Differential Equations
+    - simple solvers
+    - error propagation
 
-# Syntax
+13. Data driven ODE
+    - combine ODE with optimization
+    - automatic differentiation (adjoints)
 
-Syntactic Sugar:
-Cheat sheet: https://cheatsheets.quantecon.org/
-
-# Typing -> Lecture 2
-
-- static
-- dynamic
-
-# 
 

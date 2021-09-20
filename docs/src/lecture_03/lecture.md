@@ -1,13 +1,23 @@
-# Design patters: good practices and strcutured thinking
+# Design patterns: good practices and structured thinking
 
-Multiple dispatch allows to 
+Design guiding principles:
+- SOLID: Single Responsibility, Open/Closed, Liskov Substitution, Interface
+- Segregation, Dependency Inversion
+- DRY: Don't Repeat Yourself
+- KISS: Keep It Simple, Stupid!
+- POLA: Principle of Least Astonishment
+- YAGNI: You Aren't Gonna Need It (overengineering)
+- POLP: Principle of Least Privilege 
+
+Julia does not fit into any methodological classes like *object-oriented* or *functional* programming. The key concept of julia is the *multiple dispatch*, which has *zero* runtime cost.
+
+Many popular design concepts from other languages are solved using this simple principle. Multiple dispatch allows to 
 
 - composition vs. inheritance (L02?)
 - generalization problem
 - reusability (composition, @forward)
 - access restrictions (getter functions, redefining getproperty)
     - closures - functions with states(), accepting 
-- exceptions?
 - piracy?
 - traits, multiple-inheritance
 
@@ -25,7 +35,9 @@ Multiple dispatch allows to
     + Small examples (GD?, Minibatching, )
     +  Performance issues ()
 
-### Implementation of closeres in julia: documentation
+### Implementation of closures in julia: documentation
+
+Closure is a record storing a function together with an environment. The environment is a mapping associating each *free* variable of the function (variables that are used locally, but defined in an enclosing scope) with the value or reference to which the name was bound when the closure was created.
 
 ```
 function adder(x)
@@ -46,20 +58,27 @@ function adder(x)
 end
 ```
 
-### Beware: Performance of captured variables
- - https://github.com/JuliaLang/julia/issues/15276    
+Note that the structure ##1 is not directly accessible. Allowing access restriction. 
 
-### Performance gotcha of global variables (make them const)
+Usage of closures:
+- callbacks: the function can also modify the enclosed variable.
+- abstraction: partial evaluation 
+- can be used to imitate objects: 
+https://stackoverflow.com/questions/39133424/how-to-create-a-single-dispatch-object-oriented-class-in-julia-that-behaves-l/39150509#39150509
+
+!!! theorem "Beware: Performance of captured variables"
+    Inference of types may be difficult in closures:
+    https://github.com/JuliaLang/julia/issues/15276    
+
 
 ### Expression Problem 
 Matrix of methods/types(data-structures)
 
-| data \ methods | add | scalarmult | vecmult | matmul | new |
+| data \ methods | find_food | eat! |  |  | new |
 | --- | ---- | ---- | --- | ---- | -- |
-| Full |  | | | | |
-| Sparse | | | | | |
-| diagonal | | | | | |
-| SVD | | | | | |
+| Wolf |  | | | | |
+| Sheep | | | | | |
+| Grass | | | | | |
 | new |
 
 We want to multiply matrices of different types.

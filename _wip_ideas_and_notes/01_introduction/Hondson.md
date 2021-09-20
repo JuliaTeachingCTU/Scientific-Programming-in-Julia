@@ -5,7 +5,7 @@ Segregation, Dependency Inversion
 DRY: Don't Repeat Yourself
 KISS: Keep It Simple, Stupid!
 POLA: Principle of Least Astonishment
-YAGNI: You Aren't Gonna Need It == (overenginenring)
+YAGNI: You Aren't Gonna Need It == (overengineering)
 POLP: Principle of Least Privilege == 
 
 
