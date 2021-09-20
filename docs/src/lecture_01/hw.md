@@ -32,7 +32,7 @@ or
 
 ```@raw html
 </div></div>
-<details class = "solution-body">
+<details class = "solution-body" hidden>
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
