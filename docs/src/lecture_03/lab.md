@@ -6,21 +6,22 @@ using Scientific_Programming_in_Julia.Ecosystem: eat!, find_food, count
 ```
 
 In this lab we will finalize our predator-prey agent simulation such that we
-can simulate a number of steps in order to get a plot like below.
+can simulate a number of steps and get a plot like below.
 
 ![img](pred-prey.png)
 
 
 ## Reproduction
+Currently our animals can only eat. In our simulation we also want them to
+reproduce. We will do this by adding a `reproduce!` method to `AbstractAnimal`.
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-The only other thing that our animals are able to do apart from eating will
-be reproducing. Write a function `reproduce!` that take an `AbstractAnimal`
-and a `World`. Reproducing will cost an animal half of its energy and add an
-identical copy of the given animal to the world.
+Write a function `reproduce!` that takes an `AbstractAnimal` and a `World`.
+Reproducing will cost an animal half of its energy and then add an identical copy of
+the given animal to the world.
 ```@raw html
 </div></div>
 <details class = "solution-body">
@@ -28,7 +29,7 @@ identical copy of the given animal to the world.
 ```
 ```julia
 function reproduce!(a::AbstractAnimal, w::World)
-    a.energy /= 2
+    energy!(a, energy(a)/2)
     push!(w.agents, deepcopy(a))
 end
 ```
@@ -38,18 +39,13 @@ end
 
 
 ## One step at a time
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
 One iteration of our simulation will be carried out by a function called
 `agent_step!(::AbstractAgent, ::World)`. Implement one method for `AbstractPlant`s
 and one for `AbstractAnimal`s.
 
 An `AbstractPlant` will grow if it is not fully grown (i.e. decrease growth
 counter).  If the growth counter has reached zero, the `fully_grown` flag has
-to be set to zero and the counter reset to `regrowth_time`.
+to be set to `true` and the counter reset to `regrowth_time`.
 
 An `AbstractAnimal` will loose one unit of energy in every step.  Then it will
 try to find food and eat. After eating, if its energy is less than zero, the
@@ -57,32 +53,39 @@ animal dies.  If it is still alive, it will try to reproduce with the
 probablitiy $p_r$.
 
 ```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Implement the function `agent_step!` with specialized methods for `AbstractAnimal`s
+and `AbstractPlant`s.
+```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
 ```julia
 function agent_step!(a::AbstractPlant, w::World)
-    if !a.fully_grown
-        if a.countdown <= 0
-            a.fully_grown = true
-            a.countdown = a.regrowth_time
+    if !fully_grown(a)
+        if countdown(a) <= 0
+            fully_grown!(a,true)
+            reset!(a)
         else
-            a.countdown -= 1
+            incr_countdown!(a,-1)
         end
     end
     return a
 end
 
-function agent_step!(a::A, w::World) where A<:AbstractAnimal
-    a.energy -= 1
+function agent_step!(a::AbstractAnimal, w::World)
+    incr_energy!(a,-1)
     dinner = find_food(a,w)
     eat!(a, dinner, w)
-    if a.energy < 0
+    if energy(a) < 0
         kill_agent!(a,w)
         return
     end
-    if rand() <= a.reproduction_prob
+    if rand() <= reproduction_prob(a)
         reproduce!(a,w)
     end
     return a
@@ -93,22 +96,27 @@ end
 ```
 
 ## Simulate the world!
+
+The last function we need for our simulation just needs to run a number of
+steps. In practice we often want varying logging behaviour which we can
+implement nicely using *callbacks*.
+
+An exemplary callback could just log the agent count at every step:
+```julia
+log_count(w::World) = @info agent_count(w)
+```
+
+
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-The last function we need to run our simulation just needs to run a number of
-steps. In practice we often want varying logging behaviour which we can
-implement nicely using *callbacks*. Implement a function
-`simulate!(w::World, iters::Int; callbacks=[])`
-which applies a number of callbacks of the form `callback(::World)`
-after each iteration.
+Implement a function `simulate!(w::World, iters::Int; callbacks=[])` which
+runs a number of iterations (i.e. `agent_step!`s) and
+applies passed callbacks of the form `callback(::World)` after each
+iteration.
 
-An exemplary callback could just log the agent count at ever step:
-```julia
-log_count(w::World) = @info agent_count(w)
-```
 ```@raw html
 </div></div>
 <details class = "solution-body">
@@ -152,117 +160,123 @@ ws = [Wolf(2*Δenergy_wolf,Δenergy_wolf,wolf_reproduce, wolf_foodprob) for _ in
 
 w = World(vcat(gs,ss,ws))
 
-cbs = [w->(@info agent_count(w))]
-simulate!(w, 10, callbacks=cbs)
-```
-
-
-
-## Smarter callbacks through closures
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Often we want our callbacks to be executed only every $N$th step.  Implement a
-function `every_nth(f::Function,n::Int)` that takes a function and uses a
-closure to construct another function that only calls `f` every `n` calls to
-the function `fn` that is returned by `every_nth(f,n)`.
-
-Use `every_nth` to log the agent count every 5th step of your simulation and to
-save every second agent count.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```julia
-function every_nth(f::Function, n::Int)
-    i = 1
-    function callback(w::World)
-        # display(i) # comment this out to see how the counter increases
-        if i == n
-            f(w)
-            i = 1
-        else
-            i += 1
-        end
-    end
-end
-
-# construct a global variable to store the trajectories
+# construct a global variable to store agent counts at every step
 counts = Dict(n=>[c] for (n,c) in agent_count(w))
 # callback to save current counts
-function _save(w::World)
+function save_agent_count(w::World)
     for (n,c) in agent_count(w)
         push!(counts[n],c)
     end
 end
 
-# create callbacks
-logcb = every_nth(w->(@info agent_count(w)), 5)
-savecb = every_nth(_save, 2)
+cbs = [
+    w->(@info agent_count(w)),
+    save_agent_count
+]
 
-simulate!(w, 200, callbacks=[logcb, savecb])
+simulate!(w, 200, callbacks=cbs)
 
-# you can now plot the trajectories like this
+# plot the count trajectories for every type of agent
 using Plots
 plt = plot()
 for (n,c) in counts
     plot!(plt, c, label="$n", lw=2)
 end
-display(plt)
-```
-```@raw html
-</p></details>
+plt
 ```
 
 
-## Poisoned Grass
+## Female & Male Sheep
+
+The goal of the last part of the lab is to demonstrate the [forwarding
+method](@ref forwarding_method) by implementing a sheep that can have two
+different sexes and can only reproduce with another sheep of opposite sex.
+
+This new type of sheep needs an additonal field `sex::Symbol` which can be either
+`:male` or `:female`.
+In OOP we would now simply inherit from `Sheep` and create a `⚥Sheep`
+with an additional field. In Julia there is no inheritance - only subtyping of
+abstract types.
+As you cannot inherit from a concrete type in Julia, we will have to create a
+wrapper type and forward all necessary methods. This is typically a sign of
+unfortunate type tree design and should be avoided, but if you want to extend a
+code base by an unforeseen type this forwarding of methods is a nice
+work-around.  Our `⚥Sheep` type will simply contain a classic `sheep` and a
+`sex` field
+```julia
+struct ⚥Sheep{T<:Real} <: AbstractAnimal
+    sheep::Sheep{T}
+    sex::Symbol
+end
+⚥Sheep(E,ΔE,pr,pf,sex) = ⚥Sheep(Sheep(E,ΔE,pr,pf),sex)
+```
+
+```@repl load_ecosystem
+⚥Sheep(1.0,1.0,1.0,1.0,:female)
+```
+
+In our case, the methods that have to be forwarded are `agent_step!`,
+`reproduce!`, `eats` and `eat!`.  The custom reproduction behaviour will of
+course be taken care of by a `reproduce!` function that does not just
+forward but also contains specialized behaviour for the `⚥Sheep`.
+
+
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-In the previous exercises you have seen that multiple dispatch makes it easy to
-add new methods to a given type (much easier than in OOP!).  In this exercise
-you will see that it is just as easy to add a completely new type to our
-hierarchy and reuse the methods that we have already defined (similar to
-inheritance in OOP).
-
-We have a few essential functions: `agent_step!`, `reproduce!`, `find_food`, `eats`,
-and `eat!`. If you look at their type signatures you can see that the first
-three already operate on any `AbstractAnimal`/`AbstractPlant`. This means that
-for any subtype that has the expected fields (`energy`, `Δenergy`, `food_prob`,
-and `reproduction_prob`) these functions already work.
-
-The only methods we have to implement for a new animal or plant are the `eats`
-and `eat!` methods.  So, lets implement a `PoisonedGrass` which will *decrease*
-the energy of a sheep that ate it.
-
-How much poisoned grass can you add to the simulation without wiping out the
-sheep population?
+Forward the accessors `energy`, `energy!`, `reproduction_prob`, and `food_prob`,
+as well as our core methods `eats` and `eat!` to `Sheep`.
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
 ```julia
-mutable struct PoisonedGrass <: AbstractPlant
-    fully_grown::Bool
-    regrowth_time::Int
-    countdown::Int
-end
-PoisonedGrass(t) = PoisonedGrass(false, t, rand(1:t))
+energy(g::⚥Sheep) = energy(g.sheep)
+energy!(g::⚥Sheep, ΔE) = energy!(g.sheep, ΔE)
+reproduction_prob(g::⚥Sheep) = reproduction_prob(g.sheep)
+food_prob(g::⚥Sheep) = food_prob(g.sheep)
 
-function eat!(sheep::Sheep, grass::PoisonedGrass, w::World)
-     if grass.fully_grown
-        grass.fully_grown = false
-        sheep.energy -= sheep.Δenergy
+eats(::⚥Sheep, ::Grass) = true
+eats(::⚥Sheep, ::PoisonedGrass) = true
+eat!(s::⚥Sheep, g::AbstractPlant, w::World) = eat!(s.sheep, g, w)
+```
+```@raw html
+</p></details>
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Implement the `reproduce!` method for the `⚥Sheep`.  Note that you first
+have to find another sheep of opposite sex in your `World`, and only if you
+can find one you can reproduce.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```julia
+mates(a::AbstractPlant, ::⚥Sheep) = false
+mates(a::AbstractAnimal, ::⚥Sheep) = false
+mates(g1::⚥Sheep, g2::⚥Sheep) = g1.sex != g2.sex
+function find_mate(g::⚥Sheep, w::World)
+    ms = filter(a->mates(a,g), w.agents)
+    isempty(ms) ? nothing : sample(ms)
+end
+
+function reproduce!(s::⚥Sheep, w::World)
+    m = find_mate(s,w)
+    if !isnothing(m)
+        energy!(s, energy(s)/2)
+        # TODO: should probably mix s/m
+        push!(w.agents, deepcopy(s))
     end
 end
-
-eats(::Sheep,::PoisonedGrass) = true
 ```
 ```@raw html
 </p></details>

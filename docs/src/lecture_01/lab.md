@@ -180,8 +180,14 @@ Looking at the last two expersions `+`, `*`, we can see that in Julia, operators
 *
 ```
 The main difference from our `polynomial` function is that there are multiple methods, for each of these functions. Each one of the methods coresponds to a specific combination of arguments, for which the function can be specialized to. You can see the list by calling a `methods` function:
-```@repl 1
-methods(+)
+```julia
+julia> methods(+)
+# 190 methods for generic function "+":                                                                               
+[1] +(x::T, y::T) where T<:Union{Int128, Int16, Int32, Int64, Int8, UInt128, UInt16, UInt32, UInt64, UInt8} in Base at
+ int.jl:87                                                                                                            
+[2] +(c::Union{UInt16, UInt32, UInt64, UInt8}, x::BigInt) in Base.GMP at gmp.jl:528                                   
+[3] +(c::Union{Int16, Int32, Int64, Int8}, x::BigInt) in Base.GMP at gmp.jl:534
+...
 ```
 One other notable difference is that these functions allow using both infix and postfix notation `a + b` and `+(a,b)`, which is a speciality of elementary functions such as arithmetic operators or set operation such as `∩, ∪, ∈`.
 
@@ -446,15 +452,14 @@ nothing #hide
 </p></details>
 ```
 
-
 ## How to use code from other people
-The script that we have run at the beginning of this lab has created a folder `test` with the following files.
+The script that we have run at the beginning of this lab has created a folder `L1Env` with the following files.
 ```
-./test/
+./L1Env/
     ├── Manifest.toml
     ├── Project.toml
     └── src
-        └── test.jl
+        └── L1Env.jl
 ```
 Every folder with a toml file called `Project.toml`, can be used by Julia's pkg manager into setting so called environment. Each of these environments has a specific name, unique identifier and most importantly a list of pkgs to be installed. Setting up or more often called activating an environment can be done either before starting Julia itself by running julia with the `--project XXX` flag or from withing the Julia REPL, by switching to Pkg mode with `]` key (similar to the help mode activated by pressing `?`) and running command `activate`.
 
@@ -462,11 +467,11 @@ So far we have used the general environment, which by default does not come with
 
 In order to find which environment is currently active, run the following:
 ```julia
-] status
+pkg> status
 ```
 The output of such command usually indicates the general environment located at `.julia/` folder (`${HOME}/.julia/` or `${APPDATA}/.julia/` in case of Unix/Windows based systems respectively)
 ```julia
-(@v1.6) pkg> status
+pkg> status
 Status `~/.julia/environments/v1.6/Project.toml` (empty project)
 ```
 Generally one should avoid working in the general environment, with the exception using some generic pkgs, such as `PkgTemplates.jl`, which is used for generating pkg templates/folder structure like the one above ([link](https://github.com/invenia/PkgTemplates.jl)), more on this in the [lecture](@ref pkg_lecture) on pkg development. 
@@ -477,7 +482,7 @@ Generally one should avoid working in the general environment, with the exceptio
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Activate the test environment inside `./test` and check that the `BenchmarkTools` package has been installed. Use `BenchmarkTools` pkg's `@btime` to benchmark our `polynomial` function with the following arguments.
+Activate the `L1Env` environment inside `./L1Env` and check that the `BenchmarkTools` package has been installed. Use `BenchmarkTools` pkg's `@btime` to benchmark our `polynomial` function with the following arguments.
 ```@example 1
 aexp = ones(10) ./ factorial.(0:9)
 x = 1.1
@@ -490,6 +495,9 @@ nothing #hide
 - The functionality that we want to use is the `@btime` macro (it acts almost like a function but with a different syntax `@macro arg1 arg2 arg3 ...`). More on macros in the corresponding [lecture](@ref macro_lecture).
 
 **BONUS**: Compare the output of `polynomial(aexp, x)` with the value of `exp(x)`, which it approximates.
+
+!!! note "Broadcasting"
+    In the assignment's code, we are using quite ubiquitous concept in Julia called `broadcasting` or simply the `dot-syntax` - see `./`, `factorial.`. This concept allows to map both simple arithmetic operations as well as custom functions across arrays, with the added benefit of increased performance, when the broadcasting system can merge operations into a more efficient code. More information can be found in the official [documentation](https://docs.julialang.org/en/v1/manual/arrays/#Broadcasting) or [section](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/lecture_01/arrays/#Broadcasting) of our bachelor course.
 
 ```@raw html
 </div></div>
@@ -515,6 +523,24 @@ The apostrophes in the previous sentece are on purpose, because implementation o
 </p></details>
 ```
 
+## Discussion & future directions
+Instead of `if-else` statements that would throw an error for different types, in Julia, we generally see the pattern of typing the function in the way. that for other than desirable types `MethodError` is emitted with the information about closest matching methods. This is part of the design process in Julia of a function and for the particular functionality of the `polynomial` example, we can look into the Julia itself, where it has been implemented in the `evalpoly` function
+```@repl 1
+methods(evalpoly)
+```
+
+Another avenue, that we have only touched with the `BenchmarkTools`, is performance and will be further explored in the later [lectures](@ref perf_lecture).
+
+With the next lecture focused on typing in Julia, it is worth noting that polynomials lend itself quite nicely to a definition of a custom type, which can help both readability of the code as well further extensions.
+```julia
+struct Polynom{C}
+    coefficients::{C}
+end
+
+function (p:Polynom)(x)
+    polynomial(p.coefficients, x)
+end
+```
 
 ## Useful resources
 - Getting Started tutorial from JuliaLang documentation - [Docs](https://docs.julialang.org/en/v1/manual/getting-started/)
@@ -525,7 +551,7 @@ The apostrophes in the previous sentece are on purpose, because implementation o
 
 
 ### [Various errors and how to read them](@id lab_errors)
-This section summarizes most commonly encountered types of errors in Julia and shows how to read them. [Documentation](https://docs.julialang.org/en/v1/base/base/#Errors) contains the complete list and each individual error can be queried against the `?` mode of the REPL.
+This section summarizes most commonly encountered types of errors in Julia and how to resolve them or at least understand, what has gone wrong. It expands a little bit the official [documentation](https://docs.julialang.org/en/v1/base/base/#Errors), which contains the complete list with examples. Keep in mind again, that you can use help mode in the REPL to query error types as well.
 
 #### `MethodError`
 This type of error is most commonly thrown by Julia's multiple dispatch system with a message like `no method matching X(args...)`, seen in two examples bellow.
@@ -587,3 +613,6 @@ I_am_not_defined
 Often these kind of errors arise as a result of bad code practices, such as long running sessions of Julia having long forgotten global variables, that do not exist upon new execution (this one in particular has been addressed by the authors of the reactive Julia notebooks [Pluto.jl](https://github.com/fonsp/Pluto.jl)).
 
 For more details on code scoping we recommend particular places in the bachelor course lectures [here](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/lecture_02/scope/#Soft-local-scope) and [there](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/lecture_03/scope/#Scope-of-variables).
+
+#### `ErrorException` & `error` function
+`ErrorException` is the most generic error, which can be thrown/raised just by calling the `error` function with a chosen string message. As a result developers may be inclined to misuse this for any kind of unexpected behavior a user can run into, often providing out-of-context/uninformative messages.

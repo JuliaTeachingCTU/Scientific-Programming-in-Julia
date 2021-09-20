@@ -8,8 +8,18 @@ using Scientific_Programming_in_Julia.Ecosystem: eat!, find_food, agent_count
 In this homework we will continue working on our agent simulation.  All your
 code must be in a single file called `Ecosystem.jl` containing all the type
 definitions and functions we created in [Lab 2](@ref lab02) and the work you
-do in this homework. Zip this file and upload it to BRUTE to receive your
-points for the homework.
+do in this homework. Additionally to your code file you need a `Project.toml`
+that contains all your dependencies. You will learn more on environments and `.toml`-files
+in the [lectures](@ref environments). For now zip your `Ecosystem.jl` and a `Project.toml` with
+the contents below and upload it to BRUTE to get your points.
+```julia
+name = "Ecosystem"
+
+[deps]
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+```
+
+## Counting Agents
 
 To monitor the different populations in our world we need a function that
 counts each type of agent. For `AbstractAnimal`s we simply have to count how
@@ -23,7 +33,7 @@ we only want to count the ones that are fully grown.
 ```
 1. Implement a function `agent_count` that can be called on a single
    `AbstractAgent` and returns either `0` or `1` (i.e. always `1` for animals;
-   `1` for a fully grown plant and `0` otherwise).
+   `1` for a fully grown plant and `0` if the plant is not fully grown).
 
 2. Add a method for a vector of agents `Vector{<:AbstractAgent}`.
 
@@ -48,10 +58,9 @@ Use as much dispatch as you can! ;)
 
 ```@raw html
 </div></div>
-<details class = "solution-body">
+<details class = "solution-body" hidden>
 <summary class = "solution-header">Solution:</summary><p>
 ```
-
 ```julia
 # first solution using foldl instead of a for loop
 agent_count(g::AbstractPlant) = g.fully_grown ? 1 : 0

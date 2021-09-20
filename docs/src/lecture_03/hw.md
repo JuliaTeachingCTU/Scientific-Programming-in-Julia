@@ -3,97 +3,158 @@
 ```@setup load_ecosystem
 using Scientific_Programming_in_Julia
 using Scientific_Programming_in_Julia.Ecosystem: eat!, find_food, count
+
+n_grass       = 500
+regrowth_time = 17.0
+
+n_sheep         = 100
+Δenergy_sheep   = 5.0
+sheep_reproduce = 0.5
+sheep_foodprob  = 0.4
+
+n_wolves       = 8
+Δenergy_wolf   = 17.0
+wolf_reproduce = 0.03
+wolf_foodprob  = 0.02
+
+gs = [Grass(true,regrowth_time,regrowth_time) for _ in 1:n_grass]
+ss = [Sheep(2*Δenergy_sheep,Δenergy_sheep,sheep_reproduce, sheep_foodprob) for _ in 1:n_sheep]
+ws = [Wolf(2*Δenergy_wolf,Δenergy_wolf,wolf_reproduce, wolf_foodprob) for _ in 1:n_wolves]
+
+w = World(vcat(gs,ss,ws))
 ```
 
-The goal of this homework is to demonstrate the [forwarding method](@ref forwarding_method) by
-implementing a gendered sheep that can only reproduce with another sheep of
-opposite gender.
 
-The gendered sheep need an additonal field `gender::Symbol` which can be either
-`:male` or `:female`.
-In OOP we would now simply inherit from `Sheep` and create a `GenderedSheep`
-with an additional field. In Julia there is no inheritance - only subtyping of
-abstract types.
-As you cannot inherit from a concrete type in Julia, we will have to create a
-wrapper type and forward all necessary methods. This is typically a sign of
-unfortunate type tree design and should be avoided, but if you want to extend a
-code base by a type that was not thought of during the inital design, this
-forwarding of methods is a nice work-around.  Our `GenderedSheep` type will
-simply contain a classic `sheep` and a `gender` field
+
+In this homework we will extend our agent simulation with more powerful callbacks
+and add a second type of grass. You can use the following snippet from the labs
+as a base simulation script
 ```julia
-struct GenderedSheep{T<:Real} <: AbstractAnimal
-    sheep::Sheep{T}
-    gender::Symbol
-end
-GenderedSheep(E,ΔE,pr,pf,gender) = GenderedSheep(Sheep(E,ΔE,pr,pf),gender)
+n_grass       = 500
+regrowth_time = 17.0
+
+n_sheep         = 100
+Δenergy_sheep   = 5.0
+sheep_reproduce = 0.5
+sheep_foodprob  = 0.4
+
+n_wolves       = 8
+Δenergy_wolf   = 17.0
+wolf_reproduce = 0.03
+wolf_foodprob  = 0.02
+
+gs = [Grass(true,regrowth_time,regrowth_time) for _ in 1:n_grass]
+ss = [Sheep(2*Δenergy_sheep,Δenergy_sheep,sheep_reproduce, sheep_foodprob) for _ in 1:n_sheep]
+ws = [Wolf(2*Δenergy_wolf,Δenergy_wolf,wolf_reproduce, wolf_foodprob) for _ in 1:n_wolves]
+
+w = World(vcat(gs,ss,ws))
+
+cbs = [w->(@info agent_count(w))]
+simulate!(w, 10, callbacks=cbs)
 ```
 
-```@repl load_ecosystem
-GenderedSheep(1.0,1.0,1.0,1.0,:female)
-```
-
-In our case, the methods that have to be forwarded are `agent_step!`,
-`reproduce!`, `eats` and `eat!`.  The custom reproduction behaviour will of
-course be taken care of by a `reproduce!` function that does not just
-forward but also contains specialized behaviour for the `GenderedSheep`.
-
-
+## Smarter callbacks through closures
+Often we want our callbacks to be executed only every $N$th step. This can be
+used to get less verbose logging or e.g. to write out checkpoints of your
+simulation.
 ```@raw html
 <div class="admonition is-category-homework">
-<header class="admonition-header">Homework</header>
+<header class="admonition-header">Homework (1 point)</header>
 <div class="admonition-body">
 ```
-Forward the accessors `energy`, `energy!`, `reproduction_prob`, and `food_prob`,
-as well as our core methods `eats` and `eat!` to `Sheep`.
+Implement a function `every_nth(f::Function,n::Int)` that takes a function and
+uses a closure to construct another function that only calls `f` every `n`
+calls to the function `fn` that is returned by `every_nth(f,n)`.
+
+You can use `every_nth` to log and save the agent count only every couple of
+steps of your simulation. Using `every_nth` will look like this:
+```@repl load_ecosystem
+# `@info agent_count(w)` is executed only every 5th call to logcb(w)
+logcb = every_nth(w->(@info agent_count(w)), 5);
+
+for i in 1:10
+    logcb(w)
+end
+```
 ```@raw html
 </div></div>
-<details class = "solution-body">
+<details class = "solution-body" hidden>
 <summary class = "solution-header">Solution:</summary><p>
 ```
 ```julia
-energy(g::GenderedSheep) = energy(g.sheep)
-energy!(g::GenderedSheep, ΔE) = energy!(g.sheep, ΔE)
-reproduction_prob(g::GenderedSheep) = reproduction_prob(g.sheep)
-food_prob(g::GenderedSheep) = food_prob(g.sheep)
-
-eats(::GenderedSheep, ::Grass) = true
-eats(::GenderedSheep, ::PoisonedGrass) = true
-eat!(s::GenderedSheep, g::AbstractPlant, w::World) = eat!(s.sheep, g, w)
+function every_nth(f::Function, n::Int)
+    i = 1
+    function callback(w::World)
+        # display(i) # comment this out to see how the counter increases
+        if i == n
+            f(w)
+            i = 1
+        else
+            i += 1
+        end
+    end
+end
 ```
 ```@raw html
 </p></details>
 ```
 
+
+## Poisoned grass
+
+In the previous exercises you have seen that multiple dispatch makes it easy to
+add new methods to a given type (much easier than in OOP!).  In this exercise
+you will see that it is just as easy to add a completely new type to our
+hierarchy and reuse the methods that we have already defined (similar to
+inheritance in OOP).
+
+
+As an example, lets implement a `PoisonedGrass` which will *decrease* the
+energy of a sheep that ate it.
+Apart from the accessors (like `energy`, `energy!`, etc.) we have a few
+essential functions: `agent_step!`, `reproduce!`, `find_food`, `eats`,
+and `eat!`. If you look at their type signatures you can see that the first
+three already operate on any `AbstractAnimal`/`AbstractPlant`. This means that
+for any subtype that has the expected fields (i.e. `energy`,
+`reproduction_prob`, etc.) these functions already work.
+
+Therefore, the only methods we have to implement for a new animal or plant are the `eats`
+and `eat!` methods because they are specific for each concrete type.
+
 ```@raw html
 <div class="admonition is-category-homework">
-<header class="admonition-header">Homework</header>
+<header class="admonition-header">Homework (2 points)</header>
 <div class="admonition-body">
 ```
-Implement the `reproduce!` method for the `GenderedSheep`.  Note that you first
-have to find another sheep of opposite gender in your `World`, and only if you
-can find one you can reproduce.
+Define a new subtype of `AbstractPlant` called `PoisonedGrass` which will
+decrease a sheep's energy by $\Delta E$ if it is eaten.
+
+Implement the functions `eat!` and `eats` in order to make the simulation work
+with `PoisonedGrass`.
+
+How much poisoned grass can you add to the simulation without wiping out the
+sheep population?
 ```@raw html
 </div></div>
-<details class = "solution-body">
+<details class = "solution-body" hidden>
 <summary class = "solution-header">Solution:</summary><p>
 ```
 ```julia
-mates(a::AbstractPlant, ::GenderedSheep) = false
-mates(a::AbstractAnimal, ::GenderedSheep) = false
-mates(g1::GenderedSheep, g2::GenderedSheep) = g1.gender != g2.gender
-function find_mate(g::GenderedSheep, w::World)
-    ms = filter(a->mates(a,g), w.agents)
-    isempty(ms) ? nothing : sample(ms)
+mutable struct PoisonedGrass <: AbstractPlant
+    fully_grown::Bool
+    regrowth_time::Int
+    countdown::Int
 end
+PoisonedGrass(t) = PoisonedGrass(false, t, rand(1:t))
 
-function reproduce!(s::GenderedSheep, w::World)
-    m = find_mate(s,w)
-    if !isnothing(m)
-        s.sheep.energy /= 2
-        # TODO: should probably mix s/m
-        push!(w.agents, deepcopy(s))
+function eat!(sheep::Sheep, grass::PoisonedGrass, w::World)
+     if grass.fully_grown
+        grass.fully_grown = false
+        sheep.energy -= sheep.Δenergy
     end
 end
+
+eats(::Sheep,::PoisonedGrass) = true
 ```
 ```@raw html
 </p></details>

@@ -30,7 +30,7 @@ different amount of points:
 
 | Homework | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   | 9   | 10  | 11  | 12  | 13  |
 | :--      | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| Points   | -   | 2   | -   | -   | -   | -   | -   | -   | -   | -   | -   | -   | -   |
+| Points   | -   | 2   | 3   | -   | -   | -   | -   | -   | -   | -   | -   | -   | -   |
 
 
 ## What will we emphasize? / What will you learn?
