@@ -18,7 +18,7 @@ low level implementations.
 The [Julia](https://docs.julialang.org/en/v1/) programming language is designed
 with exactly those requirements of scientific computing in mind.  In this
 course we will show you how to make use of the tools and advantages that
-*jit-compiled* Julia provides over *dynamic*, high-level languages like Phython
+*jit-compiled* Julia provides over *dynamic*, high-level languages like Python
 or lower level languages like C++.
 
 ## What will you learn?
