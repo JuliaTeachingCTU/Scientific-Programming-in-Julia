@@ -256,10 +256,97 @@ You can verify that the above general function can be compiled to a performant c
 .
 
 ### More on Type hierarchy and Parametric types
-How types and functions comes together and what is the role of their parametrisation?
+How types and functions comes together and what is the role of their parametrisation? 
+
+As we have discussed earlier, (i) each variable is associated with a concrete type and (ii) each function can specify type of arguments it accepts. For each call of a function `f` with parameters `a,b,c,...`, Julia looks for the a function with name `f` that "accepts" parameters of corresponding types. This type-matching can lead to 
+* success, when Julia founds a function which it can use,
+* Julia will not find any methods with a correct signature
+* There will be ambiguity.
+
+Let's start with some simple examples:
+```julia
+foo(a::Vector{Int}) = println("Vector{Int}")
+foo(a::AbstractVector{Int}) = println("AbstractVector{Int}")
+foo(a::AbstractVector{Real}) = println("AbstractVector{Real}")
+foo(a::AbstractVector{<:Real}) = println("AbstractVector{<:Real}")
+```
+
+Now which method will Julia
+```
+foo([1,2,3,4])
+foo(Real[1,2,3,6.0])
+foo([1,2,3,6.0])
+```
 
 
+## Notes from a Package development: improving engineering quality & latency
 
+* A *function* refers to a set of functions for different combination of type parameters. A *methods* defining different behavior for different type of arguments are called specializations.
+For example
+```julia
+move(a::Position, b::Position) = Position(a.x + b.x, a.y + b.y)
+move(a::Vector{<:Position}, b::Vector{<:Position}) = move.(a,b)
+```
+`move` refers to function, where `move(a::Position, b::Position)` and `move(a::Vector{<:Position}, b::Vector{<:Position})` are methods. When different behavior on different types is defined by a programmer, as shown above, we call about *implementation specialization*. There is another for of specialization, called *compiler specialization*, which occurs when the compiler generates different functions for you from a single method. For example for 
+```julia
+struct Position{T}
+  x::T
+  y::T
+end
+move(Position(1,1), Position(2,2))
+move(Position(1.0,1.0), Position(2.0,2.0))
+```
+the compiler has to generate two methods, since in the first case it will be adding `Int64`s while in the latter it will be adding `Float64`s (and it needs to use different intrinsics, which you can check using `@code_native  move(Position(1,1), Position(2,2))` and `@code_native move(Position(1.0,1.0), Position(2.0,2.0))`).
+
+## Type inference
+Since the compiler needs to know, which functions / methods the compiler will use, it needs to know type. The process, which takes block of code and identify all types is called *type inference*, and it is an essential part of Julia's speed. If Julia can infer all types in the code, it can compile everything to a special method, which can be fast. If the type inference fails, Julia will detect types dynamically during execution of the function, and the code will be slow. 
+
+
+Compile function is a "blob" of native code living in a particular memory location. Julia needs to pick a right block corresponding to a function with particular type of parameters.
+
+Calling a function involves
+* preparing parameters
+* finding a right block corresponding to a function with particular type of parameters.
+The process can be made during runtime (when code is executing) or during compile time (when code is compiled) and everything in between.
+
+An interesting intermediate is called Union-Splitting, which happends when there is a little bit of uncertainty. Julia will do something like
+```julia
+argtypes = typeof(args)
+push!(execution_stack, args)
+if T == Tuple{Int, Bool}
+  @goto compiled_blob_1234
+else # the only other option is Tuple{Float64, Bool}
+  @goto compiled_blob_1236
+end
+``` 
+
+Important structures. `Core.MethodInstance`s contains type_inferred code, which is the code with all variables used in the method anotated. For example
+```julia
+@code_typed move(a, δ)
+```
+and see the difference to 
+```julia
+@code_lowered move(a, δ)
+```
+Since type-inference can be very time consuming, storing these parts can be important.
+
+The second structure is `Core.CodeInstances` which contains the compiled code, the "output" of `@code_native move(a, δ)`.
+
+Since Julia's compiler is written in Julia, you can inspect these "dictionaries".
+```julia
+methods(move)
+using MethodAnalysis
+methodinstances(move) # shows method instances
+```
+
+
+## Backedges
+Julia allows you to redefine a method. When this happens, all compiled code that uses this method needs to be invalidated (it is not recompiled immediately, it is lazily invalidated). To know, what has to be invalidated, each `MethodInstance` keeps track of all compile-time callers. These are the backedges. See `?Core.MethodInstance`. This means that when you add a new specialization of a function, some already compiled code might be invalidation (marked as not-compiled), and when Julia would like to call this code again, it has to compile it.
+
+In precompilation, Julia caches `MethodInstance`s.
+
+
+## end of notes
 
 An interesting feature of Julia's type system is parametrisation of types, which we have slightly touched above. `Abstract` and `Composite` types can be parametrised, where the parameter can be other type, sets of types, or or a value of any bits type.
 
