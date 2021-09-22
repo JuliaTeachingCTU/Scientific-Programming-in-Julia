@@ -1,4 +1,4 @@
-# Lab 3: Predator-Prey Agents
+# [Lab 3: Predator-Prey Agents](@id lab03)
 
 ```@setup load_ecosystem
 using Scientific_Programming_in_Julia
