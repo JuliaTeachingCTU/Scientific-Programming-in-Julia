@@ -14,6 +14,42 @@ final result could look something like the plot below.
 
 As you can see, in this model, the wolves unfortunately died out :(.
 
+## Agent simulations
+
+In an agent simulation we assume that we have a bunch of agents (in our case
+grass, sheep, and wolves) that act in some environment (we will call it a
+*world*). At every time-step each agent will perform a *step* in which it
+performs some of the actions that it can take. For example, a *grass* agent will grow
+a little at every step and a *sheep* agent will try to find some grass and
+reproduce. The time step of an agent is represented by the `agent_step!` in the
+pseudo code below.
+```
+# simulate N steps:
+for i in 1:N
+    for agent in agents
+        agent_step!(agent, world)
+
+# agent_step! for grass:
+if not fully_grown
+    grow
+else
+    do nothing
+
+# agent_step! for animals:
+1. loose energy
+2. find some food with food_prob
+3. eat
+4. die if no more energy
+5. reproduce with reproduction_prob
+```
+In the course of this lab you will implement a simple world, the three
+different agent types, and functions that specify which agent can eat what (step 3),
+as well as the search for food (step 2).
+In the [next lab](@ref lab03) you will finish the agent simulation by implementing
+the complete `agent_step!` function which grows grass, and lets sheep and
+wolves eat each other as well as reproduce.
+
+
 ## Creating the world
 To get started we need a type hierarchy. In order to be able to extend this model
 in later labs we will create an `AbstractAgent` that acts as the root of our tree.
@@ -31,8 +67,10 @@ abstract type AbstractPlant <: AbstractAgent end
 The first concrete type we implement is the basis of life in our simulation and
 source of all energy: `Grass`.
 Our `Grass` will be growing over time and it will need a certain amount of time
-steps to fully grow before it can be eaten. This has to be reflected in the
-fields of our grass struct:
+steps to fully grow before it can be eaten.
+We will realise this with a `countdown` field. At every step of the simulation
+the `countdown` will decrease until it reaches zero at which point the grass
+is fully grown.  This has to be reflected in the fields of our grass struct:
 ```julia
 mutable struct Grass <: AbstractPlant
     fully_grown::Bool
@@ -42,10 +80,12 @@ end
 # constructor for grass with random growth countdown
 Grass(t) = Grass(false, t, rand(1:t))
 ```
-Note that `Grass` is a subtype of `AbstractPlant`. Let us assume that all plants
-have at least the fields `fully_grown`, `regrowth_time`, and `countdown`,
-because all plants need some time to grow. If this is the case we can define
-a common interface for all `AbstractPlant`s.
+Note that `Grass` is a mutable type because e.g. the `countdown` field will
+change during the simulation.
+Let us assume that all plants have at least the fields `fully_grown`,
+`regrowth_time`, and `countdown`, because all plants need some time to grow. If
+this is the case we can make `Grass` a subtype of `AbstractPlant` (via `<:`) and
+define a common interface for all `AbstractPlant`s.
 ```julia
 # get field values
 fully_grown(a::AbstractPlant) = a.fully_grown
@@ -57,7 +97,7 @@ fully_grown!(a::AbstractPlant, b::Bool) = a.fully_grown = b
 countdown!(a::AbstractPlant, c::Int) = a.countdown = c
 incr_countdown!(a::AbstractPlant, Δc::Int) = countdown!(a, countdown(a)+Δc)
 
-# reset plant couter once its grown
+# reset plant couter once it's grown
 reset!(a::AbstractPlant) = a.countdown = a.regrowth_time
 ```
 
@@ -90,11 +130,15 @@ function Base.show(io::IO, w::World)
     map(a->println(io,"  $a"),w.agents)
 end
 ```
+Note that the `World` struct is not mutable because it only holds a pointer to
+the `agents` vector. Hence, mutating the contents of the vector does not mutate
+the world. However, changing the pointer to a completely different vector would
+mutate the struct but this is not what we want in this case.
 ```@raw html
 </p></details>
 ```
 
-Now you should be able to create a world some grass in it that will soon be
+Now you should be able to create a world with some grass in it that will soon be
 eaten by sheep:
 ```@repl load_ecosystem
 grass = Grass(5)
@@ -146,6 +190,8 @@ special methods for each new type that we introduce.
 ```
 Implement a function `eat!(::Sheep, ::Grass, ::World)` which increases the sheep's
 energy by $\Delta E$ and sets `fully_grown` of the grass to `false`.
+Note that you do not yet need the world in this function. It is needed later
+for the case of wolves eating sheep.
 ```@raw html
 </div></div>
 <details class = "solution-body">
@@ -165,8 +211,8 @@ end
 Below you can see how a fully grown grass is eaten by a sheep.  The sheep's
 energy changes and the `fully_grown` field of the grass becomes `false`.
 ```@repl load_ecosystem
-grass = Grass(true,5.0,5.0);
-sheep = Sheep(10.0,5.0,0.1,0.1);
+grass = Grass(true,5,5)
+sheep = Sheep(10.0,5.0,0.1,0.1)
 world = World([grass, sheep])
 eat!(sheep,grass,world);
 world
@@ -175,7 +221,7 @@ Note that the order of the arguments has a meaning here. Calling
 `eat!(grass,sheep,world)` results in a `MethodError` which is great, because
 `Grass` cannot eat `Sheep`.
 ```@repl load_ecosystem
-grass = Grass(true,5.0,5.0);     # hide
+grass = Grass(true,5,5);         # hide
 sheep = Sheep(10.0,5.0,0.1,0.1); # hide
 world = World([grass, sheep]);   # hide
 eat!(grass,sheep,world);
@@ -221,7 +267,7 @@ kill_agent!(a::AbstractAnimal, w::World) = deleteat!(w.agents, findall(x->x==a, 
 ```
 With a correct `eat!` method you should get results like this:
 ```@repl load_ecosystem
-grass = Grass(true,5.0,5.0);
+grass = Grass(true,5,5);
 sheep = Sheep(10.0,5.0,0.1,0.1);
 wolf  = Wolf(20.0,10.0,0.1,0.1);
 world = World([grass, sheep, wolf])
@@ -236,20 +282,24 @@ The sheep is removed from the world and the wolf's energy increased by $\Delta E
 The next mechanism in our simulation models an animal's search for food.  For
 example, a sheep can only try to eat if the world currently holds some grass.
 The process of finding food for a given animal will be implemented by the
-function `find_food(a::AbstractAnimal, ::World)`. This function will either
-return `nothing` or another animal that can be eaten by `a` with the given food
-probability $p_f$.
+function `find_food(s::Sheep, ::World)`.
+The food probability $p_f$ is the probability that a sheep finds food at a
+given step of the simulation.  Hence, `find_food` will either return `nothing`
+(if the sheep does not find grass) or sample a random `Grass` from all
+available `Grass` agents.
 
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Implement the method `find_food(::Sheep, ::World)` which returns either a
-`Grass` (sampled randomly from all `Grass`es with the given food probability
-$p_f$) or returns `nothing`.
 
-Hint: You can use `StatsBase.sample` to choose a random element from a vector.
+Implement the method `find_food(::Sheep, ::World)` which first returns either a
+`Grass` (sampled randomly from all `Grass`es) with the given food probability
+$p_f$ or returns `nothing`.
+
+Hint: You can use `filter` and `isa` to filter for a certain type and
+`StatsBase.sample` to choose a random element from a vector.
 
 ```@raw html
 </div></div>
@@ -272,10 +322,10 @@ To test your function your can create sheep with different $p_f$.
 A sheep with $p_f=1$ will always find some food if there is some in the world,
 so you should get a result like below.
 ```@repl load_ecosystem
-grass = Grass(true,5.0,5.0);
+grass = Grass(true,5,0);
 sheep = Sheep(10.0,5.0,1.0,1.0);
 wolf  = Wolf(20.0,10.0,1.0,1.0);
-world = World([grass, sheep, wolf]);
+world = World([grass, sheep, wolf])
 
 dinner = find_food(sheep,world)
 eat!(sheep,dinner,world);
@@ -319,7 +369,13 @@ end
 ```
 Identify the code duplications between `find_food(::Sheep,::World)` and
 `find_food(::Wolf,::World)` and generalize the function to
-`find_food(::AbstractAnimal, ::World)`
+`find_food(::AbstractAnimal, ::World)`.
+
+Hint: You can introduce a new function `eats(::AbstractAgent)::AbstractAgent`
+which specifies which type of agent eats another type of agent.
+
+Once you have done this, remove
+the two more specific functions for sheep and wolves.
 
 ```@raw html
 </div></div>
@@ -353,7 +409,7 @@ eats(::AbstractAgent,::AbstractAgent) = false
 What happens if you call `eat!(wolf, find_food(wolf,world), world)` and there
 are no sheep anymore? Or if the wolf's $p_f<1$?
 
-Write a simple for-loop that runs `7` iterations of a simple simulation that
+Write a simple for-loop that runs at least 7 iterations of a simple simulation that
 lets a wolf eat one sheep in each iteration with this given world:
 ```julia
 sheep = [Sheep(10.0,5.0,1.0,1.0) for _ in 1:5]

@@ -2,27 +2,9 @@
 In order to participate in the course, everyone should install a recent version of Julia together with some text editor of choice. Furthermore during the course we will introduce some best practices of creating/testing and distributing your own Julia code, for which we will require a GitHub account.
 
 ## Julia IDE
-As there does not exist any proper IDE for Julia yet, there is no one way to install/develop and run Julia. However following the bachelor course *TODO LINK* we will be using currently the most widely adopted way to code in Julia and that is in combination with VSCode editor. If you are still rocking Windows machine there is a great guide on getting such setup working on the bachelor course. *TODO LINK or COPY* When deciding which version to download we recommend the latest stable release as of August 2021, `1.6.x`, which has some quality of life improvements mainly with regards to exception readability. This is however not a strict requirement and any text editor with the option to send code to the terminal, such as Sublime Text, Vim+tmux or Atom will suffice (a major convenience when dealing with programming languages that support interactivity through a Read-Eval-Print Loop - REPL).
+There is no one way to install/develop and run Julia, which may be strange users coming from MATLAB, but for users of general purpose languages such as Python, C++ this is quite common. As of 2020 the most widely adopted way is in combination with the [VSCode](https://code.visualstudio.com/) editor, for which there is an officially supported Julia [extension](https://www.julia-vscode.org/). Moreover this setup is the same as with our bachelor [course](https://github.com/JuliaTeachingCTU/Julia-for-Optimization-and-Learning), which has provided an extensive tutorial mainly in case of installation on Windows machines, [here](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/installation/julia/). If you are using any other supported platform, you can use the guide as well replacing some steps with your system specifics. When deciding which version to download we recommend the latest stable release as of August 2021, `1.6.x`, which has some quality of life improvements mainly with regards to readability. 
+
+Note that this setup is not a strict requirement for the lectures/labs and any other text editor with the option to send code to the terminal, such as Sublime Text, Vim+tmux or Atom will suffice (a major convenience when dealing with programming languages that support interactivity through a Read-Eval-Print Loop - REPL).
 
 ## GitHub registration & Git setup
-If you are familiar with git and GitHub, we recommend following the guide at *TODO LINK or COPY* to create your own GitHub account and install a git client.
-
-
-## Advanced setup (not required)
-More advanced users can experiment with the following setups on Windows and/or Linux/MacOS platforms. More specifically we believe that knowing how to run any language inside a Docker container helps to understand the problem of dependencies and reproducible code in more depth than with a simple local installation. Moreover given the convenience of remote development in VSCode both of the setups feel almost like a local installation.
-
-### Julia in WSL
-This setup is specific to Windows 10, which as of 2016 allows to run any Linux distribution almost natively on top of the Windows kernel.
-
-### Julia in Docker
-- Install Docker client
-- Setup the permissions
-- Build a simple docker with Julia Hello world
-- Caveats around such setup - GUI, dependencies, file system, running as root
-
-
-
-
-
-
-
+As one of the goals of the course is writing code that can be distributed to others, we require a GitHub account, which you can create [here](https://github.com/) (unless you already have one). In order to interact with GitHub repositories, we will be using `git` client. For installation instruction (Windows only) see the section in the bachelor [course](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/dev/installation/git/).

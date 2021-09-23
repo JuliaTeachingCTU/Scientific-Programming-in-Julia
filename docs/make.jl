@@ -117,7 +117,6 @@ makedocs(;
         "12: Uncertainty propagation in ODE" => lecture_12,
         "13: Learning ODE from data" => lecture_13,
         "How to submit homeworks" => "how_to_submit_hw.md",
-        "How To ..." => "howto.md", ## temporary
     ],
 )
 
