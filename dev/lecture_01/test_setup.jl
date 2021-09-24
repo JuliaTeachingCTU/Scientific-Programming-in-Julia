@@ -10,15 +10,13 @@ name, mail = readchomp(`git config user.name`), readchomp(`git config user.email
 println("Git Config Username: ", length(name) > 0 ? "✔" : "✗")
 println("Git Config Email: ", length(mail) > 0 ? "✔" : "✗")
 
-envdir = "L1Env"
-s = if !isdir(envdir)
+s = try
 	using Pkg
-
-	Pkg.generate(envdir)
-	Pkg.activate(envdir)
+	Pkg.activate(".")
 	Pkg.add("BenchmarkTools")
 	true
-else
+catch e
+	@warn e
 	false
 end
 
