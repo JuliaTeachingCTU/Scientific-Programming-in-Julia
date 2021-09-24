@@ -3,6 +3,11 @@
 In this lab you will continue working on your agent simulation. If you did not
 manage to finish the homework, do not worry, you can use the code below which
 contains all the functionality we developed in the lab.
+
+```@raw html
+<details class = "solution-body">
+<summary class = "solution-header">Solution of Lab 2:</summary><p>
+```
 ```@example hw02
 using StatsBase
 
@@ -133,6 +138,9 @@ function reproduce!(a::A, w::World) where A<:Animal
     w.max_id = new_id
 end
 nothing # hide
+```
+```@raw html
+</p></details>
 ```
 
 ## Counting Agents
