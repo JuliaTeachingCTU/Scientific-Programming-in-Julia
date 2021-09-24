@@ -39,7 +39,7 @@ or
 As always there are multiple options for the `circlemat` function definition. Here we show the two, that we have foreshadowed in the homework hints:
 
 - longer version using incremental definition in for loop
-```@repl 1
+```@repl lab01_base
 function circlemat(n)
     A = zeros(Int, n, n) # creates nxn matrix of zeros
     for i in 1:n
@@ -55,14 +55,14 @@ circlemat(10)
 ```
 
 - short version with comprehension and ternary operator
-```@repl 1
+```@repl lab01_base
 circlemat(n) = [(i == j-1 && j > 1) || (i == n && j == 1) || (i == j+1 && j < n) || (i == 1 && j == n) ? 1 : 0 for i in 1:n, j in 1:n]
 circlemat(10)
 ```
 Both version should give the same answer.
 
 Extending the original `polynomial` to matrix valued point `x = A`, requires only small changes to the initialization of `accumulator` variable. Running directly the original code fails on `MethodError`, because julia cannot add a matrix to an integer.
-```@repl 1
+```@repl lab01_base
 function polynomial(a, x::AbstractMatrix) # we are limiting this function to everything that is subtype of AbstractMatrix
     accumulator = zeros(eltype(x), size(x)) # zeros of the same type and size as `x`
     for i in length(a):-1:1
@@ -72,18 +72,18 @@ function polynomial(a, x::AbstractMatrix) # we are limiting this function to eve
 end
 ```
 
-```@repl 1
+```@repl lab01_base
 A = circlemat(10) # matrix of size 10x10
 coeffs = ones(4)  # coefficients of polynomial
 polynomial(coeffs, A)
 ```
 
 The other option is to use the more abstract version that we have defined to work with generators/iterators. For example
-```@repl generator
+```@repl lab01_generator
 polynomial(a, x) = sum(ia -> x^(ia[1]-1) * ia[2], enumerate(a))
 ```
 works out of the box
-```@repl generator
+```@repl lab01_generator
 circlemat(n) = [(i == j-1 && j > 1) || (i == n && j == 1) || (i == j+1 && j < n) || (i == 1 && j == n) ? 1 : 0 for i in 1:n, j in 1:n] #hide
 A = circlemat(10) #hide
 coeffs = ones(4)  #hide
@@ -100,7 +100,7 @@ polynomial(coeffs, A)
 <header class="admonition-header">Exercise (voluntary)</header>
 <div class="admonition-body">
 ```
-Install `GraphRecipes` and `Plots` packages into our `./L1Env/` environment defined during the lecture and figure out, how to plot the graph defined by adjacency matrix `A` from the homework.
+Install `GraphRecipes` and `Plots` packages into the environment defined during the lecture and figure out, how to plot the graph defined by adjacency matrix `A` from the homework.
 
 **HINTS**:
 - There is help command inside the the pkg mod of the REPL. Type `? add` to find out how to install a package. Note that both pkgs are registered.
@@ -112,9 +112,9 @@ Install `GraphRecipes` and `Plots` packages into our `./L1Env/` environment defi
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
-Activate `L1Env` environment in pkg mode, if it is not currently active.
+Activate the environment in pkg mode, if it is not currently active.
 ```julia
-pkg> activate ./L1Env
+pkg> activate .
 ```
 Installing pkgs is achieved using the `add` command. Running `] ? add` returns a short piece of documentation for this command:
 ```julia
@@ -141,11 +141,11 @@ pkg> status
 ```
 
 The plotting itself as easy as calling the `graphplot` function on our adjacency matrix.
-```@repl 1
+```@repl lab01_base
 using GraphRecipes, Plots
 graphplot(A)
 ```
-```@example 1
+```@example  lab01_base
 graphplot(A) #hide
 ```
 
