@@ -1,87 +1,75 @@
 # [Lab 3: Predator-Prey Agents](@id lab03)
 
-```@setup load_ecosystem
-using Scientific_Programming_in_Julia
-using Scientific_Programming_in_Julia.Ecosystem: eat!, find_food, count
-```
+In this lab we will look at two different ways of extending our agent
+simulation to take into account that animals can have two different sexes:
+*female* and *male*.
 
-In this lab we will finalize our predator-prey agent simulation such that we
-can simulate a number of steps and get a plot like below.
+In the first part of the lab you will re-use the code from [lab 2](@ref lab02)
+and create a new type of sheep (`⚥Sheep`) which has an additional field *sex*.
+In the second part you will redesign the type hierarchy from scratch using
+parametric types to make this agent system much more flexible and *julian*.
 
-![img](pred-prey.png)
+## Part I: Female & Male Sheep
 
+For your convenience, the code from lab 2 that you will need in the first part
+of this lab can be found below.
 
-## Reproduction
-Currently our animals can only eat. In our simulation we also want them to
-reproduce. We will do this by adding a `reproduce!` method to `AbstractAnimal`.
 ```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Write a function `reproduce!` that takes an `AbstractAnimal` and a `World`.
-Reproducing will cost an animal half of its energy and then add an identical copy of
-the given animal to the world.
-```@raw html
-</div></div>
 <details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
+<summary class = "solution-header">Solution of Lab 2:</summary><p>
 ```
-```julia
-function reproduce!(a::AbstractAnimal, w::World)
-    energy!(a, energy(a)/2)
-    push!(w.agents, deepcopy(a))
+```@example lab03-nonparametric
+using StatsBase
+
+abstract type Agent end
+abstract type Animal <: Agent end
+abstract type Plant <: Agent end
+
+mutable struct World{A<:Agent}
+    agents::Dict{Int,A}
+    max_id::Int
 end
-```
-```@raw html
-</p></details>
-```
+function World(agents::Vector{<:Agent})
+    World(Dict(id(a)=>a for a in agents), maximum(id.(agents)))
+end
 
-
-## One step at a time
-One iteration of our simulation will be carried out by a function called
-`agent_step!(::AbstractAgent, ::World)`. Implement one method for `AbstractPlant`s
-and one for `AbstractAnimal`s.
-
-An `AbstractPlant` will grow if it is not fully grown (i.e. decrease growth
-counter).  If the growth counter has reached zero, the `fully_grown` flag has
-to be set to `true` and the counter reset to `regrowth_time`.
-
-An `AbstractAnimal` will loose one unit of energy in every step.  Then it will
-try to find food and eat. After eating, if its energy is less than zero, the
-animal dies.  If it is still alive, it will try to reproduce with the
-probablitiy $p_r$.
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Implement the function `agent_step!` with specialized methods for `AbstractAnimal`s
-and `AbstractPlant`s.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```julia
-function agent_step!(a::AbstractPlant, w::World)
-    if !fully_grown(a)
-        if countdown(a) <= 0
-            fully_grown!(a,true)
-            reset!(a)
-        else
-            incr_countdown!(a,-1)
-        end
+# optional: you can overload the `show` method to get custom
+# printing of your World
+function Base.show(io::IO, w::World)
+    println(io, typeof(w))
+    for (_,a) in w.agents
+        println(io,"  $a")
     end
-    return a
 end
 
-function agent_step!(a::AbstractAnimal, w::World)
+function world_step!(world::World)
+    # make sure that we only iterate over IDs that already exist in the 
+    # current timestep this lets us safely add agents
+    ids = deepcopy(keys(world.agents))
+
+    for id in ids
+        # agents can be killed by other agents, so make sure that we are
+        # not stepping dead agents forward
+        !haskey(world.agents,id) && continue
+
+        a = world.agents[id]
+        agent_step!(a,world)
+    end
+end
+
+function agent_step!(a::Plant, w::World)
+    if size(a) != max_size(a)
+        grow!(a)
+    end
+end
+
+function agent_step!(a::Animal, w::World)
     incr_energy!(a,-1)
-    dinner = find_food(a,w)
-    eat!(a, dinner, w)
-    if energy(a) < 0
+    if rand() <= food_prob(a)
+        dinner = find_food(a,w)
+        eat!(a, dinner, w)
+    end
+    if energy(a) <= 0
         kill_agent!(a,w)
         return
     end
@@ -90,111 +78,89 @@ function agent_step!(a::AbstractAnimal, w::World)
     end
     return a
 end
+
+mutable struct Grass <: Plant
+    id::Int
+    size::Int
+    max_size::Int
+end
+
+mutable struct Sheep <: Animal
+    id::Int
+    energy::Float64
+    Δenergy::Float64
+    reproduction_prob::Float64
+    food_prob::Float64
+end
+
+mutable struct Wolf <: Animal
+    id::Int
+    energy::Float64
+    Δenergy::Float64
+    reproduction_prob::Float64
+    food_prob::Float64
+end
+
+id(a::Agent) = a.id  # every agent has an ID so we can just define id for Agent here
+
+Base.size(a::Plant) = a.size
+max_size(a::Plant) = a.max_size
+grow!(a::Plant) = a.size += 1
+
+# get field values
+energy(a::Animal) = a.energy
+Δenergy(a::Animal) = a.Δenergy
+reproduction_prob(a::Animal) = a.reproduction_prob
+food_prob(a::Animal) = a.food_prob
+
+# set field values
+energy!(a::Animal, e) = a.energy = e
+incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
+
+function eat!(a::Sheep, b::Grass, w::World)
+    incr_energy!(a, size(b)*Δenergy(a))
+    kill_agent!(b,w)
+end
+function eat!(wolf::Wolf, sheep::Sheep, w::World)
+    incr_energy!(wolf, energy(sheep)*Δenergy(wolf))
+    kill_agent!(sheep,w)
+end
+eat!(a::Animal,b::Nothing,w::World) = nothing
+
+kill_agent!(a::Plant, w::World) = a.size = 0
+kill_agent!(a::Animal, w::World) = delete!(w.agents, id(a))
+
+function find_food(a::Animal, w::World)
+    as = filter(x->eats(a,x), w.agents |> values |> collect)
+    isempty(as) ? nothing : sample(as)
+end
+
+eats(::Sheep,::Grass) = true
+eats(::Wolf,::Sheep) = true
+eats(::Agent,::Agent) = false
+
+function reproduce!(a::A, w::World) where A<:Animal
+    energy!(a, energy(a)/2)
+    a_vals = [getproperty(a,n) for n in fieldnames(A) if n!=:id]
+    new_id = w.max_id + 1
+    â = A(new_id, a_vals...)
+    w.agents[id(â)] = â
+    w.max_id = new_id
+end
+nothing # hide
 ```
 ```@raw html
 </p></details>
 ```
 
-## Simulate the world!
 
-The last function we need for our simulation just needs to run a number of
-steps. In practice we often want varying logging behaviour which we can
-implement nicely using *callbacks*.
-
-An exemplary callback could just log the agent count at every step:
-```julia
-log_count(w::World) = @info agent_count(w)
-```
-
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Implement a function `simulate!(w::World, iters::Int; callbacks=[])` which
-runs a number of iterations (i.e. `agent_step!`s) and
-applies passed callbacks of the form `callback(::World)` after each
-iteration.
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```julia
-function simulate!(w::World, iters::Int; callbacks=[])
-    for i in 1:iters
-        for a in w.agents
-            agent_step!(a,w)
-        end
-        for cb in callbacks
-            cb(w)
-        end
-    end
-end
-```
-```@raw html
-</p></details>
-```
-Now lets try to run our first fully fledged simulation!  Below you can find
-some parameters that will often result in nice oscillations like in the plot at
-the beginning of the lab.
-```@example load_ecosystem
-n_grass       = 500
-regrowth_time = 17.0
-
-n_sheep         = 100
-Δenergy_sheep   = 5.0
-sheep_reproduce = 0.5
-sheep_foodprob  = 0.4
-
-n_wolves       = 8
-Δenergy_wolf   = 17.0
-wolf_reproduce = 0.03
-wolf_foodprob  = 0.02
-
-gs = [Grass(true,regrowth_time,regrowth_time) for _ in 1:n_grass]
-ss = [Sheep(2*Δenergy_sheep,Δenergy_sheep,sheep_reproduce, sheep_foodprob) for _ in 1:n_sheep]
-ws = [Wolf(2*Δenergy_wolf,Δenergy_wolf,wolf_reproduce, wolf_foodprob) for _ in 1:n_wolves]
-
-w = World(vcat(gs,ss,ws))
-
-# construct a global variable to store agent counts at every step
-counts = Dict(n=>[c] for (n,c) in agent_count(w))
-# callback to save current counts
-function save_agent_count(w::World)
-    for (n,c) in agent_count(w)
-        push!(counts[n],c)
-    end
-end
-
-cbs = [
-    w->(@info agent_count(w)),
-    save_agent_count
-]
-
-simulate!(w, 200, callbacks=cbs)
-
-# plot the count trajectories for every type of agent
-using Plots
-plt = plot()
-for (n,c) in counts
-    plot!(plt, c, label="$n", lw=2)
-end
-plt
-```
-
-
-## Female & Male Sheep
-
-The goal of the last part of the lab is to demonstrate the [forwarding
+The goal of the first part of the lab is to demonstrate the [forwarding
 method](@ref forwarding_method) by implementing a sheep that can have two
 different sexes and can only reproduce with another sheep of opposite sex.
 
 This new type of sheep needs an additonal field `sex::Symbol` which can be either
 `:male` or `:female`.
-In OOP we would now simply inherit from `Sheep` and create a `⚥Sheep`
+In OOP we would simply inherit from `Sheep` and create a `⚥Sheep`
 with an additional field. In Julia there is no inheritance - only subtyping of
 abstract types.
 As you cannot inherit from a concrete type in Julia, we will have to create a
@@ -203,23 +169,23 @@ unfortunate type tree design and should be avoided, but if you want to extend a
 code base by an unforeseen type this forwarding of methods is a nice
 work-around.  Our `⚥Sheep` type will simply contain a classic `sheep` and a
 `sex` field
-```julia
-struct ⚥Sheep{T<:Real} <: AbstractAnimal
-    sheep::Sheep{T}
+```@example lab03-nonparametric
+struct ⚥Sheep <: Animal
+    sheep::Sheep
     sex::Symbol
 end
-⚥Sheep(E,ΔE,pr,pf,sex) = ⚥Sheep(Sheep(E,ΔE,pr,pf),sex)
+⚥Sheep(id,E,ΔE,pr,pf,sex) = ⚥Sheep(Sheep(id,E,ΔE,pr,pf),sex)
+nothing # hide
 ```
 
-```@repl load_ecosystem
-⚥Sheep(1.0,1.0,1.0,1.0,:female)
+```@repl lab03-nonparametric
+⚥Sheep(1,1.0,1.0,1.0,1.0,:female)
 ```
 
-In our case, the methods that have to be forwarded are `agent_step!`,
-`reproduce!`, `eats` and `eat!`.  The custom reproduction behaviour will of
+In our case, the methods that have to be forwarded are the accessors,
+`eats` and `eat!`.  The custom reproduction behaviour will of
 course be taken care of by a `reproduce!` function that does not just
 forward but also contains specialized behaviour for the `⚥Sheep`.
-
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -233,15 +199,16 @@ as well as our core methods `eats` and `eat!` to `Sheep`.
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-```julia
+```@example lab03-nonparametric
+id(g::⚥Sheep) = id(g.sheep)
 energy(g::⚥Sheep) = energy(g.sheep)
 energy!(g::⚥Sheep, ΔE) = energy!(g.sheep, ΔE)
 reproduction_prob(g::⚥Sheep) = reproduction_prob(g.sheep)
 food_prob(g::⚥Sheep) = food_prob(g.sheep)
 
 eats(::⚥Sheep, ::Grass) = true
-eats(::⚥Sheep, ::PoisonedGrass) = true
-eat!(s::⚥Sheep, g::AbstractPlant, w::World) = eat!(s.sheep, g, w)
+eat!(s::⚥Sheep, g::Plant, w::World) = eat!(s.sheep, g, w)
+nothing # hide
 ```
 ```@raw html
 </p></details>
@@ -260,12 +227,12 @@ can find one you can reproduce.
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-```julia
-mates(a::AbstractPlant, ::⚥Sheep) = false
-mates(a::AbstractAnimal, ::⚥Sheep) = false
+```@example lab03-nonparametric
+mates(a::Plant, ::⚥Sheep) = false
+mates(a::Animal, ::⚥Sheep) = false
 mates(g1::⚥Sheep, g2::⚥Sheep) = g1.sex != g2.sex
 function find_mate(g::⚥Sheep, w::World)
-    ms = filter(a->mates(a,g), w.agents)
+    ms = filter(a->mates(a,g), w.agents |> values |> collect)
     isempty(ms) ? nothing : sample(ms)
 end
 
@@ -273,11 +240,143 @@ function reproduce!(s::⚥Sheep, w::World)
     m = find_mate(s,w)
     if !isnothing(m)
         energy!(s, energy(s)/2)
-        # TODO: should probably mix s/m
-        push!(w.agents, deepcopy(s))
+        vals = [getproperty(s.sheep,n) for n in fieldnames(Sheep) if n!=:id]
+        new_id = w.max_id + 1
+        ŝ = ⚥Sheep(new_id, vals..., rand(Bool) ? :female : :male)
+        w.agents[id(ŝ)] = ŝ
+        w.max_id = new_id
     end
 end
+nothing # hide
 ```
+```@raw html
+</p></details>
+```
+
+```@example lab03-nonparametric
+f = ⚥Sheep(1,3.0,1.0,1.0,1.0,:female)
+m = ⚥Sheep(2,4.0,1.0,1.0,1.0,:male)
+w = World([f,m])
+
+for _ in 1:4
+    @show w
+    world_step!(w)
+end
+```
+
+
+## Part II: A new, parametric type hierarchy
+
+You may have thought that the extention of Part I is not the most elegant thing
+you have done in your life. If you did - you were right. There is a way of using
+Julia's powerful type system to create a much more general verion of our agent
+simulation. First, let us not that there are two fundamentally different types
+of agents in our world: animals and plants. All species such as grass, sheep, wolves, etc.
+can be categorized as on of those two.
+Second, animals have two different, immutable sexes.  Thus an animal is
+specified by two things: its *species* and its *sex*.  With this observation
+let's try to redesign the type hiearchy using parametric types to reflect this.
+
+The goal will be a `Plant` type with two parametric types: A `Species` type and
+a `Sex` type. The type of a female wolf would then be `Animal{Wolf,Female}`.
+The new type hiearchy then boils down to
+```@example lab03
+abstract type Species end
+abstract type PlantSpecies <: Species end
+abstract type Grass <: PlantSpecies end
+
+abstract type AnimalSpecies <: Species end
+abstract type Sheep <: AnimalSpecies end
+abstract type Wolf <: AnimalSpecies end
+
+abstract type Sex end
+abstract type Male <: Sex end
+abstract type Female <: Sex end
+
+abstract type Agent{S<:Species} end
+```
+Now we can create a *concrete* type `Animal` with the two parametric types
+and the fields that we already know from lab 2.
+```@example lab03
+mutable struct Animal{A<:AnimalSpecies,S<:Sex} <: Agent{A}
+    id::Int
+    energy::Float64
+    Δenergy::Float64
+    reproduction_prob::Float64
+    food_prob::Float64
+end
+
+# the accessors from lab 2 stay the same
+id(a::Agent) = a.id
+energy(a::Animal) = a.energy
+Δenergy(a::Animal) = a.Δenergy
+reproduction_prob(a::Animal) = a.reproduction_prob
+food_prob(a::Animal) = a.food_prob
+energy!(a::Animal, e) = a.energy = e
+incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
+nothing # hide
+```
+To create an instance of `Animal` we have to specify the parametric type
+while constructing it
+```@example lab03
+Animal{Wolf,Female}(1,5,5,1,1)
+```
+Note that we now automatically have animals of any sex without additional work.
+As a little enjoyable side project, we can overload Julia's `show` method to
+get custom printing behaviour of our shiny new parametric type:
+```@example lab03
+Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
+Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
+Base.show(io::IO, ::Type{Male}) = print(io,"♂")
+Base.show(io::IO, ::Type{Female}) = print(io,"♀")
+function Base.show(io::IO, a::Animal{A,S}) where {A,S}
+    e = energy(a)
+    d = Δenergy(a)
+    pr = reproduction_prob(a)
+    pf = food_prob(a)
+    print(io,"$A$S #$(id(a)) E=$e ΔE=$d pr=$pr pf=$pf")
+end
+
+[Animal{Sheep,Male}(2,2,2,1,1),Animal{Wolf,Female}(1,5,5,1,1)]
+```
+Unfortunately we have lost the convenience of creating plants and animals
+by simply calling their species constructor. For example, `Sheep` is just an
+abstract type that we cannot instantiate. However, we can manually define
+a new constructors that will give us this convenience back.
+This is done in exactly the same way as defining a constructor for a concrete type:
+```julia
+Sheep(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male) = Animal{Sheep,S}(id,E,ΔE,pr,pf)
+```
+Ok, so we have a constructor for `Sheep` now. But what about all the other
+billions of species that I want to define in my huge master project of
+ecosystem simulations?  Do I have to write them all by hand? *Do not
+despair!* Julia has you covered:
+```@example lab03
+function (A::Type{<:AnimalSpecies})(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male)
+    Animal{A,S}(id,E,ΔE,pr,pf)
+end
+
+[Sheep(2,2,2,1,1),Wolf(1,5,5,1,1)]
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Adapt the code from lab 2 to work with our new parametric type hierarchy.
+For this you will have to define a concrete `Plant` type in a similar fashion
+as the new `Animal` type. Additionally you need to adapt at least the methods
+`eat!`, `eats`, `mates`, and `reproduce!`.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+The full solution can be found on Github from the
+[`World`](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/world.jl),
+[`Plant`s](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/plant.jl), and
+[`Animal`s](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/animal.jl).
 ```@raw html
 </p></details>
 ```
