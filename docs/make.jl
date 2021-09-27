@@ -58,6 +58,7 @@ lecture_03 = [
 
 lecture_04 = [
     "Lab" => "./lecture_04/lab.md"
+    "Homework" => "./lecture_04/hw.md"
 ]
 
 lecture_05 = [
@@ -106,7 +107,7 @@ makedocs(;
         "1: Introduction" => lecture_01,
         "2: The power of Type System & multiple dispatch" => lecture_02,
         "3: Design patterns" => lecture_03,
-        "4: Packages development, environments, etc..." => lecture_04,
+        "4: Packages development, Unit Tests & CI" => lecture_04,
         "5: Benchmarking, profiling, and performance gotchas" => lecture_05,
         "6: Language introspection" => lecture_06,
         "7: Macros" => lecture_07,
