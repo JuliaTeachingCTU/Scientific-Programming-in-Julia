@@ -57,9 +57,9 @@ version = "1.16.1+0"
 
 [[ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "bd4afa1fdeec0c8b89dad3c6e92bc6e3b0fec9ce"
+git-tree-sha1 = "e8a30e8019a512e4b6c56ccebc065026624660e8"
 uuid = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-version = "1.6.0"
+version = "1.7.0"
 
 [[ColorSchemes]]
 deps = ["ColorTypes", "Colors", "FixedPointNumbers", "Random"]
@@ -153,7 +153,7 @@ version = "2.2.3+0"
 
 [[EcosystemCore]]
 deps = ["StatsBase"]
-git-tree-sha1 = "43c67ffceba411b843d9d7237d9210e7b075d934"
+git-tree-sha1 = "9b3a25d787bcd5974160b1c7064096b8fb37a88c"
 repo-rev = "main"
 repo-url = "https://github.com/JuliaTeachingCTU/EcosystemCore.jl.git"
 uuid = "3e0d8730-8ea0-4ee2-afe6-c85384c618a2"
@@ -567,9 +567,9 @@ version = "1.0.14"
 
 [[Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "GeometryBasics", "JSON", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs"]
-git-tree-sha1 = "457b13497a3ea4deb33d273a6a5ea15c25c0ebd9"
+git-tree-sha1 = "cfbd033def161db9494f86c5d18fbf874e09e514"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.22.2"
+version = "1.22.3"
 
 [[Preferences]]
 deps = ["TOML"]

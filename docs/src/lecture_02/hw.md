@@ -55,7 +55,7 @@ end
 
 function agent_step!(a::Animal, w::World)
     incr_energy!(a,-1)
-    if rand() <= food_prob(a)
+    if rand() <= foodprob(a)
         dinner = find_food(a,w)
         eat!(a, dinner, w)
     end
@@ -63,7 +63,7 @@ function agent_step!(a::Animal, w::World)
         kill_agent!(a,w)
         return
     end
-    if rand() <= reproduction_prob(a)
+    if rand() <= reprprob(a)
         reproduce!(a,w)
     end
     return a
@@ -79,16 +79,16 @@ mutable struct Sheep <: Animal
     id::Int
     energy::Float64
     Δenergy::Float64
-    reproduction_prob::Float64
-    food_prob::Float64
+    reprprob::Float64
+    foodprob::Float64
 end
 
 mutable struct Wolf <: Animal
     id::Int
     energy::Float64
     Δenergy::Float64
-    reproduction_prob::Float64
-    food_prob::Float64
+    reprprob::Float64
+    foodprob::Float64
 end
 
 id(a::Agent) = a.id  # every agent has an ID so we can just define id for Agent here
@@ -100,8 +100,8 @@ grow!(a::Plant) = a.size += 1
 # get field values
 energy(a::Animal) = a.energy
 Δenergy(a::Animal) = a.Δenergy
-reproduction_prob(a::Animal) = a.reproduction_prob
-food_prob(a::Animal) = a.food_prob
+reprprob(a::Animal) = a.reprprob
+foodprob(a::Animal) = a.foodprob
 
 # set field values
 energy!(a::Animal, e) = a.energy = e

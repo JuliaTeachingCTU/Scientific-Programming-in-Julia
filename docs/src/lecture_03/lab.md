@@ -65,7 +65,7 @@ end
 
 function agent_step!(a::Animal, w::World)
     incr_energy!(a,-1)
-    if rand() <= food_prob(a)
+    if rand() <= foodprob(a)
         dinner = find_food(a,w)
         eat!(a, dinner, w)
     end
@@ -73,7 +73,7 @@ function agent_step!(a::Animal, w::World)
         kill_agent!(a,w)
         return
     end
-    if rand() <= reproduction_prob(a)
+    if rand() <= reprprob(a)
         reproduce!(a,w)
     end
     return a
@@ -89,16 +89,16 @@ mutable struct Sheep <: Animal
     id::Int
     energy::Float64
     Δenergy::Float64
-    reproduction_prob::Float64
-    food_prob::Float64
+    reprprob::Float64
+    foodprob::Float64
 end
 
 mutable struct Wolf <: Animal
     id::Int
     energy::Float64
     Δenergy::Float64
-    reproduction_prob::Float64
-    food_prob::Float64
+    reprprob::Float64
+    foodprob::Float64
 end
 
 id(a::Agent) = a.id  # every agent has an ID so we can just define id for Agent here
@@ -110,8 +110,8 @@ grow!(a::Plant) = a.size += 1
 # get field values
 energy(a::Animal) = a.energy
 Δenergy(a::Animal) = a.Δenergy
-reproduction_prob(a::Animal) = a.reproduction_prob
-food_prob(a::Animal) = a.food_prob
+reprprob(a::Animal) = a.reprprob
+foodprob(a::Animal) = a.foodprob
 
 # set field values
 energy!(a::Animal, e) = a.energy = e
@@ -192,7 +192,7 @@ forward but also contains specialized behaviour for the `⚥Sheep`.
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Forward the accessors `energy`, `energy!`, `reproduction_prob`, and `food_prob`,
+Forward the accessors `energy`, `energy!`, `reprprob`, and `foodprob`,
 as well as our core methods `eats` and `eat!` to `Sheep`.
 ```@raw html
 </div></div>
@@ -203,8 +203,8 @@ as well as our core methods `eats` and `eat!` to `Sheep`.
 id(g::⚥Sheep) = id(g.sheep)
 energy(g::⚥Sheep) = energy(g.sheep)
 energy!(g::⚥Sheep, ΔE) = energy!(g.sheep, ΔE)
-reproduction_prob(g::⚥Sheep) = reproduction_prob(g.sheep)
-food_prob(g::⚥Sheep) = food_prob(g.sheep)
+reprprob(g::⚥Sheep) = reprprob(g.sheep)
+foodprob(g::⚥Sheep) = foodprob(g.sheep)
 
 eats(::⚥Sheep, ::Grass) = true
 eat!(s::⚥Sheep, g::Plant, w::World) = eat!(s.sheep, g, w)
@@ -302,16 +302,16 @@ mutable struct Animal{A<:AnimalSpecies,S<:Sex} <: Agent{A}
     id::Int
     energy::Float64
     Δenergy::Float64
-    reproduction_prob::Float64
-    food_prob::Float64
+    reprprob::Float64
+    foodprob::Float64
 end
 
 # the accessors from lab 2 stay the same
 id(a::Agent) = a.id
 energy(a::Animal) = a.energy
 Δenergy(a::Animal) = a.Δenergy
-reproduction_prob(a::Animal) = a.reproduction_prob
-food_prob(a::Animal) = a.food_prob
+reprprob(a::Animal) = a.reprprob
+foodprob(a::Animal) = a.foodprob
 energy!(a::Animal, e) = a.energy = e
 incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
 nothing # hide
@@ -332,8 +332,8 @@ Base.show(io::IO, ::Type{Female}) = print(io,"♀")
 function Base.show(io::IO, a::Animal{A,S}) where {A,S}
     e = energy(a)
     d = Δenergy(a)
-    pr = reproduction_prob(a)
-    pf = food_prob(a)
+    pr = reprprob(a)
+    pf = foodprob(a)
     print(io,"$A$S #$(id(a)) E=$e ΔE=$d pr=$pr pf=$pf")
 end
 
