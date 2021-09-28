@@ -109,6 +109,11 @@ As you can see, the string that is being displayed contains information about th
 ```@repl lab01_base
 typeof(a)
 ```
+Additionally for collection/iterable types such as `Vector` there is also the `eltype` function.
+```@repl lab01_base
+eltype(a)
+```
+
 In most cases variables store just a reference to a place in memory either stack/heap (exceptions are primitive types such as `Int`, `Float`) and therefore creating an array `a`, "storing" the reference in `b` with an assignment and changing elements of `b`, e.g. `b[1] = 2`, changes also the values in `a`.
 
 ```@raw html
@@ -212,6 +217,17 @@ julia> methods(+)
 ```
 One other notable difference is that these functions allow using both infix and postfix notation `a + b` and `+(a,b)`, which is a specialty of elementary functions such as arithmetic operators or set operation such as `∩, ∪, ∈`. 
 
+The functionality of `methods` is complemented with the reverse lookup `methodswith`, which for a given type returns a list of methods that can be called with it as an argument.
+```julia
+julia> methodswith(Int)
+[1] +(x::T, y::T) where T<:Union{Int128, Int16, Int32, Int64, Int8, UInt128, UInt16, UInt32, UInt64, UInt8} in Base at int.jl:87
+[2] +(c::Union{Int16, Int32, Int64, Int8}, x::BigInt) in Base.GMP at gmp.jl:534
+[3] +(c::Union{Int16, Int32, Int64, Int8}, x::BigFloat) in Base.MPFR at mpfr.jl:384
+[4] +(x::BigFloat, c::Union{Int16, Int32, Int64, Int8}) in Base.MPFR at mpfr.jl:379
+[5] +(x::BigInt, c::Union{Int16, Int32, Int64, Int8}) in Base.GMP at gmp.jl:533
+...
+```
+
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -238,7 +254,7 @@ end
 
 
 ### Calling for help
-Evaluating code interactively is not the only way to infer its functionality, as there is a whole another world inside Julia's REPL: the help terminal. Accessing help terminal can be achieved simply by writing `?` with a query keyword after. This searches all the available documentation of individual methods/functions/types in the source code to find the corresponding keyword. The simplest way to create documentation that can be accessed in this way is using so called `docstring`s, which are multiline strings written above a function or type definition. 
+Evaluating code interactively is not the only way to infer its functionality, as there is a whole another world inside Julia's REPL: the help terminal. Accessing help terminal can be achieved by writing `?` with a query keyword after. This searches documentation of all the available source code to find the corresponding keyword. The simplest way to create documentation, that can be accessed in this way, is using so called `docstring`s, which are multiline strings written above function or type definition. 
 ```julia
 """
     polynomial(a, x)
