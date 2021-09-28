@@ -312,16 +312,14 @@ As the arguments of the `polynomial` functions are untyped, i.e. they do not spe
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Choose one of the variables from the list bellow and try to evaluate it with the `polynomial` function. Check the type of coefficient collection variable itself with `typeof` and the items in the collection with `eltype`. Consult the solution as well as the additional resources at the end of the [page](@ref lab_errors) in case of difficulties.
+Choose one of the variables `af` to `ac` representing polynomial coefficients and try to evaluate it with the `polynomial` function at point `x=3` as before. Lookup the type of coefficient collection variable itself with `typeof` and the items in the collection with `eltype`. In this case you can consult your solution with the expandable solution bellow to find out more.
 
 ```@example lab01_base
 af = [-19.0, 7.0, -4.0, 6.0]
 at = (-19, 7, -4, 6)
 ant = (a₀ = -19, a₁ = 7, a₂ = -4, a₃ = 6)
 a2d = [-19 -4; 7 6]
-ach = ['1', '2', '3', '4']
 ac = [2i^2 + 1 for i in -2:1]
-ag = (2i^2 + 1 for i in -2:1)
 nothing #hide
 ```
 
@@ -342,35 +340,50 @@ As opposed to the basic definition of `a` type the array is filled with `Float64
 typeof(at), eltype(at)
 polynomial(at, x)
 ```
-With round brackets over a fixed length vector we get the `Tuple` type, which is a fixed size, so called immutable "array" of a fixed size (its elements cannot be changed, unless initialized from scratch). Each element can be of a different type, but here we have only one and thus the `Tuple` is aliased into `NTuple`. There are some performance benefits for using immutable structure, which will be discussed [later](@ref type_lecture) or [even later](@ref perf_lecture).
+With round brackets over a fixed length vector we get the `Tuple` type, which is so called immutable "array" of a fixed size (its elements cannot be changed, unless initialized from scratch). Each element can be of a different type, but here we have only one and thus the `Tuple` is aliased into `NTuple`. There are some performance benefits for using immutable structure, which will be discussed [later](@ref type_lecture) or [even later](@ref perf_lecture).
 
 
-Defining `key=value` pairs inside round brackets creates a structure called `NamedTuple`, which has the same properties as `Tuple` and furthermore it's elements can be conveniently accessed by dot syntax, e.g. `ant.a₀`.
+Defining `key=value` pairs inside round brackets creates a structure called `NamedTuple`, which has the same properties as `Tuple` and furthermore its elements can be conveniently accessed by dot syntax, e.g. `ant.a₀`.
 ```@repl lab01_base
 typeof(ant), eltype(ant)
 polynomial(ant, x)
 ```
 
-Defining a 2D array is a simple change of syntax, which initialized a matrix row by row separated by `;` with spaces between individual elements. The function works in the same way because linear indexing works in 2d arrays in the column major order.
+Defining a 2D array is a simple change of syntax, which initialized a matrix row by row separated by `;` with spaces between individual elements. The function returns the same result because linear indexing works in 2d arrays in the column major order.
 ```@repl lab01_base
 typeof(a2d), eltype(a2d)
 polynomial(a2d, x)
 ```
 
-Consider the vector/array of characters, which themselves have numeric values (you can check by converting them to Int `Int('1')` or `convert(Int, 'l')`). In spite of that, our untyped function cannot process such input, as there isn't an operation/method that would allow  multiplication of `Char` and `Int` type. Julia tries to promote the argument types to some common type, however checking the `promote_type(Int, Char)` returns `Any` (union of all types), which tells us that the conversion is not possible automatically.
+The last example shows so called array comprehension syntax, where we define and array of known length using and for loop iteration. Resulting array/vector has integer elements, however even mixed type is possible yielding `Any`, if there isn't any other common supertype to `promote` every entry into. (Use `?` to look what `promote` and `promote_type` does.)
+```@repl lab01_base
+typeof(ac), eltype(ac)
+polynomial(ac, x)
+```
+
+```@raw html
+</p></details>
+```
+
+So far we have seen that `polynomial` function accepts a wide variety of arguments, however there are some understandable edge cases that it cannot handle.
+
+Consider first the vector/array of characters `ach`
+```@example lab01_base
+ach = ['1', '2', '3', '4']
+```
+which themselves have numeric values (you can check by converting them to Int `Int('1')` or `convert(Int, 'l')`). In spite of that, our untyped function cannot process such input, as there isn't an operation/method that would allow multiplication of `Char` and `Int` type. Julia tries to promote the argument types to some common type, however checking the `promote_type(Int, Char)` returns `Any` (union of all types), which tells us that the conversion is not possible automatically.
 ```@repl lab01_base
 typeof(ach), eltype(ach)
 polynomial(ach, x)
 ```
 In the stacktrace we can see the location of each function call. If we include the function `polynomial` from some file `poly.jl` using `include("poly.jl")`, we will see that the location changes from `REPL[X]:10` to the actual file name.
 
-The next example shows so called array comprehension syntax, where we define and array of known length using and for loop iteration. Resulting array/vector has integer elements, however even mixed type is possible yielding `Any`, if there isn't any other common supertype to `promote` every entry into. (Use `?` to look what `promote` and `promote_type` does.)
-```@repl lab01_base
-typeof(ac), eltype(ac)
-polynomial(ac, x)
-```
 
-By swapping square brackets for round we have defined so called generator/iterator, which as opposed to the previous example does not allocate an array, only the structure that produces it. You may notice that the element type in this case is `Any`, which means that a function using such generator as an argument cannot specialize based on the type and has to infer it every time an element is generated/returned. We will touch on how this affects performance in one of the later [lectures](@ref perf_lecture).
+By swapping square brackets for round in the array comprehension `ac` above, we have defined so called generator/iterator, which as opposed to variable `ac` does not allocate an array, only the structure that produces it.
+```@example lab01_base
+ag = (2i^2 + 1 for i in -2:1)
+```
+You may notice that the element type in this case is `Any`, which means that a function using this generator as an argument cannot specialize based on the type and has to infer it every time an element is generated/returned. We will touch on how this affects performance in one of the later [lectures](@ref perf_lecture).
 ```@repl lab01_base
 typeof(ag), eltype(ag)
 polynomial(ag, x)
@@ -381,15 +394,10 @@ In general generators may have unknown length, this can be useful for example in
 agc = ag |> collect # pipe syntax, equivalent to collect(ag)
 typeof(agc), eltype(agc)
 ```
-
 You can see now that `eltype` is no longer `Any`, as a proper type for the whole container has been found in the `collect` function, however we have lost the advantage of not allocating an array.
 
-```@raw html
-</p></details>
-```
-
 ## Extending/limiting the polynomial example
-Following up on the polynomial example, let's us expand it a little further in order to facilitate the arguments, that have been throwing exceptions. The first direction, that we will move forward to, is providing the user with more detailed error message when an incorrect type of coefficients has been provided.
+Following up on the polynomial example, let's us expand it a little further in order to facilitate the arguments, that have been throwing exceptions. The first direction, which we will move forward to, is providing the user with more detailed error message when an incorrect type of coefficients has been provided.
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -472,7 +480,7 @@ for i in length(a):-1:1
 end
 ```
 !!! note "Anonymous functions reminder"
-    ```@repl 3
+    ```@repl lab01_anonymous
     x -> x + 1              # unless the reference is stored it cannot be called
     plusone = x -> x + 1    # the reference can be stored inside a variable
     plusone(x)              # calling with the same syntax
@@ -608,7 +616,7 @@ The output gives us the time of execution averaged over multiple runs (the numbe
 ```@repl lab01_base
 polynomial(aexp, x) - exp(x)
 ```
-The apostrophes in the previous sentece are on purpose, because implementation of `exp` also relies too on a finite sum, though much more sophisticated than the basic Taylor expansion.
+The apostrophes in the previous sentence are on purpose, because implementation of `exp` also relies on a finite sum, though much more sophisticated than the basic Taylor expansion.
 
 ```@raw html
 </p></details>
