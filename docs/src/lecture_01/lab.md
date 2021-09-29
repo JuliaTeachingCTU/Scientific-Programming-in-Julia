@@ -1,7 +1,7 @@
 # Lab 01: Introduction to Julia
 This lab should get everyone up to speed in the basics of Julia's installation, syntax and basic coding. For more detailed introduction you can check out Lectures 1-3 of the bachelor [course](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/).
 
-## Testing Julia installation
+## Testing Julia installation (custom setup)
 In order to proceed further let's run a simple [script](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_01/test_setup.jl) to see, that the setup described in chapter [Installation](@ref install) is working properly.
 After spawning a terminal/cmdline run this command:
 ```bash
@@ -10,7 +10,7 @@ julia ./test_setup.jl
 The script does the following 
 - "Tests" if Julia is added to path and can be run with `julia` command from anywhere
 - Prints Julia version info
-- Checks version Julia.
+- Checks Julia version.
 - Checks git configuration (name + email)
 - Creates an environment configuration files
 - Installs a basic pkg called BenchmarkTools, which we will use for benchmarking a simple function later in the labs.
@@ -24,7 +24,7 @@ f(x) = a_{n}x^{n} + a_{n-1}x^{n-1} + \dots + a_{0}x^{0},
 ```
 where $x \in \mathbb{R}$ and $\vec{a} \in \mathbb{R}^{n+1}$.
 
-The simplest way of writing this in a generic way is realizing that essentially the function $f$ is really implicitly containing argument $\vec{a}$, i.e. $f \equiv f(\vec{a}, x)$, yielding the following function
+The simplest way of writing this in a generic fashion is realizing that essentially the function $f$ is really implicitly containing argument $\vec{a}$, i.e. $f \equiv f(\vec{a}, x)$, yielding the following Julia code
 
 ```@example lab01_base
 function polynomial(a, x)
@@ -91,13 +91,11 @@ Thanks to the high level nature of Julia language it is often the case that exam
 
 ![polynomial_explained](./polynomial.svg)
 
-The indentation is not necessary as opposed to other languages such as Python, due to the existence of the `end` keyword, however it is strongly recommended to use it, see [style guide](https://docs.julialang.org/en/v1/manual/style-guide/#Style-Guide).
+Due to the existence of the `end` keyword, indentation is not necessary as opposed to other languages such as Python, however it is strongly recommended to use it, see [style guide](https://docs.julialang.org/en/v1/manual/style-guide/#Style-Guide).
 
-
-Though there are libraries/IDEs that allow us to step through Julia code (`Rebugger.jl` [link](https://github.com/timholy/Rebugger.jl) and `VSCode` [link](https://www.julia-vscode.org/docs/stable/userguide/debugging/)), here we will explore the code interactively in REPL by evaluating pieces of code separately.
+Though there are libraries/IDEs that allow us to step through Julia code (`Debugger.jl` [link](https://github.com/JuliaDebug/Debugger.jl) and `VSCode` [link](https://www.julia-vscode.org/docs/stable/userguide/debugging/)), here we will explore the code interactively in REPL by evaluating pieces of code separately.
 
 ### Basic types, assignments and variables
-
 When defining a variable through an assignment we get the representation of the right side, again this is different from the default 
 behavior in Python, where the output of assignments `a = [-19, 7, -4, 6]` or `x = 3`, prints nothing. Internally Julia returns the result of the `display` function.
 
@@ -109,7 +107,7 @@ As you can see, the string that is being displayed contains information about th
 ```@repl lab01_base
 typeof(a)
 ```
-Additionally for collection/iterable types such as `Vector` there is also the `eltype` function.
+Additionally for collection/iterable types such as `Vector` there is also the `eltype` function, which returns the type of elements in the collection.
 ```@repl lab01_base
 eltype(a)
 ```
@@ -159,18 +157,19 @@ length(r)
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Create variable `c` containing an array of even numbers from `2` to `42`. Furthermore create variable `d` that is different from `c` only at the 5th position, which will contain `13`.
+Create variable `c` containing an array of even numbers from `2` to `42`. Furthermore create variable `d` that is different from `c` only at the 7th position, which will contain `13`.
 
-**HINT** Use `collect` function for creation of `c` and `copy` for making a copy of `c`.
+**HINT**: Use `collect` function for creation of `c` and `copy` for making a copy of `c`.
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
 ```@repl lab01_base
-c = collect(2:2:100)
+c = collect(2:2:42)
 d = copy(c)
-d[5] = 13
+d[7] = 13
+d
 ```
 ```@raw html
 </p></details>
@@ -200,12 +199,12 @@ typeof(polynomial) <: Function
 ```
 These concepts will be expanded further in the type [lecture](@ref type_lecture), however for now note that this construction is quite useful for example if we wanted to create derivative rules for our function `derivativeof(::typeof(polynomial), ...)`.
 
-Looking at the last two expersions `+`, `*`, we can see that in Julia, operators are also functions. 
+Looking at mathematical operators `+`, `*`, we can see that in Julia they are also standalone functions. 
 ```@repl lab01_base
 +
 *
 ```
-The main difference from our `polynomial` function is that there are multiple methods, for each of these functions. Each one of the methods coresponds to a specific combination of arguments, for which the function can be specialized to. You can see the list by calling a `methods` function:
+The main difference from our `polynomial` function is that there are multiple methods, for each of these functions. Each one of the methods coresponds to a specific combination of arguments, for which the function can be specialized to using *multiple dispatch*. You can see the list by calling a `methods` function:
 ```julia
 julia> methods(+)
 # 190 methods for generic function "+":                                                                               
@@ -246,6 +245,7 @@ Define function called `addone` with one argument, that adds `1` to the argument
 function addone(x)
     x + 1
 end
+addone(1) == 2
 ```
 
 ```@raw html
@@ -254,7 +254,7 @@ end
 
 
 ### Calling for help
-Evaluating code interactively is not the only way to infer its functionality, as there is a whole another world inside Julia's REPL: the help terminal. Accessing help terminal can be achieved by writing `?` with a query keyword after. This searches documentation of all the available source code to find the corresponding keyword. The simplest way to create documentation, that can be accessed in this way, is using so called `docstring`s, which are multiline strings written above function or type definition. 
+In order to better understand some keywords we have encountered so far, we can ask for help in the Julia's REPL itself with the built-in help terminal. Accessing help terminal can be achieved by writing `?` with a query keyword after. This searches documentation of all the available source code to find the corresponding keyword. The simplest way to create documentation, that can be accessed in this way, is using so called `docstring`s, which are multiline strings written above function or type definition. 
 ```julia
 """
     polynomial(a, x)
@@ -265,7 +265,7 @@ function polynomial(a, x)
     # function body
 end
 ```
-More on this in [lecture](@ref pkg_lecture) on pkg development.
+More on this in the [lecture](@ref pkg_lecture) about pkg development.
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -305,14 +305,14 @@ Example docstring for `typeof` function.
 ```
 
 ## Testing waters
-As the arguments of the `polynomial` functions are untyped, i.e. they do not specify the allowed types like for example `polynomial(a, x::Number)` does, the following exercise explores how wide range of arguments the function accepts.
+As the arguments of the `polynomial` functions are untyped, i.e. they do not specify the allowed types like for example `polynomial(a, x::Number)` does, the following exercise explores which arguments the function accepts, while giving expected result.
 
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Choose one of the variables `af` to `ac` representing polynomial coefficients and try to evaluate it with the `polynomial` function at point `x=3` as before. Lookup the type of coefficient collection variable itself with `typeof` and the items in the collection with `eltype`. In this case you can consult your solution with the expandable solution bellow to find out more.
+Choose one of the variables `af` to `ac` representing polynomial coefficients and try to evaluate it with the `polynomial` function at point `x=3` as before. Lookup the type of coefficient collection variable itself with `typeof` and the items in the collection with `eltype`. In this case we allow you to consult your solution with the expandable solution bellow to find out more information about a particular example.
 
 ```@example lab01_base
 af = [-19.0, 7.0, -4.0, 6.0]
@@ -371,7 +371,7 @@ Consider first the vector/array of characters `ach`
 ```@example lab01_base
 ach = ['1', '2', '3', '4']
 ```
-which themselves have numeric values (you can check by converting them to Int `Int('1')` or `convert(Int, 'l')`). In spite of that, our untyped function cannot process such input, as there isn't an operation/method that would allow multiplication of `Char` and `Int` type. Julia tries to promote the argument types to some common type, however checking the `promote_type(Int, Char)` returns `Any` (union of all types), which tells us that the conversion is not possible automatically.
+which themselves have numeric values (you can check by converting them to Int `Int('1')` or `convert(Int, '1')`). In spite of that, our untyped function cannot process such input, as there isn't an operation/method that would allow multiplication of `Char` and `Int` type. Julia tries to promote the argument types to some common type, however checking the `promote_type(Int, Char)` returns `Any` (union of all types), which tells us that the conversion is not possible automatically.
 ```@repl lab01_base
 typeof(ach), eltype(ach)
 polynomial(ach, x)
@@ -379,22 +379,17 @@ polynomial(ach, x)
 In the stacktrace we can see the location of each function call. If we include the function `polynomial` from some file `poly.jl` using `include("poly.jl")`, we will see that the location changes from `REPL[X]:10` to the actual file name.
 
 
-By swapping square brackets for round in the array comprehension `ac` above, we have defined so called generator/iterator, which as opposed to variable `ac` does not allocate an array, only the structure that produces it.
+By swapping square brackets for round in the array comprehension `ac` above, we have defined so called generator/iterator, which as opposed to original variable `ac` does not allocate an array, only the structure that produces it.
 ```@example lab01_base
 ag = (2i^2 + 1 for i in -2:1)
+typeof(ag), eltype(ag)
 ```
 You may notice that the element type in this case is `Any`, which means that a function using this generator as an argument cannot specialize based on the type and has to infer it every time an element is generated/returned. We will touch on how this affects performance in one of the later [lectures](@ref perf_lecture).
+
 ```@repl lab01_base
-typeof(ag), eltype(ag)
 polynomial(ag, x)
 ```
-
-In general generators may have unknown length, this can be useful for example in batch processing of files, where we do not know beforehand how many files are in a given folder. However the problem here originated from a missing indexing operation `getindex`, which can be easily solved by collecting the generator with `collect` and thus transforming it into and array.
-```@repl lab01_base
-agc = ag |> collect # pipe syntax, equivalent to collect(ag)
-typeof(agc), eltype(agc)
-```
-You can see now that `eltype` is no longer `Any`, as a proper type for the whole container has been found in the `collect` function, however we have lost the advantage of not allocating an array.
+The problem that we face during evaluation is that generator type is missing the `getindex` operation, as they are made for situations where the size of the collection may be unknown and the only way of obtaining particular elements is through sequential iteration. Generators can be useful for example when creating batches of data for a machine learning training. We can "fix" the situation using `collect` function, mentioned earlier, however that again allocates an array.
 
 ## Extending/limiting the polynomial example
 Following up on the polynomial example, let's us expand it a little further in order to facilitate the arguments, that have been throwing exceptions. The first direction, which we will move forward to, is providing the user with more detailed error message when an incorrect type of coefficients has been provided.
@@ -499,7 +494,7 @@ There is even shorter way how to write this using one line function syntax and r
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
-Ordered from the longest to the shortest, here are three (and there are definitely more) examples with the same functionality.
+Ordered from the longest to the shortest, here are three examples with the same functionality (and there are definitely many more).
 Using the `map(iterable) do itervar ... end` syntax, that creates anonymous function from the block of code.
 ```@example lab01_base
 function polynomial(a, x)
@@ -560,9 +555,9 @@ The script that we have run at the beginning of this lab has created two new fil
  ├── Manifest.toml
  └── Project.toml
 ```
-Every folder with a toml file called `Project.toml`, can be used by Julia's pkg manager into setting so called environment. Each of these environments has a specific name, unique identifier and most importantly a list of pkgs to be installed. Setting up or more often called activating an environment can be done either before starting Julia itself by running julia with the `--project XXX` flag or from within the Julia REPL, by switching to Pkg mode with `]` key (similar to the help mode activated by pressing `?`) and running command `activate`.
+Every folder with a toml file called `Project.toml`, can be used by Julia's pkg manager into setting so called environment, which contains a list of pkgs to be installed. Setting up or more often called activating an environment can be done either before starting Julia itself by running julia with the `--project XXX` flag or from within the Julia REPL, by switching to Pkg mode with `]` key (similar to the help mode activated by pressing `?`) and running command `activate`.
 
-So far we have used the general environment, which by default does not come with any 3rd party packages and includes only the base and standard libraries - [already](https://docs.julialang.org/en/v1/base/arrays/) [quite](https://docs.julialang.org/en/v1/base/multi-threading/) [powerful](https://docs.julialang.org/en/v1/stdlib/Distributed/) [on its own](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/). 
+So far we have used the general environment (depending on your setup), which by default does not come with any 3rd party packages and includes only the base and standard libraries - [already](https://docs.julialang.org/en/v1/base/arrays/) [quite](https://docs.julialang.org/en/v1/base/multi-threading/) [powerful](https://docs.julialang.org/en/v1/stdlib/Distributed/) [on its own](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/). 
 
 In order to find which environment is currently active, run the following:
 ```julia
@@ -573,7 +568,7 @@ The output of such command usually indicates the general environment located at 
 pkg> status
 Status `~/.julia/environments/v1.6/Project.toml` (empty project)
 ```
-Generally one should avoid working in the general environment, with the exception using some generic pkgs, such as `PkgTemplates.jl`, which is used for generating library templates/folder structure like the one above ([link](https://github.com/invenia/PkgTemplates.jl)), more on this in the [lecture](@ref pkg_lecture) on pkg development. 
+Generally one should avoid working in the general environment, with the exception of some generic pkgs, such as `PkgTemplates.jl`, which is used for generating library templates/folder structure like the one above ([link](https://github.com/invenia/PkgTemplates.jl)), more on this in the [lecture](@ref pkg_lecture) on pkg development. 
 
 
 ```@raw html
@@ -630,7 +625,7 @@ methods(evalpoly)
 
 Another avenue, that we have only touched with the `BenchmarkTools`, is performance and will be further explored in the later [lectures](@ref perf_lecture).
 
-With the next lecture focused on typing in Julia, it is worth noting that polynomials lend itself quite nicely to a definition of a custom type, which can help both readability of the code as well further extensions.
+With the next lecture focused on typing in Julia, it is worth noting that polynomials lend themselves quite nicely to a definition of a custom type, which can help both readability of the code as well further extensions.
 ```julia
 struct Polynom{C}
     coefficients::{C}
@@ -641,12 +636,15 @@ function (p:Polynom)(x)
 end
 ```
 
+---
+
 ## Useful resources
 - Getting Started tutorial from JuliaLang documentation - [Docs](https://docs.julialang.org/en/v1/manual/getting-started/)
 - Converting syntax between MATLAB ↔ Python ↔ Julia - [Cheatsheet](https://cheatsheets.quantecon.org/)
 - Bachelor course for refreshing your knowledge - [Course](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/)
 - Stylistic conventions - [Style Guide](https://docs.julialang.org/en/v1/manual/style-guide/#Style-Guide)
 - Reserved keywords - [List](https://docs.julialang.org/en/v1/base/base/#Keywords)
+- Official cheatsheet with basic syntax - [link](https://juliadocs.github.io/Julia-Cheat-Sheet/)
 
 
 ### [Various errors and how to read them](@id lab_errors)
