@@ -154,9 +154,9 @@ nothing # hide
 ```
 
 
-The goal of the first part of the lab is to demonstrate the [forwarding
-method](@ref forwarding_method) by implementing a sheep that can have two
-different sexes and can only reproduce with another sheep of opposite sex.
+The goal of the first part of the lab is to demonstrate the *forwarding method*
+(which is close to how things are done in OOP) by implementing a sheep that can
+have two different sexes and can only reproduce with another sheep of opposite sex.
 
 This new type of sheep needs an additonal field `sex::Symbol` which can be either
 `:male` or `:female`.

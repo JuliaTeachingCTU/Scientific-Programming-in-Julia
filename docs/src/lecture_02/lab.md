@@ -204,8 +204,7 @@ grass. The process of one animal eating a plant (or another animal) will be
 implemented via the `eat!(a::Agent,b::Agent,::World)` function.
 Calling the function will cause agent `a` to eat agent `b`, possibly mutating
 them and the world. The `eat!` function will do something different for different
-input types and is our first practical example of [multiple dispatch](@ref
-multiple_dispatch).
+input types and is our first practical example of [*multiple dispatch*](https://docs.julialang.org/en/v1/manual/methods/).
 
 ```@raw html
 <div class="admonition is-category-exercise">

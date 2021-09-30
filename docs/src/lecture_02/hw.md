@@ -213,7 +213,7 @@ Use as much dispatch as you can! ;)
 ```
 Using the world below, run few `world_step!`s.  Plot trajectories of the agents
 count over time. Can you tweak the parameters such that you get similar oscillations
-as in the plot from [lab 2](@id lab02)?
+as in the plot from [lab 2](@ref lab02)?
 ```@example hw02
 n_grass = 200
 m_size  = 10
