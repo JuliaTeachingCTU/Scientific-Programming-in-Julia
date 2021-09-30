@@ -1,12 +1,13 @@
 # Course outline
 
+1. Introduction
 
 2. Type system
-   - user: tool for abstraction
-   - compiler: tool for memory layout
+    - user: tool for abstraction
+    - compiler: tool for memory layout
 
 3. Design patterns (mental setup)
-    - julia is a type-based language
+    - Julia is a type-based language
     - generalizes OOP and FP
 
 4. Packages

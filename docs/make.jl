@@ -52,22 +52,25 @@ lecture_02 = [
 ]
 
 lecture_03 = [
+    "Lecture" => "./lecture_03/lecture.md"
     "Lab" => "./lecture_03/lab.md"
     "Homework" => "./lecture_03/hw.md"
 ]
 
 lecture_04 = [
+    "Lecture" => "./lecture_04/lecture.md"
     "Lab" => "./lecture_04/lab.md"
 ]
 
 lecture_05 = [
+    "Lecture" => "./lecture_05/lecture.md"
 ]
 
 lecture_06 = [
 ]
 
 lecture_07 = [
-    "Macros" => "./lecture_07/macros.md"
+    "Lecture" => "./lecture_07/lecture.md"
 ]
 
 lecture_08 = [
@@ -116,7 +119,7 @@ makedocs(;
         "11: Julia for GPU programming" => lecture_11,
         "12: Uncertainty propagation in ODE" => lecture_12,
         "13: Learning ODE from data" => lecture_13,
-        "How to submit homeworks" => "how_to_submit_hw.md",
+        #"How to submit homeworks" => "how_to_submit_hw.md",
     ],
 )
 
