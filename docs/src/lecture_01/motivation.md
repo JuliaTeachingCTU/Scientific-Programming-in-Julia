@@ -119,7 +119,7 @@ Design principle: abstraction should have *zero* runtime  cost
     - functions as symbolic abstraction layers
 
 
-![](julia-compilation.png)
+![](julia-compilation.svg)
 
 - AST = Abstract Syntax Tree
 - IR = Intermediate Representation
