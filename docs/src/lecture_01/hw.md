@@ -91,6 +91,7 @@ pkg> status
 The plotting itself as easy as calling the `graphplot` function on our adjacency matrix.
 ```@repl lab01_base
 using GraphRecipes, Plots
+A = [ 0  1  0  0  0  0  0  0  0  1; 1  0  1  0  0  0  0  0  0  0; 0  1  0  1  0  0  0  0  0  0; 0  0  1  0  1  0  0  0  0  0; 0  0  0  1  0  1  0  0  0  0; 0  0  0  0  1  0  1  0  0  0; 0  0  0  0  0  1  0  1  0  0; 0  0  0  0  0  0  1  0  1  0; 0  0  0  0  0  0  0  1  0  1; 1  0  0  0  0  0  0  0  1  0]# hide
 graphplot(A)
 ```
 ```@example  lab01_base
