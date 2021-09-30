@@ -39,11 +39,11 @@ Very simple for a user, very complicated for a programmer. The program should:
 
 ## Classical thinking: create a library, call it.
 
-Think of an experiment: ```main``` taking a configuration file. The configuration file can be simple: ```input file```, what to do with it, ```output file```.
+Think of an experiment: ```main``` loop taking a configuration file. The configuration file can be simple: ```input file```, what to do with it, ```output file```.
 
 The more complicated experiments you want to do, the more complex your configuration file becomes. Sooner or later, you will create a new *configuration language*, or *scripting language*.
 
-Ending up in *2 language problem*. 
+Ending up in the *2 language problem*. 
 
 1.  Low-level programming = computer centric
     - close to the hardware
@@ -80,7 +80,7 @@ A dance between specialization and abstraction.
 - **Specialization**  allows for custom treatment. The right algorithm for the right circumstance is obtained by *Multiple dispatch*,
 - **Abstraction** recognizes what remains the same after differences are stripped away. Abstractions in mathematics are captured as code through *generic programming*.
 
-Why new language?
+Why a new language?
 
 ## Challenge
 Translate high-level thinking with as much abstraction as possible into specific *fast* machine code.
@@ -100,10 +100,10 @@ Not so easy!
 
 Simple solution
 - Solved by different floating and integer division operation
-- Not so simple with complex objects: triangular matrices
+- Not so simple with complex objects, e.g. triangular matrices
 
 
-Julia was designed as a high-level language that allows very high level abstract cocepts but propagates as much information about the specifics as possible to help the compiler to generate as fast code as possible. Taking lessons from the inability to achieve fast code compilation (mostly from python).
+Julia was designed as a high-level language that allows very high level abstract concepts but *propagates* as much information about the specifics as possible to help the compiler to generate as fast code as possible. Taking lessons from the inability to achieve fast code compilation (mostly from python).
 
 ![](benchmarks.svg)
 
@@ -134,7 +134,13 @@ fsum(x,p...) = x+fsum(p[1],p[2:end]...)
 ```
 Defines essentially a sum of inputs. Nice generic and abstract concept.
 
-How does it work from the computer point of view?
+Possible in many languages:
+- Matlab via ```nargin, varargin``` using construction
+  ```if nargin==1, out=varargin{1}, else out=fsum(varargin{2:end}), end```
+
+Julia solves this ```if``` at compile time. 
+
+The generated code can be inspected by macro ```@code_llvm```?
 ```
 fsum(1,2,3)
 @code_llvm fsum(1,2,3)
@@ -147,7 +153,7 @@ Note that each call of fsum generates a new and different function.
 
 Functions can act either as regular functions or like templates in C++. Compiler decides.
 
-This example is relatively simple, many other JIT languages can optimize such code. Julia allows taking this approach much further.
+This example is relatively simple, many other JIT languages can optimize such code. Julia allows taking this approach further.
 
 
 Generality of the code:
@@ -183,14 +189,7 @@ The simplification was not achieved by the compiler alone.
       y ~ Normal(m, sqrt(s²))
   end
   ```
-  <!-- ```julia
-  using ParameterizedFunctions
-  @ode_def begin
-  dy = x * (ρ - z) - y
-  dz = x * y - β * z
-  dx = σ * (y - x)
-  end σ ρ β  
-  ``` -->
+  
 
 Such tools allow building a very convenient user experience on abstract level, and reaching very efficient code.
 
