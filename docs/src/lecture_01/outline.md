@@ -8,7 +8,7 @@
 
 3. Design patterns (mental setup)
     - Julia is a type-based language
-    - generalizes OOP and FP
+    - multiple-dispatch generalizes OOP and FP
 
 4. Packages
     - way how to organize code
@@ -22,15 +22,15 @@
     - understand how the compiler process the data
     
 7. Macros
-    - automate writing of boring boilerplate code
+    - automate writing of boring the boilerplate code
     - good macro create cleaner code
 
 8. Automatic Differentiation
-    - Theory: difference between forward and backward mode
+    - Theory: difference between the forward and backward mode
     - Implementation techniques
 
 9. Intermediate representation
-    - how to use internal representation of the code 
+    - how to use internal the representation of the code 
     - example in automatic differentiation
 
 10. Parallel computing

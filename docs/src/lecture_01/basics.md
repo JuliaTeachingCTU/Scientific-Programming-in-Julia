@@ -63,9 +63,21 @@ Function properties:
 
 Definitions of multiple small functions and their composition
 ```
-
-
+fsum(x) = x
+fsum(x,p...) = x+fsum(p[1],p[2:end]...)
 ```
+a single methods may not be sufficient to understand the full algorithm. In procedural language, you may write:
+```matlab
+function out=fsum(x,varargin)
+if nargin==2 # TODO: better treatment
+    out=x
+else
+    out = fsum(varargin{1},varargin{2:end})
+end
+```
+The need to build intuition for function composition.
+
+Dispatch is easier to optimize by the compiler.
 
 
 ## Operators are functions
@@ -82,7 +94,7 @@ Definitions of multiple small functions and their composition
 | A.n = x	|setproperty!|
 
 
-Can be redefined and overloaded for different input types.
+Can be redefined and overloaded for different input types. The ```getproperty``` method can define access to the memory structure.
 
 ## Broadcasting revisited
 
@@ -93,4 +105,4 @@ The special meaning of the dot is that they will be fused into a single call:
 - ```f.(g.(x .+ 1))``` is treated by Julia as ```broadcast(x -> f(g(x + 1)), x)```. 
 - An assignment ```y .= f.(g.(x .+ 1))``` is treated as in-place operation ```broadcast!(x -> f(g(x + 1)), y, x)```.
 
-Same logic works for lists, tuples, etc.
+The same logic works for lists, tuples, etc.

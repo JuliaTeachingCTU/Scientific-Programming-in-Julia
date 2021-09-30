@@ -12,7 +12,7 @@ Key requirements:
 
 Contrast to general-purpose language:
 - less concern with business models (library + header files)
-- less concern with ABI 
+- less concern with Application binary interface (ABI)
 - less concern with public/private separation
 
 
@@ -39,7 +39,10 @@ Very simple for a user, very complicated for a programmer. The program should:
 
 ## Classical thinking: create a library, call it.
 
-Think of an experiment: ```main``` loop taking a configuration file. The configuration file can be simple: ```input file```, what to do with it, ```output file```.
+Think of a problem of repeated execution of similar jobs. Can be implemented by the  ```main``` loop (in low-level language) taking a configuration file. The configuration file can be simple, consisting of e.g.: 
+- ```input data file```,
+-  what to do with it,
+- ```output file```
 
 The more complicated experiments you want to do, the more complex your configuration file becomes. Sooner or later, you will create a new *configuration language*, or *scripting language*.
 
@@ -50,8 +53,7 @@ Ending up in the *2 language problem*.
     - allows excellent optimization for fast execution
 
 2. High-level programming = user centric
-    - experimenting = running multiple configurations
-    - running code with many different parameters as easily as possible
+    - running code with many different modifications as easily as possible
     - allowing high level of abstraction
 
 In scientific programming, the most well known scripting languages are: Python,  Matlab, R
@@ -64,7 +66,7 @@ The scripting language typically makes decisions (```if```) at runtime. Becomes 
 ### Examples
 1. Basic Linear Algebra Subroutines (BLAS)--MKL, OpenBlas---with bindings (Matlab, NumPy)
 2. Matlab and Mex (C with pointer arithmetics)
-3. Python with trascription to C (Cython)
+3. Python with transcription to C (Cython)
 
 
 ### Convergence efforts
@@ -99,7 +101,7 @@ Not so easy!
     - Poor language design choice!
 
 Simple solution
-- Solved by different floating and integer division operation
+- Solved by different floating and integer division operation ```/,÷```
 - Not so simple with complex objects, e.g. triangular matrices
 
 
@@ -126,7 +128,7 @@ Design principle: abstraction should have *zero* runtime  cost
 
 
 
-## Teaser example:
+## Teaser example
 Function recursion with arbitrary number of arguments:
 ```julia
 fsum(x) = x
@@ -193,12 +195,12 @@ The simplification was not achieved by the compiler alone.
 
 Such tools allow building a very convenient user experience on abstract level, and reaching very efficient code.
 
-## Experiment reproducibility
+## Reproducibile research
 
-Think about a code that was written ages ago. To run it, you need to be able to have the same version of the language it was written for. 
+Think about a code that was written some time ago. To run it, you often need to be able to have the same version of the language it was written for. 
 
 - **Standard way**
-  language freezes syntax and guarantee some back-ward compatibility (Matlab), which prevents future improvements
+  language freezes syntax and guarantees some back-ward compatibility (Matlab), which prevents future improvements
 
 - **Julia approach**
   allows easy recreation of the *environment* in which the code was developed. Every project (e.g. directory) can have its own environment
