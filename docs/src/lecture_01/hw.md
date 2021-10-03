@@ -1,7 +1,7 @@
 # Homework 1: Extending `polynomial` the other way
 ```@raw html
 <div class="admonition is-category-homework">
-<header class="admonition-header">Homework (1+1 points)</header>
+<header class="admonition-header">Homework (2 points)</header>
 <div class="admonition-body">
 ```
 
@@ -36,59 +36,7 @@ or
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
-As always there are multiple options for the `circlemat` function definition. Here we show the two, that we have foreshadowed in the homework hints:
-
-- longer version using incremental definition in for loop
-```@repl 1
-function circlemat(n)
-    A = zeros(Int, n, n) # creates nxn matrix of zeros
-    for i in 1:n
-        for j in 1:n
-            if (i == j-1 && j > 1) || (i == n && j == 1) || (i == j+1 && j < n) || (i == 1 && j == n)
-                A[i,j] = 1
-            end
-        end
-    end
-    return A
-end
-circlemat(10)
-```
-
-- short version with comprehension and ternary operator
-```@repl 1
-circlemat(n) = [(i == j-1 && j > 1) || (i == n && j == 1) || (i == j+1 && j < n) || (i == 1 && j == n) ? 1 : 0 for i in 1:n, j in 1:n]
-circlemat(10)
-```
-Both version should give the same answer.
-
-Extending the original `polynomial` to matrix valued point `x = A`, requires only small changes to the initialization of `accumulator` variable. Running directly the original code fails on `MethodError`, because julia cannot add a matrix to an integer.
-```@repl 1
-function polynomial(a, x::AbstractMatrix) # we are limiting this function to everything that is subtype of AbstractMatrix
-    accumulator = zeros(eltype(x), size(x)) # zeros of the same type and size as `x`
-    for i in length(a):-1:1
-        accumulator += x^(i-1) * a[i] # ! 1-based indexing for arrays
-    end
-    return accumulator
-end
-```
-
-```@repl 1
-A = circlemat(10) # matrix of size 10x10
-coeffs = ones(4)  # coefficients of polynomial
-polynomial(coeffs, A)
-```
-
-The other option is to use the more abstract version that we have defined to work with generators/iterators. For example
-```@repl generator
-polynomial(a, x) = sum(ia -> x^(ia[1]-1) * ia[2], enumerate(a))
-```
-works out of the box
-```@repl generator
-circlemat(n) = [(i == j-1 && j > 1) || (i == n && j == 1) || (i == j+1 && j < n) || (i == 1 && j == n) ? 1 : 0 for i in 1:n, j in 1:n] #hide
-A = circlemat(10) #hide
-coeffs = ones(4)  #hide
-polynomial(coeffs, A)
-```
+Nothing to see here.
 
 ```@raw html
 </p></details>
@@ -100,7 +48,7 @@ polynomial(coeffs, A)
 <header class="admonition-header">Exercise (voluntary)</header>
 <div class="admonition-body">
 ```
-Install `GraphRecipes` and `Plots` packages into our `./L1Env/` environment defined during the lecture and figure out, how to plot the graph defined by adjacency matrix `A` from the homework.
+Install `GraphRecipes` and `Plots` packages into the environment defined during the lecture and figure out, how to plot the graph defined by adjacency matrix `A` from the homework.
 
 **HINTS**:
 - There is help command inside the the pkg mod of the REPL. Type `? add` to find out how to install a package. Note that both pkgs are registered.
@@ -112,9 +60,9 @@ Install `GraphRecipes` and `Plots` packages into our `./L1Env/` environment defi
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
-Activate `L1Env` environment in pkg mode, if it is not currently active.
+Activate the environment in pkg mode, if it is not currently active.
 ```julia
-pkg> activate ./L1Env
+pkg> activate .
 ```
 Installing pkgs is achieved using the `add` command. Running `] ? add` returns a short piece of documentation for this command:
 ```julia
@@ -141,11 +89,12 @@ pkg> status
 ```
 
 The plotting itself as easy as calling the `graphplot` function on our adjacency matrix.
-```@repl 1
+```@repl lab01_base
 using GraphRecipes, Plots
+A = [ 0  1  0  0  0  0  0  0  0  1; 1  0  1  0  0  0  0  0  0  0; 0  1  0  1  0  0  0  0  0  0; 0  0  1  0  1  0  0  0  0  0; 0  0  0  1  0  1  0  0  0  0; 0  0  0  0  1  0  1  0  0  0; 0  0  0  0  0  1  0  1  0  0; 0  0  0  0  0  0  1  0  1  0; 0  0  0  0  0  0  0  1  0  1; 1  0  0  0  0  0  0  0  1  0]# hide
 graphplot(A)
 ```
-```@example 1
+```@example  lab01_base
 graphplot(A) #hide
 ```
 
@@ -154,4 +103,4 @@ graphplot(A) #hide
 ```
 
 # How to submit?
-The guide is located [here](@ref homeworks).
+Isolate the code of the compulsory task into a script named `hw.jl` alongside with the `Project.toml` and `Manifest.toml` of the environment. Create a zipfile of the folder and send it to the lab instructor, who has assigned the task, via email (contact emails are located on the [homepage](@ref emails) of the course).

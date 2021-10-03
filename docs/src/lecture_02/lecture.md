@@ -1,4 +1,4 @@
-#Motivation
+# [Motivation](@id type_lecture)
 
 Before going into details about Julia type system, we spent few minutes motivating
 the two main role of type system, which is (i) structuring the code and (ii) and
@@ -630,7 +630,7 @@ Depending on the variance of the type constructor, the subtyping relation of the
 On the other hand, "function from Animal to String" is a subtype of "function from Cat to String" because the function type constructor is contravariant in the parameter type. Here the subtyping relation of the simple types is reversed for the complex types.
 
 
-### The power of Type System \& multiple dispatch
+### [The power of Type System \& multiple dispatch](@id multiple_dispatch)
   - Zero cost abstraction the compiler has information about types and can freely inline
     `x |> identity |> identity |> identity |> identity |> identity`
 

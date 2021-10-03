@@ -35,10 +35,12 @@ that can transform intermediate representations of Julia code.
 
 ## Organization
 
-The [course webpage](https://juliateachingctu.github.io/Scientific-Programming-in-Julia/dev/)
-contains all information about the course that you need, including lecture
-notes, lab instructions, and homeworks. The official format of the course is
-2+2 (2h lectures/2h labs per week) for 4 credits.
+This course webpage contains all information about the course that you need,
+including lecture notes, lab instructions, and homeworks. The official format
+of the course is 2+2 (2h lectures/2h labs per week) for 4 credits.
+
+The official course code is: **B0M36SPJ** and the timetable for the winter semester
+2021 can be found [here](https://fel.cvut.cz/cz/education/rozvrhy-ng.B211/public/html/predmety/69/85/p6985906.html).
 
 The course will be graded based on points from your homework (**max. 20 points**)
 and points from a [final project](@ref final_project) (**max. 30 points**).
@@ -67,18 +69,18 @@ The evaluation criteria of the final project are ...
 Your points from the homeworks and the final project are summed and graded by
 the standard grading scale below.
 
-| Grade  | A     | B     | C     | D     | E     | F   |
-| :--    | :--   | :--   | :--   | :--   | :--   | :-- |
-| Points | 45-50 | 40-44 | 35-39 | 30-34 | 25-29 | <25 |
+| Grade  | A     | B     | C     | D     | E     | F    |
+| :--    | :--   | :--   | :--   | :--   | :--   | :--  |
+| Points | 45-50 | 40-44 | 35-39 | 30-34 | 25-29 | 0-25 |
 
 
-## Teachers
+## [Teachers](@id emails)
 
 | --          | E-mail                                                     | Room     | Role           |
 | :--         | :--                                                        | :--      | :--            |
 | Tomáš Pevný | [pevnytom@fel.cvut.cz](mailto:pevnytom@fel.cvut.cz)        | KN:E-333 | Lecturer       |
 | Vašek Šmídl | [smidlva1@fjfi.cvut.cz](mailto:smidlva1@fjfi.cvut.cz)      | KN:E-333 | Lecturer       |
-| Jan Franců  | [jan.francu@fjfi.cvut.cz](mailto:jan.francu@fjfi.cvut.cz)  | KN:E-333 | Lab Instructor |
+| Jan Franců  | [francja5@fel.cvut.cz](mailto:francja5@fel.cvut.cz)       | KN:E-333 | Lab Instructor |
 | Niklas Heim | [heimnikl@fel.cvut.cz](mailto:heimnikl@fel.cvut.cz)        | KN:E-333 | Lab Instructor |
 
 

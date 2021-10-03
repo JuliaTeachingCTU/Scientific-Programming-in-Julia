@@ -3,79 +3,45 @@ module Ecosystem
 using StatsBase
 using EcosystemCore
 
-export Grass, Sheep, Wolf, World, PoisonedGrass, ⚥Sheep
-export agent_step!, agent_count, simulate!, every_nth
+export Grass, Sheep, Wolf, World, Mushroom
+export agent_step!, agent_count, world_step!, simulate!, every_nth
 
-mutable struct PoisonedGrass <: AbstractPlant
-    fully_grown::Bool
-    regrowth_time::Int
-    countdown::Int
+
+abstract type Mushroom <: PlantSpecies end
+Base.show(io::IO,::Type{Mushroom}) = print(io,"🍄")
+
+EcosystemCore.eats(::Animal{Sheep},::Plant{Mushroom}) = true
+function EcosystemCore.eat!(s::Animal{Sheep}, m::Plant{Mushroom}, w::World)
+    incr_energy!(s, -size(m)*Δenergy(s))
+    EcosystemCore.kill_agent!(m,w)
 end
-PoisonedGrass(t) = PoisonedGrass(false, t, rand(1:t))
-PoisonedGrass() = PoisonedGrass(2)
 
-EcosystemCore.eats(::Sheep,::PoisonedGrass) = true
 
-function EcosystemCore.eat!(sheep::Sheep, grass::PoisonedGrass, w::World)
-     if fully_grown(grass)
-        fully_grown!(grass, false)
-        incr_energy!(sheep, -Δenergy(sheep))
+function simulate!(world::World, iters::Int; callbacks=[])
+    for i in 1:iters
+        world_step!(world)
+        for cb in callbacks
+            cb(world)
+        end
     end
 end
 
 
-struct ⚥Sheep{T<:Real} <: AbstractAnimal
-    sheep::Sheep{T}
-    gender::Symbol
-end
-⚥Sheep(E,ΔE,pr,pf,gender) = ⚥Sheep(Sheep(E,ΔE,pr,pf),gender)
-⚥Sheep(E,ΔE,pr,pf) = ⚥Sheep(E,ΔE,pr,pf,sample([:male,:female]))
+countsym(g::T) where T<:Plant = fully_grown(g) ? nameof(T) : :NoCount
+countsym(::T) where T<:Animal = nameof(T)
 
-EcosystemCore.energy(g::⚥Sheep) = energy(g.sheep)
-EcosystemCore.energy!(g::⚥Sheep, e) = energy!(g.sheep, e)
-EcosystemCore.Δenergy(g::⚥Sheep, e) = Δenergy(g.sheep, e)
-EcosystemCore.incr_energy!(g::⚥Sheep, Δe) = incr_energy!(g.sheep, Δe)
-EcosystemCore.reproduction_prob(g::⚥Sheep) = reproduction_prob(g.sheep)
-EcosystemCore.food_prob(g::⚥Sheep) = food_prob(g.sheep)
-
-EcosystemCore.eats(::⚥Sheep, ::Grass) = true
-EcosystemCore.eats(::⚥Sheep, ::PoisonedGrass) = true
-EcosystemCore.eat!(s::⚥Sheep, g::AbstractPlant, w::World) = eat!(s.sheep, g, w)
-
-mates(a::AbstractPlant, ::⚥Sheep) = false
-mates(a::AbstractAnimal, ::⚥Sheep) = false
-mates(g1::⚥Sheep, g2::⚥Sheep) = g1.gender != g2.gender
-function find_mate(g::⚥Sheep, w::World)
-    ms = filter(a->mates(a,g), w.agents)
-    isempty(ms) ? nothing : sample(ms)
-end
-
-function EcosystemCore.reproduce!(s::⚥Sheep, w::World)
-    m = find_mate(s,w)
-    if !isnothing(m)
-        energy!(s, energy(s)/2)
-        # TODO: should probably mix s/m
-        push!(w.agents, deepcopy(s))
-    end
-end
-
-
-
-countsym(g::T) where T<:AbstractPlant = fully_grown(g) ? nameof(T) : :NoCount
-countsym(::T) where T<:AbstractAnimal = nameof(T)
-
-# function agent_count(as::Vector{AbstractAgent})
+# function agent_count(as::Vector{Agent})
 #     cs = StatsBase.countmap(map(countsym,as))
 #     delete!(cs,:NoCount)
 # end
 
-agent_count(g::AbstractPlant) = fully_grown(g) ? 1 : 0
-agent_count(::AbstractAnimal) = 1
-agent_count(as::Vector{<:AbstractAgent}) = sum(agent_count,as)
+agent_count(p::Plant) = size(p)/EcosystemCore.max_size(p)
+agent_count(::Animal) = 1
+agent_count(as::Vector{<:Agent}) = sum(agent_count,as)
 
 function agent_count(w::World)
-    function op(d::Dict,a::T) where T<:AbstractAgent
-        n = nameof(T)
+    function op(d::Dict,a::Agent{S}) where S<:Species
+        n = nameof(S)
         if n in keys(d)
             d[n] += agent_count(a)
         else
@@ -83,18 +49,7 @@ function agent_count(w::World)
         end
         return d
     end
-    foldl(op, w.agents, init=Dict{Symbol,Int}())
-end
-
-function simulate!(w::World, iters::Int; callbacks=[])
-    for i in 1:iters
-        for a in w.agents
-            agent_step!(a,w)
-        end
-        for cb in callbacks
-            cb(w)
-        end
-    end
+    foldl(op, w.agents |> values |> collect, init=Dict{Symbol,Real}())
 end
 
 function every_nth(f::Function, n::Int)
