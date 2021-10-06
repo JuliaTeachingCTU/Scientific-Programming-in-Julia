@@ -7,6 +7,21 @@ export Grass, Sheep, Wolf, World, Mushroom
 export agent_step!, agent_count, world_step!, simulate!, every_nth
 
 
+getargs(S::Type{<:Species},args::Tuple) = args
+getargs(S::Type{<:AnimalSpecies},a::NamedTuple) = (a.energy,a.Δenergy,a.reprprob,a.foodprob)
+getargs(S::Type{<:PlantSpecies},a::NamedTuple) = (a.max_size,)
+
+function EcosystemCore.World(configs::Tuple...)
+    ids_stop  = cumsum([n for (_,n,_) in configs])
+    ids_start = vcat([1], ids_stop[1:end-1] .+ 1)
+    xs = map(zip(ids_start, ids_stop, configs)) do (start,stop,config)
+        (S,_,args) = config
+        [S(id,getargs(S,args)...) for id in start:stop]
+    end
+    World(reduce(vcat, xs))
+end
+
+
 abstract type Mushroom <: PlantSpecies end
 Base.show(io::IO,::Type{Mushroom}) = print(io,"🍄")
 
