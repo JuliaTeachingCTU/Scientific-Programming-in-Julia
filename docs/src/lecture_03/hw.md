@@ -8,6 +8,11 @@ using Scientific_Programming_in_Julia
 In this homework we will add another species of plant to our simulation
 (*poisoned mushrooms*) and practice the use of closures with callback
 functions.
+The solution of lab 3 can be found on Github for the
+[`World`](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/world.jl),
+[`Plant`s](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/plant.jl), and
+[`Animal`s](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/animal.jl).
+
 
 ## Poisoned Mushrooms
 
