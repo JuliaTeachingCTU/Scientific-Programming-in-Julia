@@ -1,147 +1,23 @@
 # Homework 2: Predator-Prey Agents
 
 In this lab you will continue working on your agent simulation. If you did not
-manage to finish the homework, do not worry, you can use the code below which
-contains all the functionality we developed in the lab.
-
-```@raw html
-<details class = "solution-body">
-<summary class = "solution-header">Solution of Lab 2:</summary><p>
+manage to finish the homework, do not worry, you can use [this
+script](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/Lab02Ecosystem.jl)
+which contains all the functionality we developed in the lab.
+```@setup hw02
+projdir = dirname(Base.active_project())
+include(joinpath(projdir,"..","src","Lab02Ecosystem.jl"))
 ```
-```@example hw02
-using StatsBase
 
-abstract type Agent end
-abstract type Animal <: Agent end
-abstract type Plant <: Agent end
+## How to submit?
 
-mutable struct World{A<:Agent}
-    agents::Dict{Int,A}
-    max_id::Int
-end
-function World(agents::Vector{<:Agent})
-    World(Dict(id(a)=>a for a in agents), maximum(id.(agents)))
-end
+Put all your code (including your or the provided solution of lab 2) in a
+script named `hw.jl` alongside with the `Project.toml` and `Manifest.toml` of
+the environment. Please only include packages in the environment that are
+necessary for the homework.  Create a `.zip` archive of the three files and
+send it to the lab instructor, who has assigned the task, via email (contact
+emails are located on the [homepage](@ref emails) of the course).
 
-# optional: you can overload the `show` method to get custom
-# printing of your World
-function Base.show(io::IO, w::World)
-    println(io, typeof(w))
-    for (_,a) in w.agents
-        println(io,"  $a")
-    end
-end
-
-function world_step!(world::World)
-    # make sure that we only iterate over IDs that already exist in the 
-    # current timestep this lets us safely add agents
-    ids = deepcopy(keys(world.agents))
-
-    for id in ids
-        # agents can be killed by other agents, so make sure that we are
-        # not stepping dead agents forward
-        !haskey(world.agents,id) && continue
-
-        a = world.agents[id]
-        agent_step!(a,world)
-    end
-end
-
-function agent_step!(a::Plant, w::World)
-    if size(a) != max_size(a)
-        grow!(a)
-    end
-end
-
-function agent_step!(a::Animal, w::World)
-    incr_energy!(a,-1)
-    if rand() <= foodprob(a)
-        dinner = find_food(a,w)
-        eat!(a, dinner, w)
-    end
-    if energy(a) <= 0
-        kill_agent!(a,w)
-        return
-    end
-    if rand() <= reprprob(a)
-        reproduce!(a,w)
-    end
-    return a
-end
-
-mutable struct Grass <: Plant
-    id::Int
-    size::Int
-    max_size::Int
-end
-
-mutable struct Sheep <: Animal
-    id::Int
-    energy::Float64
-    Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
-end
-
-mutable struct Wolf <: Animal
-    id::Int
-    energy::Float64
-    Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
-end
-
-id(a::Agent) = a.id  # every agent has an ID so we can just define id for Agent here
-
-Base.size(a::Plant) = a.size
-max_size(a::Plant) = a.max_size
-grow!(a::Plant) = a.size += 1
-
-# get field values
-energy(a::Animal) = a.energy
-Δenergy(a::Animal) = a.Δenergy
-reprprob(a::Animal) = a.reprprob
-foodprob(a::Animal) = a.foodprob
-
-# set field values
-energy!(a::Animal, e) = a.energy = e
-incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
-
-function eat!(a::Sheep, b::Grass, w::World)
-    incr_energy!(a, size(b)*Δenergy(a))
-    kill_agent!(b,w)
-end
-function eat!(wolf::Wolf, sheep::Sheep, w::World)
-    incr_energy!(wolf, energy(sheep)*Δenergy(wolf))
-    kill_agent!(sheep,w)
-end
-eat!(a::Animal,b::Nothing,w::World) = nothing
-
-kill_agent!(a::Plant, w::World) = a.size = 0
-kill_agent!(a::Animal, w::World) = delete!(w.agents, id(a))
-
-function find_food(a::Animal, w::World)
-    as = filter(x->eats(a,x), w.agents |> values |> collect)
-    isempty(as) ? nothing : sample(as)
-end
-
-eats(::Sheep,::Grass) = true
-eats(::Wolf,::Sheep) = true
-eats(::Agent,::Agent) = false
-
-function reproduce!(a::A, w::World) where A<:Animal
-    energy!(a, energy(a)/2)
-    a_vals = [getproperty(a,n) for n in fieldnames(A) if n!=:id]
-    new_id = w.max_id + 1
-    â = A(new_id, a_vals...)
-    w.agents[id(â)] = â
-    w.max_id = new_id
-end
-nothing # hide
-```
-```@raw html
-</p></details>
-```
 
 ## Counting Agents
 
@@ -153,7 +29,7 @@ quantity.
 
 ```@raw html
 <div class="admonition is-category-homework">
-<header class="admonition-header">Homework (2 points)</header>
+<header class="admonition-header">Compulsory Homework (2 points)</header>
 <div class="admonition-body">
 ```
 1. Implement a function `agent_count` that can be called on a single
@@ -187,12 +63,15 @@ end
 
 ```@repl hw02
 grass1 = Grass(1,5,5);
+agent_count(grass1)
+
 grass2 = Grass(2,1,5);
+agent_count([grass1,grass2]) # one grass is fully grown; the other only 20% => 1.2
+
 sheep = Sheep(3,10.0,5.0,1.0,1.0);
 wolf  = Wolf(4,20.0,10.0,1.0,1.0);
 world = World([grass1, grass2, sheep, wolf]);
-
-agent_count(world)  # one grass is fully grown; the other only 20% => 1.2
+agent_count(world)
 ```
 
 Hint: You can get the *name* of a type by using the `nameof` function:
@@ -208,7 +87,7 @@ Use as much dispatch as you can! ;)
 
 ```@raw html
 <div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise (voluntary)</header>
+<header class="admonition-header">Voluntary Exercise (voluntary)</header>
 <div class="admonition-body">
 ```
 Using the world below, run few `world_step!`s.  Plot trajectories of the agents
