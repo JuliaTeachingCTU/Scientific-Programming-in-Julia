@@ -47,8 +47,8 @@ You should now be able to run `using EcosystemCore` in your REPL to precomplie
 the core package.
 ```@repl
 using EcosystemCore
-grass = Grass(true,5.0,5.0);
-sheep = Sheep(10.0,5.0,0.1,0.1);
+grass = Grass(1, 5.0, 5.0);          # id = 1
+sheep = Sheep(2, 10.0, 5.0, 0.1, 0.1); # id = 2
 world = World([grass, sheep])
 eat!(sheep,grass,world);
 world
@@ -63,7 +63,7 @@ world
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-1. Next, lets add the utility functions `simulate!`, `agent_count`, and `every_nth`, as well as the two new types `PoisonedGrassc` and `⚥Sheep` along with the necessary functions and method overloads.
+1. Next, lets add the utility functions `simulate!`, `agent_count`, and `every_nth`, as well as the two new types `Mushroom` and `⚥Sheep` along with the necessary functions and method overloads. *TODO: update this*
 
 2. Note that you either have to `import` a method to overload it or do something like this
    ```julia
@@ -76,6 +76,41 @@ world
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
+Partial solution that should reside inside the `Ecosystem` pkg
+```julia
+for S in (Sheep, Wolf)
+  @eval begin
+        EcosystemCore.mates(a::Animal{$S,Female}, b::Animal{$S,Male}) = true
+        EcosystemCore.mates(a::Animal{$S,Male}, b::Animal{$S,Female}) = true
+  end
+end
+EcosystemCore.mates(a::Agent, b::Agent) = false
+
+using EcosystemCore: max_size # not exported from EcosystemCore
+
+## this should be probably part of the EcosystemCore
+species(::Plant{P}) where P <: PlantSpecies = P
+species(::Animal{A}) where A <: AnimalSpecies = A
+##
+
+agent_count(p::Plant) = size(p)/max_size(p)
+agent_count(::Animal) = 1
+agent_count(as::Vector{<:Agent}) = sum(agent_count,as)
+
+function agent_count(w::World)
+    function op(d::Dict,a::A) where A<:Agent
+        n = nameof(species(a))
+        if n in keys(d)
+            d[n] += agent_count(a)
+        else
+            d[n] = agent_count(a)
+        end
+        return d
+    end
+    foldl(op, w.agents |> values |> collect, init=Dict{Symbol,Real}())
+end
+```
+
 In a fresh REPL you should now be able to run one of your simulation scripts
 like below
 ```julia
@@ -95,14 +130,17 @@ n_wolves       = 8
 wolf_reproduce = 0.03
 wolf_foodprob  = 0.02
 
-gs = [Grass(true,regrowth_time,regrowth_time) for _ in 1:n_grass]
-ss = [Sheep(2*Δenergy_sheep,Δenergy_sheep,sheep_reproduce, sheep_foodprob) for _ in 1:n_sheep]
-ws = [Wolf(2*Δenergy_wolf,Δenergy_wolf,wolf_reproduce, wolf_foodprob) for _ in 1:n_wolves]
+gs = [Grass(id, regrowth_time) for id in 1:n_grass]
+ss = [Sheep(id, 2*Δenergy_sheep, Δenergy_sheep, sheep_reproduce, sheep_foodprob) for id in n_grass+1:n_grass+n_sheep]
+ws = [Wolf(id, 2*Δenergy_wolf, Δenergy_wolf, wolf_reproduce, wolf_foodprob) for id in n_grass+n_sheep+1:n_grass+n_sheep+n_wolves]
 
 w = World(vcat(gs,ss,ws))
 
-logcb = every_nth(w->(@info agent_count(w)), 5)
-simulate!(w, 10, callbacks=[logcb])
+counts = Dict(n=>[c] for (n,c) in agent_count(w))
+for _ in 1:100
+    world_step!(w)
+    @show agent_count(w)
+end
 ```
 ```@raw html
 </p></details>
