@@ -74,7 +74,7 @@ uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 deps = ["StatsBase"]
 git-tree-sha1 = "9b3a25d787bcd5974160b1c7064096b8fb37a88c"
 repo-rev = "main"
-repo-url = "git@github.com:JuliaTeachingCTU/EcosystemCore.jl.git"
+repo-url = "https://github.com/JuliaTeachingCTU/EcosystemCore.jl.git"
 uuid = "3e0d8730-8ea0-4ee2-afe6-c85384c618a2"
 version = "0.1.0"
 
