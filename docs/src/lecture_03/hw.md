@@ -22,16 +22,6 @@ delicious looks but decreases the energy of the sheep by
 ```@raw html
 </div></div>
 ```
-```@setup hw03
-abstract type Mushroom <: PlantSpecies end
-Base.show(io::IO,::Type{Mushroom}) = print(io,"🍄")
-
-EcosystemCore.eats(::Animal{Sheep},::Plant{Mushroom}) = true
-function EcosystemCore.eat!(s::Animal{Sheep}, m::Plant{Mushroom}, w::World)
-    incr_energy!(s, -size(m)*Δenergy(s))
-    EcosystemCore.kill_agent!(m,w)
-end
-```
 Your new species should give you results like below
 ```@repl hw03
 s = Sheep(1,2,2,1,1);
@@ -73,20 +63,6 @@ calls to the function `fn` that is returned by `every_nth(f,n)`.
 
 ```@raw html
 </div></div>
-```
-```@setup hw03
-function every_nth(f::Function, n::Int)
-    i = 1
-    function callback(w::World)
-        # display(i) # comment this out to see how the counter increases
-        if i == n
-            f(w)
-            i = 1
-        else
-            i += 1
-        end
-    end
-end
 ```
 You can use `every_nth` to log and save the agent count only every couple of
 steps of your simulation. Using `every_nth` will look like this:

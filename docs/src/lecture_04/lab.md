@@ -1,9 +1,5 @@
 # Lab 4: Packages, Tests, Continuous Integration
 
-# TODO
-* demonstrate versioning
-
-
 In this lab you will practice common development workflows in Julia.
 At the end of the labe you will have
 - Your own package called `Ecosystem.jl` which you can conveniently install in any Julia REPL
@@ -16,22 +12,25 @@ To practice working with multiple packages that build on top of each other we
 first separate the core functionality of our ecosystem into a package called
 `EcosystemCore.jl`. This core package [already
 exists](https://github.com/JuliaTeachingCTU/EcosystemCore.jl) and defines the
-interface to `AbstractAnimal` and `AbstractPlant`. It also contains the three
-basic types `Grass`, `Sheep`, and `Wolf`, as well as the most important
-functions: `eat!`, `agent_step!`, `find_food` and `reproduce!`.
+interface to `Animal` and `Plant`. It also contains the three
+basic species types `Grass`, `Sheep`, and `Wolf`, as well as the most important
+functions: `eat!`, `agent_step!`, `find_food` and `reproduce!`, `model_step!`.
 
 Your task is to create your own package `Ecosystem.jl` which will contain the
 utitlity functions `simulate!`, `agent_count`, `every_nth` that we created,
-as well as the new types `PoisonedGrass` and `⚥Sheep`.
+as well as the new species `Mushroom`.
 
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-1. Create a new package by starting a julia REPL, typing `]` to enter the `Pkg` REPL and writing `generate Ecosystem`. This will create a new package called `Ecosystem` with a `Project.toml` and one file `src/Ecosystem.jl`
+1. Create a new package by starting a julia REPL, typing `]` to enter the `Pkg`
+   REPL and writing `generate Ecosystem`. This will create a new package called
+   `Ecosystem` with a `Project.toml` and one file `src/Ecosystem.jl`
 
-2. Exit julia, navigate into the newly created `Ecosystem` folder and restart julia in the `Ecosystem` environment by typing `julia --project`.
+2. Exit julia, navigate into the newly created `Ecosystem` folder and restart
+   julia in the `Ecosystem` environment by typing `julia --project`.
 
 3. Add `EcosystemCore.jl` as a dependency by running
    ```
@@ -44,11 +43,14 @@ as well as the new types `PoisonedGrass` and `⚥Sheep`.
 <summary class = "solution-header">Solution:</summary><p>
 ```
 You should now be able to run `using EcosystemCore` in your REPL to precomplie
-the core package.
-```@repl
+the core package and use its exported functions and types as in the labs before.
+Functions that are not exported can be accessed via `EcosystemCore.function_name`.
+Often unexported functions are not considered to be part of the public API and
+therefore might change without warning from on version to the other.
+```@repl lab04
 using EcosystemCore
-grass = Grass(true,5.0,5.0);
-sheep = Sheep(10.0,5.0,0.1,0.1);
+grass = Grass(1,5);
+sheep = Sheep(2,10.0,5.0,0.1,0.1);
 world = World([grass, sheep])
 eat!(sheep,grass,world);
 world
@@ -63,12 +65,16 @@ world
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-1. Next, lets add the utility functions `simulate!`, `agent_count`, and `every_nth`, as well as the two new types `PoisonedGrassc` and `⚥Sheep` along with the necessary functions and method overloads.
+1. Next, let's add the utility functions `simulate!`, `agent_count`, and
+   `every_nth`, as well as the new species `Mushroom` along with the necessary
+   functions and method overloads.
 
-2. Note that you either have to `import` a method to overload it or do something like this
+2. Note that you either have to `import` a method to overload it or do
+   define your functions like `Ecosystem.function_name` e.g.:
    ```julia
-   EcosystemCore.eats(::Sheep, ::PoisonedGrass) = true
+   EcosystemCore.eats(::Animal{Sheep}, ::Plant{Mushroom}) = true
    ```
+   which is often the preferred way of doing it.
 
 3. Export all types and functions that should be accessible from outside your package.
 ```@raw html
@@ -85,24 +91,10 @@ using Ecosystem
 n_grass       = 500
 regrowth_time = 17.0
 
-n_sheep         = 100
-Δenergy_sheep   = 5.0
-sheep_reproduce = 0.5
-sheep_foodprob  = 0.4
+world = World([...])
 
-n_wolves       = 8
-Δenergy_wolf   = 17.0
-wolf_reproduce = 0.03
-wolf_foodprob  = 0.02
-
-gs = [Grass(true,regrowth_time,regrowth_time) for _ in 1:n_grass]
-ss = [Sheep(2*Δenergy_sheep,Δenergy_sheep,sheep_reproduce, sheep_foodprob) for _ in 1:n_sheep]
-ws = [Wolf(2*Δenergy_wolf,Δenergy_wolf,wolf_reproduce, wolf_foodprob) for _ in 1:n_wolves]
-
-w = World(vcat(gs,ss,ws))
-
-logcb = every_nth(w->(@info agent_count(w)), 5)
-simulate!(w, 10, callbacks=[logcb])
+# ...
+simulate!(world,100)
 ```
 ```@raw html
 </p></details>
