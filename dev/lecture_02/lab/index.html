@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_02/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox" checked/><label class="tocitem" for="menuitem-4"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#The-Predator-Prey-Model"><span>The Predator-Prey Model</span></a></li><li><a class="tocitem" href="#The-Grass-Agent"><span>The <code>Grass</code> Agent</span></a></li><li><a class="tocitem" href="#Sheep-eat-grass"><span>Sheep eat grass</span></a></li><li><a class="tocitem" href="#Wolves-eat-sheep"><span>Wolves eat sheep</span></a></li><li><a class="tocitem" href="#Finding-food-for-sheep"><span>Finding food for sheep</span></a></li><li><a class="tocitem" href="#Finding-food-for-wolves"><span>Finding food for wolves</span></a></li><li><a class="tocitem" href="#General-food-finding"><span>General food finding</span></a></li><li><a class="tocitem" href="#Eating-nothing"><span>Eating nothing</span></a></li><li><a class="tocitem" href="#Reproduction"><span>Reproduction</span></a></li><li><a class="tocitem" href="#Finally!-world_step!"><span>Finally! <code>world_step!</code></span></a></li></ul></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">4: Packages development, environments, etc...</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li></ul></li><li><span class="tocitem">6: Language introspection</span></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li></ul></li><li><span class="tocitem">8: Introduction to automatic differentiation</span></li><li><span class="tocitem">9: Manipulating intermediate representation</span></li><li><span class="tocitem">10: Different levels of parallel programming</span></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><span class="tocitem">12: Uncertainty propagation in ODE</span></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">2: The power of Type System &amp; multiple dispatch</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_02/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="lab02"><a class="docs-heading-anchor" href="#lab02">Lab 2: Predator-Prey Agents</a><a id="lab02-1"></a><a class="docs-heading-anchor-permalink" href="#lab02" title="Permalink"></a></h1><h2 id="The-Predator-Prey-Model"><a class="docs-heading-anchor" href="#The-Predator-Prey-Model">The Predator-Prey Model</a><a id="The-Predator-Prey-Model-1"></a><a class="docs-heading-anchor-permalink" href="#The-Predator-Prey-Model" title="Permalink"></a></h2><p>In the next two labs you will implement your own, simplified, agent-based simulation of a <em>predator-prey model</em>.  The model will contain <em>wolves</em>, <em>sheep</em>, and - to feed your sheep - some <em>grass</em>.  Running and plotting your final result could look something like the plot below.</p><p><img src="../pred-prey.png" alt="img"/></p><p>As you can see, in this model, the wolves unfortunately died out :(. In this lab we will first define what our agent simulation does on a high level. Then you will write the core methods for finding food (<code>find_food</code>), to specify what an animal eats (<code>eat!</code>), and how it reproduces (<code>reproduce!</code>).</p><p>In an agent simulation we assume that we have a bunch of agents (in our case grass, sheep, and wolves) that act in some environment (we will call it a <em>world</em>). At every iteration of the simulation each agent will perform a <em>step</em> in which it performs some of the actions that it can take. For example, a <em>grass</em> agent will grow a little at every step. A <em>sheep</em> agent will try to find some grass and reproduce.</p><p>To get started we need a type hierarchy. The first abstract type <code>Agent</code> that acts as the root of our tree.  All animals and plants will be subtypes of <code>Agent</code>. There are different kinds of animals and plants so it makes sense to create an <code>Animal</code> type which will be the supertype of all animals. The same is true for <code>Plant</code>s. Finally, we need a simple world which consist of a dictionary of agent IDs to agents, and a field that holds the current maximum ID (so that we can generate new ones).</p><pre><code class="language-julia hljs">abstract type Agent end
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_02/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox" checked/><label class="tocitem" for="menuitem-4"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#The-Predator-Prey-Model"><span>The Predator-Prey Model</span></a></li><li><a class="tocitem" href="#The-Grass-Agent"><span>The <code>Grass</code> Agent</span></a></li><li><a class="tocitem" href="#Sheep-eat-grass"><span>Sheep eat grass</span></a></li><li><a class="tocitem" href="#Wolves-eat-sheep"><span>Wolves eat sheep</span></a></li><li><a class="tocitem" href="#Finding-food-for-sheep"><span>Finding food for sheep</span></a></li><li><a class="tocitem" href="#Finding-food-for-wolves"><span>Finding food for wolves</span></a></li><li><a class="tocitem" href="#General-food-finding"><span>General food finding</span></a></li><li><a class="tocitem" href="#Eating-nothing"><span>Eating nothing</span></a></li><li><a class="tocitem" href="#Reproduction"><span>Reproduction</span></a></li><li><a class="tocitem" href="#Finally!-world_step!"><span>Finally! <code>world_step!</code></span></a></li></ul></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li></ul></li><li><span class="tocitem">6: Language introspection</span></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li></ul></li><li><span class="tocitem">8: Introduction to automatic differentiation</span></li><li><span class="tocitem">9: Manipulating intermediate representation</span></li><li><span class="tocitem">10: Different levels of parallel programming</span></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><span class="tocitem">12: Uncertainty propagation in ODE</span></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">2: The power of Type System &amp; multiple dispatch</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_02/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="lab02"><a class="docs-heading-anchor" href="#lab02">Lab 2: Predator-Prey Agents</a><a id="lab02-1"></a><a class="docs-heading-anchor-permalink" href="#lab02" title="Permalink"></a></h1><h2 id="The-Predator-Prey-Model"><a class="docs-heading-anchor" href="#The-Predator-Prey-Model">The Predator-Prey Model</a><a id="The-Predator-Prey-Model-1"></a><a class="docs-heading-anchor-permalink" href="#The-Predator-Prey-Model" title="Permalink"></a></h2><p>In the next two labs you will implement your own, simplified, agent-based simulation of a <em>predator-prey model</em>.  The model will contain <em>wolves</em>, <em>sheep</em>, and - to feed your sheep - some <em>grass</em>.  Running and plotting your final result could look something like the plot below.</p><p><img src="../pred-prey.png" alt="img"/></p><p>As you can see, in this model, the wolves unfortunately died out :(. In this lab we will first define what our agent simulation does on a high level. Then you will write the core methods for finding food (<code>find_food</code>), to specify what an animal eats (<code>eat!</code>), and how it reproduces (<code>reproduce!</code>).</p><p>In an agent simulation we assume that we have a bunch of agents (in our case grass, sheep, and wolves) that act in some environment (we will call it a <em>world</em>). At every iteration of the simulation each agent will perform a <em>step</em> in which it performs some of the actions that it can take. For example, a <em>grass</em> agent will grow a little at every step. A <em>sheep</em> agent will try to find some grass and reproduce.</p><p>To get started we need a type hierarchy. The first abstract type <code>Agent</code> that acts as the root of our tree.  All animals and plants will be subtypes of <code>Agent</code>. There are different kinds of animals and plants so it makes sense to create an <code>Animal</code> type which will be the supertype of all animals. The same is true for <code>Plant</code>s. Finally, we need a simple world which consist of a dictionary of agent IDs to agents, and a field that holds the current maximum ID (so that we can generate new ones).</p><pre><code class="language-julia hljs">abstract type Agent end
 abstract type Animal &lt;: Agent end
 abstract type Plant &lt;: Agent end
 
@@ -37,7 +37,7 @@ end</code></pre><p>The <code>agent_step!</code> function will have multiple meth
     end
 end</code></pre><p>The <code>agent_step!</code> method for animals is different. At the beginning of each step an animal looses energy. Afterwards it tries to find some food, which it will subsequently eat. If the animal then has less than zero energy it dies and is removed from the world. If it has positive energy it will try to reproduce.</p><pre><code class="language-julia hljs">function agent_step!(a::Animal, w::World)
     incr_energy!(a,-1)
-    if rand() &lt;= food_prob(a)
+    if rand() &lt;= foodprob(a)
         dinner = find_food(a,w)
         eat!(a, dinner, w)
     end
@@ -45,7 +45,7 @@ end</code></pre><p>The <code>agent_step!</code> method for animals is different.
         kill_agent!(a,w)
         return
     end
-    if rand() &lt;= reproduction_prob(a)
+    if rand() &lt;= reprprob(a)
         reproduce!(a,w)
     end
     return a
@@ -62,12 +62,12 @@ grow!(a::Plant) = a.size += 1</code></pre><div class="admonition is-category-exe
 <div class="admonition-body"><ol><li>Define a constructor for <code>Grass</code> which, given only an ID and a maximum size <span>$m$</span>, will create an instance of <code>Grass</code> that has a randomly initialized <code>size</code> in the range <span>$(1,m)$</span>.</li><li>Create some <code>Grass</code> agents inside a <code>World</code> and run a few <code>world_step!</code>s.</li></ol></div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p><p>The constructor for grass with random growth countdown:</p><pre><code class="language-julia hljs">Grass(id,m) = Grass(id, rand(1:m), m)</code></pre><p>Creation of a world with a few grass agents:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; w = World([Grass(id,3) for id in 1:2])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Grass}
-  Main.Grass(2, 1, 3)
-  Main.Grass(1, 2, 3)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for _ in 1:3
+  Main.Grass(2, 3, 3)
+  Main.Grass(1, 3, 3)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for _ in 1:3
            world_step!(w)
            @info w
        end</code><code class="nohighlight hljs ansi" style="display:block;">┌ Info: Main.World{Main.Grass}
-│   Main.Grass(2, 2, 3)
+│   Main.Grass(2, 3, 3)
 └   Main.Grass(1, 3, 3)
 ┌ Info: Main.World{Main.Grass}
 │   Main.Grass(2, 3, 3)
@@ -78,13 +78,13 @@ grow!(a::Plant) = a.size += 1</code></pre><div class="admonition is-category-exe
     id::Int
     energy::Float64
     Δenergy::Float64
-    reproduction_prob::Float64
-    food_prob::Float64
+    reprprob::Float64
+    foodprob::Float64
 end</code></pre><p>Again we will use <code>Sheep</code> as a generic example for an <code>Animal</code> which leaves us with the interface below. We only have setters for <code>energy</code> because all other fields of our animals will stay constant.</p><pre><code class="language-julia hljs"># get field values
 energy(a::Animal) = a.energy
 Δenergy(a::Animal) = a.Δenergy
-reproduction_prob(a::Animal) = a.reproduction_prob
-food_prob(a::Animal) = a.food_prob
+reprprob(a::Animal) = a.reprprob
+foodprob(a::Animal) = a.foodprob
 
 # set field values
 energy!(a::Animal, e) = a.energy = e
@@ -110,8 +110,8 @@ Closest candidates are:
     id::Int
     energy::Float64
     Δenergy::Float64
-    reproduction_prob::Float64
-    food_prob::Float64
+    reprprob::Float64
+    foodprob::Float64
 end
 
 function eat!(wolf::Wolf, sheep::Sheep, w::World)
@@ -219,12 +219,12 @@ for _ in 1:4
     @show world
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world = Main.World{Main.Grass}
   Main.Grass(2, 6, 8)
-  Main.Grass(3, 6, 8)
+  Main.Grass(3, 7, 8)
   Main.Grass(1, 7, 8)
 
 world = Main.World{Main.Grass}
   Main.Grass(2, 7, 8)
-  Main.Grass(3, 7, 8)
+  Main.Grass(3, 8, 8)
   Main.Grass(1, 8, 8)
 
 world = Main.World{Main.Grass}
@@ -265,33 +265,44 @@ for _ in 1:2
     world_step!(world)
     @show world
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world = Main.World{Main.Agent}
-  Main.Grass(5, 0, 5)
+  Main.Grass(5, 4, 5)
+  Main.Sheep(16, 9.5, 5.0, 0.5, 0.5)
   Main.Wolf(12, 19.0, 10.0, 0.1, 0.1)
-  Main.Grass(1, 5, 5)
-  Main.Sheep(6, 9.0, 5.0, 0.5, 0.5)
-  Main.Wolf(11, 359.0, 10.0, 0.1, 0.1)
+  Main.Sheep(8, 12.0, 5.0, 0.5, 0.5)
+  Main.Grass(1, 0, 5)
+  Main.Sheep(6, 4.5, 5.0, 0.5, 0.5)
+  Main.Wolf(11, 19.0, 10.0, 0.1, 0.1)
   Main.Sheep(9, 4.5, 5.0, 0.5, 0.5)
   Main.Sheep(14, 4.5, 5.0, 0.5, 0.5)
-  Main.Grass(3, 2, 5)
-  Main.Sheep(7, 4.5, 5.0, 0.5, 0.5)
-  Main.Grass(4, 2, 5)
-  Main.Sheep(13, 4.5, 5.0, 0.5, 0.5)
-  Main.Grass(2, 2, 5)
-  Main.Sheep(10, 9.0, 5.0, 0.5, 0.5)
+  Main.Grass(3, 3, 5)
+  Main.Sheep(7, 9.5, 5.0, 0.5, 0.5)
+  Main.Grass(4, 0, 5)
+  Main.Sheep(13, 12.0, 5.0, 0.5, 0.5)
+  Main.Sheep(15, 4.5, 5.0, 0.5, 0.5)
+  Main.Grass(2, 3, 5)
+  Main.Sheep(10, 14.0, 5.0, 0.5, 0.5)
 
 world = Main.World{Main.Agent}
   Main.Grass(5, 0, 5)
-  Main.Sheep(16, 9.25, 5.0, 0.5, 0.5)
+  Main.Sheep(16, 4.25, 5.0, 0.5, 0.5)
+  Main.Sheep(20, 14.25, 5.0, 0.5, 0.5)
   Main.Wolf(12, 18.0, 10.0, 0.1, 0.1)
-  Main.Grass(1, 5, 5)
-  Main.Sheep(6, 8.0, 5.0, 0.5, 0.5)
-  Main.Wolf(11, 358.0, 10.0, 0.1, 0.1)
-  Main.Sheep(9, 8.5, 5.0, 0.5, 0.5)
+  Main.Sheep(8, 13.0, 5.0, 0.5, 0.5)
+  Main.Sheep(17, 4.25, 5.0, 0.5, 0.5)
+  Main.Grass(1, 1, 5)
+  Main.Sheep(19, 1.75, 5.0, 0.5, 0.5)
+  Main.Sheep(22, 5.5, 5.0, 0.5, 0.5)
+  Main.Sheep(23, 4.25, 5.0, 0.5, 0.5)
+  Main.Sheep(6, 1.75, 5.0, 0.5, 0.5)
+  Main.Wolf(11, 18.0, 10.0, 0.1, 0.1)
+  Main.Sheep(9, 14.25, 5.0, 0.5, 0.5)
   Main.Sheep(14, 1.75, 5.0, 0.5, 0.5)
   Main.Grass(3, 0, 5)
-  Main.Sheep(7, 18.5, 5.0, 0.5, 0.5)
+  Main.Sheep(7, 28.5, 5.0, 0.5, 0.5)
   Main.Grass(4, 0, 5)
-  Main.Sheep(13, 9.25, 5.0, 0.5, 0.5)
-  Main.Sheep(15, 1.75, 5.0, 0.5, 0.5)
-  Main.Grass(2, 0, 5)
-  Main.Sheep(10, 23.0, 5.0, 0.5, 0.5)</code></pre><p>The code for this lab is inspired by the predator-prey model of <a href="https://juliadynamics.github.io/Agents.jl/v3.5/examples/predator_prey/"><code>Agents.jl</code></a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.6 on <span class="colophon-date" title="Tuesday 5 October 2021 09:18">Tuesday 5 October 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Main.Sheep(13, 5.5, 5.0, 0.5, 0.5)
+  Main.Sheep(15, 4.25, 5.0, 0.5, 0.5)
+  Main.Grass(2, 1, 5)
+  Main.Sheep(10, 13.0, 5.0, 0.5, 0.5)
+  Main.Sheep(18, 13.0, 5.0, 0.5, 0.5)
+  Main.Sheep(21, 1.75, 5.0, 0.5, 0.5)</code></pre><p>The code for this lab is inspired by the predator-prey model of <a href="https://juliadynamics.github.io/Agents.jl/v3.5/examples/predator_prey/"><code>Agents.jl</code></a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.7 on <span class="colophon-date" title="Wednesday 6 October 2021 15:48">Wednesday 6 October 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
