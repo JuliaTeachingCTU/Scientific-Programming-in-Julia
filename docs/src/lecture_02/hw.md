@@ -14,9 +14,9 @@ include(joinpath(projdir,"..","src","Lab02Ecosystem.jl"))
 Put all your code (including your or the provided solution of lab 2) in a
 script named `hw.jl` alongside with the `Project.toml` and `Manifest.toml` of
 the environment. Please only include packages in the environment that are
-necessary for the homework.  Create a zipfile of the folder and send it to the
-lab instructor, who has assigned the task, via email (contact emails are
-located on the [homepage](@ref emails) of the course).
+necessary for the homework.  Create a `.zip` archive of the three files and
+send it to the lab instructor, who has assigned the task, via email (contact
+emails are located on the [homepage](@ref emails) of the course).
 
 
 ## Counting Agents
