@@ -211,6 +211,7 @@ foodprob(a::Animal) = a.foodprob
 energy!(a::Animal, e) = a.energy = e
 incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
 
+# optional: overload the show method for Sheep
 function Base.show(io::IO, s::Sheep)
     e = energy(s)
     d = Δenergy(s)
