@@ -22,7 +22,7 @@ Type systems according to [Wikipedia](https://en.wikipedia.org/wiki/Data_type):
 * In computer science and computer programming, a **data type** or simply **type** is an attribute of data which tells the compiler or interpreter how the programmer intends to use the data.
 * A **type system** is a logical system comprising a set of rules that assigns a property called a type to the various constructs of a computer program, such as variables, expressions, functions or modules. These types formalize and enforce the otherwise implicit categories the programmer uses for algebraic data types, data structures, or other components.
 
-## 1. Structuring the code / enforcing the categories
+## Structuring the code / enforcing the categories
 The role of **structuring** the code and imposing semantic restriction
 means that the type system allows you to logically divide your program,
 and to prevent certain types of errors.
@@ -64,7 +64,7 @@ in which case the burden of ensuring that a wolf will never baa rests upon the
 programmer which inevitably leads to errors (note that severely constrained
 type systems are difficult to use).
 
-## 2. Intention of use and restrictions on compilers
+## Intention of use and restrictions on compilers
 Additionally, types are used to generate efficient code. As an example, consider the following two
 alternatives to represent a set of animals:
 
@@ -87,11 +87,8 @@ nothing # hide
 A good compiler makes use of the information provided by the type system to generate effiecint code
 which we can verify by inspecting the compiled code using `@code_native` macro
 
-````@example lecture
+````@repl lecture
 @code_native energy(a)
-````
-
-````@example lecture
 @code_native energy(b)
 ````
 
