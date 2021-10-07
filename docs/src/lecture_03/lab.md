@@ -12,7 +12,7 @@ parametric types to make this agent system much more flexible and *julian*.
 ## Part I: Female & Male Sheep
 
 The code from lab 2 that you will need in the first part of this lab can be
-found [here](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/Lab02Ecosystem.jl).
+found [here](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_02/Lab02Ecosystem.jl).
 
 The goal of the first part of the lab is to demonstrate the *forwarding method*
 (which is close to how things are done in OOP) by implementing a sheep that can
