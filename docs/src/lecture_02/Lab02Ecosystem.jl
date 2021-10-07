@@ -96,6 +96,26 @@ food_prob(a::Animal) = a.food_prob
 energy!(a::Animal, e) = a.energy = e
 incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
 
+function Base.show(io::IO, g::Grass)
+    x = size(g)/max_size(g) * 100
+    print(io,"🌿 #$(id(g)) $(round(Int,x))% grown")
+end
+function Base.show(io::IO, w::Wolf)
+    e = energy(w)
+    d = Δenergy(w)
+    pr = reprprob(w)
+    pf = foodprob(w)
+    print(io,"🐺 #$(id(w)) E=$e ΔE=$d pr=$pr pf=$pf")
+end
+function Base.show(io::IO, s::Sheep)
+    e = energy(s)
+    d = Δenergy(s)
+    pr = reprprob(s)
+    pf = foodprob(s)
+    print(io,"🐑 #$(id(s)) E=$e ΔE=$d pr=$pr pf=$pf")
+end
+
+
 function eat!(a::Sheep, b::Grass, w::World)
     incr_energy!(a, size(b)*Δenergy(a))
     kill_agent!(b,w)
