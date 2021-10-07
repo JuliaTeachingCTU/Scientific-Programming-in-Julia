@@ -224,14 +224,14 @@ a.x = 2
 # Note, that the memory layout of mutable structures is different, as fields now contain references to memory locations, where the actual values are stored. 
 
 # ### Parametric Types
-# So far, we had to trade-off flexibility for generality in type definitions. Can we have both? The answer is positive. The way to achieve this  **flexibility** in definitions of the type while being  able to generate optimal code is to  **parametrize** the type definition. This is achieved by replacing types with a parameter (typically a single uppercase character) and decorating in definition by specifying different type in curly brackets. For example 
+# So far, we had to trade-off flexibility for generality in type definitions. Can we have both? The answer is affirmative. The way to achieve this  **flexibility** in definitions of the type while being  able to generate optimal code is to  **parametrize** the type definition. This is achieved by replacing types with a parameter (typically a single uppercase character) and decorating in definition by specifying different type in curly brackets. For example 
 struct PositionT{T}
   x::T
   y::T 
 end
 u = [PositionT(rand(), rand()) for _ in 1:100];
 @btime reduce(move, u);
-# Notice that the compiler can take advantage of specializing for differen types (which does not have effect as in modern processrs have addition of Float and Int takes the same time).
+# Notice that the compiler can take advantage of specializing for different types (which does not have effect as in modern processrs have addition of `Float` and `Int` takes the same time).
 v = [PositionT(rand(1:100), rand(1:100)) for _ in 1:100];
 @btime reduce(move, v);
 # The above definition suffers the same problem as `VaguePosition`, which is that it allows us to instantiate the `PositionT` with non-numeric types, e.g. `String`. We solve this by restricting the types `T` to be childs of some supertype, in this case `Real`
@@ -258,8 +258,9 @@ end
 # which means you cannot instantiate them. They purpose is
 # * to allow to define operations for broad class of concrete types
 # * to inform compiler about constant values, which can be used 
+# Notice in the above example that parameters of types do not have to be types, but also values of primitive types, as in the above example of `AbstractArray` `N` is the number of dimensions which is an integer value.
 # 
-# For convenience, it is common to name some important partially instantiated Abstract types, for example `AbstractVector` as 
+# For convenience, it is common to give some important partially instantiated Abstract types an **alias**, for example `AbstractVector` as 
 # ```julia
 # const AbstractVector{T} = AbstractArray{T,1}
 # ```
@@ -275,10 +276,10 @@ end
 
 # ## More on use of types in function definitions
 # ### Terminology
-# * A *function* refers to a set of "methods" for a different combination of type parameters (a term function can be therefore considered as refering to a mere **name**). A *method* defining different behavior for different type of arguments are also called specializations. For example
+# * A *function* refers to a set of "methods" for a different combination of type parameters (a term function can be therefore considered as refering to a mere **name**). *Methods* define different behavior for different type of arguments for a given function. For in below example
 move(a::Position, b::Position) = Position(a.x + b.x, a.y + b.y)
 move(a::Vector{<:Position}, b::Vector{<:Position}) = move.(a,b)
-# `move` refers to function, where `move(a, b)`, `move(a::Position, b::Position)` and `move(a::Vector{<:Position}, b::Vector{<:Position})` are methods. When different behavior on different types is defined by a programmer, as shown above, we call it *implementation specialization*. There is another type of specialization, called compiler specialization*, which occurs when the compiler generates different functions for you from a single method. For example for 
+# `move` refers to a function with methods `move(a::Position, b::Position)` and `move(a::Vector{<:Position}, b::Vector{<:Position})`. When different behavior on different types is defined by a programmer, as shown above, it is also called *implementation specialization*. There is another type of specialization, called compiler specialization*, which occurs when the compiler generates different functions for you from a single method. For example for 
 move(Position(1,1), Position(2,2))
 move(Position(1.0,1.0), Position(2.0,2.0))
 # the compiler generates two methods, one for `Position{Int64}` and the other for `Position{Float64}`. Notice that inside generated functions, the compiler needs to use different intrinsic operations, which can be viewed from 
@@ -299,11 +300,12 @@ by = Position(2.0, 2.0)
 move(a, by)
 # 1. The compiler knows that you call function `move` 
 # 2. and the compiler infers type of arguments (you can see the result using 
-(typeof(a),typeof(by))
+    (typeof(a),typeof(by))
 # 3. The compiler identifies all methods that can be applied to a function `move` with arguments of type `(Position{Float64}, Position{Float64})`
-Base.method_instances(move, (typeof(a), typeof(by)))
-m = Base.method_instances(move, (typeof(a), typeof(by))) |> first
-# 4a. If the method has been specialized (compiled), which we can check as `Base.isgenerated(m)`, then the arguments are prepared and the method is invoked
+    Base.method_instances(move, (typeof(a), typeof(by)))
+    m = Base.method_instances(move, (typeof(a), typeof(by))) |> first
+# 4a. If the method has been specialized (compiled), then the arguments are prepared and the method is invoked. The compiled specialization can be seen from 
+  m.cache
 # 4b. If the method has not been specialized (compiled), the compiler compiles the method for a given type of arguments  and continues as in step 4a.
 # A compiled function is therefore  a "blob" of **native code** living in a particular memory location. When Julia calls a function, it needs to pick a right block corresponding to a function with particular type of parameters.
 #
@@ -332,7 +334,7 @@ wolfpack_c =  WolfOrSheep[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
 # THanks to union splitting, Julia is able to have performant operations on arrays with undefined / missing values for example 
 [1, 2, 3, missing] |> typeof
 
-### More on matching methods to functions
+# ### More on matching methods and arguments
 # In the above process, the step, where Julia looks for a method instance with corresponding parameters can be very confusing. The rest of this lecture will focus on this. For those who want to have a formal background, we recommend (talk of  Francesco Zappa Nardelli)[https://www.youtube.com/watch?v=Y95fAipREHQ] and / or the that of (Jan Vitek)[https://www.youtube.com/watch?v=LT4AP7CUMAw].
 # 
 # When Julia needs to specialize a method instance, in needs to find it among multiple definitions. A single function can have many method instances, see for example `methods(+)` which  lists all methods instances of `+` function. How Julia select the proper one?
@@ -370,22 +372,35 @@ move([Position(1,2), Position(1.0,2.0)], [Position(1,2), Position(1.0,2.0)])
 # 1. Why the following fails?
 foo(a::Vector{Real}) = println("Vector{Real}")
 foo([1.0,2,3])
-# Julia's type system is **invariant**, which means that `Vector{Real}` is different from 
-# `Vector{Float64}` and from `Vector{Float32}`, even though `Float64` and `Float32` are 
-# sub-types of `Real`. Therefore `typeof([1.0,2,3])` isa `Vector{Float64}` which is not 
-# subtype of `Vector{Real}.` For **covariant** languages, this would be true. For more 
-# information on variance in computer languages, see 
-# !()[https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)].
-# If de above definition of `foo` should be applicable to all vectors which has elements
-# of subtype of `Real` we have define it as 
+#   Julia's type system is **invariant**, which means that `Vector{Real}` is different from `Vector{Float64}` and from `Vector{Float32}`, even though `Float64` and `Float32` are sub-types of `Real`. Therefore `typeof([1.0,2,3])` isa `Vector{Float64}` which is not subtype of `Vector{Real}.` For **covariant** languages, this would be true. For more information on variance in computer languages, see ()[https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)]. If de above definition of `foo` should be applicable to all vectors which has elements of subtype of `Real` we have define it as 
 foo(a::Vector{T}) where {T<:Real} = println("Vector{T} where {T<:Real}")
-# or equivalently but more tersely as 
+#   or equivalently but more tersely as 
 foo(a::Vector{<:Real}) = println("Vector{T} where {T<:Real}")
-
 # 2. Diagonal rule
-# rule says that the type repeat in method signature, it has to be 
-# a concrete type. Consider for example the function below
+# rule says that the type repeat in method signature, it has to be a concrete type. Consider for example the function below
 move(a::T, b::T) where {T<:Position}
-# we cannot call it with `move(Position(1.0,2.0), Position(1,2))`,
-# since in this case `Position(1.0,2.0)` is of type `Position{Float64}`
-# while `Position(1,2)` is of type `Position{Int64}`.
+# we cannot call it with `move(Position(1.0,2.0), Position(1,2))`, since in this case `Position(1.0,2.0)` is of type `Position{Float64}` while `Position(1,2)` is of type `Position{Int64}`.
+# 3. When debugging why arguments does not match the particular method definition, it is useful to use `typeof`, `isa`, and `<:` commands. For example 
+typeof(Position(1.0,2.0))
+#
+typeof(Position(1,2))
+#
+Position(1,2) isa Position{Float64}
+#
+Position(1,2) isa Position{Real}
+#
+Position(1,2) isa Position{<:Real}
+#
+typeof(Position(1,2)) <: Position{<:Float64}
+#
+typeof(Position(1,2)) <: Position{<:Real}
+
+
+# ### A bizzare definitions which you can encounter
+# A following definition of One-Hot Matrix is taken from Flux.jl
+struct OneHotArray{T<:Integer, L, N, var"N+1", I<:Union{T,AbstractArray{T, N}}} <: AbstractArray{Bool, var"N+1"}
+  indices::I
+end
+# The parameters of the type carry an information about the type used to encode position of `one` in each column in `T`), the dimension of one-hot vectors in `L`, the dimension of the storage of `indices` in `N` (which is zero for OneHotVector and one for OneHotMatrix), number of dimensions of the OneHotArray in `var"N+1"` and the type of underlying storage of indicies `I`.
+
+
