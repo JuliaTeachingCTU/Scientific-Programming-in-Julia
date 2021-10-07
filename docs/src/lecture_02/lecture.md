@@ -9,11 +9,11 @@ using InteractiveUtils # hide
 using InteractiveUtils: subtypes # hide
 ````
 
-Before going into details of the Julia type system, we will spend a few minutes motivating
-the two main roles of the type system, which are:
+Before going into the details of Julia's type system, we will spend a few minutes motivating
+the two main roles of a type system, which are:
 
-1. Structuring your code
-2. Communicating to the compiler how your type will be used
+1. Structuring code
+2. Communicating to the compiler how a type will be used
 
 The first aspect is important for the convenience of the programmer and enables abstractions
 in the language, the latter aspect is important for the speed of the generated code.
