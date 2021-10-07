@@ -4,24 +4,29 @@ EditURL = "<unknown>/src/lecture_02/lecture.jl"
 
 # Motivation
 
-Before going into details about Julia type system, we spent few minutes motivating
-the two main role of type system, which is:
+````@example lecture
+using InteractiveUtils # hide
+using InteractiveUtils: subtypes # hide
+````
 
-1. structuring the code and
-2. and communicating to the compiler your intentions how the type will be used.
+Before going into details about Julia type system, we will spend a few minutes motivating
+the two main roles of the type system, which are:
 
-The first aspect is important for the convenience of programmer and possible abstraction
-in the language, the latter aspect is important for the speed of generated code.
+1. Structuring the code
+2. Communicating to the compiler how your type will be used.
 
-How type system is defined according to [Wikipedia](https://en.wikipedia.org/wiki/Data_type)?
+The first aspect is important for the convenience of the programmer and enables abstractions
+in the language, the latter aspect is important for the speed of the generated code.
+
+Type systems according to [Wikipedia](https://en.wikipedia.org/wiki/Data_type):
 * In computer science and computer programming, a **data type** or simply **type** is an attribute of data which tells the compiler or interpreter how the programmer intends to use the data.*
 * A **type system** is a logical system comprising a set of rules that assigns a property called a type to the various constructs of a computer program, such as variables, expressions, functions or modules. These types formalize and enforce the otherwise implicit categories the programmer uses for algebraic data types, data structures, or other components.*
 
 ## Structuring the code / enforcing the categories
-The role of aiding to **structure** the code and impose semantic restriction
+The role of **structuring** the code and imposing semantic restriction
 means that the type system allows you to logically divide your program,
-and to prevent some type of error.
-Consider for example two types, `Wolf` and `Sheep` which shares the same
+and to prevent certain types of errors.
+Consider for example two types, `Wolf` and `Sheep` which share the same
 definition but the types have different names.
 
 ````@example lecture
@@ -41,24 +46,25 @@ This allows us to define functions applicable only to the corresponding type
 ````@example lecture
 howl(wolf::Wolf) = println(wolf.name, " has howled.")
 baa(sheep::Sheep) = println(sheep.name, " has baaed.")
+nothing # hide
 ````
 
-Therefore the compiler (or interpretter) **enforces** that wolf can only `howl`
-and never `baa` and vice versa sheep can only `baa`. In this sense, it ensures
+Therefore the compiler (or interpretter) **enforces** that a wolf can only `howl`
+and never `baa` and vice versa a sheep can only `baa`. In this sense, it ensures
 that `howl(sheep)` and `baa(wolf)` never happen.
-For a comparison, consider alternative definition as follows
+For comparison, consider an alternative definition as follows
 
 ````@example lecture
 bark(animal) = println(animal.name, " has howled.")
 baa(animal)  = println(animal.name, " has baaed.")
 ````
 
-in which case the burden of ensuring that wolf will never baa rest upon the
-programmer which inevitably lead to errors (note that severely constrained
+in which case the burden of ensuring that a wolf will never baa rests upon the
+programmer which inevitably leads to errors (note that severely constrained
 type systems are difficult to use).
 
 ## Intention of use and restrictions on compilers
-The *intention of use* in types is related to how efficient code can compiler
+The *intention of use* in types is related to how efficient code a compiler can
 produce for that given intention. As an example, consider a following two
 alternatives to represent a set of animals:
 
@@ -68,25 +74,28 @@ b = (Wolf("1", 1), Wolf("2", 2), Sheep("3", 3))
 ````
 
 where `a` is an array which can contain arbitrary types and have arbitrary length
-whereas `b` is a `Tuple` which has fixed length with first two items are of type `Wolf`
-and the third item to be of type `Sheep`. Moreover, consider a function which calculates
+whereas `b` is a `Tuple` which has fixed length in which the first two items are of type `Wolf`
+and the third item is of type `Sheep`. Moreover, consider a function which calculates the
 energy of all animals as
 
 ````@example lecture
 energy(animals) = mapreduce(x -> x.energy, +, animals)
 ````
 
-A good compiler a use the extra provided by the type system to generate effiecint code
+A good compiler makes use of the information provided by the type system to generate effiecint code
 which we can verify by inspecting the compiled code using `@code_native` macro
 
 ````@example lecture
 @code_native energy(a)
+````
+
+````@example lecture
 @code_native energy(b)
 ````
 
 one observes the second version produces more optimal code. Why is that?
-* In the first representation, `a`, animals are stored in `Array` which can have arbitrary size and can contain arbitrary animals. This means that compiler has to compile `energy(a)` such that it works on such arrays.
-* In the second representation, `b`, animals are stored in `Tuple`, which specializes for lengths and types of items. This means that the compiler knows the number of animals and the type of each animal on each position within the tuple, which allows him to specialize.
+* In the first representation, `a`, the animals are stored in an `Array` which can have arbitrary size and can contain arbitrary animals. This means that the compiler has to compile `energy(a)` such that it works on such arrays.
+* In the second representation, `b`, the animals are stored in a `Tuple`, which specializes for lengths and types of items. This means that the compiler knows the number of animals and the type of each animal on each position within the tuple, which allows it to specialize.
 
 This difference will indeed have an impact on the time of code execution.
 On my i5-8279U CPU, the difference (as measured by BenchmarkTools) is
@@ -98,28 +107,29 @@ using BenchmarkTools
 nothing #hide
 ````
 
-Which nicely demonstrates that the choice of types affects the performance. Does it mean that we should always use `Tuples` instead of `Arrays`? Surely not, it is  just that each is better for different use-case. Using Tuples means that compiler will  compile special function for each length of tuple and each combination of types of items it contains, which is clearly wasteful.
+Which nicely demonstrates that the choice of types affects performance. Does it mean that we should always use `Tuples` instead of `Arrays`? Surely not, it is  just that each is better for different use-cases. Using Tuples means that the compiler will compile a special function for each length of tuple and each combination of types of items it contains, which is clearly wasteful.
 
-# Julia type system
+# Julia's type system
 
 ## Julia is dynamicaly typed
-Julia's type system is dynamic, which means that all types are resolved during runtime. **But**, if the compiler can infer types of all variables of the called function, it can specialize the function for that given type of variables which lead to an efficient code. Consider a modified example where we represent two wolfpacks:
+Julia's type system is dynamic, which means that all types are resolved during runtime. **But**, if the compiler can infer types of all variables of the called function, it can specialize the function for that given type of variables which leads to efficient code. Consider a modified example where we represent two wolfpacks:
 
 ````@example lecture
 wolfpack_a =  [Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
 wolfpack_b =  Any[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
 ````
 
-`wolfpack_a` carries a type `Vector{Wolf}` while `wolfpack_b` has a type `Vector{Any}`. This means that in the first case, the compiler know that all items are of the type `Wolf`and it can specialize functions using this information. In case of `wolfpack_b`, he does not know which animal he will encounter (although all are of the same type), and therefore it needs to dynamically resolve the type of each item upon its use. This ultimately leads to less performant code.
+`wolfpack_a` carries a type `Vector{Wolf}` while `wolfpack_b` has the type `Vector{Any}`. This means that in the first case, the compiler knows that all items are of the type `Wolf`and it can specialize functions using this information. In case of `wolfpack_b`, it does not know which animal it will encounter (although all are of the same type), and therefore it needs to dynamically resolve the type of each item upon its use. This ultimately leads to less performant code.
 
 ````@example lecture
 @btime energy(wolfpack_a)
 @btime energy(wolfpack_b)
+nothing # hide
 ````
 
-To conclude, julia is indeed dynamically typed language, **but** if the compiler can infer
-all types in called function in advance, it does not have to perform a type resolution
-during execution, which produces a performant code.
+To conclude, julia is indeed a dynamically typed language, **but** if the compiler can infer
+all types in a called function in advance, it does not have to perform the type resolution
+during execution, which produces performant code.
 
 ## Classes of types
 Julia divides types into three classes: primitive, composite, and abstract.
@@ -133,12 +143,12 @@ primitive type Float16 <: AbstractFloat 16 end
 primitive type Float32 <: AbstractFloat 32 end
 primitive type Float64 <: AbstractFloat 64 end
 ```
-and they are mainly used to jump-start julia's type system. It rarely make a sense to
-define a special primitive type, as it make sense only if you define special functions
-operating on its bits, which makes mostly sense if you want to expose special operations
-provided by underlying CPU / LLVM compiler. For example `+` for `Int32` is different
-from `+` for `Float32` as they call a different intrinsic operation. You can inspect this
-jump-starting of type system by yourself by inspecting Julia's source.
+and they are mainly used to jump-start julia's type system. It is rarely needed to
+define a special primitive type, as it makes sense only if you define special functions
+operating on its bits. This is almost excusively used for exposing special operations
+provided by the underlying CPU / LLVM compiler. For example `+` for `Int32` is different
+from `+` for `Float32` as they call a different intrinsic operations. You can inspect this
+jump-starting of the type system yourself by looking at Julia's source.
 ```julia
 julia> @which +(1,2)
 +(x::T, y::T) where T<:Union{Int128, Int16, Int32, Int64, Int8, UInt128, UInt16, UInt32, UInt64, UInt8} in Base at int.jl:87
@@ -148,7 +158,7 @@ At `int.jl:87`
 ```julia
 (+)(x::T, y::T) where {T<:BitInteger} = add_int(x, y)
 ```
-we seen that `+` of integers is calling function `add_int(x, y)`, which is defined in a core
+we see that `+` of integers is calling the function `add_int(x, y)`, which is defined in the core
 part of the compiler in `Intrinsics.cpp` (yes, in C++).
 
 From Julia docs: *Core is the module that contains all identifiers considered "built in" to
@@ -156,22 +166,24 @@ the language, i.e. part of the core language and not libraries. Every module imp
 specifies using Core, since you can't do anything without those definitions.*
 
 Primitive types are rarely used, and they will not be used in this course. We mention them
-for the sake of completness and refer reader to the official Documentation (and source code
+for the sake of completeness and refer the reader to the official Documentation (and source code
 of Julia).
 
 ### Abstract Type
 
-The main rule of abstract type is to give a set of types which behaves similarly the same logical meaning. Abstract types can be therefore viewed as a **set of types** that can be instantiated. This is used mainly to define general methods for set of types where we expect the same behavior (recall the Julia design motivation: *if it quacks like a duck, waddles like a duck and looks like a duck, chances are it's a duck*. An abstract types are defined by as `abstract type TypeName end`. For example following set of abstract types defines part of julia's number systems.
+An abstract type can be viewed as a set of concrete types. For example, an
+`AbstractFloat` represents the set of concrete types `(BigFloat,Float64,Float32,Float16)`.
+This is used mainly to define general methods for sets of types for which we expect the same behavior (recall the Julia design motivation: *if it quacks like a duck, waddles like a duck and looks like a duck, chances are it's a duck*). Abstract types are defined with `abstract type TypeName end`. For example the following set of abstract types defines part of julia's number system.
 ```julia
 abstract type Number end
-abstract type Real     <: Number end
-abstract type Complex     <: Number end
+abstract type Real          <: Number end
+abstract type Complex       <: Number end
 abstract type AbstractFloat <: Real end
-abstract type Integer  <: Real end
-abstract type Signed   <: Integer end
-abstract type Unsigned <: Integer end
+abstract type Integer       <: Real end
+abstract type Signed        <: Integer end
+abstract type Unsigned      <: Integer end
 ```
-where `<:` means "is a subtype of" and it is used in declarations where the right-hand is an immediate sypertype of a given type (`Integer` has an immediate supertype `Real`.) If the supertype is not supplied, it is considered to be Any, therefore in the above defition `Number` has a supertype of `Any`. Childrens of a particular type can be viewed as
+where `<:` means "is a subtype of" and it is used in declarations where the right-hand is an immediate sypertype of a given type (`Integer` has the immediate supertype `Real`.) If the supertype is not supplied, it is considered to be Any, therefore in the above defition `Number` has the supertype `Any`. Children of a particular type can be viewed as
 
 ````@example lecture
 using AbstractTrees
@@ -186,30 +198,32 @@ As was mentioned, abstract types allows as to define functions that can be appli
 
 ````@example lecture
 sgn(x::Real) = x > 0 ? 1 : x < 0 ? -1 : 0
+nothing # hide
 ````
 
 and we know it would be correct for all real numbers. This means that if anyone creates
 a new subtype of `Real`, the above function can be used. This also means that
-**it is expected** that comparison operations are defined for any real numbers. Also notice that
-`Complex` numbers are excluded, since that do not have a total order.
+**it is expected** that comparison operations are defined for any real number. Also notice that
+`Complex` numbers are excluded, since they do not have a total order.
 
-For unsigned numbers, the `sgn` can be simplified, as it is sufficient to verify if they are different (greated) then zeros, therefore the function can read
+For unsigned numbers, the `sgn` can be simplified, as it is sufficient to verify if they are different (greater) than zero, therefore the function can read
 
 ````@example lecture
 sgn(x::Unsigned) = x > 0 ? 1 : 0
+nothing # hide
 ````
 
 and again, it applies to all numbers derived from `Unsigned`. Recall that
-`Unsigned <: Integer <: Real,` how does Julia decides,
+`Unsigned <: Integer <: Real,` how does Julia decide,
 which version of the function `sgn` to use for `UInt8(0)`? It chooses the most
-specific version, and therefore for `sgn(UInt8(0))` it will use `sgn(x::Unsinged)`.
+specific version, and thus for `sgn(UInt8(0))` it will use `sgn(x::Unsinged)`.
 If the compiler cannot decide, typically it encounters an ambiguity, it throws an error
-and recommend which function you should define to resolve it.
+and recommends which function you should define to resolve it.
 
 The above behavior allows to define default "fallback" implementations and while allowing
-to specialize for sub-types. A usual example is a matrix multiplication, which has a
+to specialize for sub-types. A great example is matrix multiplication, which has a
 generic (and slow) implementation with many specializations, which can take advantage
-of structure (sparse, banded), or of optimized implementations (e.g. blas implementation
+of structure (sparse, banded), or use optimized implementations (e.g. blas implementation
 for dense matrices with eltype `Float32` and `Float64`).
 
 Again, Julia does not make a difference between abstract types defined in `Base`
@@ -218,13 +232,13 @@ the same.
 
 (![From Julia documentation](https://docs.julialang.org/en/v1/manual/types/#man-abstract-types))
 Abstract types cannot be instantiated, which means that we cannot create a variable that
-would have an abstract type (try `typeof(Number(1f0))`). Also, Abstract types cannot have
+would have an abstract type (try `typeof(Number(1f0))`). Also, abstract types cannot have
 any fields, therefore there is no composition (there are lengty discussions of why this is so,
-one of the most definite arguments of creators is that Abstract types with fields frequently lead
+one of the most definite arguments of creators is that abstract types with fields frequently lead
 to children types not using some fields (consider circle vs. ellipse)).
 
 ### [Composite types](@id composite_types)
-Composite types are similar to `struct` in C (they even have the same memory layout) as they logically join together other types. It is not a great idea to think about them as objects (in OOP sense), because objects tie together *data* and *functions* on owned data. Contrary in Julia (as in C), functions operates on data of structures, but are not tied to them and they are defined outside them. Composite types are workhorses of Julia's type system, as user-defined types are mostly composite (or abstract).
+Composite types are similar to `struct` in C (they even have the same memory layout) as they logically join together other types. It is not a great idea to think about them as objects (in OOP sense), because objects tie together *data* and *functions* on owned data. Contrary in Julia (as in C), functions operate on data of structures, but are not tied to them and they are defined outside them. Composite types are workhorses of Julia's type system, as user-defined types are mostly composite (or abstract).
 
 Composite types are defined using `struct TypeName [fields] end`. To define a position of an animal on the Euclidean plane as a type, we would write
 
@@ -235,7 +249,7 @@ struct PositionF64
 end
 ````
 
-which defines a structure with two fields `x` and `y` of type `Float64`. Julia compiler creates a default constructor, where both (but generally all) arguments are converted using `(convert(Float64, x), convert(Float64, y)` to the correct type. This means that we can construct a PositionF64 with numbers of different type that are convertable to Float64, e.g. `PositionF64(1,1//2)` but we cannot construct `PositionF64` where fields would be of different type (e.g. `Int`, `Float32`, etc.) or they are not trivially convertable (e.g. `String`).
+which defines a structure with two fields `x` and `y` of type `Float64`. Julia's compiler creates a default constructor, where both (but generally all) arguments are converted using `(convert(Float64, x), convert(Float64, y)` to the correct type. This means that we can construct a PositionF64 with numbers of different type that are convertable to Float64, e.g. `PositionF64(1,1//2)` but we cannot construct `PositionF64` where the fields would be of different type (e.g. `Int`, `Float32`, etc.) or they are not trivially convertable (e.g. `String`).
 
 Fields in composite types do not have to have a specified type.  We can define a `VaguePosition` without specifying the type
 
@@ -246,11 +260,11 @@ struct VaguePosition
 end
 ````
 
-This works as the definition above except that arguments are not converted to `Float64` and one can store different values in `x` and `y`, for example `String` (e.g. VaguePosition("Hello","world")). Although the above definition might be convenient, it limits compiler's ability to specialize, as the type  `VaguePosition` does not carry information about type of `x` and `y`, which has a negative impact on the performance. For example
+This works as the definition above except that the arguments are not converted to `Float64` now. One can store different values in `x` and `y`, for example `String` (e.g. VaguePosition("Hello","world")). Although the above definition might be convenient, it limits the compiler's ability to specialize, as the type  `VaguePosition` does not carry information about type of `x` and `y`, which has a negative impact on the performance. For example
 
 ````@example lecture
 using BenchmarkTools
-move(a, b) = typeof(a)(T(a.x + b.x, a.y + b.y))
+move(a::T,b::T) where T = T(a.x + b.x, a.y + b.y)
 x = [PositionF64(rand(), rand()) for _ in 1:100]
 y = [VaguePosition(rand(), rand()) for _ in 1:100]
 @benchmark reduce(move, x)
@@ -347,8 +361,9 @@ and from `AbstractArray{Float64,1}.` Note that these are still `Abstract` types,
 which means you cannot instantiate them. They purpose is
 * to allow to define operations for broad class of concrete types
 * to inform compiler about constant values, which can be used
+Notice in the above example that parameters of types do not have to be types, but also values of primitive types, as in the above example of `AbstractArray` `N` is the number of dimensions which is an integer value.
 
-For convenience, it is common to name some important partially instantiated Abstract types, for example `AbstractVector` as
+For convenience, it is common to give some important partially instantiated Abstract types an **alias**, for example `AbstractVector` as
 ```julia
 const AbstractVector{T} = AbstractArray{T,1}
 ```
@@ -429,7 +444,12 @@ move(a, by)
     m = Base.method_instances(move, (typeof(a), typeof(by))) |> first
 ````
 
-4a. If the method has been specialized (compiled), which we can check as `Base.isgenerated(m)`, then the arguments are prepared and the method is invoked
+4a. If the method has been specialized (compiled), then the arguments are prepared and the method is invoked. The compiled specialization can be seen from
+
+````@example lecture
+  m.cache
+````
+
 4b. If the method has not been specialized (compiled), the compiler compiles the method for a given type of arguments  and continues as in step 4a.
 A compiled function is therefore  a "blob" of **native code** living in a particular memory location. When Julia calls a function, it needs to pick a right block corresponding to a function with particular type of parameters.
 
@@ -471,10 +491,9 @@ THanks to union splitting, Julia is able to have performant operations on arrays
 
 ````@example lecture
 [1, 2, 3, missing] |> typeof
-
-### More on matching methods to functions
 ````
 
+### More on matching methods and arguments
 In the above process, the step, where Julia looks for a method instance with corresponding parameters can be very confusing. The rest of this lecture will focus on this. For those who want to have a formal background, we recommend (talk of  Francesco Zappa Nardelli)[https://www.youtube.com/watch?v=Y95fAipREHQ] and / or the that of (Jan Vitek)[https://www.youtube.com/watch?v=LT4AP7CUMAw].
 
 When Julia needs to specialize a method instance, in needs to find it among multiple definitions. A single function can have many method instances, see for example `methods(+)` which  lists all methods instances of `+` function. How Julia select the proper one?
@@ -542,36 +561,66 @@ foo(a::Vector{Real}) = println("Vector{Real}")
 foo([1.0,2,3])
 ````
 
-Julia's type system is **invariant**, which means that `Vector{Real}` is different from
-`Vector{Float64}` and from `Vector{Float32}`, even though `Float64` and `Float32` are
-sub-types of `Real`. Therefore `typeof([1.0,2,3])` isa `Vector{Float64}` which is not
-subtype of `Vector{Real}.` For **covariant** languages, this would be true. For more
-information on variance in computer languages, see
-!()[https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)].
-If de above definition of `foo` should be applicable to all vectors which has elements
-of subtype of `Real` we have define it as
+  Julia's type system is **invariant**, which means that `Vector{Real}` is different from `Vector{Float64}` and from `Vector{Float32}`, even though `Float64` and `Float32` are sub-types of `Real`. Therefore `typeof([1.0,2,3])` isa `Vector{Float64}` which is not subtype of `Vector{Real}.` For **covariant** languages, this would be true. For more information on variance in computer languages, see ()[https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)]. If de above definition of `foo` should be applicable to all vectors which has elements of subtype of `Real` we have define it as
 
 ````@example lecture
 foo(a::Vector{T}) where {T<:Real} = println("Vector{T} where {T<:Real}")
 ````
 
-or equivalently but more tersely as
+  or equivalently but more tersely as
 
 ````@example lecture
 foo(a::Vector{<:Real}) = println("Vector{T} where {T<:Real}")
 ````
 
 2. Diagonal rule
-rule says that the type repeat in method signature, it has to be
-a concrete type. Consider for example the function below
+rule says that the type repeat in method signature, it has to be a concrete type. Consider for example the function below
 
 ````@example lecture
 move(a::T, b::T) where {T<:Position}
 ````
 
-we cannot call it with `move(Position(1.0,2.0), Position(1,2))`,
-since in this case `Position(1.0,2.0)` is of type `Position{Float64}`
-while `Position(1,2)` is of type `Position{Int64}`.
+we cannot call it with `move(Position(1.0,2.0), Position(1,2))`, since in this case `Position(1.0,2.0)` is of type `Position{Float64}` while `Position(1,2)` is of type `Position{Int64}`.
+3. When debugging why arguments does not match the particular method definition, it is useful to use `typeof`, `isa`, and `<:` commands. For example
+
+````@example lecture
+typeof(Position(1.0,2.0))
+````
+
+````@example lecture
+typeof(Position(1,2))
+````
+
+````@example lecture
+Position(1,2) isa Position{Float64}
+````
+
+````@example lecture
+Position(1,2) isa Position{Real}
+````
+
+````@example lecture
+Position(1,2) isa Position{<:Real}
+````
+
+````@example lecture
+typeof(Position(1,2)) <: Position{<:Float64}
+````
+
+````@example lecture
+typeof(Position(1,2)) <: Position{<:Real}
+````
+
+### A bizzare definitions which you can encounter
+A following definition of One-Hot Matrix is taken from Flux.jl
+
+````@example lecture
+struct OneHotArray{T<:Integer, L, N, var"N+1", I<:Union{T,AbstractArray{T, N}}} <: AbstractArray{Bool, var"N+1"}
+  indices::I
+end
+````
+
+The parameters of the type carry an information about the type used to encode position of `one` in each column in `T`), the dimension of one-hot vectors in `L`, the dimension of the storage of `indices` in `N` (which is zero for OneHotVector and one for OneHotMatrix), number of dimensions of the OneHotArray in `var"N+1"` and the type of underlying storage of indicies `I`.
 
 ---
 
