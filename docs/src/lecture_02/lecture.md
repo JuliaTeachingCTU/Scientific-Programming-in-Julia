@@ -230,7 +230,7 @@ Again, Julia does not make a difference between abstract types defined in `Base`
 libraries shipped with the language and those defined by you (the user). All are treated
 the same.
 
-(![From Julia documentation](https://docs.julialang.org/en/v1/manual/types/#man-abstract-types))
+[From Julia documentation](https://docs.julialang.org/en/v1/manual/types/#man-abstract-types):
 Abstract types cannot be instantiated, which means that we cannot create a variable that
 would have an abstract type (try `typeof(Number(1f0))`). Also, abstract types cannot have
 any fields, therefore there is no composition (there are lengty discussions of why this is so,
@@ -387,7 +387,7 @@ specialized for particular arguments.
 
 ## More on the use of types in function definitions
 ### Terminology
-* A *function* refers to a set of "methods" for a different combination of type parameters (the term function can be therefore considered as refering to a mere **name**). *Methods* define different behavior for different types of arguments for a given function. For example
+A *function* refers to a set of "methods" for a different combination of type parameters (the term function can be therefore considered as refering to a mere **name**). *Methods* define different behavior for different types of arguments for a given function. For example
 
 ````@example lecture
 move(a::Position, b::Position) = Position(a.x + b.x, a.y + b.y)
