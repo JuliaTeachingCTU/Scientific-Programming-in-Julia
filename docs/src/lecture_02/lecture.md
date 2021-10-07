@@ -296,7 +296,7 @@ a.x = 2
 Note, that the memory layout of mutable structures is different, as fields now contain references to memory locations, where the actual values are stored.
 
 ### Parametric Types
-So far, we had to trade-off flexibility for generality in type definitions. Can we have both? The answer is positive. The way to achieve this  **flexibility** in definitions of the type while being  able to generate optimal code is to  **parametrize** the type definition. This is achieved by replacing types with a parameter (typically a single uppercase character) and decorating in definition by specifying different type in curly brackets. For example
+So far, we had to trade-off flexibility for generality in type definitions. Can we have both? The answer is affirmative. The way to achieve this  **flexibility** in definitions of the type while being  able to generate optimal code is to  **parametrize** the type definition. This is achieved by replacing types with a parameter (typically a single uppercase character) and decorating in definition by specifying different type in curly brackets. For example
 
 ````@example lecture
 struct PositionT{T}
@@ -308,7 +308,7 @@ u = [PositionT(rand(), rand()) for _ in 1:100];
 nothing #hide
 ````
 
-Notice that the compiler can take advantage of specializing for differen types (which does not have effect as in modern processrs have addition of Float and Int takes the same time).
+Notice that the compiler can take advantage of specializing for different types (which does not have effect as in modern processrs have addition of `Float` and `Int` takes the same time).
 
 ````@example lecture
 v = [PositionT(rand(1:100), rand(1:100)) for _ in 1:100];
@@ -370,77 +370,34 @@ specialized for a particular arguments.
 
 ## More on use of types in function definitions
 ### Terminology
-* A *function* refers to a set of "methods" for a different combination of type parameters (a term function can be therefore considered as refering to a mere **name**). A *method* defining different behavior for different type of arguments are also called specializations. For example
+* A *function* refers to a set of "methods" for a different combination of type parameters (a term function can be therefore considered as refering to a mere **name**). *Methods* define different behavior for different type of arguments for a given function. For in below example
 
 ````@example lecture
-move(a, b) = Position(a.x + b.x, a.y + b.y)
 move(a::Position, b::Position) = Position(a.x + b.x, a.y + b.y)
 move(a::Vector{<:Position}, b::Vector{<:Position}) = move.(a,b)
 ````
 
-`move` refers to function, where `move(a, b)`, `move(a::Position, b::Position)` and `move(a::Vector{<:Position}, b::Vector{<:Position})` are methods. When different behavior on different types is defined by a programmer, as shown above, we call about *implementation specialization*. There is another type of specialization, called compiler specialization*, which occurs when the compiler generates different functions for you from a single method. For example for
+`move` refers to a function with methods `move(a::Position, b::Position)` and `move(a::Vector{<:Position}, b::Vector{<:Position})`. When different behavior on different types is defined by a programmer, as shown above, it is also called *implementation specialization*. There is another type of specialization, called compiler specialization*, which occurs when the compiler generates different functions for you from a single method. For example for
 
 ````@example lecture
 move(Position(1,1), Position(2,2))
 move(Position(1.0,1.0), Position(2.0,2.0))
 ````
 
-the compiler has to generate two methods, since in the first case it will be adding `Int64`s while in the latter it will be adding `Float64`s (and it needs to use different intrinsics, which you can check using `@code_native  move(Position(1,1), Position(2,2))` and `@code_native move(Position(1.0,1.0), Position(2.0,2.0))`).
+the compiler generates two methods, one for `Position{Int64}` and the other for `Position{Float64}`. Notice that inside generated functions, the compiler needs to use different intrinsic operations, which can be viewed from
 
 ````@example lecture
-### How Julia compiler works?
+@code_native  move(Position(1,1), Position(2,2))
 ````
 
-Compiled function is a "blob" of **native code** living in a particular memory location.
-When Julia calls a function, it needs to pick a right block corresponding to a function
-with particular type of parameters.
-Calling a function involves therefore involves
-* preparing parameters
-* finding a right block corresponding to a function with particular type of parameters.
-The process can be made during runtime (when code is executing) or during compile time
-(when code is compiled) and everything in between.
+and
 
-An interesting intermediate is called Union-Splitting, which happens when there is just
-a little bit of uncertainty. Julia will do something like
-```julia
-argtypes = typeof(args)
-push!(execution_stack, args)
-if T == Tuple{Int, Bool}
-  @goto compiled_blob_1234
-else # the only other option is Tuple{Float64, Bool}
-  @goto compiled_blob_1236
-end
-```
+````@example lecture
+@code_native move(Position(1.0,1.0), Position(2.0,2.0))
+````
 
-1. The compiler knows that you want to call function `move`
-2. The compiler tries to infer type of arguments, the result can be viewed using `typeof(a)` / `typef(b)`
-3. The compiler looks of he has already specialized (compiled) a version of `move` for give
-    types of parameters.
-4a. If the method has been specialized, it is called adter arguments are prepared.
-4b. If the method has not been specialized, the compiler find a method instance corresponding
-    to type of parameters, compile it (and cache with all method instances called witihn this
-    method), and execute it.
-If the compiler determines that the arguments are abstract, it has to perform the above procedure
-within the function, which has negative effect on the performance, as the above procedure can
-be slow, especially for methods with many arguments (e.g. 30ns for a method with one argument,
-100 ns for method with two arguements).
-
-In the above process, the step, where Julia looks for a method instance with corresponding
-parameters can be very confusing. The rest of this lecture will focus on this. For those who
-want to know more, we recommend
-(talk of  Francesco Zappa Nardelli)[https://www.youtube.com/watch?v=Y95fAipREHQ]
-and / or the talk of (Jan Vitek)[https://www.youtube.com/watch?v=LT4AP7CUMAw].
-
-When Julia needs to specialize a method instance, in needs to find it among multiple definitions.
-A single function can have many method instances, see for example `methods(+)` which
-lists all methods instances of `+` function. How Julia select the proper one?
-1. It finds all methods where type of arguments match or are subtypes of restrictions
-   on arguments in the method definition.
-2. If there are multiple matches, the compiler selects the most specific definition.
-3. If the compiler cannot decide, which method instance to choose, it throws an error.
-
-Example:
-Consider following definitions
+## Intermezzo: How Julia compiler works?
+Let's walk through an example. Consider following definitions
 
 ````@example lecture
 move(a::Position, by::Position) = Position(a.x + by.x, a.y + by.y)
@@ -450,7 +407,7 @@ move(a::Vector{<:Position}, by::Vector{<:Position}) = move.(a, by)
 move(a::Vector{<:Position}, by::Position) = move.(a, by)
 ````
 
-and function call
+and a function call
 
 ````@example lecture
 a = Position(1.0, 1.0)
@@ -458,35 +415,124 @@ by = Position(2.0, 2.0)
 move(a, by)
 ````
 
-since types of `a` and `b` are `Position{Float64}`, from the above list following three
-methods
-```julia
-move(a::Position, by::Position) = Position(a.x + by.x, a.y + by.y)
-move(a::T, by::T) where {T<:Position} = Position(a.x + by.x, a.y + by.y)
-move(a::Position{Float64}, by::Position{Float64}) = Position(a.x + by.x, a.y + by.y)
-```
-can be used for the given arguments. Julia will select ** the most specific ** version, which is
-```julia
-move(a::Position{Float64}, by::Position{Float64}) = Position(a.x + by.x, a.y + by.y)
-```
-For
+1. The compiler knows that you call function `move`
+2. and the compiler infers type of arguments (you can see the result using
 
 ````@example lecture
-a = Position(1f0, 1f0)
-by = Position(2f0, 2f0)
-move(a, by)
+    (typeof(a),typeof(by))
 ````
 
-following methods matche types of arguments
+3. The compiler identifies all methods that can be applied to a function `move` with arguments of type `(Position{Float64}, Position{Float64})`
+
+````@example lecture
+    Base.method_instances(move, (typeof(a), typeof(by)))
+    m = Base.method_instances(move, (typeof(a), typeof(by))) |> first
+````
+
+4a. If the method has been specialized (compiled), which we can check as `Base.isgenerated(m)`, then the arguments are prepared and the method is invoked
+4b. If the method has not been specialized (compiled), the compiler compiles the method for a given type of arguments  and continues as in step 4a.
+A compiled function is therefore  a "blob" of **native code** living in a particular memory location. When Julia calls a function, it needs to pick a right block corresponding to a function with particular type of parameters.
+
+If the compiler cannot narrow types of arguments to concrete types, it has to perform the above procedure inside the called function, which has negative effect on the performance, as the type resulution and identification of the method can be slow, especially for methods with many arguments (e.g. 30ns for a method with one argument,
+100 ns for method with two arguements).
+Recall the above example
+
+````@example lecture
+wolfpack_a =  [Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
+@benchmark energy(wolfpack_a)
+````
+
+and
+
+````@example lecture
+wolfpack_b =  Any[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
+@benchmark energy(wolfpack_b)
+````
+
+An interesting intermediate between fully abstract and fully concrete type happens, when the compiler knows that arguments have abstract type, which is composed of a small number of concrete types. This case  called Union-Splitting, which happens when there is just a little bit of uncertainty. Julia will do something like
 ```julia
+argtypes = typeof(args)
+push!(execution_stack, args)
+if T == Tuple{Int, Bool}
+  @goto compiled_blob_1234
+else # the only other option is Tuple{Float64, Bool}
+  @goto compiled_blob_1236
+end
+```
+For example
+
+````@example lecture
+const WolfOrSheep = Union{Wolf, Sheep}
+wolfpack_c =  WolfOrSheep[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
+@benchmark energy(wolfpack_c)
+````
+
+THanks to union splitting, Julia is able to have performant operations on arrays with undefined / missing values for example
+
+````@example lecture
+[1, 2, 3, missing] |> typeof
+
+### More on matching methods to functions
+````
+
+In the above process, the step, where Julia looks for a method instance with corresponding parameters can be very confusing. The rest of this lecture will focus on this. For those who want to have a formal background, we recommend (talk of  Francesco Zappa Nardelli)[https://www.youtube.com/watch?v=Y95fAipREHQ] and / or the that of (Jan Vitek)[https://www.youtube.com/watch?v=LT4AP7CUMAw].
+
+When Julia needs to specialize a method instance, in needs to find it among multiple definitions. A single function can have many method instances, see for example `methods(+)` which  lists all methods instances of `+` function. How Julia select the proper one?
+1. It finds all methods where type of arguments match or are subtypes of restrictions  on arguments in the method definition.
+2a. If there are multiple matches, the compiler selects the most specific definition.
+2b. If the compiler cannot decide, which method instance to choose, it throws an error.
+
+````@example lecture
+confused_move(a::Position{Float64}, by) = Position(a.x + by.x, a.y + by.y)
+confused_move(a, by::Position{Float64}) = Position(a.x + by.x, a.y + by.y)
+confused_move(Position(1.0,2.0), Position(1.0,2.0))
+````
+
+2c. If it cannot find a suitable method, it throws an error.
+
+````@example lecture
+move(Position(1,2), VaguePosition("hello","world"))
+````
+
+Some examples
+Consider following definitions
+
+````@example lecture
 move(a::Position, by::Position) = Position(a.x + by.x, a.y + by.y)
-move(a::T, by::T) where {T<:Position} = Position(a.x + by.x, a.y + by.y)
-```
-from which Julia picks
-```julia
-move(a::T, by::T) where {T<:Position} = Position(a.x + by.x, a.y + by.y)
-```
-which is again more specific.
+move(a::T, by::T) where {T<:Position} = T(a.x + by.x, a.y + by.y)
+move(a::Position{Float64}, by::Position{Float64}) = Position(a.x + by.x, a.y + by.y)
+move(a::Vector{<:Position}, by::Vector{<:Position}) = move.(a, by)
+move(a::Vector{T}, by::Vector{T}) where {T<:Position} = move.(a, by)
+move(a::Vector{<:Position}, by::Position) = move.(a, by)
+````
+
+Which method will compiler select for
+
+````@example lecture
+move(Position(1.0,2.0), Position(1.0,2.0))
+````
+
+First three matches types of argumens, but the compiler will select the third one, since it is the most specific.
+
+Which method will compiler select for
+
+````@example lecture
+move(Position(1,2), Position(1,2))
+````
+
+Again, the first and second method definitions match the argument, but the second is the most specific.
+
+Which method will compiler select for
+
+````@example lecture
+move([Position(1,2)], [Position(1,2)])
+````
+
+Again, the fourth and fifth method definitions match the argument, but the fifth is the most specific.
+
+````@example lecture
+move([Position(1,2), Position(1.0,2.0)], [Position(1,2), Position(1.0,2.0)])
+````
 
 ### Frequent problems
 1. Why the following fails?
