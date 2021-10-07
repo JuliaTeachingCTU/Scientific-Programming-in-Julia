@@ -9,20 +9,20 @@ using InteractiveUtils # hide
 using InteractiveUtils: subtypes # hide
 ````
 
-Before going into details about Julia type system, we will spend a few minutes motivating
+Before going into details of the Julia type system, we will spend a few minutes motivating
 the two main roles of the type system, which are:
 
-1. Structuring the code
-2. Communicating to the compiler how your type will be used.
+1. Structuring your code
+2. Communicating to the compiler how your type will be used
 
 The first aspect is important for the convenience of the programmer and enables abstractions
 in the language, the latter aspect is important for the speed of the generated code.
 
 Type systems according to [Wikipedia](https://en.wikipedia.org/wiki/Data_type):
-* In computer science and computer programming, a **data type** or simply **type** is an attribute of data which tells the compiler or interpreter how the programmer intends to use the data.*
-* A **type system** is a logical system comprising a set of rules that assigns a property called a type to the various constructs of a computer program, such as variables, expressions, functions or modules. These types formalize and enforce the otherwise implicit categories the programmer uses for algebraic data types, data structures, or other components.*
+* In computer science and computer programming, a **data type** or simply **type** is an attribute of data which tells the compiler or interpreter how the programmer intends to use the data.
+* A **type system** is a logical system comprising a set of rules that assigns a property called a type to the various constructs of a computer program, such as variables, expressions, functions or modules. These types formalize and enforce the otherwise implicit categories the programmer uses for algebraic data types, data structures, or other components.
 
-## Structuring the code / enforcing the categories
+## 1. Structuring the code / enforcing the categories
 The role of **structuring** the code and imposing semantic restriction
 means that the type system allows you to logically divide your program,
 and to prevent certain types of errors.
@@ -49,7 +49,7 @@ baa(sheep::Sheep) = println(sheep.name, " has baaed.")
 nothing # hide
 ````
 
-Therefore the compiler (or interpretter) **enforces** that a wolf can only `howl`
+Therefore the compiler (or interpreter) **enforces** that a wolf can only `howl`
 and never `baa` and vice versa a sheep can only `baa`. In this sense, it ensures
 that `howl(sheep)` and `baa(wolf)` never happen.
 For comparison, consider an alternative definition as follows
@@ -64,9 +64,8 @@ in which case the burden of ensuring that a wolf will never baa rests upon the
 programmer which inevitably leads to errors (note that severely constrained
 type systems are difficult to use).
 
-## Intention of use and restrictions on compilers
-The *intention of use* in types is related to how efficient code a compiler can
-produce for that given intention. As an example, consider a following two
+## 2. Intention of use and restrictions on compilers
+Additionally, types are used to generate efficient code. As an example, consider the following two
 alternatives to represent a set of animals:
 
 ````@example lecture
@@ -173,7 +172,7 @@ Primitive types are rarely used, and they will not be used in this course. We me
 for the sake of completeness and refer the reader to the official Documentation (and source code
 of Julia).
 
-### Abstract Type
+### Abstract types
 
 An abstract type can be viewed as a set of concrete types. For example, an
 `AbstractFloat` represents the set of concrete types `(BigFloat,Float64,Float32,Float16)`.
@@ -314,7 +313,7 @@ a
 
 Note, that the memory layout of mutable structures is different, as fields now contain references to memory locations, where the actual values are stored.
 
-### Parametric Types
+### Parametric types
 So far, we had to trade-off flexibility for generality in type definitions. Can we have both? The answer is affirmative. The way to achieve this  **flexibility** in definitions of the type while being  able to generate optimal code is to  **parametrize** the type definition. This is achieved by replacing types with a parameter (typically a single uppercase character) and decorating in definition by specifying different type in curly brackets. For example
 
 ````@example lecture
