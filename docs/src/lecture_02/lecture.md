@@ -87,7 +87,7 @@ nothing # hide
 A good compiler makes use of the information provided by the type system to generate effiecint code
 which we can verify by inspecting the compiled code using `@code_native` macro
 
-````@repl lecture
+````@repl lecture; ansicolor=true
 @code_native energy(a)
 @code_native energy(b)
 ````
@@ -381,7 +381,7 @@ nothing # hide
 You can verify that the above general function can be compiled to performant code if
 specialized for particular arguments.
 
-````@example lecture
+````@example lecture; ansicolor=true
 @code_native mapreduce(*,+, [1,2,3], [1,2,3])
 ````
 
@@ -404,13 +404,13 @@ move(Position(1.0,1.0), Position(2.0,2.0))
 
 the compiler generates two methods, one for `Position{Int64}` and the other for `Position{Float64}`. Notice that inside generated functions, the compiler needs to use different intrinsic operations, which can be viewed from
 
-````@example lecture
+````@example lecture; ansicolor=true
 @code_native move(Position(1,1), Position(2,2))
 ````
 
 and
 
-````@example lecture
+````@example lecture; ansicolor=true
 @code_native move(Position(1.0,1.0), Position(2.0,2.0))
 ````
 
