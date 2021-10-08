@@ -11,59 +11,59 @@ end</code></pre><p>This allows us to define functions applicable only to the cor
 baa(sheep::Sheep) = println(sheep.name, &quot; has baaed.&quot;)</code></pre><p>Therefore the compiler (or interpreter) <strong>enforces</strong> that a wolf can only <code>howl</code> and never <code>baa</code> and vice versa a sheep can only <code>baa</code>. In this sense, it ensures that <code>howl(sheep)</code> and <code>baa(wolf)</code> never happen. For comparison, consider an alternative definition as follows</p><pre><code class="language-julia hljs">bark(animal) = println(animal.name, &quot; has howled.&quot;)
 baa(animal)  = println(animal.name, &quot; has baaed.&quot;)</code></pre><p>in which case the burden of ensuring that a wolf will never baa rests upon the programmer which inevitably leads to errors (note that severely constrained type systems are difficult to use).</p><h2 id="Intention-of-use-and-restrictions-on-compilers"><a class="docs-heading-anchor" href="#Intention-of-use-and-restrictions-on-compilers">Intention of use and restrictions on compilers</a><a id="Intention-of-use-and-restrictions-on-compilers-1"></a><a class="docs-heading-anchor-permalink" href="#Intention-of-use-and-restrictions-on-compilers" title="Permalink"></a></h2><p>Additionally, types are used to generate efficient code. As an example, consider the following two alternatives to represent a set of animals:</p><pre><code class="language-julia hljs">a = [Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Sheep(&quot;3&quot;, 3)]
 b = (Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Sheep(&quot;3&quot;, 3))</code></pre><p>where <code>a</code> is an array which can contain arbitrary types and have arbitrary length whereas <code>b</code> is a <code>Tuple</code> which has fixed length in which the first two items are of type <code>Wolf</code> and the third item is of type <code>Sheep</code>. Moreover, consider a function which calculates the energy of all animals as</p><pre><code class="language-julia hljs">energy(animals) = mapreduce(x -&gt; x.energy, +, animals)</code></pre><p>A good compiler makes use of the information provided by the type system to generate effiecint code which we can verify by inspecting the compiled code using <code>@code_native</code> macro</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_native energy(a)</code><code class="nohighlight hljs ansi" style="display:block;">	.text
-; ┌ @ lecture.md:83 within `energy&#39;
-	subq	$40, %rsp
-	movq	%rsi, 32(%rsp)
-	movq	(%rsi), %rax
-	movabsq	$140044858353424, %rcx          # imm = 0x7F5EBC08E710
-; │┌ @ reducedim.jl:310 within `mapreduce&#39;
-; ││┌ @ reducedim.jl:310 within `#mapreduce#672&#39;
-; │││┌ @ reducedim.jl:318 within `_mapreduce_dim&#39;
-	movq	%rcx, (%rsp)
-	movabsq	$jl_system_image_data, %rcx
-	movq	%rcx, 8(%rsp)
-	movabsq	$jl_system_image_data, %rcx
-	movq	%rcx, 16(%rsp)
-	movq	%rax, 24(%rsp)
-	movabsq	$_mapreduce, %rax
-	movabsq	$jl_system_image_data, %rdi
-	movq	%rsp, %rsi
-	movl	$4, %edx
-	callq	*%rax
-; │└└└
-	addq	$40, %rsp
-	retq
-; └</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_native energy(b)</code><code class="nohighlight hljs ansi" style="display:block;">	.text
-; ┌ @ lecture.md:83 within `energy&#39;
-; │┌ @ reduce.jl:287 within `mapreduce&#39;
-; ││┌ @ reduce.jl:287 within `#mapreduce#218&#39;
-; │││┌ @ reduce.jl:160 within `mapfoldl&#39;
-; ││││┌ @ reduce.jl:160 within `#mapfoldl#214&#39;
-; │││││┌ @ reduce.jl:44 within `mapfoldl_impl&#39;
-; ││││││┌ @ reduce.jl:48 within `foldl_impl&#39;
-; │││││││┌ @ tuple.jl:263 within `_foldl_impl&#39;
-; ││││││││┌ @ operators.jl:534 within `afoldl&#39;
-; │││││││││┌ @ reduce.jl:93 within `MappingRF&#39;
-; ││││││││││┌ @ reduce.jl:81 within `BottomRF&#39;
-; │││││││││││┌ @ int.jl:87 within `+&#39;
-	movq	24(%rdi), %rax
-	addq	8(%rdi), %rax
-; ││││││││└└└└
-; ││││││││┌ @ operators.jl:535 within `afoldl&#39;
-; │││││││││┌ @ reduce.jl:93 within `MappingRF&#39;
-; ││││││││││┌ @ reduce.jl:81 within `BottomRF&#39;
-; │││││││││││┌ @ int.jl:87 within `+&#39;
-	addq	40(%rdi), %rax
-; │└└└└└└└└└└└
-	retq
-	nopl	(%rax)
-; └</code></pre><p>one observes the second version produces more optimal code. Why is that?</p><ul><li>In the first representation, <code>a</code>, the animals are stored in an <code>Array</code> which can have arbitrary size and can contain arbitrary animals. This means that the compiler has to compile <code>energy(a)</code> such that it works on such arrays.</li><li>In the second representation, <code>b</code>, the animals are stored in a <code>Tuple</code>, which specializes for lengths and types of items. This means that the compiler knows the number of animals and the type of each animal on each position within the tuple, which allows it to specialize.</li></ul><p>This difference will indeed have an impact on the time of code execution. On my i5-8279U CPU, the difference (as measured by BenchmarkTools) is</p><pre><code class="language-julia hljs">using BenchmarkTools
+<span class="sgr90">; ┌ @ lecture.md:83 within `energy&#39;</span>
+	<span class="sgr96"><span class="sgr1">subq</span></span>	<span class="sgr33">$40</span>, %rsp
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsi, <span class="sgr33">32(</span>%rsp<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	<span class="sgr33">(</span>%rsi<span class="sgr33">)</span>, %rax
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr33">$140177508886280</span>, %rcx          <span class="sgr90"># imm = 0x7F7D9E9F6708</span>
+<span class="sgr90">; │┌ @ reducedim.jl:310 within `mapreduce&#39;</span>
+<span class="sgr90">; ││┌ @ reducedim.jl:310 within `#mapreduce#672&#39;</span>
+<span class="sgr90">; │││┌ @ reducedim.jl:318 within `_mapreduce_dim&#39;</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rcx, <span class="sgr33">(</span>%rsp<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$jl_system_image_data</span>, %rcx
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rcx, <span class="sgr33">8(</span>%rsp<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$jl_system_image_data</span>, %rcx
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rcx, <span class="sgr33">16(</span>%rsp<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rax, <span class="sgr33">24(</span>%rsp<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$_mapreduce</span>, %rax
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$jl_system_image_data</span>, %rdi
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsp, %rsi
+	<span class="sgr96"><span class="sgr1">movl</span></span>	<span class="sgr33">$4</span>, %edx
+	<span class="sgr96"><span class="sgr1">callq</span></span>	*%rax
+<span class="sgr90">; │└└└</span>
+	<span class="sgr96"><span class="sgr1">addq</span></span>	<span class="sgr33">$40</span>, %rsp
+	<span class="sgr96"><span class="sgr1">retq</span></span>
+<span class="sgr90">; └</span></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_native energy(b)</code><code class="nohighlight hljs ansi" style="display:block;">	.text
+<span class="sgr90">; ┌ @ lecture.md:83 within `energy&#39;</span>
+<span class="sgr90">; │┌ @ reduce.jl:287 within `mapreduce&#39;</span>
+<span class="sgr90">; ││┌ @ reduce.jl:287 within `#mapreduce#218&#39;</span>
+<span class="sgr90">; │││┌ @ reduce.jl:160 within `mapfoldl&#39;</span>
+<span class="sgr90">; ││││┌ @ reduce.jl:160 within `#mapfoldl#214&#39;</span>
+<span class="sgr90">; │││││┌ @ reduce.jl:44 within `mapfoldl_impl&#39;</span>
+<span class="sgr90">; ││││││┌ @ reduce.jl:48 within `foldl_impl&#39;</span>
+<span class="sgr90">; │││││││┌ @ tuple.jl:263 within `_foldl_impl&#39;</span>
+<span class="sgr90">; ││││││││┌ @ operators.jl:534 within `afoldl&#39;</span>
+<span class="sgr90">; │││││││││┌ @ reduce.jl:93 within `MappingRF&#39;</span>
+<span class="sgr90">; ││││││││││┌ @ reduce.jl:81 within `BottomRF&#39;</span>
+<span class="sgr90">; │││││││││││┌ @ int.jl:87 within `+&#39;</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	<span class="sgr33">24(</span>%rdi<span class="sgr33">)</span>, %rax
+	<span class="sgr96"><span class="sgr1">addq</span></span>	<span class="sgr33">8(</span>%rdi<span class="sgr33">)</span>, %rax
+<span class="sgr90">; ││││││││└└└└</span>
+<span class="sgr90">; ││││││││┌ @ operators.jl:535 within `afoldl&#39;</span>
+<span class="sgr90">; │││││││││┌ @ reduce.jl:93 within `MappingRF&#39;</span>
+<span class="sgr90">; ││││││││││┌ @ reduce.jl:81 within `BottomRF&#39;</span>
+<span class="sgr90">; │││││││││││┌ @ int.jl:87 within `+&#39;</span>
+	<span class="sgr96"><span class="sgr1">addq</span></span>	<span class="sgr33">40(</span>%rdi<span class="sgr33">)</span>, %rax
+<span class="sgr90">; │└└└└└└└└└└└</span>
+	<span class="sgr96"><span class="sgr1">retq</span></span>
+	<span class="sgr96"><span class="sgr1">nopl</span></span>	<span class="sgr33">(</span>%rax<span class="sgr33">)</span>
+<span class="sgr90">; └</span></code></pre><p>one observes the second version produces more optimal code. Why is that?</p><ul><li>In the first representation, <code>a</code>, the animals are stored in an <code>Array</code> which can have arbitrary size and can contain arbitrary animals. This means that the compiler has to compile <code>energy(a)</code> such that it works on such arrays.</li><li>In the second representation, <code>b</code>, the animals are stored in a <code>Tuple</code>, which specializes for lengths and types of items. This means that the compiler knows the number of animals and the type of each animal on each position within the tuple, which allows it to specialize.</li></ul><p>This difference will indeed have an impact on the time of code execution. On my i5-8279U CPU, the difference (as measured by BenchmarkTools) is</p><pre><code class="language-julia hljs">using BenchmarkTools
 @btime energy(a);
-@btime energy(b);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">  105.514 ns (0 allocations: 0 bytes)
-  18.154 ns (0 allocations: 0 bytes)</code></pre><p>Which nicely demonstrates that the choice of types affects performance. Does it mean that we should always use <code>Tuples</code> instead of <code>Arrays</code>? Surely not, it is  just that each is better for different use-cases. Using Tuples means that the compiler will compile a special function for each length of tuple and each combination of types of items it contains, which is clearly wasteful.</p><h1 id="type_system"><a class="docs-heading-anchor" href="#type_system">Julia&#39;s type system</a><a id="type_system-1"></a><a class="docs-heading-anchor-permalink" href="#type_system" title="Permalink"></a></h1><h2 id="Julia-is-dynamicaly-typed"><a class="docs-heading-anchor" href="#Julia-is-dynamicaly-typed">Julia is dynamicaly typed</a><a id="Julia-is-dynamicaly-typed-1"></a><a class="docs-heading-anchor-permalink" href="#Julia-is-dynamicaly-typed" title="Permalink"></a></h2><p>Julia&#39;s type system is dynamic, which means that all types are resolved during runtime. <strong>But</strong>, if the compiler can infer types of all variables of the called function, it can specialize the function for that given type of variables which leads to efficient code. Consider a modified example where we represent two wolfpacks:</p><pre><code class="language-julia hljs">wolfpack_a =  [Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Wolf(&quot;3&quot;, 3)]
+@btime energy(b);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">  106.755 ns (0 allocations: 0 bytes)
+  18.036 ns (0 allocations: 0 bytes)</code></pre><p>Which nicely demonstrates that the choice of types affects performance. Does it mean that we should always use <code>Tuples</code> instead of <code>Arrays</code>? Surely not, it is  just that each is better for different use-cases. Using Tuples means that the compiler will compile a special function for each length of tuple and each combination of types of items it contains, which is clearly wasteful.</p><h1 id="type_system"><a class="docs-heading-anchor" href="#type_system">Julia&#39;s type system</a><a id="type_system-1"></a><a class="docs-heading-anchor-permalink" href="#type_system" title="Permalink"></a></h1><h2 id="Julia-is-dynamicaly-typed"><a class="docs-heading-anchor" href="#Julia-is-dynamicaly-typed">Julia is dynamicaly typed</a><a id="Julia-is-dynamicaly-typed-1"></a><a class="docs-heading-anchor-permalink" href="#Julia-is-dynamicaly-typed" title="Permalink"></a></h2><p>Julia&#39;s type system is dynamic, which means that all types are resolved during runtime. <strong>But</strong>, if the compiler can infer types of all variables of the called function, it can specialize the function for that given type of variables which leads to efficient code. Consider a modified example where we represent two wolfpacks:</p><pre><code class="language-julia hljs">wolfpack_a =  [Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Wolf(&quot;3&quot;, 3)]
 wolfpack_b =  Any[Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Wolf(&quot;3&quot;, 3)]</code></pre><p><code>wolfpack_a</code> carries a type <code>Vector{Wolf}</code> while <code>wolfpack_b</code> has the type <code>Vector{Any}</code>. This means that in the first case, the compiler knows that all items are of the type <code>Wolf</code>and it can specialize functions using this information. In case of <code>wolfpack_b</code>, it does not know which animal it will encounter (although all are of the same type), and therefore it needs to dynamically resolve the type of each item upon its use. This ultimately leads to less performant code.</p><pre><code class="language-julia hljs">@btime energy(wolfpack_a)
-@btime energy(wolfpack_b)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">  20.060 ns (0 allocations: 0 bytes)
-  107.081 ns (0 allocations: 0 bytes)</code></pre><p>To conclude, julia is indeed a dynamically typed language, <strong>but</strong> if the compiler can infer all types in a called function in advance, it does not have to perform the type resolution during execution, which produces performant code.</p><h2 id="Classes-of-types"><a class="docs-heading-anchor" href="#Classes-of-types">Classes of types</a><a id="Classes-of-types-1"></a><a class="docs-heading-anchor-permalink" href="#Classes-of-types" title="Permalink"></a></h2><p>Julia divides types into three classes: primitive, composite, and abstract.</p><h3 id="Primitive-types"><a class="docs-heading-anchor" href="#Primitive-types">Primitive types</a><a id="Primitive-types-1"></a><a class="docs-heading-anchor-permalink" href="#Primitive-types" title="Permalink"></a></h3><p>Citing the <a href="https://docs.julialang.org/en/v1/manual/types/#Primitive-Types">documentation</a>:  <em>A primitive type is a concrete type whose data consists of plain old bits. Classic examples  of primitive types are integers and floating-point values. Unlike most languages, Julia lets you declare your own primitive types, rather than providing only a fixed set of built-in ones. In fact, the standard primitive types are all defined in the language itself.</em></p><p>The definition of primitive types look as follows</p><pre><code class="language-julia hljs">primitive type Float16 &lt;: AbstractFloat 16 end
+@btime energy(wolfpack_b)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">  19.057 ns (0 allocations: 0 bytes)
+  102.704 ns (0 allocations: 0 bytes)</code></pre><p>To conclude, julia is indeed a dynamically typed language, <strong>but</strong> if the compiler can infer all types in a called function in advance, it does not have to perform the type resolution during execution, which produces performant code.</p><h2 id="Classes-of-types"><a class="docs-heading-anchor" href="#Classes-of-types">Classes of types</a><a id="Classes-of-types-1"></a><a class="docs-heading-anchor-permalink" href="#Classes-of-types" title="Permalink"></a></h2><p>Julia divides types into three classes: primitive, composite, and abstract.</p><h3 id="Primitive-types"><a class="docs-heading-anchor" href="#Primitive-types">Primitive types</a><a id="Primitive-types-1"></a><a class="docs-heading-anchor-permalink" href="#Primitive-types" title="Permalink"></a></h3><p>Citing the <a href="https://docs.julialang.org/en/v1/manual/types/#Primitive-Types">documentation</a>:  <em>A primitive type is a concrete type whose data consists of plain old bits. Classic examples  of primitive types are integers and floating-point values. Unlike most languages, Julia lets you declare your own primitive types, rather than providing only a fixed set of built-in ones. In fact, the standard primitive types are all defined in the language itself.</em></p><p>The definition of primitive types look as follows</p><pre><code class="language-julia hljs">primitive type Float16 &lt;: AbstractFloat 16 end
 primitive type Float32 &lt;: AbstractFloat 32 end
 primitive type Float64 &lt;: AbstractFloat 64 end</code></pre><p>and they are mainly used to jump-start julia&#39;s type system. It is rarely needed to define a special primitive type, as it makes sense only if you define special functions operating on its bits. This is almost excusively used for exposing special operations provided by the underlying CPU / LLVM compiler. For example <code>+</code> for <code>Int32</code> is different from <code>+</code> for <code>Float32</code> as they call a different intrinsic operations. You can inspect this jump-starting of the type system yourself by looking at Julia&#39;s source.</p><pre><code class="language-julia hljs">julia&gt; @which +(1,2)
 +(x::T, y::T) where T&lt;:Union{Int128, Int16, Int32, Int64, Int8, UInt128, UInt16, UInt32, UInt64, UInt8} in Base at int.jl:87</code></pre><p>At <code>int.jl:87</code></p><pre><code class="language-julia hljs">(+)(x::T, y::T) where {T&lt;:BitInteger} = add_int(x, y)</code></pre><p>we see that <code>+</code> of integers is calling the function <code>add_int(x, y)</code>, which is defined in the core part of the compiler in <code>Intrinsics.cpp</code> (yes, in C++).</p><p>From Julia docs: <em>Core is the module that contains all identifiers considered &quot;built in&quot; to the language, i.e. part of the core language and not libraries. Every module implicitly specifies using Core, since you can&#39;t do anything without those definitions.</em></p><p>Primitive types are rarely used, and they will not be used in this course. We mention them for the sake of completeness and refer the reader to the official Documentation (and source code of Julia).</p><h3 id="Abstract-types"><a class="docs-heading-anchor" href="#Abstract-types">Abstract types</a><a id="Abstract-types-1"></a><a class="docs-heading-anchor-permalink" href="#Abstract-types" title="Permalink"></a></h3><p>An abstract type can be viewed as a set of concrete types. For example, an <code>AbstractFloat</code> represents the set of concrete types <code>(BigFloat,Float64,Float32,Float16)</code>. This is used mainly to define general methods for sets of types for which we expect the same behavior (recall the Julia design motivation: <em>if it quacks like a duck, waddles like a duck and looks like a duck, chances are it&#39;s a duck</em>). Abstract types are defined with <code>abstract type TypeName end</code>. For example the following set of abstract types defines part of julia&#39;s number system.</p><pre><code class="language-julia hljs">abstract type Number end
@@ -122,13 +122,13 @@ x = [PositionF64(rand(), rand()) for _ in 1:100]
 y = [VaguePosition(rand(), rand()) for _ in 1:100]
 @benchmark reduce(move, x)
 @benchmark reduce(move, y)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">BenchmarkTools.Trial: 10000 samples with 7 evaluations.
- Range (min … max):  4.229 μs …  1.343 ms  ┊ GC (min … max): 0.00% … 99.36%
- Time  (median):     5.000 μs              ┊ GC (median):    0.00%
- Time  (mean ± σ):   6.060 μs ± 20.897 μs  ┊ GC (mean ± σ):  6.63% ±  1.99%
+ Range (min … max):  4.500 μs … 758.682 μs  ┊ GC (min … max): 0.00% … 99.12%
+ Time  (median):     4.671 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   5.311 μs ±  14.167 μs  ┊ GC (mean ± σ):  5.31% ±  1.98%
 
-    ▁▁▄▆█▆▄        ▁▂▃▂▃▃▂▂▂▂▁                               ▁
-  ▅█████████▇▆▆▆▃▇███████████████▇▅▅▆▄▅▆▇▇▇██▇▇▇▆▅▅▅▂▆▅▃▃▃▃▃ █
-  4.23 μs      Histogram: log(frequency) by time     10.8 μs &lt;
+  ▃▆▇█▆▄▁▁                          ▁▂▃▃▃▂▂▃▂▃▂▂▂▂▁           ▂
+  ██████████▆▆▆▅▅▅▃▄▅▁▄▁▁▃▁▁▁▄▃▄▄▅▇▇████████████████▇▆▅▆▆▆▆▅▅ █
+  4.5 μs       Histogram: log(frequency) by time      7.31 μs &lt;
 
  Memory estimate: 3.12 KiB, allocs estimate: 199.</code></pre><p>Giving fields of a composite type an abstract type does not really solve the problem of the compiler not knowing the type. In this example, it still does not know, if it should use instructions for <code>Float64</code> or <code>Int8</code>.</p><pre><code class="language-julia hljs">struct LessVaguePosition
   x::Real
@@ -136,13 +136,13 @@ y = [VaguePosition(rand(), rand()) for _ in 1:100]
 end
 z = [LessVaguePosition(rand(), rand()) for _ in 1:100];
 @benchmark reduce(move, z)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">BenchmarkTools.Trial: 10000 samples with 1 evaluation.
- Range (min … max):  24.400 μs …  9.473 ms  ┊ GC (min … max): 0.00% … 98.65%
- Time  (median):     27.701 μs              ┊ GC (median):    0.00%
- Time  (mean ± σ):   30.904 μs ± 96.579 μs  ┊ GC (mean ± σ):  3.02% ±  0.99%
+ Range (min … max):  20.600 μs …  9.002 ms  ┊ GC (min … max): 0.00% … 99.60%
+ Time  (median):     21.400 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   23.674 μs ± 89.823 μs  ┊ GC (mean ± σ):  3.79% ±  1.00%
 
-     ▁ █▁                                                      
-  ▃▃█████▅▅▄▅▇▅▅▅▅▅▅▄▄▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂ ▃
-  24.4 μs         Histogram: frequency by time          50 μs &lt;
+   ██                                                          
+  ▂███▃▃▂▂▂▁▁▁▁▃▃▃▃▃▂▁▂▂▁▂▂▃▃▃▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▂
+  20.6 μs         Histogram: frequency by time        31.2 μs &lt;
 
  Memory estimate: 9.31 KiB, allocs estimate: 496.</code></pre><p>From the perspective of generating optimal code, both definitions are equally uninformative to the compiler as it cannot assume anything about the code. However, the  <code>LessVaguePosition</code> will ensure that the position will contain only numbers, hence catching trivial errors like instantiating <code>VaguePosition</code> with non-numeric types for which arithmetic operators will not be defined (recall the discussion on the  beginning of the lecture).</p><p>All structs defined above are immutable (as we have seen above in the case of <code>Tuple</code>), which means that one cannot change a field (unless the struct wraps a container, like and array, which allows that). For example this raises an error</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; a = LessVaguePosition(1,2)</code><code class="nohighlight hljs ansi" style="display:block;">Main.LessVaguePosition(1, 2)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; a.x = 2</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: setfield! immutable struct of type LessVaguePosition cannot be changed</code></pre><p>If one needs to make a struct mutable, use the keyword <code>mutable</code> before the keyword <code>struct</code> as</p><pre><code class="language-julia hljs">mutable struct MutablePosition
   x::Float64
@@ -152,8 +152,8 @@ end</code></pre><p>In mutable structures, we can change the values of fields.</p
   y::T
 end
 u = [PositionT(rand(), rand()) for _ in 1:100]
-@btime reduce(move, u)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">  203.638 ns (1 allocation: 32 bytes)</code></pre><p>Notice that the compiler can take advantage of specializing for different types (which does not have an effect here as in modern processors addition of <code>Float</code> and <code>Int</code> takes the same time).</p><pre><code class="language-julia hljs">v = [PositionT(rand(1:100), rand(1:100)) for _ in 1:100]
-@btime reduce(move, v)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">  165.157 ns (1 allocation: 32 bytes)</code></pre><p>The above definition suffers the same problem as <code>VaguePosition</code>, which is that it allows us to instantiate the <code>PositionT</code> with non-numeric types, e.g. <code>String</code>. We solve this by restricting the types <code>T</code> to be children of some supertype, in this case <code>Real</code></p><pre><code class="language-julia hljs">struct Position{T&lt;:Real}
+@btime reduce(move, u)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">  139.674 ns (1 allocation: 32 bytes)</code></pre><p>Notice that the compiler can take advantage of specializing for different types (which does not have an effect here as in modern processors addition of <code>Float</code> and <code>Int</code> takes the same time).</p><pre><code class="language-julia hljs">v = [PositionT(rand(1:100), rand(1:100)) for _ in 1:100]
+@btime reduce(move, v)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">  127.284 ns (1 allocation: 32 bytes)</code></pre><p>The above definition suffers the same problem as <code>VaguePosition</code>, which is that it allows us to instantiate the <code>PositionT</code> with non-numeric types, e.g. <code>String</code>. We solve this by restricting the types <code>T</code> to be children of some supertype, in this case <code>Real</code></p><pre><code class="language-julia hljs">struct Position{T&lt;:Real}
   x::T
   y::T
 end</code></pre><p>which will throw an error if we try to initialize it with <code>Position(&quot;1.0&quot;, &quot;2.0&quot;)</code>.</p><p>Naturally, fields in structures can be of different types, as is in the below pointless example.</p><pre><code class="language-julia hljs">struct PositionXY{X&lt;:Real, Y&lt;:Real}
@@ -163,69 +163,69 @@ end</code></pre><h3 id="Abstract-parametric-types"><a class="docs-heading-anchor
   @assert length(a) == length(b)
   mapreduce(*, +, a, b)
 end</code></pre><p>You can verify that the above general function can be compiled to performant code if specialized for particular arguments.</p><pre><code class="language-julia hljs">@code_native mapreduce(*,+, [1,2,3], [1,2,3])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">	.text
-; ┌ @ reducedim.jl:312 within `mapreduce&#39;
-	subq	$56, %rsp
-	movabsq	$.rodata.cst32, %rax
-	vmovaps	(%rax), %ymm0
-	vmovups	%ymm0, 8(%rsp)
-	movq	%rdi, 40(%rsp)
-	movq	%rsi, 48(%rsp)
-	movabsq	$jl_invoke, %rax
-	movabsq	$jl_system_image_data, %rdi
-	leaq	8(%rsp), %rsi
-	movabsq	$140044770840496, %rcx          # imm = 0x7F5EB6D18FB0
-	movl	$6, %edx
-	vzeroupper
-	callq	*%rax
-	movq	(%rax), %rax
-	addq	$56, %rsp
-	retq
-	nopw	(%rax,%rax)
-; └</code></pre><h2 id="More-on-the-use-of-types-in-function-definitions"><a class="docs-heading-anchor" href="#More-on-the-use-of-types-in-function-definitions">More on the use of types in function definitions</a><a id="More-on-the-use-of-types-in-function-definitions-1"></a><a class="docs-heading-anchor-permalink" href="#More-on-the-use-of-types-in-function-definitions" title="Permalink"></a></h2><h3 id="Terminology"><a class="docs-heading-anchor" href="#Terminology">Terminology</a><a id="Terminology-1"></a><a class="docs-heading-anchor-permalink" href="#Terminology" title="Permalink"></a></h3><p>A <em>function</em> refers to a set of &quot;methods&quot; for a different combination of type parameters (the term function can be therefore considered as refering to a mere <strong>name</strong>). <em>Methods</em> define different behavior for different types of arguments for a given function. For example</p><pre><code class="language-julia hljs">move(a::Position, b::Position) = Position(a.x + b.x, a.y + b.y)
+<span class="sgr90">; ┌ @ reducedim.jl:312 within `mapreduce&#39;</span>
+	<span class="sgr96"><span class="sgr1">subq</span></span>	<span class="sgr33">$56</span>, %rsp
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$.rodata.cst32</span>, %rax
+	<span class="sgr96"><span class="sgr1">vmovaps</span></span>	<span class="sgr33">(</span>%rax<span class="sgr33">)</span>, %ymm0
+	<span class="sgr96"><span class="sgr1">vmovups</span></span>	%ymm0, <span class="sgr33">8(</span>%rsp<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rdi, <span class="sgr33">40(</span>%rsp<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsi, <span class="sgr33">48(</span>%rsp<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$jl_invoke</span>, %rax
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$jl_system_image_data</span>, %rdi
+	<span class="sgr96"><span class="sgr1">leaq</span></span>	<span class="sgr33">8(</span>%rsp<span class="sgr33">)</span>, %rsi
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr33">$140177241541456</span>, %rcx          <span class="sgr90"># imm = 0x7F7D8EB00B50</span>
+	<span class="sgr96"><span class="sgr1">movl</span></span>	<span class="sgr33">$6</span>, %edx
+	<span class="sgr96"><span class="sgr1">vzeroupper</span></span>
+	<span class="sgr96"><span class="sgr1">callq</span></span>	*%rax
+	<span class="sgr96"><span class="sgr1">movq</span></span>	<span class="sgr33">(</span>%rax<span class="sgr33">)</span>, %rax
+	<span class="sgr96"><span class="sgr1">addq</span></span>	<span class="sgr33">$56</span>, %rsp
+	<span class="sgr96"><span class="sgr1">retq</span></span>
+	<span class="sgr96"><span class="sgr1">nopw</span></span>	<span class="sgr33">(</span>%rax,%rax<span class="sgr33">)</span>
+<span class="sgr90">; └</span></code></pre><h2 id="More-on-the-use-of-types-in-function-definitions"><a class="docs-heading-anchor" href="#More-on-the-use-of-types-in-function-definitions">More on the use of types in function definitions</a><a id="More-on-the-use-of-types-in-function-definitions-1"></a><a class="docs-heading-anchor-permalink" href="#More-on-the-use-of-types-in-function-definitions" title="Permalink"></a></h2><h3 id="Terminology"><a class="docs-heading-anchor" href="#Terminology">Terminology</a><a id="Terminology-1"></a><a class="docs-heading-anchor-permalink" href="#Terminology" title="Permalink"></a></h3><p>A <em>function</em> refers to a set of &quot;methods&quot; for a different combination of type parameters (the term function can be therefore considered as refering to a mere <strong>name</strong>). <em>Methods</em> define different behavior for different types of arguments for a given function. For example</p><pre><code class="language-julia hljs">move(a::Position, b::Position) = Position(a.x + b.x, a.y + b.y)
 move(a::Vector{&lt;:Position}, b::Vector{&lt;:Position}) = move.(a,b)</code></pre><p><code>move</code> refers to a function with methods <code>move(a::Position, b::Position)</code> and <code>move(a::Vector{&lt;:Position}, b::Vector{&lt;:Position})</code>. When different behavior on different types is defined by a programmer, as shown above, it is also called <em>implementation specialization</em>. There is another type of specialization, called <em>compiler specialization</em>, which occurs when the compiler generates different functions for you from a single method. For example for</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; move(Position(1,1), Position(2,2))</code><code class="nohighlight hljs ansi" style="display:block;">Main.Position{Int64}(3, 3)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; move(Position(1.0,1.0), Position(2.0,2.0))</code><code class="nohighlight hljs ansi" style="display:block;">Main.Position{Float64}(3.0, 3.0)</code></pre><p>the compiler generates two methods, one for <code>Position{Int64}</code> and the other for <code>Position{Float64}</code>. Notice that inside generated functions, the compiler needs to use different intrinsic operations, which can be viewed from</p><pre><code class="language-julia hljs">@code_native move(Position(1,1), Position(2,2))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">	.text
-; ┌ @ lecture.md:393 within `move&#39;
-; │┌ @ int.jl:87 within `+&#39;
-	vmovdqu	(%rdx), %xmm0
-	vpaddq	(%rsi), %xmm0, %xmm0
-	movq	%rdi, %rax
-; │└
-	vmovdqu	%xmm0, (%rdi)
-	retq
-; └</code></pre><p>and</p><pre><code class="language-julia hljs">@code_native move(Position(1.0,1.0), Position(2.0,2.0))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">	.text
-; ┌ @ lecture.md:393 within `move&#39;
-; │┌ @ float.jl:326 within `+&#39;
-	vmovupd	(%rsi), %xmm0
-	vaddpd	(%rdx), %xmm0, %xmm0
-	movq	%rdi, %rax
-; │└
-	vmovupd	%xmm0, (%rdi)
-	retq
-; └</code></pre><h2 id="Intermezzo:-How-does-the-Julia-compiler-work?"><a class="docs-heading-anchor" href="#Intermezzo:-How-does-the-Julia-compiler-work?">Intermezzo: How does the Julia compiler work?</a><a id="Intermezzo:-How-does-the-Julia-compiler-work?-1"></a><a class="docs-heading-anchor-permalink" href="#Intermezzo:-How-does-the-Julia-compiler-work?" title="Permalink"></a></h2><p>Let&#39;s walk through an example. Consider the following definitions</p><pre><code class="language-julia hljs">move(a::Position, by::Position) = Position(a.x + by.x, a.y + by.y)
+<span class="sgr90">; ┌ @ lecture.md:393 within `move&#39;</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rdi, %rax
+<span class="sgr90">; │┌ @ int.jl:87 within `+&#39;</span>
+	<span class="sgr96"><span class="sgr1">vmovdqu</span></span>	<span class="sgr33">(</span>%rdx<span class="sgr33">)</span>, %xmm0
+	<span class="sgr96"><span class="sgr1">vpaddq</span></span>	<span class="sgr33">(</span>%rsi<span class="sgr33">)</span>, %xmm0, %xmm0
+<span class="sgr90">; │└</span>
+	<span class="sgr96"><span class="sgr1">vmovdqu</span></span>	%xmm0, <span class="sgr33">(</span>%rdi<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">retq</span></span>
+<span class="sgr90">; └</span></code></pre><p>and</p><pre><code class="language-julia hljs">@code_native move(Position(1.0,1.0), Position(2.0,2.0))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">	.text
+<span class="sgr90">; ┌ @ lecture.md:393 within `move&#39;</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rdi, %rax
+<span class="sgr90">; │┌ @ float.jl:326 within `+&#39;</span>
+	<span class="sgr96"><span class="sgr1">vmovupd</span></span>	<span class="sgr33">(</span>%rsi<span class="sgr33">)</span>, %xmm0
+	<span class="sgr96"><span class="sgr1">vaddpd</span></span>	<span class="sgr33">(</span>%rdx<span class="sgr33">)</span>, %xmm0, %xmm0
+<span class="sgr90">; │└</span>
+	<span class="sgr96"><span class="sgr1">vmovupd</span></span>	%xmm0, <span class="sgr33">(</span>%rdi<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">retq</span></span>
+<span class="sgr90">; └</span></code></pre><h2 id="Intermezzo:-How-does-the-Julia-compiler-work?"><a class="docs-heading-anchor" href="#Intermezzo:-How-does-the-Julia-compiler-work?">Intermezzo: How does the Julia compiler work?</a><a id="Intermezzo:-How-does-the-Julia-compiler-work?-1"></a><a class="docs-heading-anchor-permalink" href="#Intermezzo:-How-does-the-Julia-compiler-work?" title="Permalink"></a></h2><p>Let&#39;s walk through an example. Consider the following definitions</p><pre><code class="language-julia hljs">move(a::Position, by::Position) = Position(a.x + by.x, a.y + by.y)
 move(a::T, by::T) where {T&lt;:Position} = Position(a.x + by.x, a.y + by.y)
 move(a::Position{Float64}, by::Position{Float64}) = Position(a.x + by.x, a.y + by.y)
 move(a::Vector{&lt;:Position}, by::Vector{&lt;:Position}) = move.(a, by)
 move(a::Vector{&lt;:Position}, by::Position) = move.(a, by)</code></pre><p>and a function call</p><pre><code class="language-julia hljs">a = Position(1.0, 1.0)
 by = Position(2.0, 2.0)
 move(a, by)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Main.Position{Float64}(3.0, 3.0)</code></pre><ol><li>The compiler knows that you call the function <code>move</code>.</li><li>The compiler infers the type of the arguments. You can view the result with</li></ol><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; (typeof(a),typeof(by))</code><code class="nohighlight hljs ansi" style="display:block;">(Main.Position{Float64}, Main.Position{Float64})</code></pre><ol><li>The compiler identifies all <code>move</code>-methods with arguments of type <code>(Position{Float64}, Position{Float64})</code>:</li></ol><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; Base.method_instances(move, (typeof(a), typeof(by)))</code><code class="nohighlight hljs ansi" style="display:block;">1-element Vector{Core.MethodInstance}:
- MethodInstance for move(::Main.Position{Float64}, ::Main.Position{Float64})</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; m = Base.method_instances(move, (typeof(a), typeof(by))) |&gt; first</code><code class="nohighlight hljs ansi" style="display:block;">MethodInstance for move(::Main.Position{Float64}, ::Main.Position{Float64})</code></pre><p>4a. If the method has been specialized (compiled), then the arguments are prepared and the method is invoked. The compiled specialization can be seen from</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; m.cache</code><code class="nohighlight hljs ansi" style="display:block;">Core.CodeInstance(MethodInstance for move(::Main.Position{Float64}, ::Main.Position{Float64}), #undef, 0x00000000000074fd, 0xffffffffffffffff, Main.Position{Float64}, #undef, UInt8[0x0c, 0x03, 0x00, 0x00, 0x00, 0x00, 0x08, 0x08, 0x16, 0x88  …  0xc8, 0x3d, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x09, 0x01], true, true, Ptr{Nothing} @0x00007f5eaea34090, Ptr{Nothing} @0x00007f5eaea34080)</code></pre><p>4b. If the method has not been specialized (compiled), the method is compiled for the given type of arguments and continues as in step 4a. A compiled function is therefore  a &quot;blob&quot; of <strong>native code</strong> living in a particular memory location. When Julia calls a function, it needs to pick the right block corresponding to a function with particular type of parameters.</p><p>If the compiler cannot narrow the types of arguments to concrete types, it has to perform the above procedure inside the called function, which has negative effects on performance, as the type resulution and identification of the methods can be slow, especially for methods with many arguments (e.g. 30ns for a method with one argument, 100 ns for method with two arguements). Recall the above example</p><pre><code class="language-julia hljs">wolfpack_a =  [Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Wolf(&quot;3&quot;, 3)]
-@benchmark energy(wolfpack_a)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">BenchmarkTools.Trial: 10000 samples with 997 evaluations.
- Range (min … max):  20.060 ns …  1.070 μs  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     21.665 ns              ┊ GC (median):    0.00%
- Time  (mean ± σ):   22.160 ns ± 12.883 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+ MethodInstance for move(::Main.Position{Float64}, ::Main.Position{Float64})</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; m = Base.method_instances(move, (typeof(a), typeof(by))) |&gt; first</code><code class="nohighlight hljs ansi" style="display:block;">MethodInstance for move(::Main.Position{Float64}, ::Main.Position{Float64})</code></pre><p>4a. If the method has been specialized (compiled), then the arguments are prepared and the method is invoked. The compiled specialization can be seen from</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; m.cache</code><code class="nohighlight hljs ansi" style="display:block;">Core.CodeInstance(MethodInstance for move(::Main.Position{Float64}, ::Main.Position{Float64}), #undef, 0x00000000000074fd, 0xffffffffffffffff, Main.Position{Float64}, #undef, UInt8[0x0c, 0x03, 0x00, 0x00, 0x00, 0x00, 0x08, 0x08, 0x16, 0x88  …  0xc8, 0x3d, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x09, 0x01], true, true, Ptr{Nothing} @0x00007f7d85c18a30, Ptr{Nothing} @0x00007f7d85c18a20)</code></pre><p>4b. If the method has not been specialized (compiled), the method is compiled for the given type of arguments and continues as in step 4a. A compiled function is therefore  a &quot;blob&quot; of <strong>native code</strong> living in a particular memory location. When Julia calls a function, it needs to pick the right block corresponding to a function with particular type of parameters.</p><p>If the compiler cannot narrow the types of arguments to concrete types, it has to perform the above procedure inside the called function, which has negative effects on performance, as the type resulution and identification of the methods can be slow, especially for methods with many arguments (e.g. 30ns for a method with one argument, 100 ns for method with two arguements). Recall the above example</p><pre><code class="language-julia hljs">wolfpack_a =  [Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Wolf(&quot;3&quot;, 3)]
+@benchmark energy(wolfpack_a)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">BenchmarkTools.Trial: 10000 samples with 998 evaluations.
+ Range (min … max):  19.439 ns … 35.672 ns  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     20.741 ns              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   20.689 ns ±  0.569 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-  ▅ ▇  █                                                      ▁
-  █▁█▅▃█▅▃▁▁▃▃▄▄▅▅▄▁▁▁▁▁▃▁▁▄▄▄▄▅▃▅▄▁▁▁▃▁▁▁▁▁▁▃▄▄▁▄▃▄▃▅▇▇██▇▇▇ █
-  20.1 ns      Histogram: log(frequency) by time      38.7 ns &lt;
+                  ▁      █      ▇  █                           
+  ▂▁▁▁▁▁▁▂▁▂▁▂▁▁▄▁█▁▅▁▁▂▁█▁▅▁▁▄▁█▁▁█▁▃▁▂▁▁█▁▄▁▂▁▁▂▁▂▁▂▁▁▂▁▂▁▃ ▃
+  19.4 ns         Histogram: frequency by time        21.9 ns &lt;
 
  Memory estimate: 0 bytes, allocs estimate: 0.</code></pre><p>and</p><pre><code class="language-julia hljs">wolfpack_b =  Any[Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Wolf(&quot;3&quot;, 3)]
-@benchmark energy(wolfpack_b)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">BenchmarkTools.Trial: 10000 samples with 942 evaluations.
- Range (min … max):  104.565 ns …  3.146 μs  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     116.668 ns              ┊ GC (median):    0.00%
- Time  (mean ± σ):   120.763 ns ± 49.852 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+@benchmark energy(wolfpack_b)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">BenchmarkTools.Trial: 10000 samples with 916 evaluations.
+ Range (min … max):  103.822 ns … 169.981 ns  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     122.599 ns               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   120.328 ns ±   5.977 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-  ▂ ▅ ▆  █ ▁ ▁▂▂▂▃▃▃                                           ▂
-  █▁█▅█▃▇█▇█▇████████▇▇▇▇▆▇███▇▅▆▄▆▅▄▅▄▅▁▄▄▄▅▅▅▄▅▅▄▁▃▄▅▄▄▃▄▃▅▅ █
-  105 ns        Histogram: log(frequency) by time       205 ns &lt;
+      ▅▄▂                                     ▃▄▇█▄  ▁        ▁ ▂
+  ▆█▅████▅▅▆▅▃▄▃▃▁▁▅▇▅▁▁▃▁▁▃▃▁▁▁▆▆▅▅▅▅▅▇▇▆▇███████████▆▅▅▃▅▄▆██ █
+  104 ns        Histogram: log(frequency) by time        128 ns &lt;
 
  Memory estimate: 0 bytes, allocs estimate: 0.</code></pre><p>An interesting intermediate between fully abstract and fully concrete type happens, when the compiler knows that arguments have abstract type, which is composed of a small number of concrete types. This case  called Union-Splitting, which happens when there is just a little bit of uncertainty. Julia will do something like</p><pre><code class="language-julia hljs">argtypes = typeof(args)
 push!(execution_stack, args)
@@ -236,13 +236,13 @@ else # the only other option is Tuple{Float64, Bool}
 end</code></pre><p>For example</p><pre><code class="language-julia hljs">const WolfOrSheep = Union{Wolf, Sheep}
 wolfpack_c =  WolfOrSheep[Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Wolf(&quot;3&quot;, 3)]
 @benchmark energy(wolfpack_c)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">BenchmarkTools.Trial: 10000 samples with 997 evaluations.
- Range (min … max):  23.671 ns …  2.834 μs  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     25.878 ns              ┊ GC (median):    0.00%
- Time  (mean ± σ):   27.160 ns ± 34.786 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+ Range (min … max):  21.566 ns … 38.516 ns  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     22.166 ns              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   22.216 ns ±  0.569 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-   ▃ ▄ ▇█▇                                                    ▂
-  ██▇█▄███▇▄▁▁▄▄▅▄▁▄▆▄▃▄▁▃▁▄▁▃▃▄▄▅▅▅▁▄▄▁▃▁▃▄▁▁▁▁▃▄▄▄▆▆▆▆▇▇▅▅▆ █
-  23.7 ns      Histogram: log(frequency) by time        43 ns &lt;
+             █  ▇          ▇                                   
+  ▂▁▁▁▁▁▁▃▁▁▁█▁▁█▁▁▁▃▁▁▁▇▁▁█▁▁▁▃▁▁▁▅▁▁▅▁▁▁▂▁▁▁▃▁▁▆▁▁▁▃▁▁▁▂▁▁▂ ▃
+  21.6 ns         Histogram: frequency by time        23.2 ns &lt;
 
  Memory estimate: 0 bytes, allocs estimate: 0.</code></pre><p>Thanks to union splitting, Julia is able to have performant operations on arrays with undefined / missing values for example</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; [1, 2, 3, missing] |&gt; typeof</code><code class="nohighlight hljs ansi" style="display:block;">Vector{Union{Missing, Int64}} (alias for Array{Union{Missing, Int64}, 1})</code></pre><h3 id="More-on-matching-methods-and-arguments"><a class="docs-heading-anchor" href="#More-on-matching-methods-and-arguments">More on matching methods and arguments</a><a id="More-on-matching-methods-and-arguments-1"></a><a class="docs-heading-anchor-permalink" href="#More-on-matching-methods-and-arguments" title="Permalink"></a></h3><p>In the above process, the step, where Julia looks for a method instance with corresponding parameters can be very confusing. The rest of this lecture will focus on this. For those who want to have a formal background, we recommend <a href="https://www.youtube.com/watch?v=Y95fAipREHQ">talk of  Francesco Zappa Nardelli</a> and / or the one of <a href="https://www.youtube.com/watch?v=LT4AP7CUMAw">Jan Vitek</a>.</p><p>When Julia needs to specialize a method instance, it needs to find it among multiple definitions. A single function can have many method instances, see for example <code>methods(+)</code> which  lists all method instances of the <code>+</code>-function. How does Julia select the proper one?</p><ol><li>It finds all methods where the type of arguments match or are subtypes of restrictions on arguments in the method definition.</li></ol><p>2a. If there are multiple matches, the compiler selects the most specific definition.</p><p>2b. If the compiler cannot decide, which method instance to choose, it throws an error.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; confused_move(a::Position{Float64}, by) = Position(a.x + by.x, a.y + by.y)</code><code class="nohighlight hljs ansi" style="display:block;">confused_move (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; confused_move(a, by::Position{Float64}) = Position(a.x + by.x, a.y + by.y)</code><code class="nohighlight hljs ansi" style="display:block;">confused_move (generic function with 2 methods)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; confused_move(Position(1.0,2.0), Position(1.0,2.0))</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: confused_move(::Main.Position{Float64}, ::Main.Position{Float64}) is ambiguous. Candidates:
   confused_move(a::Main.Position{Float64}, by) in Main at REPL[1]:1
@@ -265,4 +265,4 @@ move(a::Vector{&lt;:Position}, by::Position) = move.(a, by)</code></pre><p>Which
 Closest candidates are:
   foo(!Matched::Vector{Real}) at REPL[1]:1</code></pre><p>Julia&#39;s type system is <strong>invariant</strong>, which means that <code>Vector{Real}</code> is different from <code>Vector{Float64}</code> and from <code>Vector{Float32}</code>, even though <code>Float64</code> and <code>Float32</code> are sub-types of <code>Real</code>. Therefore <code>typeof([1.0,2,3])</code> isa <code>Vector{Float64}</code> which is not subtype of <code>Vector{Real}.</code> For <strong>covariant</strong> languages, this would be true. For more information on variance in computer languages, <a href="https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)">see here</a>. If de above definition of <code>foo</code> should be applicable to all vectors which has elements of subtype of <code>Real</code> we have define it as</p><pre><code class="language-julia hljs">foo(a::Vector{T}) where {T&lt;:Real} = println(&quot;Vector{T} where {T&lt;:Real}&quot;)</code></pre><p>or equivalently but more tersely as</p><pre><code class="language-julia hljs">foo(a::Vector{&lt;:Real}) = println(&quot;Vector{T} where {T&lt;:Real}&quot;)</code></pre><ol><li>Diagonal rule says that a repeated type in a method signature has to be a concrete type. Consider for example the function below</li></ol><pre><code class="language-julia hljs">move(a::T, b::T) where {T&lt;:Position} = T(a.x + by.x, a.y + by.y)</code></pre><p>we cannot call it with <code>move(Position(1.0,2.0), Position(1,2))</code>, since in this case <code>Position(1.0,2.0)</code> is of type <code>Position{Float64}</code> while <code>Position(1,2)</code> is of type <code>Position{Int64}</code>.</p><ol><li>When debugging why arguments do not match a particular method definition, it is useful to use <code>typeof</code>, <code>isa</code>, and <code>&lt;:</code> commands. For example</li></ol><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; typeof(Position(1.0,2.0))</code><code class="nohighlight hljs ansi" style="display:block;">Main.Position{Float64}</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; typeof(Position(1,2))</code><code class="nohighlight hljs ansi" style="display:block;">Main.Position{Int64}</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Position(1,2) isa Position{Float64}</code><code class="nohighlight hljs ansi" style="display:block;">false</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Position(1,2) isa Position{Real}</code><code class="nohighlight hljs ansi" style="display:block;">false</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Position(1,2) isa Position{&lt;:Real}</code><code class="nohighlight hljs ansi" style="display:block;">true</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; typeof(Position(1,2)) &lt;: Position{&lt;:Float64}</code><code class="nohighlight hljs ansi" style="display:block;">false</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; typeof(Position(1,2)) &lt;: Position{&lt;:Real}</code><code class="nohighlight hljs ansi" style="display:block;">true</code></pre><h3 id="A-bizzare-definition-which-you-can-encounter"><a class="docs-heading-anchor" href="#A-bizzare-definition-which-you-can-encounter">A bizzare definition which you can encounter</a><a id="A-bizzare-definition-which-you-can-encounter-1"></a><a class="docs-heading-anchor-permalink" href="#A-bizzare-definition-which-you-can-encounter" title="Permalink"></a></h3><p>The following definition of a one-hot matrix is taken from <a href="https://github.com/FluxML/Flux.jl/blob/1a0b51938b9a3d679c6950eece214cd18108395f/src/onehot.jl#L10-L12">Flux.jl</a></p><pre><code class="language-julia hljs">struct OneHotArray{T&lt;:Integer, L, N, var&quot;N+1&quot;, I&lt;:Union{T,AbstractArray{T, N}}} &lt;: AbstractArray{Bool, var&quot;N+1&quot;}
   indices::I
-end</code></pre><p>The parameters of the type carry information about the type used to encode the position of <code>one</code> in each column in <code>T</code>, the dimension of one-hot vectors in <code>L</code>, the dimension of the storage of <code>indices</code> in <code>N</code> (which is zero for <code>OneHotVector</code> and one for <code>OneHotMatrix</code>), number of dimensions of the <code>OneHotArray</code> in <code>var&quot;N+1&quot;</code> and the type of underlying storage of indicies <code>I</code>.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_01/hw/">« Homework</a><a class="docs-footer-nextpage" href="../lab/">Lab »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.7 on <span class="colophon-date" title="Thursday 7 October 2021 13:47">Thursday 7 October 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><p>The parameters of the type carry information about the type used to encode the position of <code>one</code> in each column in <code>T</code>, the dimension of one-hot vectors in <code>L</code>, the dimension of the storage of <code>indices</code> in <code>N</code> (which is zero for <code>OneHotVector</code> and one for <code>OneHotMatrix</code>), number of dimensions of the <code>OneHotArray</code> in <code>var&quot;N+1&quot;</code> and the type of underlying storage of indicies <code>I</code>.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_01/hw/">« Homework</a><a class="docs-footer-nextpage" href="../lab/">Lab »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.7 on <span class="colophon-date" title="Friday 8 October 2021 11:51">Friday 8 October 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
