@@ -119,7 +119,7 @@ end
 
 function eat!(a::Sheep, b::Grass, w::World)
     incr_energy!(a, size(b)*Δenergy(a))
-    kill_agent!(b,w)
+    b.size = 0
 end
 function eat!(wolf::Wolf, sheep::Sheep, w::World)
     incr_energy!(wolf, energy(sheep)*Δenergy(wolf))
@@ -127,7 +127,6 @@ function eat!(wolf::Wolf, sheep::Sheep, w::World)
 end
 eat!(a::Animal,b::Nothing,w::World) = nothing
 
-kill_agent!(a::Plant, w::World) = a.size = 0
 kill_agent!(a::Animal, w::World) = delete!(w.agents, id(a))
 
 function find_food(a::Animal, w::World)

@@ -236,8 +236,10 @@ input types and is our first practical example of [*multiple dispatch*](https://
 ```
 Implement a function `eat!(::Sheep, ::Grass, ::World)` which increases the sheep's
 energy by $\Delta E$ multiplied by the size of the grass.
+
 After the sheep's energy is updated the grass is eaten and its size counter has
 to be set to zero.
+
 Note that you do not yet need the world in this function. It is needed later
 for the case of wolves eating sheep.
 ```@raw html
@@ -248,9 +250,8 @@ for the case of wolves eating sheep.
 ```@example non_parametric_agents
 function eat!(a::Sheep, b::Grass, w::World)
     incr_energy!(a, size(b)*Δenergy(a))
-    kill_agent!(b,w)
+    b.size = 0
 end
-kill_agent!(a::Plant, w::World) = a.size = 0
 nothing # hide
 ```
 ```@raw html
@@ -281,9 +282,12 @@ eat!(grass,sheep,world);
 <div class="admonition-body">
 ```
 Next, implement a `Wolf` with the same properties as the sheep ($E$, $\Delta
-E$, $p_r$, and $p_f$) as well as the correspoding `eat!` method which increases
+E$, $p_r$, and $p_f$) as well as its `eat!` method. The `eat!` method for wolves increases
 the wolf's energy by `energy(sheep)*Δenergy(wolf)` and kills the sheep (i.e.
 removes the sheep from the world).
+Both `eat!` and `agent_step!` need to be able to remove agents from the world
+so it makes sense to create another function `kill_agent!(::Animal,::World)`.
+Please implement it as well to make your `agent_step!` work.
 
 Hint: You can use `delete!` to remove agents from the dictionary in your world.
 
