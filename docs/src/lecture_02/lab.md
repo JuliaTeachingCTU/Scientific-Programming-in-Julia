@@ -343,7 +343,7 @@ function find_food(a::Animal, w::World)
     isempty(as) ? nothing : sample(as)
 end
 
-eats(::Sheep,::Grass) = true
+eats(::Sheep,g::Grass) = size(g) > 0
 eats(::Wolf,::Sheep) = true
 eats(::Agent,::Agent) = false
 ```
@@ -362,7 +362,8 @@ random `Grass` from all available `Grass` agents.
 ```
 
 Implement the method `find_food(::Sheep, ::World)` which first returns either a
-`Grass` (sampled randomly from all `Grass`es) or returns `nothing`.
+`Grass` (sampled randomly from all `Grass`es with a size larger than zero) or
+returns `nothing`.
 
 1. Hint: For the functional programming way of coding this can use `filter` and
    `isa` to filter for a certain type and `StatsBase.sample` to choose a random
@@ -382,7 +383,7 @@ using StatsBase  # needed for `sample`
 # you can install it by typing `]add StatsBase` in the REPL
 
 function find_food(a::Sheep, w::World)
-    as = filter(x->isa(x,Grass), w.agents |> values |> collect)
+    as = filter(x->isa(x,Grass) && size(x)>0, w.agents |> values |> collect)
     isempty(as) ? nothing : sample(as)
 end
 ```
@@ -460,7 +461,7 @@ function find_food(a::Animal, w::World)
     isempty(as) ? nothing : sample(as)
 end
 
-eats(::Sheep,::Grass) = true
+eats(::Sheep,g::Grass) = size(g) > 0
 eats(::Wolf,::Sheep) = true
 eats(::Agent,::Agent) = false
 ```
