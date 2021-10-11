@@ -193,7 +193,7 @@ Matrix of methods/types(data-structures)
 
 Consider an existing matrix of data and functions:
 | data \ methods | find_food | eat! |  |  | |
-| --- | ---- | ---- | --- | ---- | --- |
+| --- | --- | --- | --- | --- | --- |
 | Wolf |  | | | | |
 | Sheep | | | | | |
 | Grass | | | | | |
@@ -383,12 +383,11 @@ Why so complicated? Wasn't original tree structure better?
 | --- | --- |  --- | --- | 
 | birds | penguin | eagle | kiwi |
 | mammal | dolphin | bat | sheep,wolf|
+| insect | backswimmer | fly | beetle|
 
 Single type hierarchy will not work. Other approaches:
  - interfaces
  - parametric types
-
- Julia Solution: Types can be parametric!
 
  Analyze what features of animals are common and *compose* the animal:
 ```julia
@@ -403,9 +402,7 @@ mutable struct Animal{H<:HeatType,M<:MovementType,C<:ChildCare}
 end
 ```
 
-This approach allows
-
-Now, we can define methods dispatching on parameters.
+Now, we can define methods dispatching on parameters of the main type.
 
 ## Interfaces
 
@@ -456,6 +453,6 @@ aslist(::Nonlist, x) = [x]
 ```
 
 Many packages:
-https://github.com/andyferris/Traitor.jl
-https://github.com/mauro3/SimpleTraits.jl
-https://github.com/tk3369/BinaryTraits.jl
+- https://github.com/andyferris/Traitor.jl
+- https://github.com/mauro3/SimpleTraits.jl
+- https://github.com/tk3369/BinaryTraits.jl
