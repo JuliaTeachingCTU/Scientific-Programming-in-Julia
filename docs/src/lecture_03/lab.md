@@ -69,6 +69,7 @@ foodprob(g::⚥Sheep) = foodprob(g.sheep)
 
 eats(::⚥Sheep, ::Grass) = true
 eat!(s::⚥Sheep, g::Plant, w::World) = eat!(s.sheep, g, w)
+eat!(w::Wolf, s::⚥Sheep, w::World) = eat!(w, s.sheep, w)
 nothing # hide
 ```
 ```@raw html
