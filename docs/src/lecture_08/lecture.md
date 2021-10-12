@@ -1,10 +1,6 @@
 ```@setup lec08
 using Plots
-using InteractiveUtils
 ```
-
-![test](InfoBottleneck_2880x1620.jpg)
-[Eric Nyquist](https://www.ericnyquist.com/) for Quanta Magazine
 
 # 1. Introduction
 
@@ -94,14 +90,14 @@ second component of $x$.
 To demonstrate the simplicity of this approach we can compute the derivative of
 the **_Babylonian Square Root_** (an algorithm to compute $\sqrt x$):
 
-```julia;
+```@repl lec08
 babysqrt(x, t=(1+x)/2, n=10) = n==0 ? t : babysqrt(x, (t+x/t)/2, n-1)
 babysqrt(2)
 ```
 All we need is to define a `Dual` number type with a value component `x`, a
 derivative component `d`, and overload the functions `+`, `/`.  In Julia, this
 reads:
-```julia; results="hidden"
+```@example lec08
 struct Dual{T<:Number}
     x::T
     d::T
@@ -117,25 +113,27 @@ Base.:+(n::Number, a::Dual) = a + n
 Base.:/(a::Dual, b::Dual)   = Dual(a.x/b.x, (a.d*b.x - a.x*b.d)/b.x^2)
 Base.:/(n::Number, a::Dual) = Dual(a.x/n, -n*a.d/a.x^2)
 Base.:/(a::Dual, n::Number) = Dual(a.x/n, a.d/n)
+nothing # hide
 ```
 Now we can define a general function that computes the derivative of a function
 `f`. We just have to call `f` with a dual number with derivative component `d=1`
 (because $\frac{dx}{dx}=1$).
-```julia; echo=true; eval=true; results="hidden"
+```@example lec08
 forward(f::Function, x::Number) = f(Dual(x,1.0)).d
+nothing # hide
 ```
 To demonstrate that it acutally works we can compare the analytic solution to
 our AD version:
 ```math
 f(x) = \sqrt{x} \qquad f'(x) = \frac{1}{2\sqrt{x}}
 ```
-```julia; echo=true; eval=true;
+```@repl lec08
 forward_dsqrt(x) = forward(babysqrt,x)
 analytc_dsqrt(x) = 1/(2babysqrt(x))
-forward_dsqrt(2.0) |> display
-analytc_dsqrt(2.0) |> display
+forward_dsqrt(2.0)
+analytc_dsqrt(2.0)
 ```
-```julia; echo=false; eval=true;
+```@example lec08
 plot(0.0:0.01:2, babysqrt, label="f(x) = babysqrt(x)", lw=3)
 plot!(0.1:0.01:2, analytc_dsqrt, label="Analytic f'", ls=:dot, lw=3)
 plot!(0.1:0.01:2, forward_dsqrt, label="Dual Forward Mode f'", lw=3, ls=:dash)
@@ -149,7 +147,7 @@ plot!(0.1:0.01:2, forward_dsqrt, label="Dual Forward Mode f'", lw=3, ls=:dash)
 ---
 
 The equivalent in Python looks like this:
-```julia eval=false
+```julia
 class Dual:
     def __init__(self, x, d):
         self.x = x
@@ -214,7 +212,7 @@ the input called (**_pullback_**). The argument to the pullback (`Δ`) represent
 previously evaluated function ("on the right side" - in case of $\frac{\partial f_3}{\partial\bm y_2}$
 this would be `Δ`$\,=\frac{\partial\bm y_3}{\partial\bm y_3}=1$).
 
-```julia; eval=false
+```julia
 rrule(::typeof(f1), x) = f1(x), Δ -> Δ*f1'(x)
 ```
 
@@ -247,12 +245,13 @@ LLVM.
 
 Source-to-source AD uses meta-programming to produce `rrule`s for any function
 that is a composition of available `rrule`s. The code for `foo`
-```julia results="hidden"
+```@example lec08
 foo(x) = h(g(f(x)))
 
 f(x) = x^2
 g(x) = sin(x)
 h(x) = 5x
+nothing # hide
 ```
 is transformed into
 ```julia eval=false
@@ -272,7 +271,7 @@ function rrule(::typeof(foo), x)
 end
 ```
 For this simple example we can define the three `rrule`s by hand:
-```julia results="hidden"
+```@example lec08
 rrule(::typeof(f), x) = f(x), Δ -> 2x*Δ
 rrule(::typeof(g), x) = g(x), Δ -> cos(x)*Δ
 rrule(::typeof(h), x) = h(x), Δ -> 5*Δ
@@ -284,11 +283,11 @@ overload functions like `+`, `*`, etc, such that you don't have to define a
 In order to transform our functions safely we will make use of `IRTools.jl`
 (*Intermediate Representation Tools*) which provide some convenience functions
 for inspecting and manipulating code snippets. The IR for `foo` looks like this:
-```julia; results="hidden"
+```@example lec08
 using IRTools: @code_ir, evalir
 ir = @code_ir foo(2.)
 ```
-```julia; echo=false; eval=true;
+```@setup lec08
 msg = """
 ir = 1: (%1, %2)                 ## rrule(foo, x)
        %3 = Main.f(%2)           ##   a = f(x)
@@ -296,11 +295,10 @@ ir = 1: (%1, %2)                 ## rrule(foo, x)
        %5 = Main.h(%4)           ##   y = h(b)
        return %5                 ##   return y
 """
-println(msg)
 ```
 Variable names are replaced by `%N` and each function gets is own line.
 We can evalulate the IR (to actually run it) like this
-```julia
+```@example lec08
 evalir(ir, nothing, 2.)
 ```
 As a first step, lets transform the function calls to `rrule` calls.  For
@@ -313,7 +311,7 @@ replacing the statements would alter our forward pass. Instead we can insert
 each statement *before* the one we want to change. Then we can replace the the
 original statement with `v = rr[1]` to use only `v` and not `J` in the
 subsequent computation.
-```julia; echo=false; eval=true;
+```@example lec08
 using IRTools
 using IRTools: xcall, stmt
 
@@ -330,27 +328,27 @@ for (v,statement) in pr
     pr[v] = xgetindex(vJ,1)
 end
 ir = IRTools.finish(pr)
-
-msg = """
-ir = 1: (%1, %2)                          ## rrule(foo, x)
-       %3 = (Main.rrule)(Main.f, %2)      ##   ra = rrule(f,x)
-       %4 = Base.getindex(%3, 1)          ##   a  = ra[1]
-       %5 = (Main.rrule)(Main.g, %4)      ##   rb = rrule(g,a)
-       %6 = Base.getindex(%5, 1)          ##   b  = rb[1]
-       %7 = (Main.rrule)(Main.h, %6)      ##   ry = rrule(h,b)
-       %8 = Base.getindex(%7, 1)          ##   y  = ry[1]
-       return %8                          ##   return y
-"""
-println(msg)
+#
+#msg = """
+#ir = 1: (%1, %2)                          ## rrule(foo, x)
+#       %3 = (Main.rrule)(Main.f, %2)      ##   ra = rrule(f,x)
+#       %4 = Base.getindex(%3, 1)          ##   a  = ra[1]
+#       %5 = (Main.rrule)(Main.g, %4)      ##   rb = rrule(g,a)
+#       %6 = Base.getindex(%5, 1)          ##   b  = rb[1]
+#       %7 = (Main.rrule)(Main.h, %6)      ##   ry = rrule(h,b)
+#       %8 = Base.getindex(%7, 1)          ##   y  = ry[1]
+#       return %8                          ##   return y
+#"""
+#println(msg)
 ```
 Evaluation of this transformed IR should still give us the same value
-```julia
+```@example lec08
 evalir(ir, nothing, 2.)
 ```
 
 The only thing that is left to do now is collect the `Js` and return
 a tuple of our forward value and the `Js`.
-```julia echo=false
+```@example lec08
 using IRTools: insertafter!, substitute, xcall, stmt
 
 xtuple(xs...) = xcall(Core, :tuple, xs...)
@@ -375,35 +373,35 @@ Js  = push!(ir, xtuple(Js...))
 # return a tuple of the last `v` and `Js`
 ret = ir.blocks[end].branches[end].args[1]
 IRTools.return!(ir, xtuple(ret, Js))
-#display(ir)
-msg = """
-ir = 1: (%1, %2)                          ## rrule(foo, x)
-       %3 = (Main.rrule)(Main.f, %2)      ##   ra = rrule(f,x)
-       %4 = Base.getindex(%3, 1)          ##   a  = ra[1]
-       %5 = Base.getindex(%3, 2)          ##   Ja = ra[2]
-       %6 = (Main.rrule)(Main.g, %4)      ##   rb = rrule(g,a)
-       %7 = Base.getindex(%6, 1)          ##   b  = rb[1]
-       %8 = Base.getindex(%6, 2)          ##   Jb = rb[2]
-       %9 = (Main.rrule)(Main.h, %7)      ##   ry = rrule(h,b)
-       %10 = Base.getindex(%9, 1)         ##   y  = ry[1]
-       %11 = Base.getindex(%9, 2)         ##   Jy = ry[2]
-       %12 = Core.tuple(%5, %8, %11)      ##   Js = (Ja,Jb,Jy)
-       %13 = Core.tuple(%10, %12)         ##   rr = (y, Js)
-       return %13                         ##   return rr
-"""
-println(msg)
+ir
+#msg = """
+#ir = 1: (%1, %2)                          ## rrule(foo, x)
+#       %3 = (Main.rrule)(Main.f, %2)      ##   ra = rrule(f,x)
+#       %4 = Base.getindex(%3, 1)          ##   a  = ra[1]
+#       %5 = Base.getindex(%3, 2)          ##   Ja = ra[2]
+#       %6 = (Main.rrule)(Main.g, %4)      ##   rb = rrule(g,a)
+#       %7 = Base.getindex(%6, 1)          ##   b  = rb[1]
+#       %8 = Base.getindex(%6, 2)          ##   Jb = rb[2]
+#       %9 = (Main.rrule)(Main.h, %7)      ##   ry = rrule(h,b)
+#       %10 = Base.getindex(%9, 1)         ##   y  = ry[1]
+#       %11 = Base.getindex(%9, 2)         ##   Jy = ry[2]
+#       %12 = Core.tuple(%5, %8, %11)      ##   Js = (Ja,Jb,Jy)
+#       %13 = Core.tuple(%10, %12)         ##   rr = (y, Js)
+#       return %13                         ##   return rr
+#"""
+#println(msg)
 ```
 The resulting IR can be evaluated to the forward pass value and the Jacobians:
-```julia
+```@repl lec08
 (y, Js) = evalir(ir, foo, 2.)
 ```
 To compute the derivative given the tuple of `Js` we just need to compose them
 and set the initial gradient to one:
-```julia
+```@repl lec08
 reduce(|>, Js, init=1)  # Ja(Jb(Jy(1)))
 ```
 The code for transforming the IR as described above looks like this.
-```julia; results="hidden"
+```@example lec08
 function transform(ir, x)
     pr = IRTools.Pipe(ir)
     Js = IRTools.Variable[]
@@ -433,10 +431,11 @@ end
 
 xgetindex(x, i...) = xcall(Base, :getindex, x, i...)
 xtuple(xs...) = xcall(Core, :tuple, xs...)
+nothing # hide
 ```
 Now we can write a general `rrule` that can differentiate any function
 composed of our defined `rrule`s
-```julia eval=true; results="hidden"
+```@example lec08
 function rrule(f, x)
     ir = @code_ir f(x)
     ir_derived = transform(ir,x)
@@ -447,9 +446,10 @@ end
 
 
 reverse(f,x) = rrule(f,x)[2](one(x))
+nothing # hide
 ```
 Finally, we just have to use `reverse` to compute the gradient
-```julia eval=true; results="hidden"
+```@example lec08
 plot(-2:0.1:2, foo, label="f(x) = 5sin(x^2)", lw=3)
 plot!(-2:0.1:2, x->10x*cos(x^2), label="Analytic f'", ls=:dot, lw=3)
 plot!(-2:0.1:2, x->reverse(foo,x), label="Dual Forward Mode f'", lw=3, ls=:dash)
@@ -475,7 +475,7 @@ differences between the backends.
 f(\bm x) = (\bm W \bm x + \bm b)^2
 ```
 
-```julia echo=false
+```@setup lec08
 using DataFrames
 using DrWatson
 using Glob
@@ -516,7 +516,7 @@ df = DataFrame([[names(df)]; collect.(eachrow(df))], [:column; Symbol.(axes(df, 
 
 ns = df[1,:] |> values |> collect
 rename!(df, ns)
-df[2:end,:]
+df[2:end,:] |> display
 ```
 
 # TODO
