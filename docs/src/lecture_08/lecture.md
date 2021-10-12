@@ -516,7 +516,9 @@ df = DataFrame([[names(df)]; collect.(eachrow(df))], [:column; Symbol.(axes(df, 
 
 ns = df[1,:] |> values |> collect
 rename!(df, ns)
-df[2:end,:] |> display
+```
+```@example lec08
+df[2:end,:] # hide
 ```
 
 # TODO
