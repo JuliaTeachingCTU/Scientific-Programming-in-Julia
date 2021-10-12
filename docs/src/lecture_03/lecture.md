@@ -192,6 +192,7 @@ Julia has *partial encapsulation* via a mechanism for consistency checks.
 Matrix of methods/types(data-structures)
 
 Consider an existing matrix of data and functions:
+
 | data \ methods | find_food | eat! |  |  | |
 | --- | --- | --- | --- | --- | --- |
 | Wolf |  | | | | |
