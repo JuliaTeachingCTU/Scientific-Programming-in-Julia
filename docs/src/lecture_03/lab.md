@@ -43,7 +43,7 @@ nothing # hide
 ⚥Sheep(1,1.0,1.0,1.0,1.0,:female)
 ```
 
-In our case, the methods that have to be forwarded are the accessors,
+In our case, the methods that have to be forwarded are the accessors, as well as
 `eats` and `eat!`.  The custom reproduction behaviour will of
 course be taken care of by a `reproduce!` function that does not just
 forward but also contains specialized behaviour for the `⚥Sheep`.
@@ -128,19 +128,19 @@ end
 
 ## Part II: A new, parametric type hierarchy
 
-You may have thought that the extention of Part I is not the most elegant thing
+You may have thought that the extension of Part I is not the most elegant thing
 you have done in your life. If you did - you were right. There is a way of using
-Julia's powerful type system to create a much more general verion of our agent
-simulation. First, let us not that there are two fundamentally different types
+Julia's powerful type system to create a much more general version of our agent
+simulation. First, let us note that there are two fundamentally different types
 of agents in our world: animals and plants. All species such as grass, sheep, wolves, etc.
-can be categorized as on of those two.
-Second, animals have two different, immutable sexes.  Thus an animal is
+can be categorized as one of those two.
+Second, animals have two different, *immutable* sexes.  Thus an animal is
 specified by two things: its *species* and its *sex*.  With this observation
 let's try to redesign the type hiearchy using parametric types to reflect this.
 
-The goal will be a `Plant` type with two parametric types: A `Species` type and
+The goal will be an `Animal` type with two parametric types: A `Species` type and
 a `Sex` type. The type of a female wolf would then be `Animal{Wolf,Female}`.
-The new type hiearchy then boils down to
+The new type hiearchy can then look like this:
 ```@example lab03
 abstract type Species end
 abstract type PlantSpecies <: Species end
@@ -183,13 +183,9 @@ while constructing it
 Animal{Wolf,Female}(1,5,5,1,1)
 ```
 Note that we now automatically have animals of any sex without additional work.
-As a little enjoyable side project, we can overload Julia's `show` method to
-get custom printing behaviour of our shiny new parametric type:
+Our little side project of overloading Julia's `show` method of our shiny new
+parametric type already looks much more elegant than before:
 ```@example lab03
-Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
-Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
-Base.show(io::IO, ::Type{Male}) = print(io,"♂")
-Base.show(io::IO, ::Type{Female}) = print(io,"♀")
 function Base.show(io::IO, a::Animal{A,S}) where {A,S}
     e = energy(a)
     d = Δenergy(a)
@@ -198,20 +194,27 @@ function Base.show(io::IO, a::Animal{A,S}) where {A,S}
     print(io,"$A$S #$(id(a)) E=$e ΔE=$d pr=$pr pf=$pf")
 end
 
+# note that for new species/sexes we will only have to overload `show` on the
+# abstract species/sex types like below!
+Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
+Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
+Base.show(io::IO, ::Type{Male}) = print(io,"♂")
+Base.show(io::IO, ::Type{Female}) = print(io,"♀")
+
+
 [Animal{Sheep,Male}(2,2,2,1,1),Animal{Wolf,Female}(1,5,5,1,1)]
 ```
 Unfortunately we have lost the convenience of creating plants and animals
 by simply calling their species constructor. For example, `Sheep` is just an
 abstract type that we cannot instantiate. However, we can manually define
 a new constructor that will give us this convenience back.
-This is done in exactly the same way as defining a constructor for a concrete type
-(i.e. turning it into a [function-like object](https://docs.julialang.org/en/v1/manual/methods/#Function-like-objects-1):
+This is done in exactly the same way as defining a constructor for a concrete type:
 ```julia
 Sheep(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male) = Animal{Sheep,S}(id,E,ΔE,pr,pf)
 ```
 Ok, so we have a constructor for `Sheep` now. But what about all the other
-billions of species that I want to define in my huge master project of
-ecosystem simulations?  Do I have to write them all by hand? *Do not
+billions of species that you want to define in your huge master thesis project of
+ecosystem simulations?  Do you have to write them all by hand? *Do not
 despair!* Julia has you covered:
 ```@example lab03
 function (A::Type{<:AnimalSpecies})(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male)
