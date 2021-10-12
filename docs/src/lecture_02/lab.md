@@ -15,6 +15,7 @@ In this lab we will first define what our agent simulation does on a high level.
 Then you will write the core methods for finding food (`find_food`),
 to specify what an animal eats (`eat!`), and how it reproduces (`reproduce!`).
 
+### High level-description
 In an agent simulation we assume that we have a bunch of agents (in our case
 grass, sheep, and wolves) that act in some environment (we will call it a
 *world*). At every iteration of the simulation each agent will perform a *step* in which it
@@ -22,7 +23,14 @@ performs some of the actions that it can take. For example, a *grass* agent will
 a little at every step. A *sheep* agent will try to find some grass and
 reproduce.
 
-To get started we need a type hierarchy. The first abstract type `Agent` that
+In short:
+* Wolves, sheep, and grass exist in a one dimensional world `Dict(1=>🐺, 2=>🐑, 3=>🌿, 4=>🌿, ...)`
+  and are identified by a unique ID
+* Each agent can perform certain actions (eating, growing, reproducing, dying...)
+* In one iteration of the simulation each agent performs its actions
+
+### Code skeleton
+To get started we need a type hierarchy. The first abstract type `Agent`
 acts as the root of our tree.  All animals and plants will be subtypes of `Agent`.
 There are different kinds of animals and plants so it makes sense to create an
 `Animal` type which will be the supertype of all animals. The same is
@@ -154,6 +162,12 @@ nothing # hide
 The constructor for grass with random growth countdown:
 ```@example non_parametric_agents
 Grass(id,m) = Grass(id, rand(1:m), m)
+
+# optional: overload show function for Grass
+function Base.show(io::IO, g::Grass)
+    x = size(g)/max_size(g) * 100
+    print(io,"🌿 #$(id(g)) $(round(Int,x))% grown")
+end
 nothing # hide
 ```
 Creation of a world with a few grass agents:
@@ -196,6 +210,15 @@ foodprob(a::Animal) = a.foodprob
 # set field values
 energy!(a::Animal, e) = a.energy = e
 incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
+
+# optional: overload the show method for Sheep
+function Base.show(io::IO, s::Sheep)
+    e = energy(s)
+    d = Δenergy(s)
+    pr = reprprob(s)
+    pf = foodprob(s)
+    print(io,"🐑 #$(id(s)) E=$e ΔE=$d pr=$pr pf=$pf")
+end
 nothing # hide
 ```
 
@@ -213,8 +236,10 @@ input types and is our first practical example of [*multiple dispatch*](https://
 ```
 Implement a function `eat!(::Sheep, ::Grass, ::World)` which increases the sheep's
 energy by $\Delta E$ multiplied by the size of the grass.
+
 After the sheep's energy is updated the grass is eaten and its size counter has
 to be set to zero.
+
 Note that you do not yet need the world in this function. It is needed later
 for the case of wolves eating sheep.
 ```@raw html
@@ -225,9 +250,8 @@ for the case of wolves eating sheep.
 ```@example non_parametric_agents
 function eat!(a::Sheep, b::Grass, w::World)
     incr_energy!(a, size(b)*Δenergy(a))
-    kill_agent!(b,w)
+    b.size = 0
 end
-kill_agent!(a::Plant, w::World) = a.size = 0
 nothing # hide
 ```
 ```@raw html
@@ -258,9 +282,12 @@ eat!(grass,sheep,world);
 <div class="admonition-body">
 ```
 Next, implement a `Wolf` with the same properties as the sheep ($E$, $\Delta
-E$, $p_r$, and $p_f$) as well as the correspoding `eat!` method which increases
+E$, $p_r$, and $p_f$) as well as its `eat!` method. The `eat!` method for wolves increases
 the wolf's energy by `energy(sheep)*Δenergy(wolf)` and kills the sheep (i.e.
 removes the sheep from the world).
+Both `eat!` and `agent_step!` need to be able to remove agents from the world
+so it makes sense to create another function `kill_agent!(::Animal,::World)`.
+Please implement it as well to make your `agent_step!` work.
 
 Hint: You can use `delete!` to remove agents from the dictionary in your world.
 
@@ -285,6 +312,15 @@ function eat!(wolf::Wolf, sheep::Sheep, w::World)
 end
 
 kill_agent!(a::Animal, w::World) = delete!(w.agents, id(a))
+
+# optional: overload the show method for Wolf
+function Base.show(io::IO, w::Wolf)
+    e = energy(w)
+    d = Δenergy(w)
+    pr = reprprob(w)
+    pf = foodprob(w)
+    print(io,"🐺 #$(id(w)) E=$e ΔE=$d pr=$pr pf=$pf")
+end
 nothing # hide
 ```
 ```@raw html
@@ -311,7 +347,7 @@ function find_food(a::Animal, w::World)
     isempty(as) ? nothing : sample(as)
 end
 
-eats(::Sheep,::Grass) = true
+eats(::Sheep,g::Grass) = size(g) > 0
 eats(::Wolf,::Sheep) = true
 eats(::Agent,::Agent) = false
 ```
@@ -330,7 +366,8 @@ random `Grass` from all available `Grass` agents.
 ```
 
 Implement the method `find_food(::Sheep, ::World)` which first returns either a
-`Grass` (sampled randomly from all `Grass`es) or returns `nothing`.
+`Grass` (sampled randomly from all `Grass`es with a size larger than zero) or
+returns `nothing`.
 
 1. Hint: For the functional programming way of coding this can use `filter` and
    `isa` to filter for a certain type and `StatsBase.sample` to choose a random
@@ -350,7 +387,7 @@ using StatsBase  # needed for `sample`
 # you can install it by typing `]add StatsBase` in the REPL
 
 function find_food(a::Sheep, w::World)
-    as = filter(x->isa(x,Grass), w.agents |> values |> collect)
+    as = filter(x->isa(x,Grass) && size(x)>0, w.agents |> values |> collect)
     isempty(as) ? nothing : sample(as)
 end
 ```
@@ -428,7 +465,7 @@ function find_food(a::Animal, w::World)
     isempty(as) ? nothing : sample(as)
 end
 
-eats(::Sheep,::Grass) = true
+eats(::Sheep,g::Grass) = size(g) > 0
 eats(::Wolf,::Sheep) = true
 eats(::Agent,::Agent) = false
 ```

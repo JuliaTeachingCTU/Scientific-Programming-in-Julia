@@ -197,7 +197,7 @@ You can check that it is a subtype of the `Function` abstract type, with the sub
 ```@repl lab01_base
 typeof(polynomial) <: Function
 ```
-These concepts will be expanded further in the type [lecture](@ref type_lecture), however for now note that this construction is quite useful for example if we wanted to create derivative rules for our function `derivativeof(::typeof(polynomial), ...)`.
+These concepts will be expanded further in the type [lecture](@ref type_system), however for now note that this construction is quite useful for example if we wanted to create derivative rules for our function `derivativeof(::typeof(polynomial), ...)`.
 
 Looking at mathematical operators `+`, `*`, we can see that in Julia they are also standalone functions. 
 ```@repl lab01_base
@@ -340,7 +340,7 @@ As opposed to the basic definition of `a` type the array is filled with `Float64
 typeof(at), eltype(at)
 polynomial(at, x)
 ```
-With round brackets over a fixed length vector we get the `Tuple` type, which is so called immutable "array" of a fixed size (its elements cannot be changed, unless initialized from scratch). Each element can be of a different type, but here we have only one and thus the `Tuple` is aliased into `NTuple`. There are some performance benefits for using immutable structure, which will be discussed [later](@ref type_lecture) or [even later](@ref perf_lecture).
+With round brackets over a fixed length vector we get the `Tuple` type, which is so called immutable "array" of a fixed size (its elements cannot be changed, unless initialized from scratch). Each element can be of a different type, but here we have only one and thus the `Tuple` is aliased into `NTuple`. There are some performance benefits for using immutable structure, which will be discussed [later](@ref type_system) or [even later](@ref perf_lecture).
 
 
 Defining `key=value` pairs inside round brackets creates a structure called `NamedTuple`, which has the same properties as `Tuple` and furthermore its elements can be conveniently accessed by dot syntax, e.g. `ant.a₀`.

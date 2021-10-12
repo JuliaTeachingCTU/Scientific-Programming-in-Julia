@@ -103,6 +103,7 @@ makedocs(;
         canonical = "https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia",
         assets = ["assets/favicon.ico"],
         collapselevel = 1,
+        ansicolor=true,
     ),
     pages = [
         "Home" => "index.md",
