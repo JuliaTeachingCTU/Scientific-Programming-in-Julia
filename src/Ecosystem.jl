@@ -28,7 +28,7 @@ Base.show(io::IO,::Type{Mushroom}) = print(io,"🍄")
 EcosystemCore.eats(::Animal{Sheep},::Plant{Mushroom}) = true
 function EcosystemCore.eat!(s::Animal{Sheep}, m::Plant{Mushroom}, w::World)
     incr_energy!(s, -size(m)*Δenergy(s))
-    EcosystemCore.kill_agent!(m,w)
+    m.size = 0
 end
 
 

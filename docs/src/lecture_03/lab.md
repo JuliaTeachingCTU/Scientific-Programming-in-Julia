@@ -30,6 +30,7 @@ code base by an unforeseen type this forwarding of methods is a nice
 work-around.  Our `⚥Sheep` type will simply contain a classic `sheep` and a
 `sex` field
 ```@example lab03-nonparametric
+include("../lecture_02/Lab02Ecosystem.jl") # hide
 struct ⚥Sheep <: Animal
     sheep::Sheep
     sex::Symbol
@@ -202,8 +203,9 @@ end
 Unfortunately we have lost the convenience of creating plants and animals
 by simply calling their species constructor. For example, `Sheep` is just an
 abstract type that we cannot instantiate. However, we can manually define
-a new constructors that will give us this convenience back.
-This is done in exactly the same way as defining a constructor for a concrete type:
+a new constructor that will give us this convenience back.
+This is done in exactly the same way as defining a constructor for a concrete type
+(i.e. turning it into a [function-like object](https://docs.julialang.org/en/v1/manual/methods/#Function-like-objects-1):
 ```julia
 Sheep(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male) = Animal{Sheep,S}(id,E,ΔE,pr,pf)
 ```
