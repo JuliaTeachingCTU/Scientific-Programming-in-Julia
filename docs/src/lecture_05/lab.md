@@ -157,11 +157,12 @@ Profile.print()
 
 In order to get more of a visual feel for profiling, there are packages that allow you to generate interactive plots or graphs. In this lab we will use [`ProfileSVG.jl`](https://github.com/timholy/ProfileSVG.jl), which does not require any fancy IDE or GUI libraries.
 
-```@repl lab05_polynomial
+```@example lab05_polynomial
 using ProfileSVG
+ProfileSVG.set_default(width=777, height=555) #hide
 ProfileSVG.save("./scalar_prof.svg") # can work with already create traces
+ProfileSVG.view() #hide
 ```
-![profile](./scalar_prof.svg)
 
 
 ```@raw html
@@ -186,10 +187,11 @@ function run_polynomial(a, x, n)
 end
 ```
 
-```@repl lab05_polynomial
+```@example lab05_polynomial
 run_polynomial(af, xf, 10) #hide
 @profview run_polynomial(af, xf, Int(1e5)) # clears the profile for us
-ProfileSVG.save("./scalar_prof_unstable.svg")
+ProfileSVG.save("./scalar_prof_unstable.svg") #hide
+nothing #hide
 ```
 ![profile_unstable](./scalar_prof_unstable.svg)
 
@@ -249,12 +251,13 @@ These numbers will be different on different HW.
 
 **BONUS**: The profile trace does not even contain the calling of mathematical operators and is mainly dominated by the iteration utilities. In this case we had to increase the number of runs to `1e6` to get some meaningful trace.
 
-```@repl lab05_polynomial
+```@example lab05_polynomial
 run_polynomial(af, xf, 10) #hide
 @profview run_polynomial(af, xf, Int(1e6))
-ProfileSVG.save("./scalar_prof_horner.svg")
+ProfileSVG.save("./scalar_prof_horner.svg") #hide
 ```
 ![profile_horner](./scalar_prof_horner.svg)
+
 ```@raw html
 </p></details>
 ```
