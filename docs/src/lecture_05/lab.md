@@ -41,11 +41,11 @@ polynomial(af, xf)
 
 The result they produce is the "same" numerically, however it differs in the output type. Though you have probably not noticed it, there should be a difference in runtime (assuming that you have run it once more after its compilation). It is probably a surprise to no one, that one of the function that has been compiled is type unstable. This can be check with the `@code_warntype` macro:
 ```@repl lab05_polynomial
-using InteractiveUtils
+using InteractiveUtils #hide
 @code_warntype polynomial(a, x)  # type stable
 @code_warntype polynomial(af, xf) # type unstable
 ```
-We are getting a little ahead of ourselves in this lab, as understanding of these expressions is part of the future [lecture](@ref introspection) and [lab](@ref introspection_lab). Anyway the output basically shows what the compiler thinks of each variable in the code, albeit for us in more less readable form than the original code. The more red the color is of the type info the less sure the inferred type is. Our main focus should be on the return type of the function which is just at the start of the code with the keyword `Body`. In the first case the return type is an `Int64`, whereas in the second example the compiler is unsure whether the type is `Float64` or `Int64`, marked as the `Union` type of the two. Fortunately for us this type instability can be fixed with a single line edit, but we will see later that it is not always the case.
+We are getting a little ahead of ourselves in this lab, as understanding of these expressions is part of the future [lecture](@ref introspection) and [lab](@ref introspection_lab). Anyway the output basically shows what the compiler thinks of each variable in the code, albeit for us in less readable form than the original code. The more red the color is of the type info the less sure the inferred type is. Our main focus should be on the return type of the function which is just at the start of the code with the keyword `Body`. In the first case the return type is an `Int64`, whereas in the second example the compiler is unsure whether the type is `Float64` or `Int64`, marked as the `Union` type of the two. Fortunately for us this type instability can be fixed with a single line edit, but we will see later that it is not always the case.
 
 !!! note "Type stability"
     Having a variable represented as `Union` of multiple types in a functions is a lesser evil than having `Any`, as we can at least enumerate statically the available options of functions to which to dynamically dispatch and in some cases there may be a low penalty.
@@ -57,7 +57,7 @@ We are getting a little ahead of ourselves in this lab, as understanding of thes
 ```
 Create a new function `polynomial_stable`, which is type stable and measure the difference in evaluation time. 
 
-*HINTS*: 
+**HINTS**: 
 - Ask for help on the `one` and `zero` keyword, which are often as a shorthand for these kind of functions.
 - run the function with the argument once before running `@time` or use `@btime` if you have `BenchmarkTools` readily available in your environment
 - To see some measurable difference with this simple function, a longer vector of coefficients may be needed.
@@ -70,11 +70,11 @@ Create a new function `polynomial_stable`, which is type stable and measure the 
 
 ```@repl lab05_polynomial
 function polynomial_stable(a, x)
-    accumulator = zero(x) # ideally we would like to create a variable that can hold both the eltype(a) and typeof(x)
+    accumulator = zero(x)
     for i in length(a):-1:1
         accumulator += x^(i-1) * a[i]
     end
-    accumulator    
+    accumulator
 end
 ```
 
@@ -84,6 +84,8 @@ end
 ```
 
 ```@repl lab05_polynomial
+polynomial(af, xf) #hide
+polynomial_stable(af, xf) #hide
 @time polynomial(af, xf)
 @time polynomial_stable(af, xf)
 ```
@@ -91,14 +93,13 @@ end
 Only really visible when evaluating multiple times.
 ```@repl lab05_polynomial
 using BenchmarkTools
-@btime polynomial(af, xf)
-@btime polynomial_stable(af, xf)
+@btime polynomial($af, $xf)
+@btime polynomial_stable($af, $xf)
 ```
-Difference only ~2ns.
+Difference only a few nanoseconds.
 
 
-*Note*: Recalling homework from lab 1. Adding `zero` also extends this function to the case of matrices.
-
+*Note*: Recalling homework from lab 1. Adding `zero` also extends this function to the case of `x` being a matrix, see `?` menu.
 ```@raw html
 </p></details>
 ```
@@ -130,24 +131,27 @@ The same function, but with keyword arguments, can be used to change these setti
 - When the execution time is short, the sampling may be insufficient -> run multiple times.
 
 ### Polynomial with scalars
-Let's look at our favorite `polynomial` function under the profiling lens.
+Let's look at our favorite `polynomial` function or rather it's type stable variant `polynomial_stable` under the profiling lens.
 
 ```@repl lab05_polynomial
 Profile.clear() # clear the last trace (does not have to be run on fresh start)
-@profile polynomial(a, x)
+@profile polynomial_stable(af, xf)
 Profile.print() # text based output of the profiler
 ```
-Unless the machine that you run the code on is really slow, the resulting output contains only the interactive part of Julia's REPL. This is due to the fact that our `polynomial` function take only aroun `7ns` to run. When we want to run profiling on something, that takes only a few nanoseconds, we have to repeatedly execute the function.
+Unless the machine that you run the code on is really slow, the resulting output contains nothing or only some internals of Julia's interactive REPL. This is due to the fact that our `polynomial` function take only few nanoseconds to run. When we want to run profiling on something, that takes only a few nanoseconds, we have to repeatedly execute the function.
 
 ```@repl lab05_polynomial
-function run_polynomial(a, x, n) 
+function run_polynomial_stable(a, x, n) 
     for _ in 1:n
-        polynomial(a, x)
+        polynomial_stable(a, x)
     end
 end
 
+af = Float64.(rand(-10:10, 10)) # using longer polynomial
+
+run_polynomial_stable(af, xf, 10) #hide
 Profile.clear()
-@profile run_polynomial(a, x, 100000)
+@profile run_polynomial_stable(af, xf, Int(1e5))
 Profile.print()
 ```
 
@@ -155,8 +159,7 @@ In order to get more of a visual feel for profiling, there are packages that all
 
 ```@repl lab05_polynomial
 using ProfileSVG
-# can work with already create traces
-ProfileSVG.save("./scalar_prof.svg")
+ProfileSVG.save("./scalar_prof.svg") # can work with already create traces
 ```
 ![profile](./scalar_prof.svg)
 
@@ -174,9 +177,18 @@ Let's compare this with the type unstable situation.
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
+First let's define the function that allows us to run the `polynomial` multiple times.
 ```@repl lab05_polynomial
-run_polynomial(af, xf, 100000) #hide
-@profview run_polynomial(af, xf, 100000)
+function run_polynomial(a, x, n) 
+    for _ in 1:n
+        polynomial(a, x)
+    end
+end
+```
+
+```@repl lab05_polynomial
+run_polynomial(af, xf, 10) #hide
+@profview run_polynomial(af, xf, Int(1e5)) # clears the profile for us
 ProfileSVG.save("./scalar_prof_unstable.svg")
 ```
 ![profile_unstable](./scalar_prof_unstable.svg)
@@ -203,7 +215,7 @@ We have noticed that no matter if the function is type stable or unstable the ma
 ```
 Rewrite the `polynomial` function using the Horner schema/method[^1]. Moreover include the type stability fixes from `polynomial_stable` You should get some *#x* speed up when measured against the old implementation (measure `polynomial` against `polynomial_stable`.
 
-*BONUS*: Profile the new method and compare the differences in traces.
+**BONUS**: Profile the new method and compare the differences in traces.
 
 [^1]: Explanation of the Horner schema can be found on [https://en.wikipedia.org/wiki/Horner%27s\_method](https://en.wikipedia.org/wiki/Horner%27s_method).
 
@@ -223,21 +235,26 @@ function polynomial(a, x)
 end
 ```
 
-Speed up? Cannot really see much here.
+Speed up:
+- 42ns -> 12ns ~ 3.5x on integer valued input 
+- 420ns -> 12ns ~ 15x on real valued input
 
 ```@repl lab05_polynomial
-@btime polynomial(a, x)
-@btime polynomial_stable(a, x)
+@btime polynomial($(Int.(af)), $(Int(xf)))
+@btime polynomial_stable($(Int.(af)), $(Int(xf)))
+@btime polynomial($af, $xf)
+@btime polynomial_stable($af, $xf)
 ```
+These numbers will be different on different HW.
 
-*BONUS*: Profile. What is so different here, that I cannot profile it?
+**BONUS**: The profile trace does not even contain the calling of mathematical operators and is mainly dominated by the iteration utilities. In this case we had to increase the number of runs to `1e6` to get some meaningful trace.
 
 ```@repl lab05_polynomial
-run_polynomial(a, x, 10) #hide
-@profview run_polynomial(a, x, 100000)
+run_polynomial(af, xf, 10) #hide
+@profview run_polynomial(af, xf, Int(1e6))
 ProfileSVG.save("./scalar_prof_horner.svg")
 ```
-![profile_horner](./scalar_prof_unstable.svg)
+![profile_horner](./scalar_prof_horner.svg)
 ```@raw html
 </p></details>
 ```
@@ -315,7 +332,7 @@ end
 ```
 that has the same functionality, while not having return type of `Any`.
 
-*HINT*: With the current design of the whole package we cannot really can anything better than `Union{Agent, Nothing}`
+**HINT**: With the current design of the whole package we cannot really get anything better than `Union{Agent, Nothing}`
 
 ```@raw html
 </div></div>
@@ -396,3 +413,33 @@ end setup=begin g, s, w = deepcopy(gs), deepcopy(ss), deepcopy(ws) end
 ```
 
 ### Tracking allocations
+Memory allocation is oftentimes the most CPU heavy part of the computation, thus working with memory correctly, i.e. avoiding unnecessary allocation is key for a well performing code. In order to get a sense of how much memory is allocated at individual places of the your codebase, we can instruct Julia to keep track of the allocations with a command line option `--track-allocation={all|user}` *figure out what these options do*
+- all
+- user
+
+After exiting, Julia will create a copy of each source file, that has been touched during execution and assign to each line the number of allocations in bytes.
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+
+Transform the simulation code above into a script. Run this script with Julia with the `--track-allocation={all|user}` option, i.e.
+```bash
+julia -L ./your_script.jl --track-allocation={all|user}
+```
+
+Investigate the results of allocation tracking inside `EcosystemCore` source files. Where is the line with the most allocations?
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+
+I would expect that the same piece of code that has been type unstable also shows the allocations - the line inside `find_rand` that contains `filter, collect, keys, etc.`. *CHECK*
+
+
+```@raw html
+</p></details>
+```
