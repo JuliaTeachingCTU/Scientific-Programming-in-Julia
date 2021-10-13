@@ -56,7 +56,7 @@ which allow custom functionality within a larger simulation function.
 For example, we might want to print out what the world looks like after
 every time step. This could be done by passing a lambda function `w->(@show w)`
 to `simulate!`.
-Often we want our callbacks to be executed only every $N$th step. This can be
+Often we want our callbacks to be executed only every `n` steps. This can be
 used to get less verbose logging or e.g. to write out checkpoints of your
 simulation.
 ```@raw html
@@ -71,7 +71,7 @@ calls to the function `fn` that is returned by `every_nth(f,n)`.
 ```@raw html
 </div></div>
 ```
-You can use `every_nth` to log and save the agent count only every couple of
+You can use `every_nth` to log (or save) the agent count only every couple of
 steps of your simulation. Using `every_nth` will look like this:
 ```@repl hw03
 # `@info agent_count(w)` is executed only every 5th call to logcb(w)
