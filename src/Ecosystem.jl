@@ -32,12 +32,10 @@ function EcosystemCore.eat!(s::Animal{Sheep}, m::Plant{Mushroom}, w::World)
 end
 
 
-function simulate!(world::World, iters::Int; callbacks=[])
+function simulate!(world::World, iters::Int; cb=()->())
     for i in 1:iters
         world_step!(world)
-        for cb in callbacks
-            cb(world)
-        end
+        cb()
     end
 end
 

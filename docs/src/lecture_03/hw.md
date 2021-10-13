@@ -29,7 +29,7 @@ delicious looks but decreases the energy of the sheep by
 ```
 Your new species should give you results like below
 ```@repl hw03
-s = Sheep(1,2,2,1,1);
+s = Sheep(1,2,1,1,1);
 m = Mushroom(2,5);
 w = World([s,m])
 eat!(s,m,w);
@@ -39,13 +39,15 @@ w
 ## Callbacks & Closures
 
 In many scientific frameworks we have to work with functions like `simulate!`
+(The `solve` function in
+[`Optim.jl`](https://github.com/JuliaNLSolvers/Optim.jl) is a good example)
 ```@example hw03
-function simulate!(w::World, iters::Int, callbacks=[])
+function simulate!(w::World, iters::Int, cb=()->())
     for _ in 1:iters
+        # In our case this loop is trivial. In more involved simulations this
+        # will be more complicated ;)
         world_step!(w)
-        for cb in callbacks
-            cb(w)
-        end
+        cb()
     end
 end
 nothing # hide

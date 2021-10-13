@@ -68,8 +68,8 @@ reprprob(g::⚥Sheep) = reprprob(g.sheep)
 foodprob(g::⚥Sheep) = foodprob(g.sheep)
 
 eats(::⚥Sheep, ::Grass) = true
-eat!(s::⚥Sheep, g::Plant, w::World) = eat!(s.sheep, g, w)
-eat!(w::Wolf, s::⚥Sheep, w::World) = eat!(w, s.sheep, w)
+eat!(s::⚥Sheep, g::Plant, world::World) = eat!(s.sheep, g, world)
+eat!(w::Wolf, s::⚥Sheep, world::World) = eat!(w, s.sheep, world)
 nothing # hide
 ```
 ```@raw html
@@ -129,12 +129,13 @@ end
 
 ## Part II: A new, parametric type hierarchy
 
-You may have thought that the extension of Part I is not the most elegant thing
-you have done in your life. If you did - you were right. There is a way of using
-Julia's powerful type system to create a much more general version of our agent
-simulation. First, let us note that there are two fundamentally different types
-of agents in our world: animals and plants. All species such as grass, sheep, wolves, etc.
-can be categorized as one of those two.
+The extension of `Sheep` to `⚥Sheep` is a very object-oriented approach.
+With a little bit of rethinking, we can build a much more elegant solution that
+makes use of Julia's powerful parametric types.
+
+First, let us note that there are two fundamentally different types of agents
+in our world: animals and plants. All species such as grass, sheep, wolves,
+etc.  can be categorized as one of those two.
 Second, animals have two different, *immutable* sexes.  Thus an animal is
 specified by two things: its *species* and its *sex*.  With this observation
 let's try to redesign the type hiearchy using parametric types to reflect this.
