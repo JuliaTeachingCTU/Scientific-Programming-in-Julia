@@ -28,16 +28,14 @@ Base.show(io::IO,::Type{Mushroom}) = print(io,"🍄")
 EcosystemCore.eats(::Animal{Sheep},::Plant{Mushroom}) = true
 function EcosystemCore.eat!(s::Animal{Sheep}, m::Plant{Mushroom}, w::World)
     incr_energy!(s, -size(m)*Δenergy(s))
-    EcosystemCore.kill_agent!(m,w)
+    m.size = 0
 end
 
 
-function simulate!(world::World, iters::Int; callbacks=[])
+function simulate!(world::World, iters::Int; cb=()->())
     for i in 1:iters
         world_step!(world)
-        for cb in callbacks
-            cb(world)
-        end
+        cb()
     end
 end
 
