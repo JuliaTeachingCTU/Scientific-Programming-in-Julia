@@ -11,148 +11,8 @@ parametric types to make this agent system much more flexible and *julian*.
 
 ## Part I: Female & Male Sheep
 
-For your convenience, the code from lab 2 that you will need in the first part
-of this lab can be found below.
-
-```@raw html
-<details class = "solution-body">
-<summary class = "solution-header">Solution of Lab 2:</summary><p>
-```
-```@example lab03-nonparametric
-using StatsBase
-
-abstract type Agent end
-abstract type Animal <: Agent end
-abstract type Plant <: Agent end
-
-mutable struct World{A<:Agent}
-    agents::Dict{Int,A}
-    max_id::Int
-end
-function World(agents::Vector{<:Agent})
-    World(Dict(id(a)=>a for a in agents), maximum(id.(agents)))
-end
-
-# optional: you can overload the `show` method to get custom
-# printing of your World
-function Base.show(io::IO, w::World)
-    println(io, typeof(w))
-    for (_,a) in w.agents
-        println(io,"  $a")
-    end
-end
-
-function world_step!(world::World)
-    # make sure that we only iterate over IDs that already exist in the 
-    # current timestep this lets us safely add agents
-    ids = deepcopy(keys(world.agents))
-
-    for id in ids
-        # agents can be killed by other agents, so make sure that we are
-        # not stepping dead agents forward
-        !haskey(world.agents,id) && continue
-
-        a = world.agents[id]
-        agent_step!(a,world)
-    end
-end
-
-function agent_step!(a::Plant, w::World)
-    if size(a) != max_size(a)
-        grow!(a)
-    end
-end
-
-function agent_step!(a::Animal, w::World)
-    incr_energy!(a,-1)
-    if rand() <= foodprob(a)
-        dinner = find_food(a,w)
-        eat!(a, dinner, w)
-    end
-    if energy(a) <= 0
-        kill_agent!(a,w)
-        return
-    end
-    if rand() <= reprprob(a)
-        reproduce!(a,w)
-    end
-    return a
-end
-
-mutable struct Grass <: Plant
-    id::Int
-    size::Int
-    max_size::Int
-end
-
-mutable struct Sheep <: Animal
-    id::Int
-    energy::Float64
-    Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
-end
-
-mutable struct Wolf <: Animal
-    id::Int
-    energy::Float64
-    Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
-end
-
-id(a::Agent) = a.id  # every agent has an ID so we can just define id for Agent here
-
-Base.size(a::Plant) = a.size
-max_size(a::Plant) = a.max_size
-grow!(a::Plant) = a.size += 1
-
-# get field values
-energy(a::Animal) = a.energy
-Δenergy(a::Animal) = a.Δenergy
-reprprob(a::Animal) = a.reprprob
-foodprob(a::Animal) = a.foodprob
-
-# set field values
-energy!(a::Animal, e) = a.energy = e
-incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
-
-function eat!(a::Sheep, b::Grass, w::World)
-    incr_energy!(a, size(b)*Δenergy(a))
-    kill_agent!(b,w)
-end
-function eat!(wolf::Wolf, sheep::Sheep, w::World)
-    incr_energy!(wolf, energy(sheep)*Δenergy(wolf))
-    kill_agent!(sheep,w)
-end
-eat!(a::Animal,b::Nothing,w::World) = nothing
-
-kill_agent!(a::Plant, w::World) = a.size = 0
-kill_agent!(a::Animal, w::World) = delete!(w.agents, id(a))
-
-function find_food(a::Animal, w::World)
-    as = filter(x->eats(a,x), w.agents |> values |> collect)
-    isempty(as) ? nothing : sample(as)
-end
-
-eats(::Sheep,::Grass) = true
-eats(::Wolf,::Sheep) = true
-eats(::Agent,::Agent) = false
-
-function reproduce!(a::A, w::World) where A<:Animal
-    energy!(a, energy(a)/2)
-    a_vals = [getproperty(a,n) for n in fieldnames(A) if n!=:id]
-    new_id = w.max_id + 1
-    â = A(new_id, a_vals...)
-    w.agents[id(â)] = â
-    w.max_id = new_id
-end
-nothing # hide
-```
-```@raw html
-</p></details>
-```
-
+The code from lab 2 that you will need in the first part of this lab can be
+found [here](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_02/Lab02Ecosystem.jl).
 
 The goal of the first part of the lab is to demonstrate the *forwarding method*
 (which is close to how things are done in OOP) by implementing a sheep that can
@@ -170,6 +30,7 @@ code base by an unforeseen type this forwarding of methods is a nice
 work-around.  Our `⚥Sheep` type will simply contain a classic `sheep` and a
 `sex` field
 ```@example lab03-nonparametric
+include("../lecture_02/Lab02Ecosystem.jl") # hide
 struct ⚥Sheep <: Animal
     sheep::Sheep
     sex::Symbol
@@ -182,7 +43,7 @@ nothing # hide
 ⚥Sheep(1,1.0,1.0,1.0,1.0,:female)
 ```
 
-In our case, the methods that have to be forwarded are the accessors,
+In our case, the methods that have to be forwarded are the accessors, as well as
 `eats` and `eat!`.  The custom reproduction behaviour will of
 course be taken care of by a `reproduce!` function that does not just
 forward but also contains specialized behaviour for the `⚥Sheep`.
@@ -207,7 +68,8 @@ reprprob(g::⚥Sheep) = reprprob(g.sheep)
 foodprob(g::⚥Sheep) = foodprob(g.sheep)
 
 eats(::⚥Sheep, ::Grass) = true
-eat!(s::⚥Sheep, g::Plant, w::World) = eat!(s.sheep, g, w)
+eat!(s::⚥Sheep, g::Plant, world::World) = eat!(s.sheep, g, world)
+eat!(w::Wolf, s::⚥Sheep, world::World) = eat!(w, s.sheep, world)
 nothing # hide
 ```
 ```@raw html
@@ -267,19 +129,20 @@ end
 
 ## Part II: A new, parametric type hierarchy
 
-You may have thought that the extention of Part I is not the most elegant thing
-you have done in your life. If you did - you were right. There is a way of using
-Julia's powerful type system to create a much more general verion of our agent
-simulation. First, let us not that there are two fundamentally different types
-of agents in our world: animals and plants. All species such as grass, sheep, wolves, etc.
-can be categorized as on of those two.
-Second, animals have two different, immutable sexes.  Thus an animal is
+The extension of `Sheep` to `⚥Sheep` is a very object-oriented approach.
+With a little bit of rethinking, we can build a much more elegant solution that
+makes use of Julia's powerful parametric types.
+
+First, let us note that there are two fundamentally different types of agents
+in our world: animals and plants. All species such as grass, sheep, wolves,
+etc.  can be categorized as one of those two.
+Second, animals have two different, *immutable* sexes.  Thus an animal is
 specified by two things: its *species* and its *sex*.  With this observation
 let's try to redesign the type hiearchy using parametric types to reflect this.
 
-The goal will be a `Plant` type with two parametric types: A `Species` type and
+The goal will be an `Animal` type with two parametric types: A `Species` type and
 a `Sex` type. The type of a female wolf would then be `Animal{Wolf,Female}`.
-The new type hiearchy then boils down to
+The new type hiearchy can then look like this:
 ```@example lab03
 abstract type Species end
 abstract type PlantSpecies <: Species end
@@ -322,13 +185,9 @@ while constructing it
 Animal{Wolf,Female}(1,5,5,1,1)
 ```
 Note that we now automatically have animals of any sex without additional work.
-As a little enjoyable side project, we can overload Julia's `show` method to
-get custom printing behaviour of our shiny new parametric type:
+Our little side project of overloading Julia's `show` method of our shiny new
+parametric type already looks much more elegant than before:
 ```@example lab03
-Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
-Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
-Base.show(io::IO, ::Type{Male}) = print(io,"♂")
-Base.show(io::IO, ::Type{Female}) = print(io,"♀")
 function Base.show(io::IO, a::Animal{A,S}) where {A,S}
     e = energy(a)
     d = Δenergy(a)
@@ -337,19 +196,27 @@ function Base.show(io::IO, a::Animal{A,S}) where {A,S}
     print(io,"$A$S #$(id(a)) E=$e ΔE=$d pr=$pr pf=$pf")
 end
 
+# note that for new species/sexes we will only have to overload `show` on the
+# abstract species/sex types like below!
+Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
+Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
+Base.show(io::IO, ::Type{Male}) = print(io,"♂")
+Base.show(io::IO, ::Type{Female}) = print(io,"♀")
+
+
 [Animal{Sheep,Male}(2,2,2,1,1),Animal{Wolf,Female}(1,5,5,1,1)]
 ```
 Unfortunately we have lost the convenience of creating plants and animals
 by simply calling their species constructor. For example, `Sheep` is just an
 abstract type that we cannot instantiate. However, we can manually define
-a new constructors that will give us this convenience back.
+a new constructor that will give us this convenience back.
 This is done in exactly the same way as defining a constructor for a concrete type:
 ```julia
 Sheep(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male) = Animal{Sheep,S}(id,E,ΔE,pr,pf)
 ```
 Ok, so we have a constructor for `Sheep` now. But what about all the other
-billions of species that I want to define in my huge master project of
-ecosystem simulations?  Do I have to write them all by hand? *Do not
+billions of species that you want to define in your huge master thesis project of
+ecosystem simulations?  Do you have to write them all by hand? *Do not
 despair!* Julia has you covered:
 ```@example lab03
 function (A::Type{<:AnimalSpecies})(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male)
@@ -373,7 +240,7 @@ as the new `Animal` type. Additionally you need to adapt at least the methods
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-The full solution can be found on Github from the
+The full solution can be found on Github for the
 [`World`](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/world.jl),
 [`Plant`s](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/plant.jl), and
 [`Animal`s](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/animal.jl).
