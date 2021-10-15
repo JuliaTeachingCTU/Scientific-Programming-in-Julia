@@ -11,12 +11,12 @@ include(joinpath(projdir,"src","lecture_02","Lab02Ecosystem.jl"))
 
 ## How to submit?
 
-Put all your code (including your or the provided solution of lab 2) in a
-script named `hw.jl` alongside with the `Project.toml` and `Manifest.toml` of
-the environment. Please only include packages in the environment that are
-necessary for the homework.  Create a `.zip` archive of the three files and
-send it to the lab instructor, who has assigned the task, via email (contact
-emails are located on the [homepage](@ref emails) of the course).
+Put all your code (including your or the provided solution of lab
+2) in a script named `hw.jl`.  Zip only this file (not its parent folder) and
+upload it to BRUTE.  Your file can contain one dependency `using StatsBase`,
+but no other packages are can to be used.  For example, having a `using Plots`
+in your code will cause the automatic evaluation to fail.
+
 
 
 ## Counting Agents
