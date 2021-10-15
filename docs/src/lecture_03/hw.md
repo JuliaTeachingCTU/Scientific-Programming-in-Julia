@@ -7,11 +7,17 @@ using Scientific_Programming_in_Julia
 
 In this homework we will add another species of plant to our simulation
 (*poisoned mushrooms*) and practice the use of closures with callback
-functions.
-The solution of lab 3 can be found on Github for the
-[`World`](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/world.jl),
-[`Plant`s](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/plant.jl), and
-[`Animal`s](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/animal.jl).
+functions. The solution of lab 3 can be found
+[here](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_03/Lab03Ecosystem.jl). You can use this file and add the code that you write
+for the homework to it.
+
+## How to submit?
+
+Put all your code (including your or the provided solution of lab 2)
+in a script named `hw.jl`.  Zip only this file (not its parent folder) and
+upload it to BRUTE.  Your file can contain one dependency `using StatsBase`,
+but no other packages are can to be used.  For example, having a `using Plots`
+in your code will cause the automatic evaluation to fail.
 
 
 ## Poisoned Mushrooms
