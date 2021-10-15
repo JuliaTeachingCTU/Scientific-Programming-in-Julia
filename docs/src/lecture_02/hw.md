@@ -11,8 +11,8 @@ include(joinpath(projdir,"src","lecture_02","Lab02Ecosystem.jl"))
 
 ## How to submit?
 
-Put all your code (including your or the provided solution of lab
-2) in a script named `hw.jl`.  Zip only this file (not its parent folder) and
+Put all your code (including your or the provided solution of lab 2)
+in a script named `hw.jl`.  Zip only this file (not its parent folder) and
 upload it to BRUTE.  Your file can contain one dependency `using StatsBase`,
 but no other packages are can to be used.  For example, having a `using Plots`
 in your code will cause the automatic evaluation to fail.
