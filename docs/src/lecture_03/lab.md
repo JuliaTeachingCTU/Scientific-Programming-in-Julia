@@ -72,6 +72,25 @@ eat!(s::⚥Sheep, g::Plant, world::World) = eat!(s.sheep, g, world)
 eat!(w::Wolf, s::⚥Sheep, world::World) = eat!(w, s.sheep, world)
 nothing # hide
 ```
+For the ones that don't like accessors: You can also overload the `Base` methods
+`getproperty` and `setproperty!` to make something like `⚥sheep.energy += 1` work:
+```julia
+function Base.getproperty(s::⚥Sheep, name::Symbol)
+    if name in fieldnames(Sheep)
+        getfield(s.sheep,name)
+    else
+        getfield(s,name)
+    end
+end
+
+function Base.setproperty!(s::⚥Sheep, name::Symbol, x)
+    if name in fieldnames(Sheep)
+        setfield!(s.sheep,name,x)
+    else
+        setfield!(s,name,x)
+    end
+end
+```
 ```@raw html
 </p></details>
 ```
