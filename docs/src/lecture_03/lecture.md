@@ -457,6 +457,7 @@ Many fundamental objects can be iterated: Arrays, Tuples, Data collections...
 
 Example: of interface ```Iterators```
 defined by "duck typing" via two functions.
+
 |Required methods	|	Brief description|
 | --- | --- |
 |iterate(iter)		| Returns either a tuple of the first item and initial state or nothing if empty|
