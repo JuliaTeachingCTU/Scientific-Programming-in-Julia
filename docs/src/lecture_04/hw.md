@@ -26,8 +26,6 @@ Create a `@testset` for `Mushroom` to verify that its size is set to zero and
 that a `Sheep` looses energy if it eats a `Mushroom`.
 ```@raw html
 </div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
 ```
 
 ```@raw html
@@ -39,10 +37,4 @@ Get your test coverage as computed by `codecov` (visible in your README badge)
 above 95% by implementing a test for `simulate!`.
 ```@raw html
 </div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-```@raw html
-</p></details>
 ```
