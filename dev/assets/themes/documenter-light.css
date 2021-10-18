@@ -823,10 +823,10 @@ a.has-text-danger:hover, a.has-text-danger:focus {
   background-color: #4a4a4a !important; }
 
 .has-text-grey {
-  color: #7a7a7a !important; }
+  color: #6b6b6b !important; }
 
 .has-background-grey {
-  background-color: #7a7a7a !important; }
+  background-color: #6b6b6b !important; }
 
 .has-text-grey-light {
   color: #b5b5b5 !important; }
@@ -2181,7 +2181,7 @@ fieldset[disabled] .button {
 .button.is-static {
   background-color: whitesmoke;
   border-color: #dbdbdb;
-  color: #7a7a7a;
+  color: #6b6b6b;
   box-shadow: none;
   pointer-events: none; }
 
@@ -3329,7 +3329,7 @@ fieldset[disabled] .select select,
   background-color: whitesmoke;
   border-color: whitesmoke;
   box-shadow: none;
-  color: #7a7a7a; }
+  color: #6b6b6b; }
 
 .input[disabled]::-moz-placeholder, #documenter .docs-sidebar form.docs-search > input[disabled]::-moz-placeholder, .textarea[disabled]::-moz-placeholder, .select select[disabled]::-moz-placeholder,
 fieldset[disabled] .input::-moz-placeholder,
@@ -3338,7 +3338,7 @@ fieldset[disabled] #documenter .docs-sidebar form.docs-search > input::-moz-plac
 fieldset[disabled] .textarea::-moz-placeholder,
 fieldset[disabled] .select select::-moz-placeholder,
 .select fieldset[disabled] select::-moz-placeholder {
-  color: rgba(122, 122, 122, 0.3); }
+  color: rgba(107, 107, 107, 0.3); }
 
 .input[disabled]::-webkit-input-placeholder, #documenter .docs-sidebar form.docs-search > input[disabled]::-webkit-input-placeholder, .textarea[disabled]::-webkit-input-placeholder, .select select[disabled]::-webkit-input-placeholder,
 fieldset[disabled] .input::-webkit-input-placeholder,
@@ -3347,7 +3347,7 @@ fieldset[disabled] #documenter .docs-sidebar form.docs-search > input::-webkit-i
 fieldset[disabled] .textarea::-webkit-input-placeholder,
 fieldset[disabled] .select select::-webkit-input-placeholder,
 .select fieldset[disabled] select::-webkit-input-placeholder {
-  color: rgba(122, 122, 122, 0.3); }
+  color: rgba(107, 107, 107, 0.3); }
 
 .input[disabled]:-moz-placeholder, #documenter .docs-sidebar form.docs-search > input[disabled]:-moz-placeholder, .textarea[disabled]:-moz-placeholder, .select select[disabled]:-moz-placeholder,
 fieldset[disabled] .input:-moz-placeholder,
@@ -3356,7 +3356,7 @@ fieldset[disabled] #documenter .docs-sidebar form.docs-search > input:-moz-place
 fieldset[disabled] .textarea:-moz-placeholder,
 fieldset[disabled] .select select:-moz-placeholder,
 .select fieldset[disabled] select:-moz-placeholder {
-  color: rgba(122, 122, 122, 0.3); }
+  color: rgba(107, 107, 107, 0.3); }
 
 .input[disabled]:-ms-input-placeholder, #documenter .docs-sidebar form.docs-search > input[disabled]:-ms-input-placeholder, .textarea[disabled]:-ms-input-placeholder, .select select[disabled]:-ms-input-placeholder,
 fieldset[disabled] .input:-ms-input-placeholder,
@@ -3365,7 +3365,7 @@ fieldset[disabled] #documenter .docs-sidebar form.docs-search > input:-ms-input-
 fieldset[disabled] .textarea:-ms-input-placeholder,
 fieldset[disabled] .select select:-ms-input-placeholder,
 .select fieldset[disabled] select:-ms-input-placeholder {
-  color: rgba(122, 122, 122, 0.3); }
+  color: rgba(107, 107, 107, 0.3); }
 
 .input, #documenter .docs-sidebar form.docs-search > input, .textarea {
   box-shadow: inset 0 1px 2px rgba(10, 10, 10, 0.1);
@@ -3497,7 +3497,7 @@ fieldset[disabled] .select select:-ms-input-placeholder,
 .checkbox[disabled], .radio[disabled],
 fieldset[disabled] .checkbox,
 fieldset[disabled] .radio {
-  color: #7a7a7a;
+  color: #6b6b6b;
   cursor: not-allowed; }
 
 .radio + .radio {
@@ -3679,7 +3679,7 @@ fieldset[disabled] .select select:hover {
   font-size: 1.5rem; }
 
 .select.is-disabled::after {
-  border-color: #7a7a7a; }
+  border-color: #6b6b6b; }
 
 .select.is-fullwidth {
   width: 100%; }
@@ -4298,7 +4298,7 @@ fieldset[disabled] .select select:hover {
 .control.has-icons-left .input:focus ~ .icon, .control.has-icons-left #documenter .docs-sidebar form.docs-search > input:focus ~ .icon, #documenter .docs-sidebar .control.has-icons-left form.docs-search > input:focus ~ .icon,
 .control.has-icons-left .select:focus ~ .icon, .control.has-icons-right .input:focus ~ .icon, .control.has-icons-right #documenter .docs-sidebar form.docs-search > input:focus ~ .icon, #documenter .docs-sidebar .control.has-icons-right form.docs-search > input:focus ~ .icon,
 .control.has-icons-right .select:focus ~ .icon {
-  color: #7a7a7a; }
+  color: #6b6b6b; }
 
 .control.has-icons-left .input.is-small ~ .icon, .control.has-icons-left #documenter .docs-sidebar form.docs-search > input ~ .icon, #documenter .docs-sidebar .control.has-icons-left form.docs-search > input ~ .icon,
 .control.has-icons-left .select.is-small ~ .icon,
@@ -4760,7 +4760,7 @@ a.list-item {
   padding-left: 0.75em; }
 
 .menu-label {
-  color: #7a7a7a;
+  color: #6b6b6b;
   font-size: 0.75em;
   letter-spacing: 0.1em;
   text-transform: uppercase; }
@@ -6006,7 +6006,7 @@ a.navbar-item:focus, a.navbar-item:focus-within, a.navbar-item:hover, a.navbar-i
   background-color: #dbdbdb;
   border-color: #dbdbdb;
   box-shadow: none;
-  color: #7a7a7a;
+  color: #6b6b6b;
   opacity: 0.5; }
 
 .pagination-previous,
@@ -6154,7 +6154,7 @@ label.panel-block:hover {
   text-align: center;
   vertical-align: top;
   width: 1em;
-  color: #7a7a7a;
+  color: #6b6b6b;
   margin-right: 0.75em; }
 
 .panel-icon .fa {
@@ -8522,7 +8522,13 @@ h1:hover .docs-heading-anchor-permalink, h2:hover .docs-heading-anchor-permalink
   right: 0.625rem;
   bottom: 0.5rem; }
 
+.docstring > section > a.docs-sourcelink:focus {
+  opacity: 1 !important; }
+
 .docstring:hover > section > a.docs-sourcelink {
+  opacity: 0.2; }
+
+.docstring:focus-within > section > a.docs-sourcelink {
   opacity: 0.2; }
 
 .docstring > section:hover a.docs-sourcelink {
@@ -8603,6 +8609,9 @@ pre, code {
 html {
   -moz-osx-font-smoothing: auto;
   -webkit-font-smoothing: auto; }
+
+li.no-marker {
+  list-style: none; }
 
 /* This file contain the overall layout.
  *
@@ -8976,7 +8985,7 @@ html {
   color: #007989; }
 
 .ansi span.sgr37 {
-  color: #8f8f8f; }
+  color: gray; }
 
 .ansi span.sgr40 {
   background-color: #242424; }
@@ -9000,10 +9009,10 @@ html {
   background-color: #007989; }
 
 .ansi span.sgr47 {
-  background-color: #8f8f8f; }
+  background-color: gray; }
 
 .ansi span.sgr90 {
-  color: #707070; }
+  color: #616161; }
 
 .ansi span.sgr91 {
   color: #cb3c33; }
@@ -9027,7 +9036,7 @@ html {
   color: whitesmoke; }
 
 .ansi span.sgr100 {
-  background-color: #707070; }
+  background-color: #616161; }
 
 .ansi span.sgr101 {
   background-color: #cb3c33; }

@@ -1148,7 +1148,7 @@ html.theme--documenter-dark a:hover {
 
 html.theme--documenter-dark code {
   background-color: rgba(255, 255, 255, 0.05);
-  color: #e74c3c;
+  color: #ececec;
   font-size: 0.875em;
   font-weight: normal;
   padding: 0.1em; }
@@ -8829,7 +8829,13 @@ html.theme--documenter-dark .docstring > section > a.docs-sourcelink {
   right: 0.625rem;
   bottom: 0.5rem; }
 
+html.theme--documenter-dark .docstring > section > a.docs-sourcelink:focus {
+  opacity: 1 !important; }
+
 html.theme--documenter-dark .docstring:hover > section > a.docs-sourcelink {
+  opacity: 0.2; }
+
+html.theme--documenter-dark .docstring:focus-within > section > a.docs-sourcelink {
   opacity: 0.2; }
 
 html.theme--documenter-dark .docstring > section:hover a.docs-sourcelink {
@@ -8909,6 +8915,9 @@ html.theme--documenter-dark .katex-display, html.theme--documenter-dark mjx-cont
 html.theme--documenter-dark html {
   -moz-osx-font-smoothing: auto;
   -webkit-font-smoothing: auto; }
+
+html.theme--documenter-dark li.no-marker {
+  list-style: none; }
 
 html.theme--documenter-dark #documenter .docs-main > article {
   overflow-wrap: break-word; }
