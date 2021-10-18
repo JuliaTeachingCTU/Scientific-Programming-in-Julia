@@ -32,12 +32,11 @@ end
 
 @testset "every_nth" begin
     i = 0
-    f(w::World) = i+=1
+    f() = i+=1
     cb = every_nth(f,3)
 
-    w = World(Dict{Int,Agent}(),1)
-    cb(w); cb(w);
+    cb(); cb();
     @test i == 0
-    cb(w)
+    cb()
     @test i == 1
 end

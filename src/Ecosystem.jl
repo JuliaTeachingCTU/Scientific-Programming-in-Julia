@@ -52,10 +52,10 @@ end
 
 function every_nth(f::Function, n::Int)
     i = 1
-    function callback(w::World)
+    function callback(args...)
         # display(i) # comment this out to see out the counter increases
         if i == n
-            f(w)
+            f(args...)
             i = 1
         else
             i += 1
