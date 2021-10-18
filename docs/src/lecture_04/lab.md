@@ -171,11 +171,8 @@ nothing # hide
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-1. Create a `@testset` and fill it with tests for `agent_count` that cover all
-   of its four methods.
-
-2. Create a `@testset` for `Mushroom` to verify that its size is set to zero
-   and that a `Sheep` looses energy if it eats a `Mushroom`.
+Create a `@testset` and fill it with tests for `agent_count` that cover all
+of its four methods.
 ```@raw html
 </div></div>
 <details class = "solution-body">
@@ -197,16 +194,6 @@ nothing # hide
     for (k,_) in res
         @test res[k] ≈ tst[k]
     end
-end
-
-@testset "Mushroom" begin
-    sheep = Sheep(5,10,2,1,1)
-    mushr = Mushroom(2,5,5)
-    world = World([sheep,mushr])
-
-    EcosystemCore.eat!(sheep,mushr,world)
-    @test size(mushr) == 0
-    @test energy(sheep) == 0
 end
 nothing # hide
 ```
@@ -291,6 +278,9 @@ jobs:
 ```
 Pushing this file to your repository should result in github automatically running
 your julia tests.
+
+You can add a status badge to your README by copying the status badge string
+from the github actions tab.
 ```@raw html
 </div></div>
 ```
@@ -308,10 +298,12 @@ report during the Github Action.
 <header class="admonition-header">Exercise (optional)</header>
 <div class="admonition-body">
 ```
-Add the codecov steps below to your `RunTests.yml`.  Note that **code coverage
-does not mean that your code is properly tested**!  It is simply measuring
-which lines have been hit during the execution of your tests, which does not
-mean that your code (or your tests) are correct.
+1. Add the codecov steps below to your `RunTests.yml`.  Note that **code coverage
+   does not mean that your code is properly tested**!  It is simply measuring
+   which lines have been hit during the execution of your tests, which does not
+   mean that your code (or your tests) are correct.
+
+2. Add the codecov status badge to your README.
 ```julia
 steps:
   - uses: julia-actions/julia-processcoverage@v1
