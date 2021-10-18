@@ -77,7 +77,7 @@ simulation.
 Implement a function `every_nth(f::Function,n::Int)` that takes an inner
 function `f` and uses a closure to construct an outer function `g` that only
 calls `f` every `n`th call to `g`. E.g. if `n=3` the inner function `f` be called
-at the 3rd, 6th, ... call to `g` (not at the 1st, 4th, 7th...).
+at the 3rd, 6th, 9th ... call to `g` (not at the 1st, 4th, 7th... call).
 
 **Hint**: You can use splatting via `...` to pass on an unknown number of
 arguments from the outer to the inner function.
