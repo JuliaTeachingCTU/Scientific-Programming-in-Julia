@@ -30,13 +30,17 @@ in your code will cause the automatic evaluation to fail.
 Implement a new species `Mushroom` which tricks a sheep into eating it by its
 delicious looks but decreases the energy of the sheep by
 `size(::Mushroom)*Δenergy(::Sheep)`.
+
+**Note**: The auto-eval system assumes that you have a constructor
+`Mushroom(id,size,max_size)` that accepts the three plant fields as arguments
+(as implemented e.g. [here](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/359f0b48314f9aa3d5d8fa0c85eebf376810aca6/src/plant.jl#L11-L13)).
 ```@raw html
 </div></div>
 ```
 Your new species should give you results like below
 ```@repl hw03
 s = Sheep(1,2,1,1,1);
-m = Mushroom(2,5);
+m = Mushroom(2,2,5);
 w = World([s,m])
 eat!(s,m,w);
 w
@@ -70,10 +74,13 @@ simulation.
 <header class="admonition-header">Homework (1 point)</header>
 <div class="admonition-body">
 ```
-Implement a function `every_nth(f::Function,n::Int)` that takes a function and
-uses a closure to construct another function that only calls `f` every `n`
-calls to the function `fn` that is returned by `every_nth(f,n)`.
+Implement a function `every_nth(f::Function,n::Int)` that takes an inner
+function `f` and uses a closure to construct an outer function `g` that only
+calls `f` every `n`th call to `g`. E.g. if `n=3` the inner function `f` be called
+at the 3rd, 6th, 9th ... call to `g` (not at the 1st, 4th, 7th... call).
 
+**Hint**: You can use splatting via `...` to pass on an unknown number of
+arguments from the outer to the inner function.
 ```@raw html
 </div></div>
 ```
@@ -81,9 +88,9 @@ You can use `every_nth` to log (or save) the agent count only every couple of
 steps of your simulation. Using `every_nth` will look like this:
 ```@repl hw03
 # `@info agent_count(w)` is executed only every 5th call to logcb(w)
-logcb = every_nth(w->(@info agent_count(w)), 5);
+logcb = every_nth(w->(@info agent_count(w)), 3);
 
-for i in 1:10
-    logcb(w)
-end
+logcb(w);  # x->(@info agent_count(w)) is not called
+logcb(w);  # x->(@info agent_count(w)) is not called
+logcb(w);  # x->(@info agent_count(w)) *is* called
 ```
