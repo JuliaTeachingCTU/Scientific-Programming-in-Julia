@@ -1,47 +1,78 @@
 # Homework 4: More Unit Tests
 
-In this lab you will create another helper function for your new package `Ecosystem.jl`
-and unit test it.
 
-The more types of species we want to add to our simulation, the more tedious it
-becomes to assign the correct IDs when creating the world. Hence, we will add a
-mechanism that automatically assigns correct IDs to created agents.
+In this homework you will finish writing your unit tests for your `Ecosystem.jl`.
+
+
+## How to submit
+
+The autoeval system expects you to upload a `.zip` file of your `Ecosystem`
+with at least the following files
+```
+.
+├── Ecosystem
+│   ├── Project.toml
+│   ├── src
+│   │   └── Ecosystem.jl
+│   └── test
+│       ├── every_nth.jl
+│       ├── mushroom.jl
+│       └── runtests.jl
+```
+The files `every_nth.jl` and `mushroom.jl` have to contain a single testset,
+so for example, the `every_nth.jl` file should look like this:
+```julia
+@testset "every_nth" begin
+    # your tests go in here
+    @test ...
+end
+```
+We will run those two testsets on our own (hopefully correct) implementation of
+`Ecosystem.jl` and check if your tests pass. Subsequently we will run them on
+an *incorrect* implementation of `Ecosystem.jl` and verify that your tests fail
+with the incorrect package. Hence, you will get full points if your tests pass
+on a correct implementation and fail on an incorrect implementation.
+
+## Testing `every_nth`
+
 ```@raw html
 <div class="admonition is-category-homework">
-<header class="admonition-header">Homework (1 point)</header>
+<header class="admonition-header">Compulsory Homework (1 point)</header>
 <div class="admonition-body">
 ```
-Overload the constructor of `World` to accept an arbitrary number of configuration
-tuples like
-```julia
-grass_config = (Grass, 200, (max_size = 10,))
-sheep_config = (Sheep, 10, (Δenergy = 0.2, energy = 4.0, reprprob = 0.8, foodprob = 0.6))
-```
-and automatically create the desired agents with correct IDs.
-
+Create a `@testset` for `every_nth(f,n)` in the file `test/every_nth.jl`.
+The testset should verify that the inner function `f` is called only every `n`
+times. This testset must contain at least two `@test` calls. One should verify
+that a variable *has not* changed the first `n-1` calls to `f`. The second one
+should check that the variable *has* changed.
 ```@raw html
 </div></div>
 ```
-The correct overload of the `World` constructor should result in behaviour like
-below
-```@example hw04
-using Scientific_Programming_in_Julia
-using EcosystemCore
 
-grass_config = (Grass, 2, (max_size = 10,))
-sheep_config = (Sheep, 1, (Δenergy = 0.2, energy = 4.0, reprprob = 0.8, foodprob = 0.6))
-wolf_config  = (Wolf, 1, (energy = 10.0, Δenergy = 8.0, reprprob = 0.1, foodprob = 0.2))
-World(grass_config, sheep_config, wolf_config)
-```
+## Testing `Mushroom`
 
 ```@raw html
 <div class="admonition is-category-homework">
-<header class="admonition-header">Homework (1 point)</header>
+<header class="admonition-header">Compulsory Homework (1 point)</header>
 <div class="admonition-body">
 ```
-Write at least 4 unit tests that make sure that the correct number of agents is
-produced, and that the arguments to the `Species` constructors are passed in
-the right order.
+Create a `@testset` for `Mushroom` that verifies that
+`eat!(::Sheep,::Mushroom,::World)` does what we expect. Calling `eat!` on a
+sheep and a mushroom should set the size of the mushroom to zero and decrease
+the energy of the sheep appropriately.
+```@raw html
+</div></div>
+```
+
+## Code coverage
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise (optional)</header>
+<div class="admonition-body">
+```
+Get your test coverage as computed by `codecov` (visible in your README badge)
+above 95% by implementing a test for `simulate!`.
 ```@raw html
 </div></div>
 ```
