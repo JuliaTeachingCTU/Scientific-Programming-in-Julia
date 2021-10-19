@@ -1,7 +1,7 @@
 # Lab 4: Packages, Tests, Continuous Integration
 
 In this lab you will practice common development workflows in Julia.
-At the end of the labe you will have
+At the end of the lab you will have
 - Your own package called `Ecosystem.jl` which you can conveniently install in any Julia REPL
 - Tests for the major functionality of your package
 - Set up continuous integration (CI) via Github Actions to automatically execute your tests
@@ -25,14 +25,16 @@ as well as the new species `Mushroom`.
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-1. Create a new package by starting a julia REPL, typing `]` to enter the `Pkg`
+1. Familiarize yourself with `EcosystemCore.jl`.
+
+2. Create a new package by starting a julia REPL, typing `]` to enter the `Pkg`
    REPL and writing `generate Ecosystem`. This will create a new package called
    `Ecosystem` with a `Project.toml` and one file `src/Ecosystem.jl`
 
-2. Navigate into the newly generated package folder via `;cd Ecosystem` and
+3. Navigate into the newly generated package folder via `;cd Ecosystem` and
    activate the environment via `]activate .`.
 
-3. Add `EcosystemCore.jl` as a dependency by running
+4. Add `EcosystemCore.jl` as a dependency by running
    ```
    ]add https://github.com/JuliaTeachingCTU/EcosystemCore.jl.git
    ```
@@ -76,8 +78,8 @@ world
    While you are adding functionality to your package you can make great use of
    `Revise.jl`.  Loading `Revise.jl` before your `Ecosystem.jl` will automatically
    recompile (and invalidate old methods!) while you develop.  You can install it
-   in your global environment and and create a `startup.jl` which always loads
-   `Revise`. Mine looks like this:
+   in your global environment and and create a `USERDIR/.config/startup.jl` which always loads
+   `Revise`. It can look like this:
    ```julia
    # try/catch block to make sure you can start julia if Revise should not be installed
    try
@@ -87,14 +89,16 @@ world
    end
    ```
 
-2. Note that you either have to `import` a method to overload it or do
+2. Note that you either have to `import` a method to overload it or
    define your functions like `Ecosystem.function_name` e.g.:
    ```julia
    EcosystemCore.eats(::Animal{Sheep}, ::Plant{Mushroom}) = true
    ```
    which is often the preferred way of doing it.
 
-3. Export all types and functions that should be accessible from outside your package.
+3. Export all types and functions that should be accessible from outside your
+   package.  This should include at least `agent_count`, `simulate!`,
+   `every_nth`, probably at all species types, and the `World`.
 ```@raw html
 </div></div>
 <details class = "solution-body">
@@ -123,7 +127,7 @@ You can put your simulation scripts in the same package in a new folder called
 ## Testing the Ecosystem
 
 Every well maintained package should contain tests. In Julia the tests have to
-be located in the `test` folder in package root. The `test` folder
+be located in the `test` folder in the package root. The `test` folder
 has to contain at least one file called `runtests.jl` which can `include` more
 files. A minimal package structure can look like below.
 ```
@@ -156,12 +160,12 @@ test = ["Test"]
 
 With `Test.jl` as an extra dependency you can start writing your `test/runtests.jl` file.
 ```@example lab04
-using Scientific_Programming_in_Julia
+using Scientific_Programming_in_Julia # hide
 using Test
 # using Ecosystem  # in your code this line as to be uncommented ;)
 
-@testset "Mushroom" begin
-    @test Mushroom(1,1) isa Plant
+@testset "agent_count" begin
+    @test agent_count(Mushroom(1,1,1)) == 1
 end
 nothing # hide
 ```
@@ -276,11 +280,11 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
 ```
-Pushing this file to your repository should result in github automatically running
+Pushing this file to your repository should result in Github automatically running
 your julia tests.
 
 You can add a status badge to your README by copying the status badge string
-from the github actions tab.
+from the Github Actions tab.
 ```@raw html
 </div></div>
 ```
@@ -298,12 +302,15 @@ report during the Github Action.
 <header class="admonition-header">Exercise (optional)</header>
 <div class="admonition-body">
 ```
-1. Add the codecov steps below to your `RunTests.yml`.  Note that **code coverage
+1. Log into `codecov.io` with your Github user name and give codecov access to
+   your new repository.
+
+2. Add the codecov steps below to your `RunTests.yml`.  Note that **code coverage
    does not mean that your code is properly tested**!  It is simply measuring
    which lines have been hit during the execution of your tests, which does not
    mean that your code (or your tests) are correct.
 
-2. Add the codecov status badge to your README.
+3. Add the codecov status badge to your README.
 ```julia
 steps:
   - uses: julia-actions/julia-processcoverage@v1

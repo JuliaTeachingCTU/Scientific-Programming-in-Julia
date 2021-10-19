@@ -24,15 +24,6 @@ function simulate!(world::World, iters::Int; cb=()->())
     end
 end
 
-
-countsym(g::T) where T<:Plant = fully_grown(g) ? nameof(T) : :NoCount
-countsym(::T) where T<:Animal = nameof(T)
-
-# function agent_count(as::Vector{Agent})
-#     cs = StatsBase.countmap(map(countsym,as))
-#     delete!(cs,:NoCount)
-# end
-
 agent_count(p::Plant) = size(p)/EcosystemCore.max_size(p)
 agent_count(::Animal) = 1
 agent_count(as::Vector{<:Agent}) = sum(agent_count,as)
