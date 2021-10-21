@@ -1,0 +1,1 @@
+# [Lab 06: Digging deeper part 1](@id introspection_lab)

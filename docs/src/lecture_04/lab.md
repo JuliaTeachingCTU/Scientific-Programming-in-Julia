@@ -98,7 +98,7 @@ world
 
 3. Export all types and functions that should be accessible from outside your
    package.  This should include at least `agent_count`, `simulate!`,
-   `every_nth`, probably at all species types, and the `World`.
+   `every_nth`, all species types, and the `World`.
 ```@raw html
 </div></div>
 <details class = "solution-body">
@@ -119,7 +119,10 @@ world = World([...])
 simulate!(world,100)
 ```
 You can put your simulation scripts in the same package in a new folder called
-`scripts` or `examples` if you like.
+`scripts` or `examples` if you like. It often makes sense to have a separate
+`Project.toml` in this folder, because it forces you think about which
+functions you need to export and which additional packages are necessary e.g.
+for visualization of your results.
 ```@raw html
 </p></details>
 ```
@@ -134,6 +137,8 @@ files. A minimal package structure can look like below.
 .
 ├── Project.toml
 ├── README.md
+├── scripts
+│   └── run.jl
 ├── src
 │   └── Ecosystem.jl
 └── test
@@ -157,7 +162,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 [targets]
 test = ["Test"]
 ```
-
+Alternatively, you can create another `Project.toml` in your `test` folder.
 With `Test.jl` as an extra dependency you can start writing your `test/runtests.jl` file.
 ```@example lab04
 using Scientific_Programming_in_Julia # hide
@@ -177,6 +182,8 @@ nothing # hide
 ```
 Create a `@testset` and fill it with tests for `agent_count` that cover all
 of its four methods.
+
+*Hint*: You can use `isapprox` or `≈` to test equaity of real numbers.
 ```@raw html
 </div></div>
 <details class = "solution-body">
@@ -219,6 +226,10 @@ some of your work.
 Create a new repository called `Ecosystem.jl` on Github (public or private,
 however you want). A good repo should also contain a `README.md` file which
 briefly describes what it is about.
+
+If you have never used `git` before you can check out the
+[tutorial](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/installation/tutorial/)
+of our Bachelor Course on Julia.
 ```@raw html
 </div></div>
 <details class = "solution-body">
