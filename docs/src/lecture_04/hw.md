@@ -10,14 +10,14 @@ The autoeval system expects you to upload a `.zip` file of your `Ecosystem`
 with at least the following files
 ```
 .
-├── Ecosystem
-│   ├── Project.toml
-│   ├── src
-│   │   └── Ecosystem.jl
-│   └── test
-│       ├── every_nth.jl
-│       ├── mushroom.jl
-│       └── runtests.jl
+└── Ecosystem
+    ├── Project.toml
+    ├── src
+    │   └── Ecosystem.jl
+    └── test
+        ├── every_nth.jl
+        ├── mushroom.jl
+        └── runtests.jl
 ```
 The files `every_nth.jl` and `mushroom.jl` have to contain a single testset,
 so for example, the `every_nth.jl` file should look like this:
