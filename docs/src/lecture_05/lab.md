@@ -110,11 +110,27 @@ There are other problems (such as repeated allocations, bad design patterns - ar
 
 Sometimes `@code_warntype` shows that the function's return type is unstable without any hints to the possible problem, fortunately for such cases a more advanced tools such as [`Cthuhlu.jl`](https://github.com/JuliaDebug/Cthulhu.jl) or [`JET.jl`](https://github.com/aviatesk/JET.jl) have been developed and we will cover it in the next lecture. *we could use it in the ecosystem*
 
-## Benchmarking
-In the last exercise we have encountered the problem of timing of code to see if we have made any progress in speeding it up. Throughout the course we have advertised the use of the `BenchmarkTools` package, which provides easy way to test your code multiple times. In this lab we will focus on some advanced usage tips and gotchas that you may encounter while using it. *Furthermore in the homework you will create an code scalability benchmark.*
+## Benchmarking (TODO)
+In the last exercise we have encountered the problem of timing of code to see, if we have made any progress in speeding it up. Throughout the course we will advertise the use of the `BenchmarkTools` package, which provides an easy way to test your code multiple times. In this lab we will focus on some advanced usage tips and gotchas that you may encounter while using it. *Furthermore in the homework you will create an code scalability benchmark.*
+
+There are few concepts to know beforehand
+- evaluation - a single execution of a benchmark expression
+- sample - a single time/memory measurement obtained by running multiple evaluations
+- trial - experiment in which multiple samples are gathered
+
+I think that it is important to know how much is involved in timing of code itself - wall clock | cpu clock (something I remember from python), the act of measuring does not come free of computational resources, sometimes Julia will show 
 
 
-*BIG TODO HERE*
+The result of a benchmark is thus a trial in which we collect multiple samples of time/memory measurements, which in turn are composed of multiple executions of the code in question. This layering of repetition is required to allow for benchmarking code at different runtime magnitudes. Imagine having to benchmark really fast operations, which fall under
+
+The number of samples/evaluations can be set manually, however most of the time we don't want to bother with them, therefore there is also the `tune!` method, that allows to tune a `@benchmarkable` job. 
+
+The most commonly used interface of `BenchmarkTools` is the `@btime` macro, which unlike the regular `@time` macro runs the code over multiple samples+evaluations and returns the minimum (a robust estimator for the location parameter of the time distribution, should not be considered an outlier - *makes sense that usually the noise puts the results to the other tail of the distribution, some miraculous noisy speedups are uncommon*).
+
+`@benchmark` is evaluated in global scope, even if called from local scope (missing an example that would show this for me)
+
+When should I call `@time` or`@elapsed` rather than `@btime`?
+When is setup/breakdown is called when? 
 
 
 ## Profiling
@@ -446,3 +462,5 @@ I would expect that the same piece of code that has been type unstable also show
 ```@raw html
 </p></details>
 ```
+
+## Resources
