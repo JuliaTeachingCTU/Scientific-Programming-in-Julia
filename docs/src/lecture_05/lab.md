@@ -1,14 +1,13 @@
 # Lab 05: Benchmarking, profiling and performance gotchas
-Performance is crucial in scientific computing. There is a big difference if your experiments run one minute or one hour. We have already developed quite a bit of code, both in packages and independent, on which we are going to present some of the tooling that Julia provides to try find performance bottlenecks. Performance of your code or more precisely the speed of execution is of course relative (preference, expectation, existing code) and it's hard to find the exact threshold when we should start to care about it. When starting out with Julia, we recommend not to get bogged down by the performance side of things straightaway, but just design the code in the way that feels natural to you. As opposed to other languages Julia offers you to write the things "like you are used" (depending on your background), e.g. for cycles are as fast as in C; vectorization of mathematical operators works the same or even better than in MATLAB, NumPy. 
+Performance is crucial in scientific computing. There is a big difference if your experiments run one minute or one hour. We have already developed quite a bit of code, both in and outside packages, on which we are going to present some of the tooling that Julia provides to try find performance bottlenecks. Performance of your code or more precisely the speed of execution is of course relative (preference, expectation, existing code) and it's hard to find the exact threshold when we should start to care about it. When starting out with Julia, we recommend not to get bogged down by the performance side of things straightaway, but just design the code in the way that feels natural to you. As opposed to other languages Julia offers you to write the things "like you are used" (depending on your background), e.g. for cycles are as fast as in C; vectorization of mathematical operators works the same or even better than in MATLAB, NumPy. 
 
 
 Once you have tested the functionality, you can start exploring the performance of your code by different means:
-- manual code inspection - identifying performance gotchas (tedious, requires skill) *specific cases should be covered in the lecture*
-- automatic code inspection - *can we cover the JET.jl*? (not as powerful as in static typed languages?)
+- manual code inspection - identifying performance gotchas (tedious, requires skill)
+- automatic code inspection - `Jet.jl`(not as powerful as in static typed languages)
 - benchmarking - measuring variability in execution time, comparing with some baseline (only a statistic, non-specific)
 - profiling - sampling the execution at regular intervals to obtain time spent at different sections (no parallelism, ...)
 - allocation tracking - similar to profiling but specifically looking at allocations (only one side of the story)
-- 
 
 ## Checking type stability
 Recall that type stable function is written in a way, that allows Julia's compiler to infer all the types of all the variables and produce an efficient native code implementation without the need of boxing some variables in a structure whose types is known only during runtime. Probably unbeknown to you we have already seen an example of type unstable function (at least in some situations) in the first lab, where we have defined the `polynomial` function:
@@ -106,32 +105,56 @@ Difference only a few nanoseconds.
 
 Code stability issues are something unique to Julia, as its JIT compilation allows it to produce code that contains boxed variables, whose type can be inferred during runtime. This is one of the reasons why interpreted languages are slow to run but fast to type. Julia's way of solving it is based around compiling functions for specific arguments, however in order for this to work without the interpreter, the compiler has to be able to infer the types.
 
-There are other problems (such as repeated allocations, bad design patterns - arrays of struct, *others, may come from the performance gotchas*), that you can learn to spot in your code, however the code stability issues are by far the most common, for beginner users of Julia wanting to squeeze more out of it.
+There are other problems (such as repeated allocations, bad design patterns - arrays of struct, using of non const globals), that you can learn to spot in your code, however the code stability issues are by far the most common, for beginner users of Julia wanting to squeeze more out of it.
 
-Sometimes `@code_warntype` shows that the function's return type is unstable without any hints to the possible problem, fortunately for such cases a more advanced tools such as [`Cthuhlu.jl`](https://github.com/JuliaDebug/Cthulhu.jl) or [`JET.jl`](https://github.com/aviatesk/JET.jl) have been developed and we will cover it in the next lecture. *we could use it in the ecosystem*
+Sometimes `@code_warntype` shows that the function's return type is unstable without any hints to the possible problem, fortunately for such cases a more advanced tools such as [`Cthuhlu.jl`](https://github.com/JuliaDebug/Cthulhu.jl) or [`JET.jl`](https://github.com/aviatesk/JET.jl) have been developed.
 
-## Benchmarking (TODO)
-In the last exercise we have encountered the problem of timing of code to see, if we have made any progress in speeding it up. Throughout the course we will advertise the use of the `BenchmarkTools` package, which provides an easy way to test your code multiple times. In this lab we will focus on some advanced usage tips and gotchas that you may encounter while using it. *Furthermore in the homework you will create an code scalability benchmark.*
+## Benchmarking with `BenchmarkTools`
+In the last exercise we have encountered the problem of timing of code to see, if we have made any progress in speeding it up. Throughout the course we will advertise the use of the `BenchmarkTools` package, which provides an easy way to test your code multiple times. In this lab we will focus on some advanced usage tips and gotchas that you may encounter while using it. 
 
-There are few concepts to know beforehand
-- evaluation - a single execution of a benchmark expression
-- sample - a single time/memory measurement obtained by running multiple evaluations
-- trial - experiment in which multiple samples are gathered
+There are few concepts to know in order to understand how the pkg works
+- evaluation - a single execution of a benchmark expression (default `1`)
+- sample - a single time/memory measurement obtained by running multiple evaluations (default `1e5`)
+- trial - experiment in which multiple samples are gathered 
 
-I think that it is important to know how much is involved in timing of code itself - wall clock | cpu clock (something I remember from python), the act of measuring does not come free of computational resources, sometimes Julia will show 
+The result of a benchmark is a trial in which we collect multiple samples of time/memory measurements, which in turn may be composed of multiple executions of the code in question. This layering of repetition is required to allow for benchmarking code at different runtime magnitudes. Imagine having to benchmark operations which are faster than the act of measuring itself - clock initialization, dispatch of an operation and subsequent time subtraction.
 
+The number of samples/evaluations can be set manually, however most of the time won't need to know about them, due to an existence of a tuning method `tune!`, which tries to run the code once to estimate the correct ration of evaluation/samples. 
 
-The result of a benchmark is thus a trial in which we collect multiple samples of time/memory measurements, which in turn are composed of multiple executions of the code in question. This layering of repetition is required to allow for benchmarking code at different runtime magnitudes. Imagine having to benchmark really fast operations, which fall under
+The most commonly used interface of `Benchmarkools` is the `@btime` macro, which returns an output similar to the regular `@time` macro however now aggregated over samples by taking their minimum (a robust estimator for the location parameter of the time distribution, should not be considered an outlier - usually the noise from other processes/tasks puts the results to the other tail of the distribution and some miraculous noisy speedups are uncommon. In order to see the underlying sampling better there is also the `@benchmark` macro, which runs in the same way as `@btime`, but prints more detailed statistics which are also returned in the `Trial` type instead of the actual code output.
 
-The number of samples/evaluations can be set manually, however most of the time we don't want to bother with them, therefore there is also the `tune!` method, that allows to tune a `@benchmarkable` job. 
+```@repl lab05_bench
+using BenchmarkTools #hide
+@btime sum($(rand(1000)))
+@benchmark sum($(rand(1000)))
+```
+!!! warn "Interpolation ~ `$` in BenchmarkTools"
+    In the previous example we have used the interpolation signs `$` to indicate that the code inside should be evaluated once and stored into a local variable. This allows us to focus only on the benchmarking of code instead of the input generation. A more subtle way where this is crops up is the case of using previously defined global variable, where instead of data generation we would measure also the type inference at each evaluation, which is usually not what we want. The following list will help you decide when to use interpolation.
+    ```julia
+    @btime sum($(rand(1000)))   # rand(1000) is stored as local variable, which is used in each evaluation
+    @btime sum(rand(1000))      # rand(1000) is called in each evaluation
+    A = rand(1000)
+    @btime sum($A)              # global variable A is inferred and stored as local, which is used in each evaluation
+    @btime sum(A)               # global variable A has to be inferred in each evaluation
+    ```
 
-The most commonly used interface of `BenchmarkTools` is the `@btime` macro, which unlike the regular `@time` macro runs the code over multiple samples+evaluations and returns the minimum (a robust estimator for the location parameter of the time distribution, should not be considered an outlier - *makes sense that usually the noise puts the results to the other tail of the distribution, some miraculous noisy speedups are uncommon*).
+### Setting up benchmarks to our liking
+In order to control the number of samples/evaluation and the amount of time given to a given benchmark, we can simply append these as keyword arguments to `@btime` or `@benchmark` in the following way
+```@repl lab05_bench
+@benchmark sum($(rand(1000))) evals=100 samples=10 seconds=5
+```
+which runs the code repeatedly for up to `5s`, where each of the `10` samples in the trial is composed of `10` evaluations. Setting up these parameters ourselves creates a more controlled environment in which performance regressions can be more easily identified.
 
-`@benchmark` is evaluated in global scope, even if called from local scope (missing an example that would show this for me)
-
-When should I call `@time` or`@elapsed` rather than `@btime`?
-When is setup/breakdown is called when? 
-
+Another axis of customization is needed when we are benchmarking mutable operations such as `sort!`, which sorts an array in-place. One way of achieving a consistent benchmark is by omitting the interpolation such as
+```@repl lab05_bench
+@benchmark sort!(rand(1000))
+```
+however now we are again measuring the data generation as well. A better way of doing such timing is using the built in `setup` keyword, into which you can put a code that has to be run before each sample and which won't be measured.
+```@repl lab05_bench
+@benchmark sort!(y) setup=(y=rand(1000))
+A = rand(1000) #hide
+@benchmark sort!(AA) setup=(AA=copy($A))
+```
 
 ## Profiling
 Profiling in Julia is part of the standard library in the `Profile` module. It implements a fairly simple sampling based profiler, which in a nutshell asks at regular intervals, where the code execution is currently at. As a result we get an array of stacktraces (= chain of function calls), which allow us to make sense of where the execution spent the most time. The number of samples, that can be stored and the period in seconds can be checked after loading `Profile` into the session with the `init()` function.
