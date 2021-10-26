@@ -16,6 +16,13 @@ function EcosystemCore.eat!(s::Animal{Sheep}, m::Plant{Mushroom}, w::World)
     m.size = 0
 end
 
+for S in (Sheep, Wolf)
+  @eval begin
+        EcosystemCore.mates(a::Animal{$S,Female}, b::Animal{$S,Male}) = true
+        EcosystemCore.mates(a::Animal{$S,Male}, b::Animal{$S,Female}) = true
+  end
+end
+EcosystemCore.mates(a::Agent, b::Agent) = false
 
 function simulate!(world::World, iters::Int; cb=()->())
     for i in 1:iters
