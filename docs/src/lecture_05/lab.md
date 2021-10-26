@@ -1,13 +1,13 @@
-# Lab 05: Benchmarking, profiling and performance gotchas
-Performance is crucial in scientific computing. There is a big difference if your experiments run one minute or one hour. We have already developed quite a bit of code, both in and outside packages, on which we are going to present some of the tooling that Julia provides to try find performance bottlenecks. Performance of your code or more precisely the speed of execution is of course relative (preference, expectation, existing code) and it's hard to find the exact threshold when we should start to care about it. When starting out with Julia, we recommend not to get bogged down by the performance side of things straightaway, but just design the code in the way that feels natural to you. As opposed to other languages Julia offers you to write the things "like you are used" (depending on your background), e.g. for cycles are as fast as in C; vectorization of mathematical operators works the same or even better than in MATLAB, NumPy. 
+# Lab 05: Practical performance debugging tools
+Performance is crucial in scientific computing. There is a big difference if your experiments run one minute or one hour. We have already developed quite a bit of code, both in and outside packages, on which we are going to present some of the tooling that Julia provides for finding performance bottlenecks. Performance of your code or more precisely the speed of execution is of course relative (preference, expectation, existing code) and it's hard to find the exact threshold when we should start to care about it. When starting out with Julia, we recommend not to get bogged down by the performance side of things straightaway, but just design the code in the way that feels natural to you. As opposed to other languages Julia offers you to write the things "like you are used to" (depending on your background), e.g. for cycles are as fast as in C; vectorization of mathematical operators works the same or even better than in MATLAB, NumPy. 
 
 
 Once you have tested the functionality, you can start exploring the performance of your code by different means:
 - manual code inspection - identifying performance gotchas (tedious, requires skill)
-- automatic code inspection - `Jet.jl`(not as powerful as in static typed languages)
+- automatic code inspection - `Jet.jl` (probably not as powerful as in statically typed languages)
 - benchmarking - measuring variability in execution time, comparing with some baseline (only a statistic, non-specific)
-- profiling - sampling the execution at regular intervals to obtain time spent at different sections (no parallelism, ...)
-- allocation tracking - similar to profiling but specifically looking at allocations (only one side of the story)
+- profiling - measuring the execution time at "each line of code" (no easy way to handle advanced parallelism, ...)
+- allocation tracking - similar to profiling but specifically looking at allocations (one sided statistic)
 
 ## Checking type stability
 Recall that type stable function is written in a way, that allows Julia's compiler to infer all the types of all the variables and produce an efficient native code implementation without the need of boxing some variables in a structure whose types is known only during runtime. Probably unbeknown to you we have already seen an example of type unstable function (at least in some situations) in the first lab, where we have defined the `polynomial` function:
@@ -38,7 +38,7 @@ xf = 3.0
 polynomial(af, xf)
 ```
 
-The result they produce is the "same" numerically, however it differs in the output type. Though you have probably not noticed it, there should be a difference in runtime (assuming that you have run it once more after its compilation). It is probably a surprise to no one, that one of the function that has been compiled is type unstable. This can be check with the `@code_warntype` macro:
+The result they produce is the "same" numerically, however it differs in the output type. Though you have probably not noticed it, there should be a difference in runtime (assuming that you have run it once more after its compilation). It is probably a surprise to no one, that one of the methods that has been compiled is type unstable. This can be check with the `@code_warntype` macro:
 ```@repl lab05_polynomial
 using InteractiveUtils #hide
 @code_warntype polynomial(a, x)  # type stable
@@ -105,9 +105,10 @@ Difference only a few nanoseconds.
 
 Code stability issues are something unique to Julia, as its JIT compilation allows it to produce code that contains boxed variables, whose type can be inferred during runtime. This is one of the reasons why interpreted languages are slow to run but fast to type. Julia's way of solving it is based around compiling functions for specific arguments, however in order for this to work without the interpreter, the compiler has to be able to infer the types.
 
-There are other problems (such as repeated allocations, bad design patterns - arrays of struct, using of non const globals), that you can learn to spot in your code, however the code stability issues are by far the most common, for beginner users of Julia wanting to squeeze more out of it.
+There are other problems (such as unnecessary allocations), that you can learn to spot in your code, however the code stability issues are by far the most commonly encountered problems among beginner users of Julia wanting to squeeze more out of it.
 
-Sometimes `@code_warntype` shows that the function's return type is unstable without any hints to the possible problem, fortunately for such cases a more advanced tools such as [`Cthuhlu.jl`](https://github.com/JuliaDebug/Cthulhu.jl) or [`JET.jl`](https://github.com/aviatesk/JET.jl) have been developed.
+!!! note "Advanced tooling"
+    Sometimes `@code_warntype` shows that the function's return type is unstable without any hints to the possible problem, fortunately for such cases a more advanced tools such as [`Cthuhlu.jl`](https://github.com/JuliaDebug/Cthulhu.jl) or [`JET.jl`](https://github.com/aviatesk/JET.jl) have been developed.
 
 ## Benchmarking with `BenchmarkTools`
 In the last exercise we have encountered the problem of timing of code to see, if we have made any progress in speeding it up. Throughout the course we will advertise the use of the `BenchmarkTools` package, which provides an easy way to test your code multiple times. In this lab we will focus on some advanced usage tips and gotchas that you may encounter while using it. 
@@ -128,8 +129,8 @@ using BenchmarkTools #hide
 @btime sum($(rand(1000)))
 @benchmark sum($(rand(1000)))
 ```
-!!! warn "Interpolation ~ `$` in BenchmarkTools"
-    In the previous example we have used the interpolation signs `$` to indicate that the code inside should be evaluated once and stored into a local variable. This allows us to focus only on the benchmarking of code instead of the input generation. A more subtle way where this is crops up is the case of using previously defined global variable, where instead of data generation we would measure also the type inference at each evaluation, which is usually not what we want. The following list will help you decide when to use interpolation.
+!!! danger "Interpolation ~ `$` in BenchmarkTools"
+    In the previous example we have used the interpolation signs `$` to indicate that the code inside should be evaluated once and stored into a local variable. This allows us to focus only on the benchmarking of code itself instead of the input generation. A more subtle way where this is crops up is the case of using previously defined global variable, where instead of data generation we would measure also the type inference at each evaluation, which is usually not what we want. The following list will help you decide when to use interpolation.
     ```julia
     @btime sum($(rand(1000)))   # rand(1000) is stored as local variable, which is used in each evaluation
     @btime sum(rand(1000))      # rand(1000) is called in each evaluation
@@ -254,7 +255,7 @@ We have noticed that no matter if the function is type stable or unstable the ma
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Rewrite the `polynomial` function using the Horner schema/method[^1]. Moreover include the type stability fixes from `polynomial_stable` You should get some *#x* speed up when measured against the old implementation (measure `polynomial` against `polynomial_stable`.
+Rewrite the `polynomial` function using the Horner schema/method[^1]. Moreover include the type stability fixes from `polynomial_stable` You should get more than 3x speedup when measured against the old implementation (measure `polynomial` against `polynomial_stable`.
 
 **BONUS**: Profile the new method and compare the differences in traces.
 
@@ -387,7 +388,7 @@ end
 **BONUS**: Explore the algorithmic side of things by implementing a different sampling strategies [^2][^3].
 
 [^2]: Reservoir sampling [https://en.wikipedia.org/wiki/Reservoir\_sampling](https://en.wikipedia.org/wiki/Reservoir_sampling)
-[^3]: [https://stackoverflow.com/q/9690009](https://stackoverflow.com/q/9690009)
+[^3]: A simple algorithm [https://stackoverflow.com/q/9690009](https://stackoverflow.com/q/9690009)
 
 ```@raw html
 </div></div>
@@ -428,7 +429,7 @@ Let's profile the simulation again
 world = create_world();
 simulate!(world, 1)
 @profview simulate!(world, 100)
-ProfileSVG.save("./ecosystem_nofilter.svg")
+ProfileSVG.save("./ecosystem_nofilter.svg") #hide
 ```
 ![profile_ecosystem_nofilter](./ecosystem_nofilter.svg)
 
@@ -436,7 +437,7 @@ ProfileSVG.save("./ecosystem_nofilter.svg")
 </p></details>
 ```
 
-We have tried few variants, however none of them really gets rid of the underlying problem. The solution unfortunately requires rewriting the World type, with a different container, that would store each species in a separate container such that the iteration never goes over an array of mixed types. Having said this we may still be interested in a solution that performs the best, given the current architecture.
+We have tried a few variants, however none of them really gets rid of the underlying problem. The solution unfortunately requires rewriting the `World` and other bits, such that the iteration never goes over an array of mixed types. Having said this we may still be interested in a solution that performs the best, given the current architecture.
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -499,8 +500,7 @@ julia --track-allocation=user
 ```
 Use the steps above to obtain a memory allocation map. Investigate the results of allocation tracking inside `EcosystemCore` source files. Where is the line with the most allocations?
 
-**BONUS** 
-Use pkg `Coverage.jl` to process the resulting files from withing the `EcosystemCore`.
+**BONUS**: Use pkg `Coverage.jl` to process the resulting files from withing the `EcosystemCore`.
 ```@raw html
 </div></div>
 <details class = "solution-body">
