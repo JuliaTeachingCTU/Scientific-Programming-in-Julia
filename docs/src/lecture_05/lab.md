@@ -302,40 +302,46 @@ ProfileSVG.save("./scalar_prof_horner.svg") #hide
 ```
 
 ## Ecosystem debugging
-Let's now apply what we have learned so far on the much bigger codebase of our `Ecosystem` and `EcosystemCore` packages.
+Let's now apply what we have learned so far on the much bigger codebase of our `Ecosystem` and `EcosystemCore` packages. 
 
-```julia
+!!! note "Installation of Ecosystem pkg"
+    If you do not have Ecosystem readily available you can get it from our [repository](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/Ecosystem.jl).
+
+```@example lab05_ecosystem
+using Scientific_Programming_in_Julia.Ecosystem #hide
 using Profile, ProfileSVG
-using EcosystemCore
 
-n_grass       = 500
-regrowth_time = 17.0
+function create_world()
+    n_grass       = 500
+    regrowth_time = 17.0
 
-n_sheep         = 100
-Δenergy_sheep   = 5.0
-sheep_reproduce = 0.5
-sheep_foodprob  = 0.4
+    n_sheep         = 100
+    Δenergy_sheep   = 5.0
+    sheep_reproduce = 0.5
+    sheep_foodprob  = 0.4
 
-n_wolves       = 8
-Δenergy_wolf   = 17.0
-wolf_reproduce = 0.03
-wolf_foodprob  = 0.02
+    n_wolves       = 8
+    Δenergy_wolf   = 17.0
+    wolf_reproduce = 0.03
+    wolf_foodprob  = 0.02
 
-gs = [Grass(id, regrowth_time) for id in 1:n_grass];
-ss = [Sheep(id, 2*Δenergy_sheep, Δenergy_sheep, sheep_reproduce, sheep_foodprob) for id in n_grass+1:n_grass+n_sheep];
-ws = [Wolf(id, 2*Δenergy_wolf, Δenergy_wolf, wolf_reproduce, wolf_foodprob) for id in n_grass+n_sheep+1:n_grass+n_sheep+n_wolves];
-world = World(vcat(gs, ss, ws));
-
-# precompile everything
-simulate!(w, 1, [w -> @info agent_count(w)])
-
-@profview simulate!(w, 100, [w -> @info agent_count(w)])
-ProfileSVG.save("./ecosystem.svg")
+    gs = [Grass(id, regrowth_time) for id in 1:n_grass];
+    ss = [Sheep(id, 2*Δenergy_sheep, Δenergy_sheep, sheep_reproduce, sheep_foodprob) for id in n_grass+1:n_grass+n_sheep];
+    ws = [Wolf(id, 2*Δenergy_wolf, Δenergy_wolf, wolf_reproduce, wolf_foodprob) for id in n_grass+n_sheep+1:n_grass+n_sheep+n_wolves];
+    World(vcat(gs, ss, ws))
+end
+world = create_world();
+nothing #hide
 ```
-![ecosystem_unstable](./ecosystem.svg)
 
+Precompile everything by running one step of our simulation and run the profiler.
 
-By investigating the top bars we see that most of the time is spend inside `EcosystemCore.find_rand`, either when called from `EcosystemCore.find_food` or `EcosystemCore.find_mate`.
+```@example lab05_ecosystem
+simulate!(world, 1)
+@profview simulate!(world, 100)
+```
+
+Red bars indicate type instabilities however, unless the bars stacked on top of them are high, narrow and not filling the whole width, the problem should not be that serious. In our case the worst offender is the`filter` method inside `EcosystemCore.find_rand` function, either when called from `EcosystemCore.find_food` or `EcosystemCore.find_mate`. In both cases the bars on top of it are narrow and not the full with, meaning that not that much time has been really spend working, but instead inferring the types in the function itself during runtime.
 
 ```julia
 # original
@@ -345,55 +351,53 @@ function EcosystemCore.find_rand(f, w::World)
 end
 ```
 
-Looking at the original code, we may not know exactly what is the problem, however the red color indicates that the code may be type unstable. Let's confirm the suspicion by evaluation.
+Looking at the original [code](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/359f0b48314f9aa3d5d8fa0c85eebf376810aca6/src/animal.jl#L36-L39), we may not know exactly what is the problem, however the red color indicates that the code may be type unstable. Let's see if that is the case by evaluation the function with some isolated inputs.
 
-```julia
-w = ws[1]                                           # get an instance of a wolf
+```@example lab05_ecosystem
+using InteractiveUtils #hide
+using Scientific_Programming_in_Julia.Ecosystem.EcosystemCore #hide
+w = Wolf(1, 20.0, 10.0, 0.9, 0.75)                  # get an instance of a wolf
 f = x -> EcosystemCore.eats(w, x)                   # define the filter function used in the `find_rand`
-EcosystemCore.find_rand(f, world)                   
+EcosystemCore.find_rand(f, world)                   # check that it returns what we want
 @code_warntype EcosystemCore.find_rand(f, world)    # check type stability
 ```
 
-Indeed we see that the function is type unstable. As a resulting in the other two functions to be type unstable
-```julia
-@code_warntype EcosystemCore.find_food(w, world) # unstable as expected
-@code_warntype EcosystemCore.find_mate(w, world) # unstable as expected
+Indeed we see that the return type is not inferred precisely but ends up being just the `Union{Nothing, Agent}`, however this is better than straight out `Any`, which is the union of all types and thus the compiler has to search much wider space. This uncertainty is propagated further resulting in the two parent functions to be inferred imperfectly.
+```@repl lab05_ecosystem
+@code_warntype EcosystemCore.find_food(w, world)
+@code_warntype EcosystemCore.find_mate(w, world)
 ```
+
+The underlying issue here is that we are enumerating over an array of type `Vector{Agent}`, where `Agent` is abstract, which does not allow Julia compiler to specialize the code for the loop body as it has to always check first the type of the item in the vector. This is even more pronounced in the `filter` function that filters the array by creating a copy of their elements, thus needing to know what the resulting array should look like.
 
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
+Replace the `filter` function in `EcosystemCore.find_rand` with a different mechanism, which does not suffer from the same performance problems as viewed by the profiler. Use the simulation of 100 steps to see the difference.
 
-Try to fix the type instability in `EcosystemCore.find_rand` by redefining it in the current session, i.e. write function
+Use temporary patching by redefine the function in the current REPL session, i.e. write the function fully specified
 ```julia
 function EcosystemCore.find_rand(f, w::World)
     ...
 end
 ```
-that has the same functionality, while not having return type of `Any`.
 
-**HINT**: With the current design of the whole package we cannot really get anything better than `Union{Agent, Nothing}`
+**BONUS**: Explore the algorithmic side of things by implementing a different sampling strategies [^2][^3].
+
+[^2]: Reservoir sampling [https://en.wikipedia.org/wiki/Reservoir\_sampling](https://en.wikipedia.org/wiki/Reservoir_sampling)
+[^3]: [https://stackoverflow.com/q/9690009](https://stackoverflow.com/q/9690009)
 
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
+There are a few alterations, which we can try.
 
-```julia
-# Vasek
-function EcosystemCore.find_rand(f, w::World)
-    ks = collect(keys(w.agents))
-    for i in randperm(length(w.agents))
-        a = w.agents[ks[i]]
-        f(a) && return a
-    end
-    return nothing
-end
-
-# mine
+```@example lab05_ecosystem
+using StatsBase: shuffle!
 function EcosystemCore.find_rand(f, w::World)
     for i in shuffle!(collect(keys(w.agents)))
         a = w.agents[i]
@@ -402,20 +406,48 @@ function EcosystemCore.find_rand(f, w::World)
     return nothing
 end
 ```
-![ecosystem_stablish](./ecosystem_1.svg)
+
+```@example lab05_ecosystem
+function EcosystemCore.find_rand(f, w::World)
+    count = 1
+    selected = nothing
+    for a in values(w.agents)
+        if f(a) 
+            if rand() * count < 1
+                selected = a
+            end
+            count += 1
+        end
+    end
+    selected
+end
+```
+
+Let's profile the simulation again
+```@example lab05_ecosystem
+world = create_world();
+simulate!(world, 1)
+@profview simulate!(world, 100)
+ProfileSVG.save("./ecosystem_nofilter.svg")
+```
+![profile_ecosystem_nofilter](./ecosystem_nofilter.svg)
 
 ```@raw html
 </p></details>
 ```
 
+We have tried few variants, however none of them really gets rid of the underlying problem. The solution unfortunately requires rewriting the World type, with a different container, that would store each species in a separate container such that the iteration never goes over an array of mixed types. Having said this we may still be interested in a solution that performs the best, given the current architecture.
 
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
+Benchmark different versions of the `find_rand` function in a simulation 10 steps. In order for this comparison to be fair, we need to ensure that both the initial state of the `World` as well as all calls to the `Random` library stay the same.
 
-How big of a performance penalty did we have to pay? Benchmark the simulation against the original version and the improved version.
+**HINTS**:
+- use `Random.seed!` to fix the global random number generator before each run of simulation
+- use `setup` keyword and `deepcopy` to initiate the `world` variable to the same state in each evaluation
 
 ```@raw html
 </div></div>
@@ -423,43 +455,37 @@ How big of a performance penalty did we have to pay? Benchmark the simulation ag
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
-```julia
-using BenchmarkTools
-
-gs = [Grass(id, regrowth_time) for id in 1:n_grass];
-ss = [Sheep(id, 2*Δenergy_sheep, Δenergy_sheep, sheep_reproduce, sheep_foodprob) for id in n_grass+1:n_grass+n_sheep];
-ws = [Wolf(id, 2*Δenergy_wolf, Δenergy_wolf, wolf_reproduce, wolf_foodprob) for id in n_grass+n_sheep+1:n_grass+n_sheep+n_wolves];
-world = World(vcat(gs, ss, ws));
-
-# does not work with the setup (works only with one setup variable)
-# https://github.com/JuliaCI/BenchmarkTools.jl/issues/44
+Run the following code for each version to find some differences. 
+```@example lab05_ecosystem
+using BenchmarkTools #hide
+using Random
+world = create_world();
 @benchmark begin
     Random.seed!(7); 
-    simulate!(World(vcat(g, s, w)), 10) 
-end setup=(g = copy(gs), s = copy(ss), w = copy(ws))
-
-
-# begin and end has to be used
-# also deepcopy is needed
-@benchmark begin
-    Random.seed!(7); 
-    simulate!(World(vcat(g, s, w)), 10) 
-end setup=begin g, s, w = deepcopy(gs), deepcopy(ss), deepcopy(ws) end
-
-
-@benchmark simulate!(World(vcat(g, s, w)), 10) setup=(g=copy(gs))
+    simulate!(w, 10) 
+end setup=(w=deepcopy($world)) evals=1 samples=20 seconds=30
 ```
+Recall that when using `setup`, we have to limit number of evaluations to `evals=1` in order not to mutate the `world` struct.
 
 ```@raw html
 </p></details>
 ```
 
 ### Tracking allocations
-Memory allocation is oftentimes the most CPU heavy part of the computation, thus working with memory correctly, i.e. avoiding unnecessary allocation is key for a well performing code. In order to get a sense of how much memory is allocated at individual places of the your codebase, we can instruct Julia to keep track of the allocations with a command line option `--track-allocation={all|user}` *figure out what these options do*
-- all
-- user
+Memory allocation is oftentimes the most CPU heavy part of the computation, thus working with memory correctly, i.e. avoiding unnecessary allocation is key for a well performing code. In order to get a sense of how much memory is allocated at individual places of the your codebase, we can instruct Julia to keep track of the allocations with a command line option `--track-allocation={all|user}`
+- `user` - measure memory allocation everywhere except Julia's core code
+- `all` - measure memory allocation at each line of Julia code
 
-After exiting, Julia will create a copy of each source file, that has been touched during execution and assign to each line the number of allocations in bytes.
+After exiting, Julia will create a copy of each source file, that has been touched during execution and assign to each line the number of allocations in bytes. In order to avoid including allocation from compilation the memory allocation statistics have to be cleared after first run by calling `Profile.clear_malloc_data()`, resulting in this kind of workflow
+```julia
+using Profile
+run_code()
+Profile.clear_malloc_data()
+run_code()
+# exit julia
+```
+
+`run_code` can be replaced by inclusion of a script file, which will be the annotated as well.
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -467,20 +493,96 @@ After exiting, Julia will create a copy of each source file, that has been touch
 <div class="admonition-body">
 ```
 
-Transform the simulation code above into a script. Run this script with Julia with the `--track-allocation={all|user}` option, i.e.
+Transform the simulation code above into a script and include it into a new Julia session
 ```bash
-julia -L ./your_script.jl --track-allocation={all|user}
+julia --track-allocation=user
 ```
+Use the steps above to obtain a memory allocation map. Investigate the results of allocation tracking inside `EcosystemCore` source files. Where is the line with the most allocations?
 
-Investigate the results of allocation tracking inside `EcosystemCore` source files. Where is the line with the most allocations?
+**BONUS** 
+Use pkg `Coverage.jl` to process the resulting files from withing the `EcosystemCore`.
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
-I would expect that the same piece of code that has been type unstable also shows the allocations - the line inside `find_rand` that contains `filter, collect, keys, etc.`. *CHECK*
+The [script](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_05/sim.jl) called `sim.jl`
+```julia
+using Ecosystem 
 
+function create_world()
+    n_grass       = 500
+    regrowth_time = 17.0
+
+    n_sheep         = 100
+    Δenergy_sheep   = 5.0
+    sheep_reproduce = 0.5
+    sheep_foodprob  = 0.4
+
+    n_wolves       = 8
+    Δenergy_wolf   = 17.0
+    wolf_reproduce = 0.03
+    wolf_foodprob  = 0.02
+
+    gs = [Grass(id, regrowth_time) for id in 1:n_grass];
+    ss = [Sheep(id, 2*Δenergy_sheep, Δenergy_sheep, sheep_reproduce, sheep_foodprob) for id in n_grass+1:n_grass+n_sheep];
+    ws = [Wolf(id, 2*Δenergy_wolf, Δenergy_wolf, wolf_reproduce, wolf_foodprob) for id in n_grass+n_sheep+1:n_grass+n_sheep+n_wolves];
+    World(vcat(gs, ss, ws))
+end
+world = create_world();
+simulate!(world, 10)
+```
+
+How to run.
+```julia
+using Profile
+include("./sim.jl")
+Profile.clear_malloc_data()
+include("./sim.jl")
+```
+
+Pkg `Coverage.jl` can highlight where is the problem with allocations.
+```julia
+julia> using Coverage
+julia> analyze_malloc(expanduser("~/.julia/packages/EcosystemCore/8dzJF/src"))
+35-element Vector{CoverageTools.MallocInfo}:
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 21)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 22)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 24)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 26)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 27)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 28)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 30)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 31)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 33)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 38)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 41)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 48)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 49)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 59)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 60)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 62)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 64)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 65)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/plant.jl.498486.mem", 16)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/plant.jl.498486.mem", 17)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 14)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 15)
+ CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 16)
+ CoverageTools.MallocInfo(16, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 9)
+ CoverageTools.MallocInfo(32, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 2)
+ CoverageTools.MallocInfo(32, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 8)
+ CoverageTools.MallocInfo(288, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 7)
+ CoverageTools.MallocInfo(3840, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 13)
+ CoverageTools.MallocInfo(32000, "~/.julia/packages/EcosystemCore/8dzJF/src/plant.jl.498486.mem", 13)
+ CoverageTools.MallocInfo(69104, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 23)
+ CoverageTools.MallocInfo(81408, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 58)
+ CoverageTools.MallocInfo(244224, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 2)
+ CoverageTools.MallocInfo(488448, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 63)
+ CoverageTools.MallocInfo(895488, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 61)
+ CoverageTools.MallocInfo(229589792, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 37)
+```
 
 ```@raw html
 </p></details>
