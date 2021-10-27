@@ -44,7 +44,7 @@ nothing # hide
 # that `howl(sheep)` and `baa(wolf)` never happen.
 # For comparison, consider an alternative definition as follows
 # 
-bark(animal) = println(animal.name, " has howled.")
+howl(animal) = println(animal.name, " has howled.")
 baa(animal)  = println(animal.name, " has baaed.")
 # 
 # in which case the burden of ensuring that a wolf will never baa rests upon the
@@ -75,8 +75,8 @@ nothing # hide
 # This difference will indeed have an impact on the time of code execution. 
 # On my i5-8279U CPU, the difference (as measured by BenchmarkTools) is
 using BenchmarkTools
-@btime energy(a);
-@btime energy(b);
+@benchmark energy(a)
+@benchmark energy(b)
 # Which nicely demonstrates that the choice of types affects performance. Does it mean that we should always use `Tuples` instead of `Arrays`? Surely not, it is  just that each is better for different use-cases. Using Tuples means that the compiler will compile a special function for each length of tuple and each combination of types of items it contains, which is clearly wasteful.
 
 # # Julia's type system
