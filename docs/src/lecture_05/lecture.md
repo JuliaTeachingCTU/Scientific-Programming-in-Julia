@@ -45,67 +45,71 @@ p = 2*pi*rand(2,n)
 
 The first thing we do is to run Profiler, to identify, where the function spends most of the time.
 
+!!! note 
+	## Julia's built-in profiler
 
-## Detour: Julia's built-in profiler
-Julia's built-in profiler is part of the standard library in the `Profile` module implementing a fairly standard sampling based profiler. It a nutshell it asks at regular intervals, where the code execution is currently and marks it and collects this information in some statistics. This allows us to analyze, where these "probes" have occured most of the time which implies those parts are those, where the execution of your function spends most of the time. As such, the profiler has two "controls", which is the `delay` between two consecutive probes and the maximum number of probes `n` (if the profile code takes a long time, you might need to increase it).
-```
-using Profile
-Profile.init(; n = 989680, delay = 0.001))
-@profile g(p,n)
+	Julia's built-in profiler is part of the standard library in the `Profile` module implementing a fairly standard sampling based profiler. It a nutshell it asks at regular intervals, where the code execution is currently and marks it and collects this information in some statistics. This allows us to analyze, where these "probes" have occured most of the time which implies those parts are those, where the execution of your function spends most of the time. As such, the profiler has two "controls", which is the `delay` between two consecutive probes and the maximum number of probes `n` (if the profile code takes a long time, you might need to increase it).
+	```
+	using Profile
+	Profile.init(; n = 989680, delay = 0.001))
+	@profile g(p,n)
+	Profile.clear()
+	@profile g(p,n)
+	```
+
+	### Making sense of profiler's output
+
+	The default `Profile.print` function shows the call-tree with count, how many times the probe occured in each function sorted from the most to least. The output is a little bit difficult to read and orrient in, therefore there are some visualization options.
+
+	What are our options?
+	- `ProfileView` is the workhorse with a GTK based api and therefore recommended for those with working GTK
+	- `ProfileSVG` is the `ProfileView` with the output exported in SVG format, which is viewed by most browser (it is also very convenient for sharing with others)
+	- `PProf.jl` is a front-end to Google's PProf profile viewer https://github.com/JuliaPerf/PProf.jl
+	- `StatProfilerHTML`  https://github.com/tkluck/StatProfilerHTML.jl
+	By personal opinion I mostly use ProfileView (or ProfileSVG) as it indicates places of potential type instability, which as will be seen later is very useful feature. 
+
+	### Profiling caveats
+
+	The same function, but with keyword arguments, can be used to change these settings, however these settings are system dependent. For example on Windows, there is a known issue that does not allow to sample faster than at `0.003s` and even on Linux based system this may not do much. There are some further caveat specific to Julia:
+	- When running profile from REPL, it is usually dominated by the interactive part which spawns the task and waits for it's completion.
+	- Code has to be run before profiling in order to filter out all the type inference and interpretation stuff. (Unless compilation is what we want to profile.)
+	- When the execution time is short, the sampling may be insufficient -> run multiple times.
+
+	We will use `ProfileSVG` for its simplicity (especially instalation). It shows the statistics in for of a flame graph which read as follows: , where . The hierarchy is expressed as functions on the bottom calls functions on the top. reads as follows:
+	- each function is represented by a horizontal bar
+	- function in the bottom calls functions that lays on it
+	- the width of the bar corresponds to time spent in the function
+	- red colored bars indicate type instabilities
+	- functions in bottom bars calles functions on top of upper bars
+	Function name contains location in files and particular line number called. GTK version is even "clickable" and opens the file in default editor.
+
+
+Let's use the profiler on the above function `g` to find potential weak spots
+```julia
+using Profile, ProfileSVG
 Profile.clear()
-@profile g(p,n)
+@profile g(p, n)
+ProfileSVG.save("profile.svg")
 ```
-
-### Making sense of profiler's output
-
-The default `Profile.print` function shows the call-tree with count, how many times the probe occured in each function sorted from the most to least. The output is a little bit difficult to read and orrient in, therefore there are some visualization options.
-
-What are our options?
-- `ProfileView` is the workhorse with a GTK based api and therefore recommended for those with working GTK
-- `ProfileSVG` is the `ProfileView` with the output exported in SVG format, which is viewed by most browser (it is also very convenient for sharing with others)
-- `PProf.jl` is a front-end to Google's PProf profile viewer https://github.com/JuliaPerf/PProf.jl
-- `StatProfilerHTML`  https://github.com/tkluck/StatProfilerHTML.jl
-By personal opinion I mostly use ProfileView (or ProfileSVG) as it indicates places of potential type instability, which as will be seen later is very useful feature. 
-
-### Profiling caveats
-
-The same function, but with keyword arguments, can be used to change these settings, however these settings are system dependent. For example on Windows, there is a known issue that does not allow to sample faster than at `0.003s` and even on Linux based system this may not do much. There are some further caveat specific to Julia:
-- When running profile from REPL, it is usually dominated by the interactive part which spawns the task and waits for it's completion.
-- Code has to be run before profiling in order to filter out all the type inference and interpretation stuff. (Unless compilation is what we want to profile.)
-- When the execution time is short, the sampling may be insufficient -> run multiple times.
+The output can be seen [here](profile.svg)
 
 
-
-Let's start with `ProfileSVG` and save the output to `profile.svg`
-```
-using ProfileSVG
-ProfileSVG.save("/tmp/profile.svg")
-```
-which shows the output of the profiler as a flame graph which reads as follows:
-- the width of the bar corresponds to time spent in the function
-- red colored bars indicate type instabilities
-- functions in bottom bars calles functions on top of upper bars
-Function name contains location in files and particular line number called. GTK version is even "clickable" and opens the file in default editor.
-
-## continueing with the example Numpy 10x...
 We can see that the function is type stable and 2/3 of the time is spent in lines 3 and 4, which allocates arrays
-```
-[cos(t0) - 1im*sin(t0)  0; 
- 0  cos(t0) + 1im*sin(t0)]
+```julia
+[[cos(t0) - 1im*sin(t0)  0]; 
+ [0  cos(t0) + 1im*sin(t0)]]
 ```
 and
+```julia
+[[cos(t1) - 1im*sin(t1)  0]; 
+ [0  cos(t1) + 1im*sin(t1)]]
 ```
-[cos(t1) - 1im*sin(t1)  0; 
- 0  cos(t1) + 1im*sin(t1)]
-```
-.
-
-Looking at function `f`, we see that in every call, it has to allocate arrays `m0` and `m1` on the heap. The allocation on heap is expensive, because it requires interaction with the operating system. Can we avoid it?
+Scrutinizing the function `f`, we see that in every call, it has to allocate arrays `m0` and `m1` **on the heap.** The allocation on heap is expensive, because it might require interaction with the operating system and it pu stress on the potential garbage collector. Can we avoid it?
 Repeated allocation can be frequently avoided by:
-- preallocating arrays
-- allocating objects on stack, which does not involve interacion with OS (but can be used in limited cases.)
+- preallocating arrays (if the arrays are of the fixed dimensions)
+- or allocating objects on stack, which does not involve interacion with OS (but can be used in limited cases.)
 
-Preallocation
+### Adding preallocation
 ```julia
 function f!(m0, m1, p, u)   										# line 1 
     t0,t1 = p 														# line 2
@@ -125,10 +129,23 @@ function g2(p,n)
 end
 ```
 
-## Detour no 2. Benchmarking
+!!! note  
+	## Benchmarking
 
-## Coming back from detour
-```
+	The simplest benchmarking can be as simple as writing 
+	```julia
+	repetitions = 100
+	t₀ = time()
+	for n in 1:100
+		g(p, n)
+	end
+	(time() - t₀) / n 
+	```
+	where we add repetitions to calibrate for background processes that can step in the precise measurements (recall that your program is not allone). Writing the above for benchmarking is utterly boring. Moreover, you might want to automatically determine the number of repetitions (the shorter time the more repetitions you want), take care of compilation of your function, you might want to have more informative output, for example median, mean, and maximum time of execution, information about number of allocation, time spent in garbage collector, etc. This is in nutshell what `BenchmarkTools.jl` offers, which we consider an essential tool for anyone interesting in tuning its code.
+
+
+We will using macro `@benchmark` from `BenchmarkTools.jl` to observe the speedup we will get between `g` and `g2`.
+```julia
 using BenchmarkTools
 
 julia> @benchmark g(p,n)
@@ -144,7 +161,7 @@ BenchmarkTools.Trial: 5 samples with 1 evaluation.
  Memory estimate: 1.57 GiB, allocs estimate: 23000002.
 ```
 
-```
+```julia
 julia> @benchmark g2(p,n)
 BenchmarkTools.Trial: 11 samples with 1 evaluation.
  Range (min … max):  413.167 ms … 764.393 ms  ┊ GC (min … max):  6.50% … 43.76%
@@ -167,12 +184,12 @@ Profile.clear()
 @profile g2(p,n)
 ProfileSVG.save("/tmp/profile2.svg")
 ```
-What we can see the profiler now?
+What the profiler tells is now (clear [here](profile2.svg) to see the output)?
 	- we spend a lot of time in `similar` in `matmul`, which is again an allocation of results for storing output of multiplication on line 7 matrix `r`.
 	- the trigonometric operations on line 3-6 are very costly
 	- Slicing `p` always allocates a new array and performs a deep copy.
 
-Let's try to get rid of these.
+Let's get rid of memory allocations at the expense of the code clarity
 ```julia
 using LinearAlgebra
 @inline function initm!(m, t)
@@ -189,10 +206,10 @@ function f1!(r1, r2, m0, m1, t0, t1, u)
     return @inbounds abs(@inbounds r2[1])^2
 end
 
-function g2(p,n)
+function g3(p,n)
 	u = [1. ; 0.]
-	m0 = [[cos(p[1]) - 1im*sin(p[1])  0]; [0  cos(p[1]) + 1im*sin(p[1])]]
-    m1 = [[cos(p[2]) - 1im*sin(p[2])  0]; [0  cos(p[2]) + 1im*sin(p[2])]]
+	m0 = [cos(p[1]) - 1im*sin(p[1])  0; 0  cos(p[1]) + 1im*sin(p[1])]
+    m1 = [cos(p[2]) - 1im*sin(p[2])  0; 0  cos(p[2]) + 1im*sin(p[2])]
     r1 = m0*u
     r2 = m1*r1
     return [f1!(r1, r2, m0, m1, p[1,i], p[2,i], u) for i=1:n]
@@ -200,7 +217,7 @@ end
 ```
 
 ```julia
-julia> @benchmark g2(p,n)
+julia> @benchmark g3(p,n)
  Range (min … max):  193.922 ms … 200.234 ms  ┊ GC (min … max): 0.00% … 1.67%
  Time  (median):     195.335 ms               ┊ GC (median):    0.00%
  Time  (mean ± σ):   196.003 ms ±   1.840 ms  ┊ GC (mean ± σ):  0.26% ± 0.61%
@@ -210,9 +227,14 @@ julia> @benchmark g2(p,n)
   194 ms           Histogram: frequency by time          200 ms <
 
  Memory estimate: 7.63 MiB, allocs estimate: 24.
- ```
-Notice that now, we are about six times faster than the first solution, albeit passing the pre code is getting messy. Also notice that we spent a very little time in garbage collector. Running the profiler, we see that there is very little what we can do now. May-be, remove 
-bounds checks and make the code a bit nicer.
+```
+Notice that now, we are about six times faster than the first solution, albeit passing the pre code is getting messy. Also notice that we spent a very little time in garbage collector. Running the profiler, 
+```julia
+Profile.clear()
+@profile g3(p,n)
+ProfileSVG.save("/tmp/profile3.svg")
+```
+we see [here](profile3.svg) that there is a very little what we can do now. May-be, remove bounds checks (more on this later) and make the code a bit nicer.
 
 Let's look at solution from a Discourse
 ```julia
@@ -266,7 +288,7 @@ end
 x = randn(2, 10000)
 ```
 
-```
+```julia
 @benchmark cmean(x)
 BenchmarkTools.Trial: 10000 samples with 1 evaluation.
  Range (min … max):  371.018 μs …   3.291 ms  ┊ GC (min … max): 0.00% … 83.30%
@@ -307,7 +329,7 @@ BenchmarkTools.Trial: 10000 samples with 1 evaluation.
  Memory estimate: 96 bytes, allocs estimate: 1.
 ```
 
-## Traversing arrays in the right order matter
+## Traverse arrays in the right order
 
 Let's now compute rowmean using the function similar to `cmean` and since we have learnt from the above, we use the `view` to have non-allocating version
 ```julia
@@ -356,7 +378,6 @@ end
 
 aligned_rmean(x) ≈ rmean(x)
 ```
-
 
 ```julia
 julia> @benchmark aligned_rmean(x)
@@ -412,7 +433,7 @@ Profile.clear()
 @profile  poor_sum(x)
 ProfileSVG.save("/tmp/profile4.svg")
 ```
-THe profiler does not show any red, which means that according to the profilerthe code is type stable (and so does the `@code_typed poor_sum(x)` does not show anything bad.) Yet, we can see that the fourth line of the `poor_sum` function takes unusually long (there is a white area above, which means that the time spend in childs of that line (iteration and sum) does the sum to the time spent in the line, which is fishy). 
+The profiler (output [here](profile4.svg)) does not show any red, which means that according to the profilerthe code is type stable (and so does the `@code_typed poor_sum(x)` does not show anything bad.) Yet, we can see that the fourth line of the `poor_sum` function takes unusually long (there is a white area above, which means that the time spend in childs of that line (iteration and sum) does the sum to the time spent in the line, which is fishy). 
 
 A close lookup on the code reveals that `s` is initialized as `Int64`, because `typeof(0)` is `Int64`. But then in the loop, we add to `s` a `Float64` because `x` is `Vector{Float64}`, which means during the execution, the type `s` changes the type.
 
@@ -443,7 +464,19 @@ BenchmarkTools.Trial: 42 samples with 1 evaluation.
   119 ms           Histogram: frequency by time          123 ms <
 
  Memory estimate: 16 bytes, allocs estimate: 1.
- ```
+```
+
+!!! info
+	The optimization of small unions has been added in Julia 1.0. If we compare the of the same function in Julia 0.6, the difference is striking
+	```julia
+	julia> @time poor_sum(x)
+	  1.863665 seconds (300.00 M allocations: 4.470 GiB, 4.29% gc time)
+	9647.736705951513
+	julia> @time stable_sum(x)
+	  0.167794 seconds (5 allocations: 176 bytes)
+	9647.736705951513
+	```
+	entirely due to 
 
 
 The main problem with the above formulation is that Julia is checking that getting element of arrays from `x[i]` is within bounds. We can remove the check using `@inbounds` macro.
@@ -455,29 +488,29 @@ function inbounds_sum(x)
     @inbounds a1 = x[1]
     @inbounds a2 = x[2]
     v = a1 + a2
-    for i = 3 : n
-        @inbounds ai = x[i]
+    @inbounds for i = 3 : n
+        ai = x[i]
         v += ai
     end
     v
 end
 ``` 
 
-This gives us few orders of magnitude speed improvements. 
-```
-julia> @benchmark inbounds_sum(x)
-BenchmarkTools.Trial: 40 samples with 1 evaluation.
- Range (min … max):  123.642 ms … 130.257 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     125.142 ms               ┊ GC (median):    0.00%
- Time  (mean ± σ):   125.691 ms ±   1.783 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+This did not gives us much.
+```julia
+BenchmarkTools.Trial: 42 samples with 1 evaluation.
+ Range (min … max):  117.804 ms … 123.634 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     119.077 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   119.387 ms ±   1.225 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-    ██▃  ▃ ▃ █ █       ▃ ▃        ▃
-  ▇▁███▇▁█▁█▁█▇█▇▇▇▇▁▇▁█▁█▁▁▇▁▁▁▁▁█▁▇▁▁▇▁▁▁▇▁▁▁▁▇▁▁▁▁▁▁▁▁▁▁▇▇▁▇ ▁
-  124 ms           Histogram: frequency by time          130 ms <
+           ▂  ▂█
+  ▅█▁▅▅▁██▅█████▅▅▁██▁▅▅▁▅▁▅▁▅▅▁▁▅▁▅▁▁▁▁▁▁▁▁▁▁▅▁▁▁▁▁▁▅▁▁▁▁▁▁▁▁▅ ▁
+  118 ms           Histogram: frequency by time          124 ms <
 
  Memory estimate: 16 bytes, allocs estimate: 1.
-```
+ ```
 
+Further, we can tell Julia that it is safe to vectorize the code
 ```julia
 function simd_sum(x)
 	n = length(x)
@@ -509,7 +542,7 @@ BenchmarkTools.Trial: 90 samples with 1 evaluation.
 ``` 
 
 
-## Global variables introduces type instability (Avoid non-const globals)
+## Global variables introduce type instability (avoid non-const globals)
 ```julia
 function implicit_sum()
 	n = length(x)
@@ -540,14 +573,24 @@ Let's look what the debugger says
 Profile.clear()
 x = randn(10^4)
 @profile implicit_sum()
-ProfileSVG.save("/tmp/profile_5.svg")
+ProfileSVG.save("/tmp/profile5.svg")
 ```
-which does not say anything except that there is a huge type-instability (red bar). In fact, the whole computation is dominated by Julia constantly determining the type (of something).
+(output available [here](profile5.svg)) which does not say anything except that there is a huge type-instability (red bar). In fact, the whole computation is dominated by Julia constantly determining the type (of something).
 
-We have several tools that can help us to determine the type instability. 
-- `@code_typed implicit_sum()`
+How can we determine, where is the type instability?
+- `@code_typed implicit_sum()` is 
 - Cthulhu as `@descend implicit_sum()`
-- JET (available with the nightly build of Julia and 1.7 pre-releases) `@report_opt implicit_sum()`
+- JET (available with the nightly build of Julia and 1.7 pre-releases)
+
+!!! info 
+	## JET 
+	JET is a code analyzer, which analyze the code without actually invoking it. The technique is called "abstract interpretation" and JET internally uses Julia's native type inference implementation, so it can analyze code as fast/correctly as Julia's code generation. JET internally traces the compiler's knowledge about types and detects, where the compiler cannot infer the type (outputs `Any`). Note that small unions are no longer considered type instability, since as we have seen above, the performance bottleneck is small. We can use JET as 
+	```julia
+		using JET
+		@report_opt implicit_sum()
+	```
+ 
+
 
 All of these tools tells us that the Julia's compiler cannot determine the type of `x`. But why? I can just invoke `typeof(x)` and I know immediately the type of `x`. 
 
@@ -646,17 +689,8 @@ BenchmarkTools.Trial: 93 samples with 1 evaluation.
  Memory estimate: 16 bytes, allocs estimate: 1.
 ```
 
-
-## Detour 3. JET
-Abstract Interpreter JET
-
- of the childs does not match. Why is that? What we can see is Julia's optimization called **Small Unions** (we have talked about this in lecture on Type stability).
-
-
-## return from Detour
 ```julia
 using JET
-@report_opt implicit_sum()
 @report_opt barrier_sum()
 ```
 
@@ -700,7 +734,6 @@ for i in 1:100
 end
 ``` 
 
-Sometimes, Julia's compiler cannot reason about types it has closed over. The problem is similar to the problem we have shown above in `poor_sum` and in `implicit_sum`.
 ```
 function simulation()
 	cby = initcallback(;steps = 10000)	#intentionally disable printing
@@ -717,20 +750,115 @@ Profile.clear()
 @profile (for i in 1:100; simulation(); end)
 ProfileSVG.save("/tmp/profile.svg")
 ```
-We see a red bars in lines 4 and 8 of evalcb, whcih is 
-- performance tweaks
-	+ boxing in closures
-	+ differnce between named tuple and dict
-	+ IO
+We see a red bars in lines 4 and 8 of evalcb, which indicates the type instability hindering the performance. Why they are there? The answer is tricky.
+
+
+In closeres, as the name suggest, function *closes over* (or captures) some variables defined in the function outside the function that is returned. If these variables are of primitive types (think `Int`, `Float64`, etc.), the compiler assumes that they might be changed. Though when primitive types are used in calculations, the result is not written to the same memory location but to a new location and the name of the variable is made to point to this new variable location (this is called rebinding). We can demonstrate it on this example (credits go to Invenia blog).
+```julia
+julia> x = [1];
+
+julia> objectid(x)
+0x79eedc509237c203
+
+julia> x .= [10];  # mutating contents
+
+julia> objectid(x)
+0x79eedc509237c203
+
+julia> y = 100;
+
+julia> objectid(y)
+0xdb216d4e5c739c77
+
+julia> y = y + 100;  # rebinding the variable name
+
+julia> objectid(y)
+0xb642af5f06b41e88
+```
+Since the inner function needs to point to the same location, julia uses `Box` container which can be seen as a translation, where the the pointer inside the Box can change while the inner function contains the same pointer to the `Box`. This makes possible to change the captured variables and tracks changes in the point. Sometimes (it can happen many time) the compiler fails to determine that the captured variable is read only, and it wrap it (box it) in the `Box` wrapper, which makes it type unstable, as `Box` does not track types (it would be difficult as even the type can change in the inner function). This is what we can see in the first example of `abmult`. In the second example, the captured variable `y` and `i` changes and the compiler is right.
+
+What can we do?
+- The first difficulty is to even detect this case. We can spot it using `@code_typed` and of course `JET.jl` can do it and it will warn us. Above we have seen the effect of the profiler.
+Using `@code_typed`
+```julia
+julia> @code_typed abmult(1)
+CodeInfo(
+1 ─ %1  = Core.Box::Type{Core.Box}
+│   %2  = %new(%1, r@_2)::Core.Box
+│   %3  = Core.isdefined(%2, :contents)::Bool
+└──       goto #3 if not %3
+2 ─       goto #4
+3 ─       $(Expr(:throw_undef_if_not, :r, false))::Any
+4 ┄ %7  = Core.getfield(%2, :contents)::Any
+│   %8  = (%7 < 0)::Any
+└──       goto #9 if not %8
+5 ─ %10 = Core.isdefined(%2, :contents)::Bool
+└──       goto #7 if not %10
+6 ─       goto #8
+7 ─       $(Expr(:throw_undef_if_not, :r, false))::Any
+8 ┄ %14 = Core.getfield(%2, :contents)::Any
+│   %15 = -%14::Any
+└──       Core.setfield!(%2, :contents, %15)::Any
+9 ┄ %17 = %new(Main.:(var"#5#6"), %2)::var"#5#6"
+└──       return %17
+) => var"#5#6"
+```
+Using `Jet.jl` (recall it requires the very latest Julia 1.7)
+```
+julia> @report_opt abmult(1)
+═════ 3 possible errors found ═════
+┌ @ REPL[15]:2 r = Core.Box(:(_7::Int64))
+│ captured variable `r` detected
+└──────────────
+┌ @ REPL[15]:2 Main.<(%7, 0)
+│ runtime dispatch detected: Main.<(%7::Any, 0)
+└──────────────
+┌ @ REPL[15]:3 Main.-(%14)
+│ runtime dispatch detected: Main.-(%14::Any)
+└──────────────
+```
+- Sometimes, we do not have to do anything. For example the above example of `evalcb` function, we assume that all the other code in the simulation would take much more time so a little type instability is not important.
+- Alternatively, we can explicitly use `Ref` instead of the `Box`, which are typed wrappers, but they are awkward to use. 
+```julia
+function ref_abmult(r::Int)
+   if r < 0
+       r = -r
+   end
+   rr = Ref(r)
+   f = x -> x * rr[]
+   return f
+end;
+```
+We can see in `@code_typed` that the compiler is happy as it can resolve the types correctly
+```julia
+julia> @code_typed ref_abmult(1)
+CodeInfo(
+1 ─ %1 = Base.slt_int(r@_2, 0)::Bool
+└──      goto #3 if not %1
+2 ─ %3 = Base.neg_int(r@_2)::Int64
+3 ┄ %4 = φ (#2 => %3, #1 => _2)::Int64
+│   %5 = %new(Base.RefValue{Int64}, %4)::Base.RefValue{Int64}
+│   %6 = %new(var"#7#8"{Base.RefValue{Int64}}, %5)::var"#7#8"{Base.RefValue{Int64}}
+└──      return %6
+) => var"#7#8"{Base.RefValue{Int64}}
+```
+Jet is also happy.
+```julia
+
+julia> @report_opt ref_abmult(1)
+No errors !
+
 ```
 
-- create a list of examples for the lecture
+So when you use closures, you should be careful of the accidental boxing, since it can inhibit the speed of code. **This is a big deal in Multithreadding and in automatic differentiation**, both heavily uses closures. You can track the discussion (here)[https://github.com/JuliaLang/julia/issues/15276].
 
-## Using named tuple instead of dict
-```julia
-params_dict = Dict(:stepsize => 0.01, :h => 0.001, :iters => 500)
-params_tuple = (;stepsize = 0.01, h=0.001, iters=500)
 
+## NamedTuples are more efficient that Dicts
+It happens a lot in scientific code, that some experiments has many parameters. It is therefore very convenient to store them in `Dict`, such that when adding a new parameter, we do not have to go over all defined functions and redefine them.
+
+Imagine that we have a (nonsensical) simulation like 
+```
+settings = Dict(:stepsize => 0.01, :h => 0.001, :iters => 500)
 function find_min!(f, x, p)
 	for i in 1:p[:iters]
 		x̃ = x + p[:h]
@@ -739,13 +867,27 @@ function find_min!(f, x, p)
 	end
 	x
 end
+```
+
+
 
 x₀ = rand()
 f = x -> x^2
 find_min!(f, x₀, params_tuple)
+
+params_tuple = (;stepsize = 0.01, h=0.001, iters=500)
 @btime find_min!($f, $x₀, $params_dict)
 @btime find_min!($f, $x₀, $params_tuple)
 ```
+- performance tweaks
+	+ differnce between named tuple and dict
+	+ IO
+```
+
+- create a list of examples for the lecture
+
+## Using named tuple instead of dict
+```julia
 
 ## Performance of captured variable
 - inspired by https://docs.julialang.org/en/v1/manual/performance-tips/#man-performance-captured
