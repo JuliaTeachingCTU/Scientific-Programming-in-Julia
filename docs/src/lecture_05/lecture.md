@@ -857,73 +857,70 @@ So when you use closures, you should be careful of the accidental boxing, since 
 It happens a lot in scientific code, that some experiments has many parameters. It is therefore very convenient to store them in `Dict`, such that when adding a new parameter, we do not have to go over all defined functions and redefine them.
 
 Imagine that we have a (nonsensical) simulation like 
-```
-settings = Dict(:stepsize => 0.01, :h => 0.001, :iters => 500)
+```julia
+settings = Dict(:stepsize => 0.01, :h => 0.001, :iters => 500, :info => "info")
 function find_min!(f, x, p)
 	for i in 1:p[:iters]
 		x̃ = x + p[:h]
-		fx = f(x)
-		x -= p[:stepsize] * (f(x̃) - fx)/p[:h]
+		fx = f(x)									# line 4
+		x -= p[:stepsize] * (f(x̃) - fx)/p[:h]		# line 5
 	end
 	x
 end
 ```
-
-
-
+Notice the parameter `p` is a `Dict` and notice that it can contain arbitrary parameters, which is useful. Hence, Dict is cool for passing parameters.
+Let's now run the function through the profiler
+```julia
 x₀ = rand()
-f = x -> x^2
-find_min!(f, x₀, params_tuple)
-
-params_tuple = (;stepsize = 0.01, h=0.001, iters=500)
-@btime find_min!($f, $x₀, $params_dict)
-@btime find_min!($f, $x₀, $params_tuple)
+f(x) = x^2
+Profile.clear()
+@profile find_min!(f, x₀, settings)
+ProfileSVG.save("/tmp/profile6.svg")
 ```
-- performance tweaks
-	+ differnce between named tuple and dict
-	+ IO
-```
-
-- create a list of examples for the lecture
-
-## Using named tuple instead of dict
+from the profiler's output [here](profile6.svg) we can see some type instabilities. Where they come from?
+The compiler does not have any infomation about types stored in `settings`, as the type of stored values are `Any` (caused by storing `String` and `Int`).
 ```julia
-
-## Performance of captured variable
-- inspired by https://docs.julialang.org/en/v1/manual/performance-tips/#man-performance-captured
-- an example of closure seen in previous lectures, reference `x` has to be included 
-```julia
-x = rand(1000)
-
-function adder(shift)
-    return y -> shift + y
-end
-
-function adder_typed(shift::Float64)
-    return y -> shift + y
-end
-
-function adder_let(shift::Float64)
-	f = let shift=shift
-		y -> shift + y
-    end
-    return f
-end
-
-f = adder(3.0)
-ft = adder_typed(3.0)
-fl = adder_let(3.0)
-
-@btime f.($x);
-@btime ft.($x);
-@btime fl.($x);
-@btime $x .+ 3.0;
-
+julia> typeof(settings)
+Dict{Symbol, Any}
 ```
-- cannot get the same performance as native call, might be affected by broadcasting (?)
-- `fl` should attain the same performance as native call
+The second problem is `get` operation on dictionaries is very time consuming operation (although technically it is O(1)), because it has to search the key in the list. Dicts are designed as a mutable container, which is not needed in our use-case, as the settings are static. For similar use-cases, Julia offers `NamedTuple`, with which we can construct settings as 
+```julia
+nt_settings = (;stepsize = 0.01, h=0.001, iters=500, :info => "info")
+```
+The `NamedTuple` is fully typed, but which we mean the names of fields are part of the type definition and fields are also part of type definition. You can think of it as a struct. Moreover, when accessing fields in `NamedTuple`, compiler knows precisely where they are located in the memory, which drastically reduces the access time. 
+Let's see the effect in `BenchmarkTools`.
+```julia
+julia> @benchmark find_min!(x -> x^2, x₀, settings)
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):   86.350 μs …   4.814 ms  ┊ GC (min … max): 0.00% … 97.61%
+ Time  (median):      90.747 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   102.405 μs ± 127.653 μs  ┊ GC (mean ± σ):  4.69% ±  3.75%
 
+  ▅██▆▂     ▁▁    ▁                                             ▂
+  ███████▇▇████▇███▇█▇████▇▇▆▆▇▆▇▇▇▆▆▆▆▇▆▇▇▅▇▆▆▆▆▄▅▅▄▅▆▆▅▄▅▃▅▃▅ █
+  86.4 μs       Histogram: log(frequency) by time        209 μs <
 
+ Memory estimate: 70.36 KiB, allocs estimate: 4002.
+
+julia> @benchmark find_min!(x -> x^2, x₀, nt_settings)
+BenchmarkTools.Trial: 10000 samples with 7 evaluations.
+ Range (min … max):  4.179 μs … 21.306 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     4.188 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   4.493 μs ±  1.135 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  █▃▁        ▁ ▁  ▁                                          ▁
+  ████▇████▄██▄█▃██▄▄▇▇▇▇▅▆▆▅▄▄▅▄▅▅▅▄▁▅▄▁▄▄▆▆▇▄▅▆▄▄▃▄▆▅▆▁▄▄▄ █
+  4.18 μs      Histogram: log(frequency) by time     10.8 μs <
+
+ Memory estimate: 16 bytes, allocs estimate: 1.
+```
+
+Checking the output with JET, there is no type instability anymore
+```julia
+@report_opt find_min!(f, x₀, nt_settings)
+No errors !
+```
+<!-- 
 ## Don't use IO unless you have to
 - debug printing in performance critical code should be kept to minimum or using in memory/file based logger in stdlib `Logging.jl`
 ```julia
@@ -952,4 +949,4 @@ function find_min!(f, x, p; verbose=true)
 	x
 end
 @btime find_min!($f, $x₀, $params_tuple; verbose=true)
-```
+``` -->
