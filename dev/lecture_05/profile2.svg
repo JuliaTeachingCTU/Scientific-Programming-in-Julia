@@ -1,121 +1,565 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" width="777" height="555" viewBox="0 0 777 555"
-     xmlns="http://www.w3.org/2000/svg" id="fig-a3e2ac3658094a6fa8a0005c5373feff">
+<svg version="1.1" width="960" height="391" viewBox="0 0 960 391"
+     xmlns="http://www.w3.org/2000/svg" id="fig-37f44f24ebd8477fa103eedf89297891">
 <defs>
-    <clipPath id="fig-a3e2ac3658094a6fa8a0005c5373feff-clip">
-        <rect x="0" y="0" width="777" height="555"/>
+    <clipPath id="fig-37f44f24ebd8477fa103eedf89297891-clip">
+        <rect x="0" y="0" width="960" height="391"/>
     </clipPath>
 </defs>
 <style type="text/css">
-    #fig-a3e2ac3658094a6fa8a0005c5373feff text {
+    #fig-37f44f24ebd8477fa103eedf89297891 text {
         pointer-events: none;
         font-family: inherit;
         font-size: 12px;
         fill: #000000;
     }
-    text#fig-a3e2ac3658094a6fa8a0005c5373feff-caption {
+    text#fig-37f44f24ebd8477fa103eedf89297891-caption {
         font-size: 16.8px;
         fill: #000000;
         text-anchor: middle;
     }
-    #fig-a3e2ac3658094a6fa8a0005c5373feff-bg {
+    #fig-37f44f24ebd8477fa103eedf89297891-bg {
         fill: #FFFFFF;
     }
-    #fig-a3e2ac3658094a6fa8a0005c5373feff-viewport rect, #fig-a3e2ac3658094a6fa8a0005c5373feff-viewport path {
+    #fig-37f44f24ebd8477fa103eedf89297891-viewport rect, #fig-37f44f24ebd8477fa103eedf89297891-viewport path {
         vector-effect: non-scaling-stroke;
         fill-opacity: 1;
     }
-    #fig-a3e2ac3658094a6fa8a0005c5373feff-viewport text {
+    #fig-37f44f24ebd8477fa103eedf89297891-viewport text {
         stroke: #000000;
         stroke-width: 0;
         stroke-opacity: 0.35;
     }
-    #fig-a3e2ac3658094a6fa8a0005c5373feff-viewport rect:hover, #fig-a3e2ac3658094a6fa8a0005c5373feff-viewport path:hover {
+    #fig-37f44f24ebd8477fa103eedf89297891-viewport rect:hover, #fig-37f44f24ebd8477fa103eedf89297891-viewport path:hover {
         fill-opacity: 0.75;
         stroke: #000000;
         stroke-width: 0.5;
     }
-    #fig-a3e2ac3658094a6fa8a0005c5373feff-viewport + rect {
+    #fig-37f44f24ebd8477fa103eedf89297891-viewport + rect {
         fill: #FFFFFF;
         opacity: 0.8;
     }
-    text#fig-a3e2ac3658094a6fa8a0005c5373feff-details{
+    text#fig-37f44f24ebd8477fa103eedf89297891-details{
         fill: #000000;
     }
 </style>
-<g id="fig-a3e2ac3658094a6fa8a0005c5373feff-frame" clip-path="url(#fig-a3e2ac3658094a6fa8a0005c5373feff-clip)">
-<rect id="fig-a3e2ac3658094a6fa8a0005c5373feff-bg" x="0" y="0" width="777" height="555"/>
-<text id="fig-a3e2ac3658094a6fa8a0005c5373feff-caption" x="388.5" y="24">Profile results</text>
-<g id="fig-a3e2ac3658094a6fa8a0005c5373feff-viewport" transform="scale(1)">
-<rect x="8" y="504" width="761.6" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
-<text x="8" dx="4" y="515.25"> in :-1</text>
-<rect x="35.2" y="489" width="734.4" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="35.2" dx="4" y="500.25">_start in client.jl:485</text>
-<rect x="35.2" y="474" width="734.4" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="35.2" dx="4" y="485.25">exec_options in client.jl:285</text>
-<rect x="35.2" y="459" width="734.4" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="35.2" dx="4" y="470.25">include in Base.jl:386</text>
-<rect x="35.2" y="444" width="734.4" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="35.2" dx="4" y="455.25">_include in loading.jl:1170</text>
-<rect x="35.2" y="429" width="734.4" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="35.2" dx="4" y="440.25">include_string in loading.jl:1116</text>
-<rect x="35.2" y="414" width="734.4" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="35.2" dx="4" y="425.25">eval in boot.jl:360</text>
-<rect x="35.2" y="399" width="734.4" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="35.2" dx="4" y="410.25">makedocs##kw in Documenter.jl:260</text>
-<rect x="35.2" y="384" width="734.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="35.2" dx="4" y="395.25">#makedocs#1 in Documenter.jl:265</text>
-<rect x="35.2" y="369" width="734.4" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="35.2" dx="4" y="380.25">cd in file.jl:106</text>
-<rect x="35.2" y="354" width="734.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="35.2" dx="4" y="365.25">#2 in Documenter.jl:266</text>
-<rect x="35.2" y="339" width="734.4" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
-<text x="35.2" dx="4" y="350.25">dispatch in Selectors.jl:170</text>
-<rect x="35.2" y="324" width="734.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="35.2" dx="4" y="335.25">runner in Builder.jl:226</text>
-<rect x="35.2" y="309" width="734.4" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="35.2" dx="4" y="320.25">expand in Expanders.jl:42</text>
-<rect x="35.2" y="294" width="734.4" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
-<text x="35.2" dx="4" y="305.25">dispatch in Selectors.jl:170</text>
-<rect x="35.2" y="279" width="734.4" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="35.2" dx="4" y="290.25">runner in Expanders.jl:665</text>
-<rect x="35.2" y="264" width="734.4" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="35.2" dx="4" y="275.25">capture##kw in IOCapture.jl:75</text>
-<rect x="35.2" y="249" width="734.4" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="35.2" dx="4" y="260.25">#capture#1 in IOCapture.jl:116</text>
-<rect x="35.2" y="234" width="734.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="35.2" dx="4" y="245.25">with_logger in logging.jl:603</text>
-<rect x="35.2" y="219" width="734.4" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
-<text x="35.2" dx="4" y="230.25">with_logstate in logging.jl:491</text>
-<rect x="35.2" y="204" width="734.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="35.2" dx="4" y="215.25">#3 in IOCapture.jl:118</text>
-<rect x="35.2" y="189" width="734.4" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="35.2" dx="4" y="200.25">#19 in Expanders.jl:666</text>
-<rect x="35.2" y="174" width="734.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="35.2" dx="4" y="185.25">cd in file.jl:106</text>
-<rect x="35.2" y="159" width="734.4" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="35.2" dx="4" y="170.25">#20 in Expanders.jl:667</text>
-<rect x="35.2" y="144" width="734.4" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="35.2" dx="4" y="155.25">eval in boot.jl:360</text>
-<rect x="35.2" y="129" width="13.6" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="35.2" dx="4" y="140.25">polynomial_stable in REPL[1]:1</text>
-<rect x="48.8" y="129" width="720.8" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="48.8" dx="4" y="140.25">run_polynomial_stable in REPL[1]:3</text>
-<rect x="48.8" y="114" width="13.6" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="48.8" dx="4" y="125.25">polynomial_stable in REPL[1]:3</text>
-<rect x="48.8" y="99" width="13.6" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="48.8" dx="4" y="110.25">Colon in range.jl:22</text>
-<rect x="48.8" y="84" width="13.6" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="48.8" dx="4" y="95.25">_colon in range.jl:24</text>
-<rect x="48.8" y="69" width="13.6" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="48.8" dx="4" y="80.25">StepRange in range.jl:263</text>
-<rect x="48.8" y="54" width="13.6" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="48.8" dx="4" y="65.25">StepRange in range.jl:208</text>
-<rect x="62.4" y="114" width="693.6" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="62.4" dx="4" y="125.25">polynomial_stable in REPL[1]:4</text>
-<rect x="62.4" y="99" width="693.6" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="62.4" dx="4" y="110.25">^ in math.jl:920</text>
+<g id="fig-37f44f24ebd8477fa103eedf89297891-frame" clip-path="url(#fig-37f44f24ebd8477fa103eedf89297891-clip)">
+<rect id="fig-37f44f24ebd8477fa103eedf89297891-bg" x="0" y="0" width="960" height="391"/>
+<text id="fig-37f44f24ebd8477fa103eedf89297891-caption" x="480" y="24">Profile results</text>
+<g id="fig-37f44f24ebd8477fa103eedf89297891-viewport" transform="scale(1)">
+<rect x="10" y="338" width="940.58" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
+<text x="10" dx="4" y="349.25"> in :-1</text>
+<rect x="15.62" y="323" width="676.65" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
+<text x="15.62" dx="4" y="334.25">eval in boot.jl:360</text>
+<rect x="15.62" y="308" width="676.65" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="15.62" dx="4" y="319.25">g2 in REPL[86]:5</text>
+<rect x="15.62" y="293" width="676.65" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="15.62" dx="4" y="304.25">collect in array.jl:683</text>
+<rect x="15.62" y="278" width="676.65" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="15.62" dx="4" y="289.25">collect_to_with_first! in array.jl:702</text>
+<rect x="15.62" y="263" width="665.42" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="15.62" dx="4" y="274.25">collect_to! in array.jl:724</text>
+<rect x="15.62" y="248" width="5.61" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="15.62" dx="4" y="259.25">iterate in generator.jl:44</text>
+<rect x="15.62" y="233" width="5.61" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="15.62" dx="4" y="244.25">iterate in range.jl:674</text>
+<rect x="15.62" y="218" width="5.61" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="15.62" dx="4" y="229.25">== in promotion.jl:410</text>
+<rect x="21.23" y="248" width="659.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="21.23" dx="4" y="259.25">iterate in generator.jl:47</text>
+<rect x="21.23" y="233" width="659.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="21.23" dx="4" y="244.25">#11 in none:0</text>
+<rect x="21.23" y="218" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="21.23" dx="4" y="229.25">f! in REPL[85]:2</text>
+<rect x="21.23" y="203" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="21.23" dx="4" y="214.25">indexed_iterate in array.jl:0</text>
+<rect x="24.04" y="218" width="47.73" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="24.04" dx="4" y="229.25">f! in REPL[85]:3</text>
+<rect x="24.04" y="203" width="5.61" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="24.04" dx="4" y="214.25">setindex! in array.jl:841</text>
+<rect x="29.65" y="203" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="29.65" dx="4" y="214.25">cos in trig.jl:0</text>
+<rect x="32.46" y="203" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="32.46" dx="4" y="214.25">cos in trig.jl:105</text>
+<rect x="32.46" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="32.46" dx="4" y="199.25">isnan in float.jl:449</text>
+<rect x="32.46" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="32.46" dx="4" y="184.25">!= in float.jl:368</text>
+<rect x="35.27" y="203" width="14.04" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="35.27" dx="4" y="214.25">cos in trig.jl:110</text>
+<rect x="35.27" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="35.27" dx="4" y="199.25">rem_pio2_kernel in rem_pio2.jl:0</text>
+<rect x="38.08" y="188" width="2.8" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="38.08" dx="4" y="199.25">rem_pio2_kernel in rem_pio2.jl:240</text>
+<rect x="38.08" y="173" width="2.8" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="38.08" dx="4" y="184.25">cody_waite_2c_pio2 in rem_pio2.jl:53</text>
+<rect x="38.08" y="158" width="2.8" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="38.08" dx="4" y="169.25">- in float.jl:329</text>
+<rect x="40.88" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="40.88" dx="4" y="199.25">rem_pio2_kernel in rem_pio2.jl:249</text>
+<rect x="40.88" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="40.88" dx="4" y="184.25">&amp;lt;= in int.jl:443</text>
+<rect x="43.69" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="43.69" dx="4" y="199.25">rem_pio2_kernel in rem_pio2.jl:256</text>
+<rect x="43.69" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="43.69" dx="4" y="184.25">cody_waite_2c_pio2 in rem_pio2.jl:53</text>
+<rect x="43.69" y="158" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="43.69" dx="4" y="169.25">- in float.jl:329</text>
+<rect x="46.5" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="46.5" dx="4" y="199.25">rem_pio2_kernel in rem_pio2.jl:268</text>
+<rect x="46.5" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="46.5" dx="4" y="184.25">cody_waite_2c_pio2 in rem_pio2.jl:51</text>
+<rect x="46.5" y="158" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="46.5" dx="4" y="169.25">muladd in float.jl:339</text>
+<rect x="49.31" y="203" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="49.31" dx="4" y="214.25">cos in trig.jl:113</text>
+<rect x="49.31" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="49.31" dx="4" y="199.25">cos_kernel in trig.jl:138</text>
+<rect x="49.31" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="49.31" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="52.12" y="203" width="2.8" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="52.12" dx="4" y="214.25">cos in trig.jl:115</text>
+<rect x="52.12" y="188" width="2.8" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="52.12" dx="4" y="199.25">sin_kernel in trig.jl:74</text>
+<rect x="52.12" y="173" width="2.8" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="52.12" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="54.92" y="203" width="5.62" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="54.92" dx="4" y="214.25">cos in trig.jl:117</text>
+<rect x="54.92" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="54.92" dx="4" y="199.25">cos_kernel in trig.jl:140</text>
+<rect x="54.92" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="54.92" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="57.73" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="57.73" dx="4" y="199.25">cos_kernel in trig.jl:141</text>
+<rect x="57.73" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="57.73" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="60.54" y="203" width="5.61" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="60.54" dx="4" y="214.25">sin in trig.jl:48</text>
+<rect x="60.54" y="188" width="5.61" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="60.54" dx="4" y="199.25">sin_kernel in trig.jl:74</text>
+<rect x="60.54" y="173" width="5.61" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="60.54" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="66.15" y="203" width="5.62" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="66.15" dx="4" y="214.25">sin in trig.jl:50</text>
+<rect x="66.15" y="188" width="5.62" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="66.15" dx="4" y="199.25">cos_kernel in trig.jl:141</text>
+<rect x="66.15" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="66.15" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="68.96" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="68.96" dx="4" y="184.25">+ in float.jl:326</text>
+<rect x="71.77" y="218" width="19.65" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="71.77" dx="4" y="229.25">f! in REPL[85]:4</text>
+<rect x="71.77" y="203" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="71.77" dx="4" y="214.25">setindex! in array.jl:841</text>
+<rect x="74.58" y="203" width="2.8" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="74.58" dx="4" y="214.25">+ in complex.jl:312</text>
+<rect x="74.58" y="188" width="2.8" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="74.58" dx="4" y="199.25">+ in float.jl:326</text>
+<rect x="77.38" y="203" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="77.38" dx="4" y="214.25">cos in trig.jl:0</text>
+<rect x="80.19" y="203" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="80.19" dx="4" y="214.25">cos in trig.jl:98</text>
+<rect x="83" y="203" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="83" dx="4" y="214.25">cos in trig.jl:119</text>
+<rect x="83" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="83" dx="4" y="199.25">sin_kernel in trig.jl:74</text>
+<rect x="83" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="83" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="85.81" y="203" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="85.81" dx="4" y="214.25">sin in trig.jl:44</text>
+<rect x="85.81" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="85.81" dx="4" y="199.25">sin_kernel in trig.jl:71</text>
+<rect x="85.81" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="85.81" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="88.62" y="203" width="2.8" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="88.62" dx="4" y="214.25">sin in trig.jl:48</text>
+<rect x="88.62" y="188" width="2.8" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="88.62" dx="4" y="199.25">sin_kernel in trig.jl:74</text>
+<rect x="88.62" y="173" width="2.8" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="88.62" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="91.42" y="218" width="56.16" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="91.42" dx="4" y="229.25">f! in REPL[85]:5</text>
+<rect x="91.42" y="203" width="5.62" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="91.42" dx="4" y="214.25">setindex! in array.jl:841</text>
+<rect x="97.04" y="203" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="97.04" dx="4" y="214.25">cos in trig.jl:104</text>
+<rect x="97.04" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="97.04" dx="4" y="199.25">cos_kernel in trig.jl:146</text>
+<rect x="97.04" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="97.04" dx="4" y="184.25">+ in float.jl:326</text>
+<rect x="99.85" y="203" width="2.8" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="99.85" dx="4" y="214.25">cos in trig.jl:107</text>
+<rect x="99.85" y="188" width="2.8" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="99.85" dx="4" y="199.25">isinf in float.jl:461</text>
+<rect x="99.85" y="173" width="2.8" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="99.85" dx="4" y="184.25">isfinite in float.jl:452</text>
+<rect x="99.85" y="158" width="2.8" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="99.85" dx="4" y="169.25">- in float.jl:329</text>
+<rect x="102.65" y="203" width="11.23" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="102.65" dx="4" y="214.25">cos in trig.jl:110</text>
+<rect x="102.65" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="102.65" dx="4" y="199.25">rem_pio2_kernel in rem_pio2.jl:0</text>
+<rect x="105.46" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="105.46" dx="4" y="199.25">rem_pio2_kernel in rem_pio2.jl:233</text>
+<rect x="105.46" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="105.46" dx="4" y="184.25">cody_waite_2c_pio2 in rem_pio2.jl:53</text>
+<rect x="105.46" y="158" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="105.46" dx="4" y="169.25">muladd in float.jl:339</text>
+<rect x="108.27" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="108.27" dx="4" y="199.25">rem_pio2_kernel in rem_pio2.jl:256</text>
+<rect x="108.27" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="108.27" dx="4" y="184.25">cody_waite_2c_pio2 in rem_pio2.jl:51</text>
+<rect x="108.27" y="158" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="108.27" dx="4" y="169.25">muladd in float.jl:339</text>
+<rect x="111.08" y="188" width="2.8" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="111.08" dx="4" y="199.25">rem_pio2_kernel in rem_pio2.jl:268</text>
+<rect x="113.88" y="203" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="113.88" dx="4" y="214.25">cos in trig.jl:116</text>
+<rect x="116.69" y="203" width="5.62" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="116.69" dx="4" y="214.25">cos in trig.jl:119</text>
+<rect x="116.69" y="188" width="5.62" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="116.69" dx="4" y="199.25">sin_kernel in trig.jl:74</text>
+<rect x="116.69" y="173" width="5.62" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="116.69" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="122.31" y="203" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="122.31" dx="4" y="214.25">sin in trig.jl:41</text>
+<rect x="122.31" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="122.31" dx="4" y="199.25">rem_pio2_kernel in rem_pio2.jl:0</text>
+<rect x="125.12" y="203" width="5.61" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="125.12" dx="4" y="214.25">sin in trig.jl:44</text>
+<rect x="125.12" y="188" width="5.61" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="125.12" dx="4" y="199.25">sin_kernel in trig.jl:74</text>
+<rect x="125.12" y="173" width="2.8" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="125.12" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="127.92" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="127.92" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="130.73" y="203" width="8.42" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="130.73" dx="4" y="214.25">sin in trig.jl:46</text>
+<rect x="130.73" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="130.73" dx="4" y="199.25">cos_kernel in trig.jl:138</text>
+<rect x="130.73" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="130.73" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="133.54" y="188" width="5.61" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="133.54" dx="4" y="199.25">cos_kernel in trig.jl:139</text>
+<rect x="133.54" y="173" width="5.61" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="133.54" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="139.15" y="203" width="8.43" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="139.15" dx="4" y="214.25">sin in trig.jl:50</text>
+<rect x="139.15" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="139.15" dx="4" y="199.25">cos_kernel in trig.jl:139</text>
+<rect x="139.15" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="139.15" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="141.96" y="188" width="5.62" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="141.96" dx="4" y="199.25">cos_kernel in trig.jl:141</text>
+<rect x="141.96" y="173" width="5.62" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="141.96" dx="4" y="184.25">+ in float.jl:326</text>
+<rect x="147.58" y="218" width="53.34" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="147.58" dx="4" y="229.25">f! in REPL[85]:6</text>
+<rect x="147.58" y="203" width="5.61" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="147.58" dx="4" y="214.25">setindex! in array.jl:841</text>
+<rect x="153.19" y="203" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="153.19" dx="4" y="214.25">+ in complex.jl:312</text>
+<rect x="153.19" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="153.19" dx="4" y="199.25">+ in float.jl:326</text>
+<rect x="156" y="203" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="156" dx="4" y="214.25">cos in trig.jl:101</text>
+<rect x="156" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="156" dx="4" y="199.25">&amp;lt; in float.jl:371</text>
+<rect x="158.81" y="203" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="158.81" dx="4" y="214.25">cos in trig.jl:110</text>
+<rect x="158.81" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="158.81" dx="4" y="199.25">rem_pio2_kernel in rem_pio2.jl:223</text>
+<rect x="158.81" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="158.81" dx="4" y="184.25">&amp;lt;= in int.jl:443</text>
+<rect x="161.62" y="203" width="2.8" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="161.62" dx="4" y="214.25">cos in trig.jl:113</text>
+<rect x="161.62" y="188" width="2.8" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="161.62" dx="4" y="199.25">cos_kernel in trig.jl:136</text>
+<rect x="161.62" y="173" width="2.8" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="161.62" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="164.42" y="203" width="11.23" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="164.42" dx="4" y="214.25">cos in trig.jl:115</text>
+<rect x="164.42" y="188" width="11.23" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="164.42" dx="4" y="199.25">sin_kernel in trig.jl:74</text>
+<rect x="164.42" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="164.42" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="167.23" y="173" width="8.42" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="167.23" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="175.65" y="203" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="175.65" dx="4" y="214.25">cos in trig.jl:117</text>
+<rect x="175.65" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="175.65" dx="4" y="199.25">cos_kernel in trig.jl:141</text>
+<rect x="175.65" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="175.65" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="178.46" y="203" width="5.62" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="178.46" dx="4" y="214.25">cos in trig.jl:119</text>
+<rect x="178.46" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="178.46" dx="4" y="199.25">sin_kernel in trig.jl:73</text>
+<rect x="178.46" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="178.46" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="181.27" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="181.27" dx="4" y="199.25">sin_kernel in trig.jl:74</text>
+<rect x="181.27" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="181.27" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="184.08" y="203" width="2.8" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="184.08" dx="4" y="214.25">sin in trig.jl:0</text>
+<rect x="186.88" y="203" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="186.88" dx="4" y="214.25">sin in trig.jl:30</text>
+<rect x="186.88" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="186.88" dx="4" y="199.25">abs in float.jl:441</text>
+<rect x="189.69" y="203" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="189.69" dx="4" y="214.25">sin in trig.jl:44</text>
+<rect x="189.69" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="189.69" dx="4" y="199.25">sin_kernel in trig.jl:74</text>
+<rect x="189.69" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="189.69" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="192.5" y="203" width="5.62" height="15" rx="2" fill="#00B58B" data-dinfo="./special/"/>
+<text x="192.5" dx="4" y="214.25">sin in trig.jl:46</text>
+<rect x="192.5" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="192.5" dx="4" y="199.25">cos_kernel in trig.jl:136</text>
+<rect x="192.5" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="192.5" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="195.31" y="188" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./special/"/>
+<text x="195.31" dx="4" y="199.25">cos_kernel in trig.jl:139</text>
+<rect x="195.31" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="195.31" dx="4" y="184.25">* in float.jl:332</text>
+<rect x="198.12" y="203" width="2.8" height="15" rx="2" fill="#2CA3FF" data-dinfo="./special/"/>
+<text x="198.12" dx="4" y="214.25">sin in trig.jl:48</text>
+<rect x="198.12" y="188" width="2.8" height="15" rx="2" fill="#6FDC91" data-dinfo="./special/"/>
+<text x="198.12" dx="4" y="199.25">sin_kernel in trig.jl:74</text>
+<rect x="198.12" y="173" width="2.8" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="198.12" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="200.92" y="218" width="325.7" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="200.92" dx="4" y="229.25">f! in REPL[85]:7</text>
+<rect x="200.92" y="203" width="325.7" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="200.92" dx="4" y="214.25">* in operators.jl:560</text>
+<rect x="200.92" y="188" width="64.58" height="15" rx="2" fill="#E1B2FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="200.92" dx="4" y="199.25">* in matmul.jl:46</text>
+<rect x="200.92" y="173" width="64.58" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="200.92" dx="4" y="184.25">convert in abstractarray.jl:16</text>
+<rect x="200.92" y="158" width="64.58" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="200.92" dx="4" y="169.25">AbstractArray in array.jl:541</text>
+<rect x="200.92" y="143" width="16.85" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="200.92" dx="4" y="154.25">copyto_axcheck! in abstractarray.jl:1055</text>
+<rect x="200.92" y="128" width="16.85" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="200.92" dx="4" y="139.25">checkaxs in abstractarray.jl:1053</text>
+<rect x="200.92" y="113" width="8.43" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="200.92" dx="4" y="124.25">== in tuple.jl:362</text>
+<rect x="200.92" y="98" width="8.43" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="200.92" dx="4" y="109.25">_eq in tuple.jl:366</text>
+<rect x="200.92" y="83" width="8.43" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="200.92" dx="4" y="94.25">== in range.jl:802</text>
+<rect x="200.92" y="68" width="8.43" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="200.92" dx="4" y="79.25">isempty in range.jl:519</text>
+<rect x="200.92" y="53" width="8.43" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="200.92" dx="4" y="64.25">last in range.jl:613</text>
+<rect x="200.92" y="38" width="8.43" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="200.92" dx="4" y="49.25">getproperty in Base.jl:33</text>
+<rect x="217.77" y="143" width="8.42" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="217.77" dx="4" y="154.25">copyto_axcheck! in abstractarray.jl:1056</text>
+<rect x="217.77" y="128" width="8.42" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="217.77" dx="4" y="139.25">copyto! in array.jl:325</text>
+<rect x="217.77" y="113" width="8.42" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="217.77" dx="4" y="124.25">copyto! in array.jl:299</text>
+<rect x="217.77" y="98" width="8.42" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="217.77" dx="4" y="109.25">_copyto_impl! in array.jl:313</text>
+<rect x="217.77" y="83" width="8.42" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="217.77" dx="4" y="94.25">unsafe_copyto! in array.jl:289</text>
+<rect x="217.77" y="68" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="217.77" dx="4" y="79.25">_unsafe_copyto! in array.jl:231</text>
+<rect x="217.77" y="53" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="217.77" dx="4" y="64.25">pointer in abstractarray.jl:1119</text>
+<rect x="217.77" y="38" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="217.77" dx="4" y="49.25">+ in pointer.jl:159</text>
+<rect x="220.58" y="68" width="2.8" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="220.58" dx="4" y="79.25">_unsafe_copyto! in array.jl:235</text>
+<rect x="220.58" y="53" width="2.8" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="220.58" dx="4" y="64.25">setindex! in array.jl:839</text>
+<rect x="226.19" y="143" width="36.5" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="226.19" dx="4" y="154.25">similar in array.jl:355</text>
+<rect x="226.19" y="128" width="36.5" height="15" rx="2" fill="#FFA000" data-dinfo="./"/>
+<text x="226.19" dx="4" y="139.25">Array in boot.jl:448</text>
+<rect x="265.5" y="188" width="129.15" height="15" rx="2" fill="#6FDC91" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="265.5" dx="4" y="199.25">* in matmul.jl:47</text>
+<rect x="265.5" y="173" width="106.69" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="265.5" dx="4" y="184.25">similar in abstractarray.jl:742</text>
+<rect x="265.5" y="158" width="106.69" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="265.5" dx="4" y="169.25">similar in array.jl:358</text>
+<rect x="265.5" y="143" width="106.69" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="265.5" dx="4" y="154.25">Array in boot.jl:457</text>
+<rect x="265.5" y="128" width="106.69" height="15" rx="2" fill="#FFA400" data-dinfo="./"/>
+<text x="265.5" dx="4" y="139.25">Array in boot.jl:448</text>
+<rect x="372.19" y="173" width="22.46" height="15" rx="2" fill="#2CA3FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="372.19" dx="4" y="184.25">mul! in matmul.jl:275</text>
+<rect x="372.19" y="158" width="22.46" height="15" rx="2" fill="#E1B2FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="372.19" dx="4" y="169.25">mul! in matmul.jl:66</text>
+<rect x="372.19" y="143" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="372.19" dx="4" y="154.25">gemv! in matmul.jl:526</text>
+<rect x="375" y="143" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="375" dx="4" y="154.25">gemv! in matmul.jl:542</text>
+<rect x="375" y="128" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="375" dx="4" y="139.25">promote in promotion.jl:298</text>
+<rect x="375" y="113" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="375" dx="4" y="124.25">_promote in promotion.jl:276</text>
+<rect x="375" y="98" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="375" dx="4" y="109.25">convert in number.jl:7</text>
+<rect x="375" y="83" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="375" dx="4" y="94.25">Complex in complex.jl:35</text>
+<rect x="375" y="68" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="375" dx="4" y="79.25">Complex in complex.jl:12</text>
+<rect x="377.81" y="143" width="16.84" height="15" rx="2" fill="#00B58B" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="377.81" dx="4" y="154.25">gemv! in matmul.jl:544</text>
+<rect x="377.81" y="128" width="5.61" height="15" rx="2" fill="#6FDC91" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="377.81" dx="4" y="139.25">gemv! in blas.jl:691</text>
+<rect x="383.42" y="128" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="383.42" dx="4" y="139.25">gemv! in blas.jl:696</text>
+<rect x="386.23" y="128" width="5.62" height="15" rx="2" fill="#6FDC91" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="386.23" dx="4" y="139.25">gemv! in blas.jl:704</text>
+<rect x="391.85" y="128" width="2.8" height="15" rx="2" fill="#E1B2FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="391.85" dx="4" y="139.25">gemv! in blas.jl:711</text>
+<rect x="394.65" y="188" width="131.97" height="15" rx="2" fill="#E1B2FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="394.65" dx="4" y="199.25">* in matmul.jl:164</text>
+<rect x="394.65" y="173" width="67.39" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="394.65" dx="4" y="184.25">similar in array.jl:358</text>
+<rect x="394.65" y="158" width="67.39" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="394.65" dx="4" y="169.25">Array in boot.jl:458</text>
+<rect x="394.65" y="143" width="67.39" height="15" rx="2" fill="#E4A71C" data-dinfo="./"/>
+<text x="394.65" dx="4" y="154.25">Array in boot.jl:450</text>
+<rect x="462.04" y="173" width="64.58" height="15" rx="2" fill="#2CA3FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="462.04" dx="4" y="184.25">mul! in matmul.jl:275</text>
+<rect x="462.04" y="158" width="64.58" height="15" rx="2" fill="#E1B2FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="462.04" dx="4" y="169.25">mul! in matmul.jl:169</text>
+<rect x="462.04" y="143" width="11.23" height="15" rx="2" fill="#00B58B" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="462.04" dx="4" y="154.25">gemm_wrapper! in matmul.jl:636</text>
+<rect x="473.27" y="143" width="5.61" height="15" rx="2" fill="#2CA3FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="473.27" dx="4" y="154.25">gemm_wrapper! in matmul.jl:639</text>
+<rect x="473.27" y="128" width="5.61" height="15" rx="2" fill="#6FDC91" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="473.27" dx="4" y="139.25">lapack_size in matmul.jl:679</text>
+<rect x="473.27" y="113" width="5.61" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="473.27" dx="4" y="124.25">== in char.jl:208</text>
+<rect x="473.27" y="98" width="5.61" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="473.27" dx="4" y="109.25">== in promotion.jl:410</text>
+<rect x="478.88" y="143" width="5.62" height="15" rx="2" fill="#00B58B" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="478.88" dx="4" y="154.25">gemm_wrapper! in matmul.jl:640</text>
+<rect x="478.88" y="128" width="5.62" height="15" rx="2" fill="#E1B2FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="478.88" dx="4" y="139.25">lapack_size in matmul.jl:679</text>
+<rect x="478.88" y="113" width="5.62" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="478.88" dx="4" y="124.25">== in char.jl:208</text>
+<rect x="478.88" y="98" width="5.62" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="478.88" dx="4" y="109.25">== in promotion.jl:410</text>
+<rect x="484.5" y="143" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="484.5" dx="4" y="154.25">gemm_wrapper! in matmul.jl:657</text>
+<rect x="484.5" y="128" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="484.5" dx="4" y="139.25">== in promotion.jl:410</text>
+<rect x="487.31" y="143" width="33.69" height="15" rx="2" fill="#00B58B" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="487.31" dx="4" y="154.25">gemm_wrapper! in matmul.jl:658</text>
+<rect x="487.31" y="128" width="5.61" height="15" rx="2" fill="#E1B2FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="487.31" dx="4" y="139.25">matmul2x2! in matmul.jl:0</text>
+<rect x="492.92" y="128" width="5.62" height="15" rx="2" fill="#6FDC91" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="492.92" dx="4" y="139.25">matmul2x2! in matmul.jl:991</text>
+<rect x="492.92" y="113" width="5.62" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="492.92" dx="4" y="124.25">size in array.jl:134</text>
+<rect x="498.54" y="128" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="498.54" dx="4" y="139.25">matmul2x2! in matmul.jl:999</text>
+<rect x="498.54" y="113" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="498.54" dx="4" y="124.25">== in char.jl:208</text>
+<rect x="498.54" y="98" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="498.54" dx="4" y="109.25">== in promotion.jl:410</text>
+<rect x="501.35" y="128" width="2.8" height="15" rx="2" fill="#6FDC91" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="501.35" dx="4" y="139.25">matmul2x2! in matmul.jl:1016</text>
+<rect x="501.35" y="113" width="2.8" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="501.35" dx="4" y="124.25">getindex in array.jl:802</text>
+<rect x="504.15" y="128" width="11.23" height="15" rx="2" fill="#E1B2FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="504.15" dx="4" y="139.25">matmul2x2! in matmul.jl:1019</text>
+<rect x="504.15" y="113" width="11.23" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="504.15" dx="4" y="124.25">* in complex.jl:277</text>
+<rect x="504.15" y="98" width="11.23" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="504.15" dx="4" y="109.25">* in float.jl:332</text>
+<rect x="515.38" y="128" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="515.38" dx="4" y="139.25">matmul2x2! in matmul.jl:1021</text>
+<rect x="515.38" y="113" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="515.38" dx="4" y="124.25">* in complex.jl:277</text>
+<rect x="515.38" y="98" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="515.38" dx="4" y="109.25">* in float.jl:332</text>
+<rect x="521" y="143" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="/Users/julia/buildbot/worker/package_macos64/build/usr/share/julia/stdlib/v1.6/LinearAlgebra/src/"/>
+<text x="521" dx="4" y="154.25">matmul2x2! in matmul.jl:1023</text>
+<rect x="526.62" y="218" width="53.34" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="526.62" dx="4" y="229.25">f! in REPL[85]:8</text>
+<rect x="526.62" y="203" width="44.92" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="526.62" dx="4" y="214.25">abs in complex.jl:264</text>
+<rect x="526.62" y="188" width="44.92" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="526.62" dx="4" y="199.25">hypot in math.jl:649</text>
+<rect x="526.62" y="173" width="8.42" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="526.62" dx="4" y="184.25">_hypot in math.jl:0</text>
+<rect x="535.04" y="173" width="8.42" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="535.04" dx="4" y="184.25">_hypot in math.jl:695</text>
+<rect x="535.04" y="158" width="8.42" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="535.04" dx="4" y="169.25">* in promotion.jl:322</text>
+<rect x="535.04" y="143" width="8.42" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="535.04" dx="4" y="154.25">* in float.jl:332</text>
+<rect x="543.46" y="173" width="2.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="543.46" dx="4" y="184.25">_hypot in math.jl:696</text>
+<rect x="543.46" y="158" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="543.46" dx="4" y="169.25">- in float.jl:329</text>
+<rect x="546.27" y="173" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="546.27" dx="4" y="184.25">_hypot in math.jl:699</text>
+<rect x="546.27" y="158" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="546.27" dx="4" y="169.25">- in float.jl:329</text>
+<rect x="549.08" y="173" width="16.84" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="549.08" dx="4" y="184.25">_hypot in math.jl:700</text>
+<rect x="549.08" y="158" width="8.42" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="549.08" dx="4" y="169.25">- in float.jl:329</text>
+<rect x="557.5" y="158" width="8.42" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="557.5" dx="4" y="169.25">/ in float.jl:335</text>
+<rect x="565.92" y="173" width="5.62" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="565.92" dx="4" y="184.25">_hypot in math.jl:703</text>
+<rect x="565.92" y="158" width="2.81" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="565.92" dx="4" y="169.25">* in operators.jl:560</text>
+<rect x="565.92" y="143" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="565.92" dx="4" y="154.25">* in float.jl:332</text>
+<rect x="571.54" y="203" width="5.61" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="571.54" dx="4" y="214.25">literal_pow in intfuncs.jl:313</text>
+<rect x="571.54" y="188" width="5.61" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="571.54" dx="4" y="199.25">* in float.jl:332</text>
+<rect x="579.96" y="218" width="87.04" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="579.96" dx="4" y="229.25">getindex in abstractarray.jl:1170</text>
+<rect x="579.96" y="203" width="87.04" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="579.96" dx="4" y="214.25">_getindex in multidimensional.jl:832</text>
+<rect x="579.96" y="188" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="579.96" dx="4" y="199.25">_unsafe_getindex in multidimensional.jl:841</text>
+<rect x="582.77" y="188" width="73" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="582.77" dx="4" y="199.25">_unsafe_getindex in multidimensional.jl:844</text>
+<rect x="582.77" y="173" width="73" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="582.77" dx="4" y="184.25">similar in abstractarray.jl:740</text>
+<rect x="582.77" y="158" width="73" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="582.77" dx="4" y="169.25">similar in array.jl:358</text>
+<rect x="582.77" y="143" width="73" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="582.77" dx="4" y="154.25">Array in boot.jl:457</text>
+<rect x="582.77" y="128" width="73" height="15" rx="2" fill="#FFA000" data-dinfo="./"/>
+<text x="582.77" dx="4" y="139.25">Array in boot.jl:448</text>
+<rect x="655.77" y="188" width="11.23" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="655.77" dx="4" y="199.25">_unsafe_getindex in multidimensional.jl:846</text>
+<rect x="655.77" y="173" width="11.23" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="655.77" dx="4" y="184.25">_unsafe_getindex! in multidimensional.jl:855</text>
+<rect x="655.77" y="158" width="11.23" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="655.77" dx="4" y="169.25">macro expansion in cartesian.jl:64</text>
+<rect x="655.77" y="143" width="2.81" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="655.77" dx="4" y="154.25">macro expansion in multidimensional.jl:860</text>
+<rect x="655.77" y="128" width="2.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="655.77" dx="4" y="139.25">setindex! in array.jl:839</text>
+<rect x="658.58" y="143" width="8.42" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="658.58" dx="4" y="154.25">macro expansion in multidimensional.jl:861</text>
+<rect x="658.58" y="128" width="8.42" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="658.58" dx="4" y="139.25">iterate in range.jl:674</text>
+<rect x="658.58" y="113" width="8.42" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="658.58" dx="4" y="124.25">== in promotion.jl:410</text>
+<rect x="667" y="218" width="11.23" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="667" dx="4" y="229.25">f! in array.jl:0</text>
+<rect x="681.04" y="263" width="8.42" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="681.04" dx="4" y="274.25">collect_to! in array.jl:728</text>
+<rect x="681.04" y="248" width="8.42" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="681.04" dx="4" y="259.25">setindex! in array.jl:839</text>
 </g></g>
 <script><![CDATA[
 // Snap.svg 0.3.0
@@ -510,10 +954,10 @@ f+=g+"]",i[b]=f}return Function("val","return Snap.path.toString.call(["+i+"])")
 <script><![CDATA[
 if (typeof require === 'function' && define.amd) {
     require(['ProfileSVG'], function (ProfileSVG) {
-        ProfileSVG.initialize("fig-a3e2ac3658094a6fa8a0005c5373feff");
+        ProfileSVG.initialize("fig-37f44f24ebd8477fa103eedf89297891");
     });
 } else {
-    ProfileSVG.initialize("fig-a3e2ac3658094a6fa8a0005c5373feff");
+    ProfileSVG.initialize("fig-37f44f24ebd8477fa103eedf89297891");
 }
 ]]></script>
 </svg>

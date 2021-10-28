@@ -1,53 +1,53 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" width="777" height="555" viewBox="0 0 777 555"
-     xmlns="http://www.w3.org/2000/svg" id="fig-349151d63a0b4081a56ccfeff96ac48b">
+     xmlns="http://www.w3.org/2000/svg" id="fig-86542f899b5d41dc9a0e25c2b3490f52">
 <defs>
-    <clipPath id="fig-349151d63a0b4081a56ccfeff96ac48b-clip">
+    <clipPath id="fig-86542f899b5d41dc9a0e25c2b3490f52-clip">
         <rect x="0" y="0" width="777" height="555"/>
     </clipPath>
 </defs>
 <style type="text/css">
-    #fig-349151d63a0b4081a56ccfeff96ac48b text {
+    #fig-86542f899b5d41dc9a0e25c2b3490f52 text {
         pointer-events: none;
         font-family: inherit;
         font-size: 12px;
         fill: #000000;
     }
-    text#fig-349151d63a0b4081a56ccfeff96ac48b-caption {
+    text#fig-86542f899b5d41dc9a0e25c2b3490f52-caption {
         font-size: 16.8px;
         fill: #000000;
         text-anchor: middle;
     }
-    #fig-349151d63a0b4081a56ccfeff96ac48b-bg {
+    #fig-86542f899b5d41dc9a0e25c2b3490f52-bg {
         fill: #FFFFFF;
     }
-    #fig-349151d63a0b4081a56ccfeff96ac48b-viewport rect, #fig-349151d63a0b4081a56ccfeff96ac48b-viewport path {
+    #fig-86542f899b5d41dc9a0e25c2b3490f52-viewport rect, #fig-86542f899b5d41dc9a0e25c2b3490f52-viewport path {
         vector-effect: non-scaling-stroke;
         fill-opacity: 1;
     }
-    #fig-349151d63a0b4081a56ccfeff96ac48b-viewport text {
+    #fig-86542f899b5d41dc9a0e25c2b3490f52-viewport text {
         stroke: #000000;
         stroke-width: 0;
         stroke-opacity: 0.35;
     }
-    #fig-349151d63a0b4081a56ccfeff96ac48b-viewport rect:hover, #fig-349151d63a0b4081a56ccfeff96ac48b-viewport path:hover {
+    #fig-86542f899b5d41dc9a0e25c2b3490f52-viewport rect:hover, #fig-86542f899b5d41dc9a0e25c2b3490f52-viewport path:hover {
         fill-opacity: 0.75;
         stroke: #000000;
         stroke-width: 0.5;
     }
-    #fig-349151d63a0b4081a56ccfeff96ac48b-viewport + rect {
+    #fig-86542f899b5d41dc9a0e25c2b3490f52-viewport + rect {
         fill: #FFFFFF;
         opacity: 0.8;
     }
-    text#fig-349151d63a0b4081a56ccfeff96ac48b-details{
+    text#fig-86542f899b5d41dc9a0e25c2b3490f52-details{
         fill: #000000;
     }
 </style>
-<g id="fig-349151d63a0b4081a56ccfeff96ac48b-frame" clip-path="url(#fig-349151d63a0b4081a56ccfeff96ac48b-clip)">
-<rect id="fig-349151d63a0b4081a56ccfeff96ac48b-bg" x="0" y="0" width="777" height="555"/>
-<text id="fig-349151d63a0b4081a56ccfeff96ac48b-caption" x="388.5" y="24">Profile results</text>
-<g id="fig-349151d63a0b4081a56ccfeff96ac48b-viewport" transform="scale(1)">
+<g id="fig-86542f899b5d41dc9a0e25c2b3490f52-frame" clip-path="url(#fig-86542f899b5d41dc9a0e25c2b3490f52-clip)">
+<rect id="fig-86542f899b5d41dc9a0e25c2b3490f52-bg" x="0" y="0" width="777" height="555"/>
+<text id="fig-86542f899b5d41dc9a0e25c2b3490f52-caption" x="388.5" y="24">Profile results</text>
+<g id="fig-86542f899b5d41dc9a0e25c2b3490f52-viewport" transform="scale(1)">
 <rect x="8" y="504" width="760.5" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
 <text x="8" dx="4" y="515.25"> in :-1</text>
 <rect x="8" y="489" width="760.5" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
@@ -100,42 +100,32 @@
 <text x="8" dx="4" y="155.25">eval in boot.jl:360</text>
 <rect x="8" y="129" width="760.5" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="8" dx="4" y="140.25">run_polynomial in REPL[1]:3</text>
-<rect x="8" y="114" width="585" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<rect x="8" y="114" width="351" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
 <text x="8" dx="4" y="125.25">polynomial in REPL[1]:3</text>
-<rect x="8" y="99" width="526.5" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<rect x="8" y="99" width="351" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="8" dx="4" y="110.25">Colon in range.jl:22</text>
-<rect x="8" y="84" width="526.5" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<rect x="8" y="84" width="351" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
 <text x="8" dx="4" y="95.25">_colon in range.jl:24</text>
-<rect x="8" y="69" width="526.5" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<rect x="8" y="69" width="351" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="8" dx="4" y="80.25">StepRange in range.jl:263</text>
-<rect x="8" y="54" width="526.5" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<rect x="8" y="54" width="351" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
 <text x="8" dx="4" y="65.25">StepRange in range.jl:208</text>
-<rect x="8" y="39" width="58.5" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="50.25">steprange_last in range.jl:223</text>
-<rect x="8" y="24" width="58.5" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="8" dx="4" y="35.25">== in promotion.jl:410</text>
-<rect x="66.5" y="39" width="351" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="66.5" dx="4" y="50.25">steprange_last in range.jl:226</text>
-<rect x="66.5" y="24" width="351" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="66.5" dx="4" y="35.25">&amp;gt; in operators.jl:305</text>
-<rect x="66.5" y="9" width="351" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="66.5" dx="4" y="20.25">&amp;lt; in int.jl:83</text>
-<rect x="417.5" y="39" width="58.5" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="417.5" dx="4" y="50.25">steprange_last in range.jl:231</text>
-<rect x="476" y="39" width="58.5" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="476" dx="4" y="50.25">steprange_last in range.jl:238</text>
-<rect x="476" y="24" width="58.5" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="476" dx="4" y="35.25">rem in int.jl:262</text>
-<rect x="593" y="114" width="117" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="593" dx="4" y="125.25">polynomial in REPL[1]:4</text>
-<rect x="593" y="99" width="117" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<rect x="8" y="39" width="234" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="8" dx="4" y="50.25">steprange_last in range.jl:226</text>
+<rect x="8" y="24" width="234" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="8" dx="4" y="35.25">&amp;gt; in operators.jl:305</text>
+<rect x="8" y="9" width="234" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="8" dx="4" y="20.25">&amp;lt; in int.jl:83</text>
+<rect x="242" y="39" width="117" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="242" dx="4" y="50.25">steprange_last in range.jl:231</text>
+<rect x="359" y="114" width="409.5" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="359" dx="4" y="125.25">polynomial in REPL[1]:4</text>
+<rect x="359" y="99" width="234" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="359" dx="4" y="110.25">getindex in array.jl:805</text>
+<rect x="593" y="99" width="175.5" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="593" dx="4" y="110.25">iterate in range.jl:674</text>
-<rect x="593" y="84" width="117" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<rect x="593" y="84" width="175.5" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
 <text x="593" dx="4" y="95.25">== in promotion.jl:410</text>
-<rect x="710" y="114" width="58.5" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="710" dx="4" y="125.25">iterate in range.jl:674</text>
-<rect x="710" y="99" width="58.5" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="710" dx="4" y="110.25">== in promotion.jl:410</text>
 </g></g>
 <script><![CDATA[
 // Snap.svg 0.3.0
@@ -530,10 +520,10 @@ f+=g+"]",i[b]=f}return Function("val","return Snap.path.toString.call(["+i+"])")
 <script><![CDATA[
 if (typeof require === 'function' && define.amd) {
     require(['ProfileSVG'], function (ProfileSVG) {
-        ProfileSVG.initialize("fig-349151d63a0b4081a56ccfeff96ac48b");
+        ProfileSVG.initialize("fig-86542f899b5d41dc9a0e25c2b3490f52");
     });
 } else {
-    ProfileSVG.initialize("fig-349151d63a0b4081a56ccfeff96ac48b");
+    ProfileSVG.initialize("fig-86542f899b5d41dc9a0e25c2b3490f52");
 }
 ]]></script>
 </svg>
