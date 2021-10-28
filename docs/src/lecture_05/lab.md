@@ -33,16 +33,15 @@ polynomial(a, x)
     
 - Float number valued arguments
 ```@example lab05_polynomial
-af = Float64.(a)
 xf = 3.0
-polynomial(af, xf)
+polynomial(a, xf)
 ```
 
 The result they produce is the "same" numerically, however it differs in the output type. Though you have probably not noticed it, there should be a difference in runtime (assuming that you have run it once more after its compilation). It is probably a surprise to no one, that one of the methods that has been compiled is type unstable. This can be check with the `@code_warntype` macro:
 ```@repl lab05_polynomial
 using InteractiveUtils #hide
 @code_warntype polynomial(a, x)  # type stable
-@code_warntype polynomial(af, xf) # type unstable
+@code_warntype polynomial(a, xf) # type unstable
 ```
 We are getting a little ahead of ourselves in this lab, as understanding of these expressions is part of the future [lecture](@ref introspection) and [lab](@ref introspection_lab). Anyway the output basically shows what the compiler thinks of each variable in the code, albeit for us in less readable form than the original code. The more red the color is of the type info the less sure the inferred type is. Our main focus should be on the return type of the function which is just at the start of the code with the keyword `Body`. In the first case the return type is an `Int64`, whereas in the second example the compiler is unsure whether the type is `Float64` or `Int64`, marked as the `Union` type of the two. Fortunately for us this type instability can be fixed with a single line edit, but we will see later that it is not always the case.
 
@@ -79,21 +78,21 @@ end
 
 ```@repl lab05_polynomial
 @code_warntype polynomial_stable(a, x)  # type stable
-@code_warntype polynomial_stable(af, xf) # type stable
+@code_warntype polynomial_stable(a, xf) # type stable
 ```
 
 ```@repl lab05_polynomial
-polynomial(af, xf) #hide
-polynomial_stable(af, xf) #hide
-@time polynomial(af, xf)
-@time polynomial_stable(af, xf)
+polynomial(a, xf) #hide
+polynomial_stable(a, xf) #hide
+@time polynomial(a, xf)
+@time polynomial_stable(a, xf)
 ```
 
 Only really visible when evaluating multiple times.
 ```@repl lab05_polynomial
 using BenchmarkTools
-@btime polynomial($af, $xf)
-@btime polynomial_stable($af, $xf)
+@btime polynomial($a, $xf)
+@btime polynomial_stable($a, $xf)
 ```
 Difference only a few nanoseconds.
 
@@ -139,24 +138,6 @@ using BenchmarkTools #hide
     @btime sum(A)               # global variable A has to be inferred in each evaluation
     ```
 
-### Setting up benchmarks to our liking
-In order to control the number of samples/evaluation and the amount of time given to a given benchmark, we can simply append these as keyword arguments to `@btime` or `@benchmark` in the following way
-```@repl lab05_bench
-@benchmark sum($(rand(1000))) evals=100 samples=10 seconds=5
-```
-which runs the code repeatedly for up to `5s`, where each of the `10` samples in the trial is composed of `10` evaluations. Setting up these parameters ourselves creates a more controlled environment in which performance regressions can be more easily identified.
-
-Another axis of customization is needed when we are benchmarking mutable operations such as `sort!`, which sorts an array in-place. One way of achieving a consistent benchmark is by omitting the interpolation such as
-```@repl lab05_bench
-@benchmark sort!(rand(1000))
-```
-however now we are again measuring the data generation as well. A better way of doing such timing is using the built in `setup` keyword, into which you can put a code that has to be run before each sample and which won't be measured.
-```@repl lab05_bench
-@benchmark sort!(y) setup=(y=rand(1000))
-A = rand(1000) #hide
-@benchmark sort!(AA) setup=(AA=copy($A))
-```
-
 ## Profiling
 Profiling in Julia is part of the standard library in the `Profile` module. It implements a fairly simple sampling based profiler, which in a nutshell asks at regular intervals, where the code execution is currently at. As a result we get an array of stacktraces (= chain of function calls), which allow us to make sense of where the execution spent the most time. The number of samples, that can be stored and the period in seconds can be checked after loading `Profile` into the session with the `init()` function.
 
@@ -175,7 +156,7 @@ Let's look at our favorite `polynomial` function or rather it's type stable vari
 
 ```@repl lab05_polynomial
 Profile.clear() # clear the last trace (does not have to be run on fresh start)
-@profile polynomial_stable(af, xf)
+@profile polynomial_stable(a, xf)
 Profile.print() # text based output of the profiler
 ```
 Unless the machine that you run the code on is really slow, the resulting output contains nothing or only some internals of Julia's interactive REPL. This is due to the fact that our `polynomial` function take only few nanoseconds to run. When we want to run profiling on something, that takes only a few nanoseconds, we have to repeatedly execute the function.
@@ -187,11 +168,11 @@ function run_polynomial_stable(a, x, n)
     end
 end
 
-af = Float64.(rand(-10:10, 10)) # using longer polynomial
+a = rand(-10:10, 10) # using longer polynomial
 
-run_polynomial_stable(af, xf, 10) #hide
+run_polynomial_stable(a, xf, 10) #hide
 Profile.clear()
-@profile run_polynomial_stable(af, xf, Int(1e5))
+@profile run_polynomial_stable(a, xf, Int(1e5))
 Profile.print()
 ```
 
@@ -228,8 +209,8 @@ end
 ```
 
 ```@example lab05_polynomial
-run_polynomial(af, xf, 10) #hide
-@profview run_polynomial(af, xf, Int(1e5)) # clears the profile for us
+run_polynomial(a, xf, 10) #hide
+@profview run_polynomial(a, xf, Int(1e5)) # clears the profile for us
 ProfileSVG.save("./scalar_prof_unstable.svg") #hide
 nothing #hide
 ```
@@ -241,7 +222,7 @@ nothing #hide
 ```
 
 Other options for viewing profiler outputs
-- [ProfileView](https://github.com/timholy/ProfileView.jl) - close cousin of `ProfileSVG`, spawns gtk window with interactive FlameGraph
+- [ProfileView](https://github.com/timholy/ProfileView.jl) - close cousin of `ProfileSVG`, spawns GTK window with interactive FlameGraph
 - [VSCode](https://www.julia-vscode.org/docs/stable/release-notes/v0_17/#Profile-viewing-support-1) - always imported `@profview` macro, flamegraphs (js extension required), filtering, one click access to source code 
 - [PProf](https://github.com/vchuravy/PProf.jl) - serializes the profiler output to protobuffer and loads it in `pprof` web app, graph visualization of stacktraces
 
@@ -282,18 +263,18 @@ Speed up:
 - 420ns -> 12ns ~ 15x on real valued input
 
 ```@repl lab05_polynomial
-@btime polynomial($(Int.(af)), $(Int(xf)))
-@btime polynomial_stable($(Int.(af)), $(Int(xf)))
-@btime polynomial($af, $xf)
-@btime polynomial_stable($af, $xf)
+@btime polynomial($a, $x)
+@btime polynomial_stable($a, $x)
+@btime polynomial($a, $xf)
+@btime polynomial_stable($a, $xf)
 ```
 These numbers will be different on different HW.
 
 **BONUS**: The profile trace does not even contain the calling of mathematical operators and is mainly dominated by the iteration utilities. In this case we had to increase the number of runs to `1e6` to get some meaningful trace.
 
 ```@example lab05_polynomial
-run_polynomial(af, xf, 10) #hide
-@profview run_polynomial(af, xf, Int(1e6))
+run_polynomial(a, xf, 10) #hide
+@profview run_polynomial(a, xf, Int(1e6))
 ProfileSVG.save("./scalar_prof_horner.svg") #hide
 ```
 ![profile_horner](./scalar_prof_horner.svg)
@@ -339,7 +320,7 @@ Precompile everything by running one step of our simulation and run the profiler
 
 ```@example lab05_ecosystem
 simulate!(world, 1)
-@profview simulate!(world, 100)
+@profview simulate!(world, 10)
 ```
 
 Red bars indicate type instabilities however, unless the bars stacked on top of them are high, narrow and not filling the whole width, the problem should not be that serious. In our case the worst offender is the`filter` method inside `EcosystemCore.find_rand` function, either when called from `EcosystemCore.find_food` or `EcosystemCore.find_mate`. In both cases the bars on top of it are narrow and not the full with, meaning that not that much time has been really spend working, but instead inferring the types in the function itself during runtime.
@@ -428,7 +409,7 @@ Let's profile the simulation again
 ```@example lab05_ecosystem
 world = create_world();
 simulate!(world, 1)
-@profview simulate!(world, 100)
+@profview simulate!(world, 10)
 ProfileSVG.save("./ecosystem_nofilter.svg") #hide
 ```
 ![profile_ecosystem_nofilter](./ecosystem_nofilter.svg)
@@ -448,7 +429,7 @@ Benchmark different versions of the `find_rand` function in a simulation 10 step
 
 **HINTS**:
 - use `Random.seed!` to fix the global random number generator before each run of simulation
-- use `setup` keyword and `deepcopy` to initiate the `world` variable to the same state in each evaluation
+- use `setup` keyword and `deepcopy` to initiate the `world` variable to the same state in each evaluation (see resources at the end of this page for more information)
 
 ```@raw html
 </div></div>
@@ -500,6 +481,7 @@ julia --track-allocation=user
 ```
 Use the steps above to obtain a memory allocation map. Investigate the results of allocation tracking inside `EcosystemCore` source files. Where is the line with the most allocations?
 
+**HINT**: In order to locate source files consult the useful resources at the end of this page.
 **BONUS**: Use pkg `Coverage.jl` to process the resulting files from withing the `EcosystemCore`.
 ```@raw html
 </div></div>
@@ -588,4 +570,60 @@ julia> analyze_malloc(expanduser("~/.julia/packages/EcosystemCore/8dzJF/src"))
 </p></details>
 ```
 
-## Resources
+---
+
+## Useful resources
+
+### Where to find source code?
+As most of Julia is written in Julia itself it is sometimes helpful to look inside for some details or inspiration. The code of `Base` and stdlib pkgs is located just next to Julia's installation in the `./share/julia` subdirectory
+```bash
+./julia-1.6.2/
+    ├── bin
+    ├── etc
+    │   └── julia
+    ├── include
+    │   └── julia
+    │       └── uv
+    ├── lib
+    │   └── julia
+    ├── libexec
+    └── share
+        ├── appdata
+        ├── applications
+        ├── doc
+        │   └── julia       # offline documentation (https://docs.julialang.org/en/v1/)
+        └── julia
+            ├── base        # base library
+            ├── stdlib      # standard library
+            └── test
+```
+Other packages installed through Pkg interface are located in the `.julia/` directory which is located in your `$HOMEDIR`, i.e. `/home/$(user)/.julia/` on Unix based systems and `/Users/$(user)/.julia/` on Windows.
+```bash
+~/.julia/
+    ├── artifacts
+    ├── compiled
+    ├── config          # startup.jl lives here
+    ├── environments
+    ├── logs
+    ├── packages        # packages are here
+    └── registries
+```
+If you are using VSCode, the paths visible in the REPL can be clicked through to he actual source code. Moreover in that environment the documentation is usually available upon hovering over code.
+
+### Setting up benchmarks to our liking
+In order to control the number of samples/evaluation and the amount of time given to a given benchmark, we can simply append these as keyword arguments to `@btime` or `@benchmark` in the following way
+```@repl lab05_bench
+@benchmark sum($(rand(1000))) evals=100 samples=10 seconds=5
+```
+which runs the code repeatedly for up to `5s`, where each of the `10` samples in the trial is composed of `10` evaluations. Setting up these parameters ourselves creates a more controlled environment in which performance regressions can be more easily identified.
+
+Another axis of customization is needed when we are benchmarking mutable operations such as `sort!`, which sorts an array in-place. One way of achieving a consistent benchmark is by omitting the interpolation such as
+```@repl lab05_bench
+@benchmark sort!(rand(1000))
+```
+however now we are again measuring the data generation as well. A better way of doing such timing is using the built in `setup` keyword, into which you can put a code that has to be run before each sample and which won't be measured.
+```@repl lab05_bench
+@benchmark sort!(y) setup=(y=rand(1000))
+A = rand(1000) #hide
+@benchmark sort!(AA) setup=(AA=copy($A))
+```
