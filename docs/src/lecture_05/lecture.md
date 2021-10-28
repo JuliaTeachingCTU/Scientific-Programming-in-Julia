@@ -11,12 +11,11 @@ Though recall the most important rule of thumb: **Never optimize code from the v
 2. cover the code with unit test, such that you know that the optimized code works the same as the original
 3. optimize the code
 
-Premature optimization have two drawbacks:
+Premature optimization frequently backfire, because of:
 - you might end-up optimizing wrong thing, i.e. you will not optimize performance bottleneck, but something very different
 - optimized code can be difficult to read and reason about, which means it is more difficult to make it right.
 
 It frequently happens that Julia newbies asks on forum that their code in Julia is slow in comparison to the same code in Python (numpy). Most of the time, they make trivial mistakes and it is very educative to go over their mistakes
-https://discourse.julialang.org/t/numpy-10x-faster-than-julia-what-am-i-doing-wrong-solved-julia-faster-now/29922
 
 ## Numpy 10x faster than julia what am i doing wrong? (solved julia faster now)
 [adapted from](https://discourse.julialang.org/t/numpy-10x-faster-than-julia-what-am-i-doing-wrong-solved-julia-faster-now/29922
@@ -57,6 +56,8 @@ Profile.clear()
 @profile g(p,n)
 ```
 
+### Making sense of profiler's output
+
 The default `Profile.print` function shows the call-tree with count, how many times the probe occured in each function sorted from the most to least. The output is a little bit difficult to read and orrient in, therefore there are some visualization options.
 
 What are our options?
@@ -65,6 +66,15 @@ What are our options?
 - `PProf.jl` is a front-end to Google's PProf profile viewer https://github.com/JuliaPerf/PProf.jl
 - `StatProfilerHTML`  https://github.com/tkluck/StatProfilerHTML.jl
 By personal opinion I mostly use ProfileView (or ProfileSVG) as it indicates places of potential type instability, which as will be seen later is very useful feature. 
+
+### Profiling caveats
+
+The same function, but with keyword arguments, can be used to change these settings, however these settings are system dependent. For example on Windows, there is a known issue that does not allow to sample faster than at `0.003s` and even on Linux based system this may not do much. There are some further caveat specific to Julia:
+- When running profile from REPL, it is usually dominated by the interactive part which spawns the task and waits for it's completion.
+- Code has to be run before profiling in order to filter out all the type inference and interpretation stuff. (Unless compilation is what we want to profile.)
+- When the execution time is short, the sampling may be insufficient -> run multiple times.
+
+
 
 Let's start with `ProfileSVG` and save the output to `profile.svg`
 ```
@@ -241,11 +251,131 @@ What we have learned so far?
 - Benchmarking is useful for comparison of solutions
 
 
+## Replacing deep copies with shallow copies (use view if possible)
 
-The same function, but with keyword arguments, can be used to change these settings, however these settings are system dependent. For example on Windows, there is a known issue that does not allow to sample faster than at `0.003s` and even on Linux based system this may not do much. There are some further caveat specific to Julia:
-- When running profile from REPL, it is usually dominated by the interactive part which spawns the task and waits for it's completion.
-- Code has to be run before profiling in order to filter out all the type inference and interpretation stuff. (Unless compilation is what we want to profile.)
-- When the execution time is short, the sampling may be insufficient -> run multiple times.
+Let's look at the following function computing mean of a columns
+```julia
+function cmean(x::AbstractMatrix{T}) where {T}
+	o = zeros(T, size(x,1))
+	n = 0 
+	for i in axes(x, 2)
+		o .+= x[:,i]
+	end
+	n > 0 ? o ./ n : o 
+end
+x = randn(2, 10000)
+```
+
+```
+@benchmark cmean(x)
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  371.018 μs …   3.291 ms  ┊ GC (min … max): 0.00% … 83.30%
+ Time  (median):     419.182 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   482.785 μs ± 331.939 μs  ┊ GC (mean ± σ):  9.91% ± 12.02%
+
+  ▃█▄▃▃▂▁                                                       ▁
+  ████████▇▆▅▃▁▁▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▃▇██ █
+  371 μs        Histogram: log(frequency) by time       2.65 ms <
+
+ Memory estimate: 937.59 KiB, allocs estimate: 10001.
+```
+What we see that function is performing more than 10000 allocations. They come from `x[:,i]` which allocates a new memory and copies the content. In this case, this is completely unnecessary, as the content of the array `x` is never modified. We can avoid it by creating a `view` into an `x`, which you can imagine as a pointer to `x` which automatically adjust the bounds. Views can be constructed either using a function call `view(x, axes...)` or using a convenience macro `@view ` which turns the usual notation `x[...]` to `view(x, ...)`
+
+```julia
+function view_cmean(x::AbstractMatrix{T}) where {T}
+	o = zeros(T, size(x,1))
+	for i in axes(x, 2)
+		o .+= @view x[:,i]
+	end
+	n = size(x,2)
+	n > 0 ? o ./ n : o 
+end
+```
+
+We obtain instantly a 10-fold speedup
+```julia
+julia> @benchmark view_cmean(x)
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  36.802 μs … 166.260 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     41.676 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   42.936 μs ±   9.921 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ▂ █▆█▆▂      ▁▁ ▁ ▁                                          ▂
+  █▄█████████▇▅██▆█▆██▆▆▇▆▆▆▆▇▆▅▆▆▅▅▁▅▅▆▇▆▆▆▆▄▃▆▆▆▄▆▄▅▅▄▆▅▆▅▄▆ █
+  36.8 μs       Histogram: log(frequency) by time      97.8 μs <
+
+ Memory estimate: 96 bytes, allocs estimate: 1.
+```
+
+## Traversing arrays in the right order matter
+
+Let's now compute rowmean using the function similar to `cmean` and since we have learnt from the above, we use the `view` to have non-allocating version
+```julia
+function rmean(x::AbstractMatrix{T}) where {T}
+	o = zeros(T, size(x,2))
+	for i in axes(x, 1)
+		o .+= @view x[i,:]
+	end
+	n = size(x,1)
+	n > 0 ? o ./ n : o 
+end
+```
+
+```julia
+x = randn(10000, 2)
+@benchmark rmean(x)
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  44.165 μs … 194.395 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     46.654 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   48.544 μs ±  10.940 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  █▆█▇▄▁            ▁                                          ▂
+  ██████▇▇▇▇▆▇▅██▇█▇█▇▆▅▄▄▅▅▄▄▄▄▂▄▅▆▅▅▅▆▅▅▅▆▄▆▄▄▅▅▄▅▄▄▅▅▅▅▄▄▃▅ █
+  44.2 μs       Histogram: log(frequency) by time       108 μs <
+
+ Memory estimate: 192 bytes, allocs estimate: 2.
+```
+The above seems OK and the speed is comparable to our tuned `cmean`.  But, can we actually do better? We have to realize that when we are accessing slices in the matrix `x`, they are not aligned in the memory. Recall that Julia is column major (like Fortran and unlike C and Python), which means that consecutive arrays of memory are along columns. i.e for a matrix with n rows and m columns they are aligned as 
+```
+1 | n + 1 | 2n + 1 | ⋯ | (m-1)n + 1
+2 | n + 2 | 2n + 2 | ⋯ | (m-1)n + 2
+3 | n + 3 | 2n + 3 | ⋯ | (m-1)n + 3
+⋮ |   ⋮   |    ⋮   | ⋯ |        ⋮  
+n |  2n   |    3n  | ⋯ |       mn
+```
+accessing non-consecutively is really bad for cache, as we have to load the memory into a cache line and use a single entry (in case of Float64 it is 8 bytes) out of it, discard it and load another one. If cache line has length 32 bytes, then we are wasting remaining 24 bytes. Therefore, we rewrite `rmean` to access the memory in consecutive blocks as follows, where we essentially sum the matrix column by columns.
+```julia
+function aligned_rmean(x::AbstractMatrix{T}) where {T}
+	o = zeros(T, size(x,2))
+	for i in axes(x, 2)
+		o[i] = sum(@view x[:, i])
+	end
+	n = size(x, 1)
+	n > 0 ? o ./ n : o 
+end
+
+aligned_rmean(x) ≈ rmean(x)
+```
+
+
+```julia
+julia> @benchmark aligned_rmean(x)
+BenchmarkTools.Trial: 10000 samples with 10 evaluations.
+ Range (min … max):  1.988 μs …  11.797 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     2.041 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   2.167 μs ± 568.616 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  █▇▄▂▂▁▁ ▁  ▂▁                                               ▂
+  ██████████████▅▅▃▁▁▁▁▁▄▅▄▁▅▆▆▆▇▇▆▆▆▆▅▃▅▅▄▅▅▄▄▄▃▃▁▁▁▄▁▁▄▃▄▃▆ █
+  1.99 μs      Histogram: log(frequency) by time      5.57 μs <
+
+ Memory estimate: 192 bytes, allocs estimate: 2.
+```
+Running the benchmark shows that we have about 20x speedup and we are on par with Julia's built-in functions.
+
+**Remark tempting it might be, there is actually nothing we can do to speed-up the `cmean` function. This trouble is inherent to the processor desing and you should be careful how you align things in the memory, such that it is performant in your project**
+
+Detecting this type of inefficiencies is generally difficult, and requires processor assisted measurement. `LIKWID.jl` is a wrapper for a LIKWID library providing various processor level statistics, like throughput, cache misses
 
 ## Type stability
 Sometimes it happens that we create a non-stable code, which might be difficult to spot at first, for a non-trained eye. A prototypical example of such bug is as follows
@@ -263,14 +393,14 @@ end
 ```julia
 x = randn(10^8);
 julia> @benchmark poor_sum(x)
-BenchmarkTools.Trial: 18 samples with 1 evaluation.
- Range (min … max):  246.936 ms … 325.800 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     300.235 ms               ┊ GC (median):    0.00%
- Time  (mean ± σ):   292.046 ms ±  25.373 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+BenchmarkTools.Trial: 23 samples with 1 evaluation.
+ Range (min … max):  222.055 ms … 233.552 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     225.259 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   225.906 ms ±   3.016 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-  ▁   ▁ ▁        ▁   █        ▁    ▁     ▁  ▁   █ ▁▁ ▁ ▁      █
-  █▁▁▁█▁█▁▁▁▁▁▁▁▁█▁▁▁█▁▁▁▁▁▁▁▁█▁▁▁▁█▁▁▁▁▁█▁▁█▁▁▁█▁██▁█▁█▁▁▁▁▁▁█ ▁
-  247 ms           Histogram: frequency by time          326 ms <
+  ▁ ▁ ▁▁█  ▁▁  ▁ ▁█ ▁ ▁ ▁ ▁ ▁    ▁▁▁▁                      ▁  ▁
+  █▁█▁███▁▁██▁▁█▁██▁█▁█▁█▁█▁█▁▁▁▁████▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁█ ▁
+  222 ms           Histogram: frequency by time          234 ms <
 
  Memory estimate: 16 bytes, allocs estimate: 1.
  ```
@@ -290,7 +420,7 @@ So why nor compiler nor `@code_typed(poor_sum(x))` warns us about the type insta
 
 We can fix it for example by initializing `x` to be the zero of an element type of the array `x` (though this solution technically assumes `x` is an array, which means that `poor_sum` will not work for generators)
 ```julia
-function better_sum(x)
+function stable_sum(x)
 	s = zero(eltype(x))
 	n = length(x)
 	for i in 1:n
@@ -302,55 +432,23 @@ end
 
 But there is no difference, due to small union optimization (the above would kill any performance in older versions.)
 ```julia
-julia> @benchmark better_sum(x)
-BenchmarkTools.Trial: 17 samples with 1 evaluation.
- Range (min … max):  171.921 ms … 344.261 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     308.825 ms               ┊ GC (median):    0.00%
- Time  (mean ± σ):   294.903 ms ±  51.566 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+julia> @benchmark stable_sum(x)
+BenchmarkTools.Trial: 42 samples with 1 evaluation.
+ Range (min … max):  119.491 ms … 123.062 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     120.535 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   120.687 ms ± 819.740 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-                           ▃                    ▃         ▃   █
-  ▇▁▁▁▁▁▁▁▁▁▁▇▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▇▁▁▁▁▁▁▁▁▁▁▁▇▁█▁▇▇▁▁▁▁▇▁█▁▁▇█ ▁
-  172 ms           Histogram: frequency by time          344 ms <
-
- Memory estimate: 16 bytes, allocs estimate: 1.```
-```
-
-
-The main problem with the above formulation is that Julia is checking that getting element of arrays from `x[i]` is within bounds. We can remove the check using `@inbounds` macro.
-```julia
-function fast_sum(x)
-	n = length(x)
-	n == 0 && return(zero(eltype(x)))
-	n == 1 && return(x[1])
-    @inbounds a1 = x[1]
-    @inbounds a2 = x[2]
-    v = a1 + a2
-    for i = 2 : n
-        @inbounds ai = x[i]
-        v += ai
-    end
-    v
-end
-``` 
-
-This gives us few orders of magnitude speed improvements. 
-```
-BenchmarkTools.Trial: 40 samples with 1 evaluation.
- Range (min … max):  122.005 ms … 135.203 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     127.112 ms               ┊ GC (median):    0.00%
- Time  (mean ± σ):   127.306 ms ±   3.222 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
-
-     ▃      ▃   █    ▃█  ▃█▃            ▃
-  ▇▇▁█▁▇▁▁▁▁█▁▇▇█▁▁▁▇██▇▁███▇▇▁▇▁▁▇▁▇▇▁▁█▁▇▁▇▁▇▁▁▁▁▁▁▁▁▁▁▁▇▇▁▁▇ ▁
-  122 ms           Histogram: frequency by time          135 ms <
+            █
+  ▅▁▅▁▅▅██▅▁█▁█▁██▅▁█▅▅▁█▅▁█▁█▅▅▅█▁▁▁▁▁▁▁▅▁▁▁▁▁▅▁▅▁▁▁▁▁▁▅▁▁▁▁▁▅ ▁
+  119 ms           Histogram: frequency by time          123 ms <
 
  Memory estimate: 16 bytes, allocs estimate: 1.
  ```
 
 
-## Global variables introduces type instability
+The main problem with the above formulation is that Julia is checking that getting element of arrays from `x[i]` is within bounds. We can remove the check using `@inbounds` macro.
 ```julia
-function implicit_sum()
+function inbounds_sum(x)
 	n = length(x)
 	n == 0 && return(zero(eltype(x)))
 	n == 1 && return(x[1])
@@ -363,7 +461,69 @@ function implicit_sum()
     end
     v
 end
-x = randn(10^8);
+``` 
+
+This gives us few orders of magnitude speed improvements. 
+```
+julia> @benchmark inbounds_sum(x)
+BenchmarkTools.Trial: 40 samples with 1 evaluation.
+ Range (min … max):  123.642 ms … 130.257 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     125.142 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   125.691 ms ±   1.783 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+    ██▃  ▃ ▃ █ █       ▃ ▃        ▃
+  ▇▁███▇▁█▁█▁█▇█▇▇▇▇▁▇▁█▁█▁▁▇▁▁▁▁▁█▁▇▁▁▇▁▁▁▇▁▁▁▁▇▁▁▁▁▁▁▁▁▁▁▇▇▁▇ ▁
+  124 ms           Histogram: frequency by time          130 ms <
+
+ Memory estimate: 16 bytes, allocs estimate: 1.
+```
+
+```julia
+function simd_sum(x)
+	n = length(x)
+	n == 0 && return(zero(eltype(x)))
+	n == 1 && return(x[1])
+    @inbounds a1 = x[1]
+    @inbounds a2 = x[2]
+    v = a1 + a2
+    @simd for i = 3 : n
+        @inbounds ai = x[i]
+        v += ai
+    end
+    v
+end
+```
+
+```
+julia> @benchmark simd_sum(x)
+BenchmarkTools.Trial: 90 samples with 1 evaluation.
+ Range (min … max):  50.854 ms … 62.260 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     54.656 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   55.630 ms ±  3.437 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+    █  ▂     ▄ ▂                    ▂    ▂            ▄
+  ▄▆█▆▁█▄██▁▁█▆██▆▄█▁▆▄▁▆▆▄▁▁▆▁▁▁▁▄██▁█▁▁█▄▄▆▆▄▄▁▄▁▁▁▄█▁▆▁▆▁▆ ▁
+  50.9 ms         Histogram: frequency by time        62.1 ms <
+
+ Memory estimate: 16 bytes, allocs estimate: 1.
+``` 
+
+
+## Global variables introduces type instability (Avoid non-const globals)
+```julia
+function implicit_sum()
+	n = length(x)
+	n == 0 && return(zero(eltype(x)))
+	n == 1 && return(x[1])
+    @inbounds a1 = x[1]
+    @inbounds a2 = x[2]
+    v = a1 + a2
+    @simd for i = 3 : n
+        @inbounds ai = x[i]
+        v += ai
+    end
+    v
+end
 ```
 
 
@@ -398,13 +558,94 @@ To understand the problem, you have to think about the compiler.
 	a. She can assume that type of `x` is the current `typeof(x)` but that would mean that if a user redefines x and change the type, the specialization of the function `implicit_sum` will assume the wrong type of `x` and it can have unexpected results.
 	b. She can take safe approach and determine the type of `x` inside the function `implicit_sum` and behave accordingly (recall that julia is dynamically type). Yet, not knowing the type precisely is absolute disaster for performance.
 
-We can check tha `implicit_sum` gives correct version for other types
+Notice the compiler dispatches on the name of the function and type of its arguments, hence, the compiler cannot create different versions of `implicit_sum` for different types of `x`, since it is not in argument, hence the dynamic resolution of types `x` inside `implicit_sum` function.
+
+Julia takes the **safe approach**, which we can verify that although the `implicit_sum` was specialized (compiled) when `x` was `Vector{Float64}`, it works for other types
 ```julia
 x = rand(Int, 1000)
 implicit_sum() ≈ sum(x)
-x = rand(UInt32, 1000)
+x = map(x -> Complex(x...), zip(rand(1000), rand(1000)))
 implicit_sum() ≈ sum(x)
 ```
+
+This means, using global variables inside functions without passing them as arguments ultimetly leads to type-instability. What are the solutions
+
+### Declaring `x` as const
+We can declare `x` as const, which tells the compiler that `x` will not change (and for the compiler mainly indicates **that type of `x` will not change**).
+
+Let's see that, but restart the julia before trying
+```julia
+using BenchmarkTools
+function implicit_sum()
+	n = length(x)
+	n == 0 && return(zero(eltype(x)))
+	n == 1 && return(x[1])
+    @inbounds a1 = x[1]
+    @inbounds a2 = x[2]
+    v = a1 + a2
+    @simd for i = 3 : n
+        @inbounds ai = x[i]
+        v += ai
+    end
+    v
+end
+const x = randn(10^8);
+```
+
+after benchmarking we see that the speed is the same as of `simd_sum()`.
+```julia
+julia> @benchmark implicit_sum()
+BenchmarkTools.Trial: 99 samples with 1 evaluation.
+ Range (min … max):  47.864 ms … 58.365 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     50.042 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   50.479 ms ±  1.598 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+          ▂ █▂▂▇ ▅  ▃
+  ▃▁▃▁▁▁▁▇██████▅█▆██▇▅▆▁▁▃▅▃▃▁▃▃▁▃▃▁▁▃▁▃▁▁▁▁▁▁▁▁▁▁▁▁▁▃▁▁▁▁▁▃ ▁
+  47.9 ms         Histogram: frequency by time        57.1 ms <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+```
+
+### Barier function
+The reason, why the `implicit_sum` is so slow that everytime the function invokes `getindex` and `+`, it has to resolve types. The solution would be to limit the number of resolutions, which can done by passing all parameters to inner function as follows.
+
+```julia
+using BenchmarkTools
+function simd_sum(x)
+	n = length(x)
+	n == 0 && return(zero(eltype(x)))
+	n == 1 && return(x[1])
+    @inbounds a1 = x[1]
+    @inbounds a2 = x[2]
+    v = a1 + a2
+    @simd for i = 3 : n
+        @inbounds ai = x[i]
+        v += ai
+    end
+    v
+end
+
+function barrier_sum()
+	simd_sum(x)
+end
+x = randn(10^8);
+```
+
+```julia
+@benchmark barrier_sum()
+BenchmarkTools.Trial: 93 samples with 1 evaluation.
+ Range (min … max):  50.229 ms … 58.484 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     53.882 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   54.064 ms ±  2.892 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+   ▂▆█                                          ▆▄
+  ▆█████▆▄█▆▄▆▁▄▄▄▄▁▁▄▁▄▄▆▁▄▄▄▁▁▄▁▁▄▁▁▆▆▁▁▄▄▁▄▆████▄▆▄█▆▄▄▄▄█ ▁
+  50.2 ms         Histogram: frequency by time        58.4 ms <
+
+ Memory estimate: 16 bytes, allocs estimate: 1.
+```
+
 
 ## Detour 3. JET
 Abstract Interpreter JET
@@ -413,125 +654,77 @@ Abstract Interpreter JET
 
 
 ## return from Detour
-```
+```julia
 using JET
-@report_call sum("julia")
+@report_opt implicit_sum()
+@report_opt barrier_sum()
+```
 
+## Boxing in closure
+Recall closure is a function which contains some parameters contained 
+
+An example of closure from Jet.jl
+```julia
+function abmult(r::Int)
+   if r < 0
+       r = -r
+   end
+   # the closure assigned to `f` make the variable `r` captured
+   f = x -> x * r
+   return f
+end;
+```      
+
+Another example of closure counting the error and printing it every `steps`
+```julia
+function initcallback(; steps =10)
+	i = 0
+	ts = time()
+	y = 0.0
+	cby = function evalcb(_y)
+		i += 1
+		y += _y
+		if mod(i, steps) == 0	% line 4
+			l = y / steps
+			y = 0.0
+			println(i, ": loss: ", l," time per step: ",round((time() - ts)/steps, sigdigits = 2))
+			ts = time()
+		end
+	end
+	cby
+end
+
+cby = initcallback()
+for i in 1:100
+	cby(rand())
+end
+``` 
+
+Sometimes, Julia's compiler cannot reason about types it has closed over. The problem is similar to the problem we have shown above in `poor_sum` and in `implicit_sum`.
+```
+function simulation()
+	cby = initcallback(;steps = 10000)	#intentionally disable printing
+	for i in 1:1000
+		cby(sin(rand()))
+	end
+end
+
+@benchmark simulation()
+```
+```
+using Profile, ProfileSVG
+Profile.clear()
+@profile (for i in 1:100; simulation(); end)
+ProfileSVG.save("/tmp/profile.svg")
+```
+We see a red bars in lines 4 and 8 of evalcb, whcih is 
 - performance tweaks
-	+ deep-copy vs view
 	+ boxing in closures
-	+ memory layout matters
-	+ bounds checking
 	+ differnce between named tuple and dict
-	+ effect of global variables
 	+ IO
+```
 
 - create a list of examples for the lecture
-
-
-## Avoid non-const globals
-- modified https://docs.julialang.org/en/v1/manual/performance-tips/#Avoid-global-variables
-```julia
-using BenchmarkTools
-
-x = rand(1000)
-
-function loop_over_global()
-    s = 0.0
-    for i in x
-        s += i
-    end
-    return s
-end
-
-@btime loop_over_global()
-```
-- can be alleviated with type annotation, but is not recommended
-```julia
-function loop_over_global()
-    s = 0.0
-    for i in x::Vector{Float64}
-        s += i
-    end
-    return s
-end
-@btime loop_over_global()
-```
-
-## Avoid changing of type of variables
-- https://docs.julialang.org/en/v1/manual/performance-tips/#Avoid-changing-the-type-of-a-variable
-```julia
-function foo()
-    x = 1
-    for i = 1:10
-        x /= rand()
-    end
-    return x
-end
-@btime foo()
-```
-- produces the same output as the following, but this is now type stable and a bit faster
-```julia
-function foo()
-    x = 1.0
-    for i = 1:10
-        x /= rand()
-    end
-    return x
-end
-@btime foo()
-```
-
-## Memory allocations matter
-- https://docs.julialang.org/en/v1/manual/performance-tips/#Pre-allocating-outputs
-- `xinc` allocates a new array each time it is called (`1e7` allocations)
-```julia
-function xinc(x)
-    return [x, x+1, x+2]
-end;
-
-function loopinc()
-    y = 0
-    for i = 1:10^7
-        ret = xinc(i)
-        y += ret[2]
-    end
-    return y
-end;
-@btime loopinc()
-```
-- `xinc!` now only modifies the input vector (`1` allocation)
-```julia
-function xinc!(ret::AbstractVector{T}, x::T) where T
-	ret[1] = x
-	ret[2] = x+1
-	ret[3] = x+2
-	nothing
-end;
-
-function loopinc_prealloc()
-	ret = Vector{Int}(undef, 3)
-	y = 0
-	for i = 1:10^7
-	    xinc!(ret, i)
-	    y += ret[2]
-	end
-	return y
-end;
-@btime loopinc_prealloc()
-```
-- `StaticArrays.jl` to the rescue if the arrays are small and of known size
-
-## Memory layout matters
-- https://docs.julialang.org/en/v1/manual/performance-tips/#man-performance-column-major I don't like that example much
-- computing norm over columns is faster than over rows (adapted from https://stackoverflow.com/questions/65237635/transpose-matrix-and-keep-column-major-memory-layout)
-```julia
-using LinearAlgebra, BenchmarkTools
-A = rand(10000, 10000);
-
-@btime mapslices(norm, $A, dims=1) # columns
-@btime mapslices(norm, $A, dims=2) # rows
-```
 
 ## Using named tuple instead of dict
 ```julia
