@@ -4,22 +4,21 @@ This class is a short introduction to writing a performant code. As such, we wan
 - how to identify weak spots in the code
 - how to properly benchmark
 - common performance anti-patterns
-- Julia's "performance gotchas", by which we mean performance problems specific for Julia (typicall caused by the lack of understanding of Julia or by a errors in coversion from script to functions)
+- Julia's "performance gotchas", by which we mean performance problems specific for Julia (typical caused by the lack of understanding of Julia or by a errors in conversion from script to functions)
 
-Though recall the most important rule of thumb: **Never optimize code from the very beggining.** A much more productive workflow is 
+Though recall the most important rule of thumb: **Never optimize code from the very beginning.** A much more productive workflow is 
 1. write the code that is idiomatic and easy to understand
 2. cover the code with unit test, such that you know that the optimized code works the same as the original
 3. optimize the code
 
-Premature optimization frequently backfire, because of:
+Premature optimization frequently backfires, because:
 - you might end-up optimizing wrong thing, i.e. you will not optimize performance bottleneck, but something very different
 - optimized code can be difficult to read and reason about, which means it is more difficult to make it right.
 
 It frequently happens that Julia newbies asks on forum that their code in Julia is slow in comparison to the same code in Python (numpy). Most of the time, they make trivial mistakes and it is very educative to go over their mistakes
 
-## Numpy 10x faster than julia what am i doing wrong? (solved julia faster now)
-[adapted from](https://discourse.julialang.org/t/numpy-10x-faster-than-julia-what-am-i-doing-wrong-solved-julia-faster-now/29922
-)
+## Numpy 10x faster than julia what am i doing wrong? (solved julia faster now) [^1]
+[^1]: Adapted from Julia's discourse [thread](https://discourse.julialang.org/t/numpy-10x-faster-than-julia-what-am-i-doing-wrong-solved-julia-faster-now/29922)
 
 ```julia
 function f(p)														# line 1 
@@ -48,7 +47,7 @@ The first thing we do is to run Profiler, to identify, where the function spends
 !!! note 
 	## Julia's built-in profiler
 
-	Julia's built-in profiler is part of the standard library in the `Profile` module implementing a fairly standard sampling based profiler. It a nutshell it asks at regular intervals, where the code execution is currently and marks it and collects this information in some statistics. This allows us to analyze, where these "probes" have occured most of the time which implies those parts are those, where the execution of your function spends most of the time. As such, the profiler has two "controls", which is the `delay` between two consecutive probes and the maximum number of probes `n` (if the profile code takes a long time, you might need to increase it).
+	Julia's built-in profiler is part of the standard library in the `Profile` module implementing a fairly standard sampling based profiler. It a nutshell it asks at regular intervals, where the code execution is currently and marks it and collects this information in some statistics. This allows us to analyze, where these "probes" have occurred most of the time which implies those parts are those, where the execution of your function spends most of the time. As such, the profiler has two "controls", which is the `delay` between two consecutive probes and the maximum number of probes `n` (if the profile code takes a long time, you might need to increase it).
 	```
 	using Profile
 	Profile.init(; n = 989680, delay = 0.001))
@@ -59,13 +58,13 @@ The first thing we do is to run Profiler, to identify, where the function spends
 
 	### Making sense of profiler's output
 
-	The default `Profile.print` function shows the call-tree with count, how many times the probe occured in each function sorted from the most to least. The output is a little bit difficult to read and orrient in, therefore there are some visualization options.
+	The default `Profile.print` function shows the call-tree with count, how many times the probe occurred in each function sorted from the most to least. The output is a little bit difficult to read and orient in, therefore there are some visualization options.
 
 	What are our options?
-	- `ProfileView` is the workhorse with a GTK based api and therefore recommended for those with working GTK
+	- `ProfileView` is the workhorse with a GTK based API and therefore recommended for those with working GTK
 	- `ProfileSVG` is the `ProfileView` with the output exported in SVG format, which is viewed by most browser (it is also very convenient for sharing with others)
-	- `PProf.jl` is a front-end to Google's PProf profile viewer https://github.com/JuliaPerf/PProf.jl
-	- `StatProfilerHTML`  https://github.com/tkluck/StatProfilerHTML.jl
+	- `PProf.jl` is a front-end to Google's PProf profile viewer [https://github.com/JuliaPerf/PProf.jl](https://github.com/JuliaPerf/PProf.jl)
+	- `StatProfilerHTML`  [https://github.com/tkluck/StatProfilerHTML.jl](https://github.com/tkluck/StatProfilerHTML.jl)
 	By personal opinion I mostly use ProfileView (or ProfileSVG) as it indicates places of potential type instability, which as will be seen later is very useful feature. 
 
 	### Profiling caveats
@@ -75,12 +74,12 @@ The first thing we do is to run Profiler, to identify, where the function spends
 	- Code has to be run before profiling in order to filter out all the type inference and interpretation stuff. (Unless compilation is what we want to profile.)
 	- When the execution time is short, the sampling may be insufficient -> run multiple times.
 
-	We will use `ProfileSVG` for its simplicity (especially instalation). It shows the statistics in for of a flame graph which read as follows: , where . The hierarchy is expressed as functions on the bottom calls functions on the top. reads as follows:
+	We will use `ProfileSVG` for its simplicity (especially installation). It shows the statistics in for of a flame graph which read as follows: , where . The hierarchy is expressed as functions on the bottom calls functions on the top. reads as follows:
 	- each function is represented by a horizontal bar
 	- function in the bottom calls functions that lays on it
 	- the width of the bar corresponds to time spent in the function
 	- red colored bars indicate type instabilities
-	- functions in bottom bars calles functions on top of upper bars
+	- functions in bottom bars calls functions on top of upper bars
 	Function name contains location in files and particular line number called. GTK version is even "clickable" and opens the file in default editor.
 
 
@@ -107,7 +106,7 @@ and
 Scrutinizing the function `f`, we see that in every call, it has to allocate arrays `m0` and `m1` **on the heap.** The allocation on heap is expensive, because it might require interaction with the operating system and it pu stress on the potential garbage collector. Can we avoid it?
 Repeated allocation can be frequently avoided by:
 - preallocating arrays (if the arrays are of the fixed dimensions)
-- or allocating objects on stack, which does not involve interacion with OS (but can be used in limited cases.)
+- or allocating objects on stack, which does not involve interaction with OS (but can be used in limited cases.)
 
 ### Adding preallocation
 ```julia
@@ -178,7 +177,7 @@ BenchmarkTools.Trial: 11 samples with 1 evaluation.
 
 We can see that we have approximately 3-fold improvement.
 
-Let's profile again and do not forget to use `Profile.clear()` to clear already stored probes.
+Let's profile again, not forgetting to use `Profile.clear()` to clear already stored probes.
 ```
 Profile.clear()
 @profile g2(p,n)
@@ -394,7 +393,7 @@ BenchmarkTools.Trial: 10000 samples with 10 evaluations.
 ```
 Running the benchmark shows that we have about 20x speedup and we are on par with Julia's built-in functions.
 
-**Remark tempting it might be, there is actually nothing we can do to speed-up the `cmean` function. This trouble is inherent to the processor desing and you should be careful how you align things in the memory, such that it is performant in your project**
+**Remark tempting it might be, there is actually nothing we can do to speed-up the `cmean` function. This trouble is inherent to the processor design and you should be careful how you align things in the memory, such that it is performant in your project**
 
 Detecting this type of inefficiencies is generally difficult, and requires processor assisted measurement. `LIKWID.jl` is a wrapper for a LIKWID library providing various processor level statistics, like throughput, cache misses
 
@@ -424,10 +423,10 @@ BenchmarkTools.Trial: 23 samples with 1 evaluation.
   222 ms           Histogram: frequency by time          234 ms <
 
  Memory estimate: 16 bytes, allocs estimate: 1.
- ```
+```
  
 Can we do better? Let's look what profiler says.
-```
+```julia
 using Profile, ProfileSVG
 Profile.clear()
 @profile  poor_sum(x)
@@ -437,7 +436,7 @@ The profiler (output [here](profile4.svg)) does not show any red, which means th
 
 A close lookup on the code reveals that `s` is initialized as `Int64`, because `typeof(0)` is `Int64`. But then in the loop, we add to `s` a `Float64` because `x` is `Vector{Float64}`, which means during the execution, the type `s` changes the type.
 
-So why nor compiler nor `@code_typed(poor_sum(x))` warns us about the type instability? This is because of the optimization called **small unions**, where Julia can optimize "small" type instabilitites (recall the second lecture).
+So why nor compiler nor `@code_typed(poor_sum(x))` warns us about the type instability? This is because of the optimization called **small unions**, where Julia can optimize "small" type instabilitites (recall the second [lecture](@ref type_lecture)).
 
 We can fix it for example by initializing `x` to be the zero of an element type of the array `x` (though this solution technically assumes `x` is an array, which means that `poor_sum` will not work for generators)
 ```julia
@@ -496,7 +495,7 @@ function inbounds_sum(x)
 end
 ``` 
 
-This did not gives us much.
+This did not give us much.
 ```julia
 BenchmarkTools.Trial: 42 samples with 1 evaluation.
  Range (min … max):  117.804 ms … 123.634 ms  ┊ GC (min … max): 0.00% … 0.00%
@@ -508,7 +507,7 @@ BenchmarkTools.Trial: 42 samples with 1 evaluation.
   118 ms           Histogram: frequency by time          124 ms <
 
  Memory estimate: 16 bytes, allocs estimate: 1.
- ```
+```
 
 Further, we can tell Julia that it is safe to vectorize the code
 ```julia
@@ -527,7 +526,7 @@ function simd_sum(x)
 end
 ```
 
-```
+```julia
 julia> @benchmark simd_sum(x)
 BenchmarkTools.Trial: 90 samples with 1 evaluation.
  Range (min … max):  50.854 ms … 62.260 ms  ┊ GC (min … max): 0.00% … 0.00%
@@ -560,7 +559,7 @@ end
 ```
 
 
-```
+```julia
 julia> @benchmark implicit_sum()
 BenchmarkTools.Trial: 1 sample with 1 evaluation.
  Single result which took 10.837 s (11.34% GC) to evaluate,
@@ -568,7 +567,7 @@ BenchmarkTools.Trial: 1 sample with 1 evaluation.
 ```
 What? The same function where I made the parameters to be implicit has just turned **nine orders of magnitude** slower? 
 
-Let's look what the debugger says
+Let's look what the profiler says
 ```julia
 Profile.clear()
 x = randn(10^4)
@@ -596,10 +595,10 @@ All of these tools tells us that the Julia's compiler cannot determine the type 
 
 To understand the problem, you have to think about the compiler.
 1. You define function `implicit_sum().`
-2. If you call `implicit_sum` and `x` has not exist, Julia will happily crash.
-3. If you call `implicit_sum` and `x` exist, the function will gives you the result (albeit slowly). At this moment, Julia has to specialize `implicit_sum`. It has two options how to behave with respect to `x`. 
+2. If you call `implicit_sum` and `x` does not exist, Julia will happily crash.
+3. If you call `implicit_sum` and `x` exist, the function will give you the result (albeit slowly). At this moment, Julia has to specialize `implicit_sum`. It has two options how to behave with respect to `x`. 
 	a. She can assume that type of `x` is the current `typeof(x)` but that would mean that if a user redefines x and change the type, the specialization of the function `implicit_sum` will assume the wrong type of `x` and it can have unexpected results.
-	b. She can take safe approach and determine the type of `x` inside the function `implicit_sum` and behave accordingly (recall that julia is dynamically type). Yet, not knowing the type precisely is absolute disaster for performance.
+	b. She can take safe approach and determine the type of `x` inside the function `implicit_sum` and behave accordingly (recall that julia is dynamically typed). Yet, not knowing the type precisely is absolute disaster for performance.
 
 Notice the compiler dispatches on the name of the function and type of its arguments, hence, the compiler cannot create different versions of `implicit_sum` for different types of `x`, since it is not in argument, hence the dynamic resolution of types `x` inside `implicit_sum` function.
 
@@ -611,7 +610,7 @@ x = map(x -> Complex(x...), zip(rand(1000), rand(1000)))
 implicit_sum() ≈ sum(x)
 ```
 
-This means, using global variables inside functions without passing them as arguments ultimetly leads to type-instability. What are the solutions
+This means, using global variables inside functions without passing them as arguments ultimately leads to type-instability. What are the solutions
 
 ### Declaring `x` as const
 We can declare `x` as const, which tells the compiler that `x` will not change (and for the compiler mainly indicates **that type of `x` will not change**).
@@ -651,7 +650,7 @@ BenchmarkTools.Trial: 99 samples with 1 evaluation.
 ```
 
 ### Barier function
-The reason, why the `implicit_sum` is so slow that everytime the function invokes `getindex` and `+`, it has to resolve types. The solution would be to limit the number of resolutions, which can done by passing all parameters to inner function as follows.
+The reason, why the `implicit_sum` is so slow that every time the function invokes `getindex` and `+`, it has to resolve types. The solution would be to limit the number of resolutions, which can done by passing all parameters to inner function as follows.
 
 ```julia
 using BenchmarkTools
@@ -734,7 +733,7 @@ for i in 1:100
 end
 ``` 
 
-```
+```julia
 function simulation()
 	cby = initcallback(;steps = 10000)	#intentionally disable printing
 	for i in 1:1000
@@ -744,7 +743,7 @@ end
 
 @benchmark simulation()
 ```
-```
+```julia
 using Profile, ProfileSVG
 Profile.clear()
 @profile (for i in 1:100; simulation(); end)
@@ -753,7 +752,10 @@ ProfileSVG.save("/tmp/profile.svg")
 We see a red bars in lines 4 and 8 of evalcb, which indicates the type instability hindering the performance. Why they are there? The answer is tricky.
 
 
-In closeres, as the name suggest, function *closes over* (or captures) some variables defined in the function outside the function that is returned. If these variables are of primitive types (think `Int`, `Float64`, etc.), the compiler assumes that they might be changed. Though when primitive types are used in calculations, the result is not written to the same memory location but to a new location and the name of the variable is made to point to this new variable location (this is called rebinding). We can demonstrate it on this example (credits go to Invenia blog).
+In closures, as the name suggest, function *closes over* (or captures) some variables defined in the function outside the function that is returned. If these variables are of primitive types (think `Int`, `Float64`, etc.), the compiler assumes that they might be changed. Though when primitive types are used in calculations, the result is not written to the same memory location but to a new location and the name of the variable is made to point to this new variable location (this is called rebinding). We can demonstrate it on this example [^2].
+
+[^2]: Invenia blog [entry](https://invenia.github.io/blog/2019/10/30/julialang-features-part-1/)
+
 ```julia
 julia> x = [1];
 
@@ -775,7 +777,7 @@ julia> y = y + 100;  # rebinding the variable name
 julia> objectid(y)
 0xb642af5f06b41e88
 ```
-Since the inner function needs to point to the same location, julia uses `Box` container which can be seen as a translation, where the the pointer inside the Box can change while the inner function contains the same pointer to the `Box`. This makes possible to change the captured variables and tracks changes in the point. Sometimes (it can happen many time) the compiler fails to determine that the captured variable is read only, and it wrap it (box it) in the `Box` wrapper, which makes it type unstable, as `Box` does not track types (it would be difficult as even the type can change in the inner function). This is what we can see in the first example of `abmult`. In the second example, the captured variable `y` and `i` changes and the compiler is right.
+Since the inner function needs to point to the same location, julia uses `Box` container which can be seen as a translation, where the pointer inside the Box can change while the inner function contains the same pointer to the `Box`. This makes possible to change the captured variables and tracks changes in the point. Sometimes (it can happen many time) the compiler fails to determine that the captured variable is read only, and it wrap it (box it) in the `Box` wrapper, which makes it type unstable, as `Box` does not track types (it would be difficult as even the type can change in the inner function). This is what we can see in the first example of `abmult`. In the second example, the captured variable `y` and `i` changes and the compiler is right.
 
 What can we do?
 - The first difficulty is to even detect this case. We can spot it using `@code_typed` and of course `JET.jl` can do it and it will warn us. Above we have seen the effect of the profiler.
@@ -850,11 +852,11 @@ No errors !
 
 ```
 
-So when you use closures, you should be careful of the accidental boxing, since it can inhibit the speed of code. **This is a big deal in Multithreadding and in automatic differentiation**, both heavily uses closures. You can track the discussion (here)[https://github.com/JuliaLang/julia/issues/15276].
+So when you use closures, you should be careful of the accidental boxing, since it can inhibit the speed of code. **This is a big deal in Multithreadding and in automatic differentiation**, both heavily uses closures. You can track the discussion [here](https://github.com/JuliaLang/julia/issues/15276).
 
 
 ## NamedTuples are more efficient that Dicts
-It happens a lot in scientific code, that some experiments has many parameters. It is therefore very convenient to store them in `Dict`, such that when adding a new parameter, we do not have to go over all defined functions and redefine them.
+It happens a lot in scientific code, that some experiments have many parameters. It is therefore very convenient to store them in `Dict`, such that when adding a new parameter, we do not have to go over all defined functions and redefine them.
 
 Imagine that we have a (nonsensical) simulation like 
 ```julia
@@ -868,7 +870,7 @@ function find_min!(f, x, p)
 	x
 end
 ```
-Notice the parameter `p` is a `Dict` and notice that it can contain arbitrary parameters, which is useful. Hence, Dict is cool for passing parameters.
+Notice the parameter `p` is a `Dict` and notice that it can contain arbitrary parameters, which is useful. Hence, `Dict` is cool for passing parameters.
 Let's now run the function through the profiler
 ```julia
 x₀ = rand()
@@ -878,12 +880,12 @@ Profile.clear()
 ProfileSVG.save("/tmp/profile6.svg")
 ```
 from the profiler's output [here](profile6.svg) we can see some type instabilities. Where they come from?
-The compiler does not have any infomation about types stored in `settings`, as the type of stored values are `Any` (caused by storing `String` and `Int`).
+The compiler does not have any information about types stored in `settings`, as the type of stored values are `Any` (caused by storing `String` and `Int`).
 ```julia
 julia> typeof(settings)
 Dict{Symbol, Any}
 ```
-The second problem is `get` operation on dictionaries is very time consuming operation (although technically it is O(1)), because it has to search the key in the list. Dicts are designed as a mutable container, which is not needed in our use-case, as the settings are static. For similar use-cases, Julia offers `NamedTuple`, with which we can construct settings as 
+The second problem is `get` operation on dictionaries is very time consuming operation (although technically it is O(1)), because it has to search the key in the list. `Dict`s are designed as a mutable container, which is not needed in our use-case, as the settings are static. For similar use-cases, Julia offers `NamedTuple`, with which we can construct settings as 
 ```julia
 nt_settings = (;stepsize = 0.01, h=0.001, iters=500, :info => "info")
 ```
