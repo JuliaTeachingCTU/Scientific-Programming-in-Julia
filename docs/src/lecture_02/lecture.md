@@ -1,8 +1,4 @@
-```@meta
-EditURL = "<unknown>/src/lecture_02/lecture.jl"
-```
-
-# Motivation
+# [Motivation](@id type_lecture)
 
 ````@example lecture
 using InteractiveUtils # hide
