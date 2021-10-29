@@ -121,8 +121,8 @@ function f!(m0, m1, p, u)   										# line 1
 end
 
 function g2(p,n)
-	u = [1. ; 0.]
-	m0 = [[cos(p[1]) - 1im*sin(p[1])  0]; [0  cos(p[1]) + 1im*sin(p[1])]]	# line 3
+    u = [1. ; 0.]
+    m0 = [[cos(p[1]) - 1im*sin(p[1])  0]; [0  cos(p[1]) + 1im*sin(p[1])]]	# line 3
     m1 = [[cos(p[2]) - 1im*sin(p[2])  0]; [0  cos(p[2]) + 1im*sin(p[2])]]
     return [f!(m0, m1, p[:,i], u) for i=1:n]
 end
@@ -475,7 +475,7 @@ BenchmarkTools.Trial: 42 samples with 1 evaluation.
 	  0.167794 seconds (5 allocations: 176 bytes)
 	9647.736705951513
 	```
-	entirely due to 
+	The optimization of small unions is a big deal. It simplifies implementation of arrays with missing values, or allows to signal that result has not been produced by returning `missing`. In case of arrays with missing values, the type of element is `Union{Missing,T}` where `T` is the type of non-missing element.
 
 
 The main problem with the above formulation is that Julia is checking that getting element of arrays from `x[i]` is within bounds. We can remove the check using `@inbounds` macro.
@@ -544,9 +544,9 @@ BenchmarkTools.Trial: 90 samples with 1 evaluation.
 ## Global variables introduce type instability (avoid non-const globals)
 ```julia
 function implicit_sum()
-	n = length(x)
-	n == 0 && return(zero(eltype(x)))
-	n == 1 && return(x[1])
+    n = length(x)
+    n == 0 && return(zero(eltype(x)))
+    n == 1 && return(x[1])
     @inbounds a1 = x[1]
     @inbounds a2 = x[2]
     v = a1 + a2
@@ -597,8 +597,8 @@ To understand the problem, you have to think about the compiler.
 1. You define function `implicit_sum().`
 2. If you call `implicit_sum` and `x` does not exist, Julia will happily crash.
 3. If you call `implicit_sum` and `x` exist, the function will give you the result (albeit slowly). At this moment, Julia has to specialize `implicit_sum`. It has two options how to behave with respect to `x`. 
-	a. She can assume that type of `x` is the current `typeof(x)` but that would mean that if a user redefines x and change the type, the specialization of the function `implicit_sum` will assume the wrong type of `x` and it can have unexpected results.
-	b. She can take safe approach and determine the type of `x` inside the function `implicit_sum` and behave accordingly (recall that julia is dynamically typed). Yet, not knowing the type precisely is absolute disaster for performance.
+    a. The compiler can assume that type of `x` is the current `typeof(x)` but that would mean that if a user redefines x and change the type, the specialization of the function `implicit_sum` will assume the wrong type of `x` and it can have unexpected results.
+    b. The compiler take safe approach and determine the type of `x` inside the function `implicit_sum` and behave accordingly (recall that julia is dynamically typed). Yet, not knowing the type precisely is absolute disaster for performance.
 
 Notice the compiler dispatches on the name of the function and type of its arguments, hence, the compiler cannot create different versions of `implicit_sum` for different types of `x`, since it is not in argument, hence the dynamic resolution of types `x` inside `implicit_sum` function.
 
