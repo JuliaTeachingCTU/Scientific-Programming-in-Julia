@@ -181,7 +181,7 @@ In order to get more of a visual feel for profiling, there are packages that all
 ```@example lab05_polynomial
 using ProfileSVG
 ProfileSVG.set_default(width=777, height=555) #hide
-ProfileSVG.save("./scalar_prof.svg") # can work with already create traces
+ProfileSVG.save("./profile_poly.svg") # can work with already created traces
 ProfileSVG.view() #hide
 ```
 
@@ -211,10 +211,10 @@ end
 ```@example lab05_polynomial
 run_polynomial(a, xf, 10) #hide
 @profview run_polynomial(a, xf, Int(1e5)) # clears the profile for us
-ProfileSVG.save("./scalar_prof_unstable.svg") #hide
+ProfileSVG.save("./profile_poly_unstable.svg") #hide
 nothing #hide
 ```
-![profile_unstable](./scalar_prof_unstable.svg)
+![profile_unstable](./profile_poly_unstable.svg)
 
 
 ```@raw html
@@ -275,9 +275,9 @@ These numbers will be different on different HW.
 ```@example lab05_polynomial
 run_polynomial(a, xf, 10) #hide
 @profview run_polynomial(a, xf, Int(1e6))
-ProfileSVG.save("./scalar_prof_horner.svg") #hide
+ProfileSVG.save("./profile_poly_horner.svg") #hide
 ```
-![profile_horner](./scalar_prof_horner.svg)
+![profile_horner](./profile_poly_horner.svg)
 
 ```@raw html
 </p></details>
@@ -318,10 +318,11 @@ nothing #hide
 
 Precompile everything by running one step of our simulation and run the profiler.
 
-```@example lab05_ecosystem
+```julia
 simulate!(world, 1)
-@profview simulate!(world, 10)
+@profview simulate!(world, 100)
 ```
+![profile_ecosim_100](./profile_ecosim_100.svg)
 
 Red bars indicate type instabilities however, unless the bars stacked on top of them are high, narrow and not filling the whole width, the problem should not be that serious. In our case the worst offender is the`filter` method inside `EcosystemCore.find_rand` function, either when called from `EcosystemCore.find_food` or `EcosystemCore.find_mate`. In both cases the bars on top of it are narrow and not the full with, meaning that not that much time has been really spend working, but instead inferring the types in the function itself during runtime.
 
@@ -389,6 +390,14 @@ function EcosystemCore.find_rand(f, w::World)
 end
 ```
 
+```julia
+world = create_world();
+simulate!(world, 1)
+@profview simulate!(world, 100)
+```
+![profile_ecosim_100_nofilter_1](./profile_ecosim_100_nofilter_1.svg)
+
+Let's try something that should does not allocate
 ```@example lab05_ecosystem
 function EcosystemCore.find_rand(f, w::World)
     count = 1
@@ -405,15 +414,12 @@ function EcosystemCore.find_rand(f, w::World)
 end
 ```
 
-Let's profile the simulation again
-```@example lab05_ecosystem
+```julia
 world = create_world();
 simulate!(world, 1)
-@profview simulate!(world, 10)
-ProfileSVG.save("./ecosystem_nofilter.svg") #hide
+@profview simulate!(world, 100)
 ```
-![profile_ecosystem_nofilter](./ecosystem_nofilter.svg)
-
+![./profile_ecosim_100_nofilter_2](./profile_ecosim_100_nofilter_2.svg)
 ```@raw html
 </p></details>
 ```
@@ -438,8 +444,7 @@ Benchmark different versions of the `find_rand` function in a simulation 10 step
 ```
 
 Run the following code for each version to find some differences. 
-```@example lab05_ecosystem
-using BenchmarkTools #hide
+```julia
 using Random
 world = create_world();
 @benchmark begin
@@ -448,7 +453,6 @@ world = create_world();
 end setup=(w=deepcopy($world)) evals=1 samples=20 seconds=30
 ```
 Recall that when using `setup`, we have to limit number of evaluations to `evals=1` in order not to mutate the `world` struct.
-
 ```@raw html
 </p></details>
 ```
@@ -613,9 +617,9 @@ If you are using VSCode, the paths visible in the REPL can be clicked through to
 ### Setting up benchmarks to our liking
 In order to control the number of samples/evaluation and the amount of time given to a given benchmark, we can simply append these as keyword arguments to `@btime` or `@benchmark` in the following way
 ```@repl lab05_bench
-@benchmark sum($(rand(1000))) evals=100 samples=10 seconds=5
+@benchmark sum($(rand(1000))) evals=100 samples=10 seconds=1
 ```
-which runs the code repeatedly for up to `5s`, where each of the `10` samples in the trial is composed of `10` evaluations. Setting up these parameters ourselves creates a more controlled environment in which performance regressions can be more easily identified.
+which runs the code repeatedly for up to `1s`, where each of the `10` samples in the trial is composed of `10` evaluations. Setting up these parameters ourselves creates a more controlled environment in which performance regressions can be more easily identified.
 
 Another axis of customization is needed when we are benchmarking mutable operations such as `sort!`, which sorts an array in-place. One way of achieving a consistent benchmark is by omitting the interpolation such as
 ```@repl lab05_bench
