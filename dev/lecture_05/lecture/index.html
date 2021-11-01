@@ -43,7 +43,7 @@ function g2(p,n)
     return [f!(m0, m1, p[:,i], u) for i=1:n]
 end</code></pre><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><h2>Benchmarking</h2><p>The simplest benchmarking can be as simple as writing </p><pre><code class="language-julia hljs">repetitions = 100
 t₀ = time()
-for n in 1:100
+for  in 1:100
 	g(p, n)
 end
 (time() - t₀) / n </code></pre><p>where we add repetitions to calibrate for background processes that can step in the precise measurements (recall that your program is not allone). Writing the above for benchmarking is utterly boring. Moreover, you might want to automatically determine the number of repetitions (the shorter time the more repetitions you want), take care of compilation of your function, you might want to have more informative output, for example median, mean, and maximum time of execution, information about number of allocation, time spent in garbage collector, etc. This is in nutshell what <code>BenchmarkTools.jl</code> offers, which we consider an essential tool for anyone interesting in tuning its code.</p></div></div><p>We will using macro <code>@benchmark</code> from <code>BenchmarkTools.jl</code> to observe the speedup we will get between <code>g</code> and <code>g2</code>.</p><pre><code class="language-julia hljs">using BenchmarkTools
@@ -125,10 +125,10 @@ g(p) = [f(p[1,i],p[2,i]) for i in axes(p,2)]</code></pre><pre><code class="nohig
 
  Memory estimate: 7.63 MiB, allocs estimate: 2.</code></pre><p>We can see that it is six-times faster than ours while also being much nicer to read and  having almost no allocations. Where is the catch? It uses <code>StaticArrays</code> which offers linear algebra primitices performant for vectors and matrices of small size. They are allocated on stack, therefore there is no pressure of GarbageCollector and the type is specialized on size of matrices (unlike regular matrices) works on arrays of an sizes. This allows the compiler to perform further optimizations like unrolling loops, etc.</p><p>What we have learned so far?</p><ul><li>Profiler is extremely useful in identifying functions, where your code spends most time.</li><li>Memory allocation (on heap to be specific) can be very bad for the performance. We can generally avoided by pre-allocation (if possible) or allocating on the stack (Julia offers increasingly larger number of primitives for hits. We have already seen StaticArrays, DataFrames now offers for example String3, String7, String15, String31).</li><li>Benchmarking is useful for comparison of solutions</li></ul><h2 id="Replacing-deep-copies-with-shallow-copies-(use-view-if-possible)"><a class="docs-heading-anchor" href="#Replacing-deep-copies-with-shallow-copies-(use-view-if-possible)">Replacing deep copies with shallow copies (use view if possible)</a><a id="Replacing-deep-copies-with-shallow-copies-(use-view-if-possible)-1"></a><a class="docs-heading-anchor-permalink" href="#Replacing-deep-copies-with-shallow-copies-(use-view-if-possible)" title="Permalink"></a></h2><p>Let&#39;s look at the following function computing mean of a columns</p><pre><code class="language-julia hljs">function cmean(x::AbstractMatrix{T}) where {T}
 	o = zeros(T, size(x,1))
-	n = 0 
 	for i in axes(x, 2)
-		o .+= x[:,i]
+		o .+= x[:,i]								# line 4
 	end
+	n = size(x, 2)
 	n &gt; 0 ? o ./ n : o 
 end
 x = randn(2, 10000)</code></pre><pre><code class="language-julia hljs">@benchmark cmean(x)
@@ -165,7 +165,8 @@ BenchmarkTools.Trial: 10000 samples with 1 evaluation.
 	end
 	n = size(x,1)
 	n &gt; 0 ? o ./ n : o 
-end</code></pre><pre><code class="language-julia hljs">x = randn(10000, 2)
+end
+x = randn(10000, 2)</code></pre><pre><code class="language-julia hljs">x = randn(10000, 2)
 @benchmark rmean(x)
 BenchmarkTools.Trial: 10000 samples with 1 evaluation.
  Range (min … max):  44.165 μs … 194.395 μs  ┊ GC (min … max): 0.00% … 0.00%
@@ -203,7 +204,7 @@ BenchmarkTools.Trial: 10000 samples with 10 evaluations.
 	s = 0
 	n = length(x)
 	for i in 1:n
-		s += x[i]
+		s += x[i]	
 	end
 	s
 end</code></pre><pre><code class="language-julia hljs">x = randn(10^8);
@@ -286,14 +287,14 @@ BenchmarkTools.Trial: 90 samples with 1 evaluation.
   50.9 ms         Histogram: frequency by time        62.1 ms &lt;
 
  Memory estimate: 16 bytes, allocs estimate: 1.</code></pre><h2 id="Global-variables-introduce-type-instability-(avoid-non-const-globals)"><a class="docs-heading-anchor" href="#Global-variables-introduce-type-instability-(avoid-non-const-globals)">Global variables introduce type instability (avoid non-const globals)</a><a id="Global-variables-introduce-type-instability-(avoid-non-const-globals)-1"></a><a class="docs-heading-anchor-permalink" href="#Global-variables-introduce-type-instability-(avoid-non-const-globals)" title="Permalink"></a></h2><pre><code class="language-julia hljs">function implicit_sum()
-    n = length(x)
-    n == 0 &amp;&amp; return(zero(eltype(x)))
-    n == 1 &amp;&amp; return(x[1])
-    @inbounds a1 = x[1]
-    @inbounds a2 = x[2]
+    n = length(y)
+    n == 0 &amp;&amp; return(zero(eltype(y)))
+    n == 1 &amp;&amp; return(y[1])
+    @inbounds a1 = y[1]
+    @inbounds a2 = y[2]
     v = a1 + a2
     @simd for i = 3 : n
-        @inbounds ai = x[i]
+        @inbounds ai = y[i]
         v += ai
     end
     v
@@ -301,7 +302,7 @@ end</code></pre><pre><code class="language-julia hljs">julia&gt; @benchmark impl
 BenchmarkTools.Trial: 1 sample with 1 evaluation.
  Single result which took 10.837 s (11.34% GC) to evaluate,
  with a memory estimate of 8.94 GiB, over 499998980 allocations.</code></pre><p>What? The same function where I made the parameters to be implicit has just turned <strong>nine orders of magnitude</strong> slower? </p><p>Let&#39;s look what the profiler says</p><pre><code class="language-julia hljs">Profile.clear()
-x = randn(10^4)
+y = randn(10^4)
 @profile implicit_sum()
 ProfileSVG.save(&quot;/tmp/profile5.svg&quot;)</code></pre><p>(output available <a href="../profile5.svg">here</a>) which does not say anything except that there is a huge type-instability (red bar). In fact, the whole computation is dominated by Julia constantly determining the type (of something).</p><p>How can we determine, where is the type instability?</p><ul><li><code>@code_typed implicit_sum()</code> is </li><li>Cthulhu as <code>@descend implicit_sum()</code></li><li>JET (available with the nightly build of Julia and 1.7 pre-releases)</li></ul><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><h2>JET</h2><p>JET is a code analyzer, which analyze the code without actually invoking it. The technique is called &quot;abstract interpretation&quot; and JET internally uses Julia&#39;s native type inference implementation, so it can analyze code as fast/correctly as Julia&#39;s code generation. JET internally traces the compiler&#39;s knowledge about types and detects, where the compiler cannot infer the type (outputs <code>Any</code>). Note that small unions are no longer considered type instability, since as we have seen above, the performance bottleneck is small. We can use JET as </p><pre><code class="language-julia hljs">	using JET
 	@report_opt implicit_sum()</code></pre></div></div><p>All of these tools tells us that the Julia&#39;s compiler cannot determine the type of <code>x</code>. But why? I can just invoke <code>typeof(x)</code> and I know immediately the type of <code>x</code>. </p><p>To understand the problem, you have to think about the compiler.</p><ol><li>You define function <code>implicit_sum().</code></li><li>If you call <code>implicit_sum</code> and <code>x</code> does not exist, Julia will happily crash.</li><li>If you call <code>implicit_sum</code> and <code>x</code> exist, the function will give you the result (albeit slowly). At this moment, Julia has to specialize <code>implicit_sum</code>. It has two options how to behave with respect to <code>x</code>.   a. The compiler can assume that type of <code>x</code> is the current <code>typeof(x)</code> but that would mean that if a user redefines x and change the type, the specialization of the function <code>implicit_sum</code> will assume the wrong type of <code>x</code> and it can have unexpected results.  b. The compiler take safe approach and determine the type of <code>x</code> inside the function <code>implicit_sum</code> and behave accordingly (recall that julia is dynamically typed). Yet, not knowing the type precisely is absolute disaster for performance.</li></ol><p>Notice the compiler dispatches on the name of the function and type of its arguments, hence, the compiler cannot create different versions of <code>implicit_sum</code> for different types of <code>x</code>, since it is not in argument, hence the dynamic resolution of types <code>x</code> inside <code>implicit_sum</code> function.</p><p>Julia takes the <strong>safe approach</strong>, which we can verify that although the <code>implicit_sum</code> was specialized (compiled) when <code>x</code> was <code>Vector{Float64}</code>, it works for other types</p><pre><code class="language-julia hljs">x = rand(Int, 1000)
@@ -367,14 +368,14 @@ BenchmarkTools.Trial: 93 samples with 1 evaluation.
    # the closure assigned to `f` make the variable `r` captured
    f = x -&gt; x * r
    return f
-end;</code></pre><p>Another example of closure counting the error and printing it every <code>steps</code></p><pre><code class="language-julia hljs">function initcallback(; steps =10)
+end;</code></pre><p>Another example of closure counting the error and printing it every <code>steps</code></p><pre><code class="language-julia hljs">function initcallback(; steps = 10)
 	i = 0
 	ts = time()
 	y = 0.0
 	cby = function evalcb(_y)
-		i += 1
+		i += 1.0
 		y += _y
-		if mod(i, steps) == 0	% line 4
+		if mod(i, steps) == 0
 			l = y / steps
 			y = 0.0
 			println(i, &quot;: loss: &quot;, l,&quot; time per step: &quot;,round((time() - ts)/steps, sigdigits = 2))
@@ -385,6 +386,7 @@ end;</code></pre><p>Another example of closure counting the error and printing i
 end
 
 cby = initcallback()
+
 for i in 1:100
 	cby(rand())
 end</code></pre><pre><code class="language-julia hljs">function simulation()
@@ -520,4 +522,4 @@ end
 	end
 	x
 end
-@btime find_min!($f, $x₀, $params_tuple; verbose=true)</code></pre><p>–&gt;</p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Adapted from Julia&#39;s discourse <a href="https://discourse.julialang.org/t/numpy-10x-faster-than-julia-what-am-i-doing-wrong-solved-julia-faster-now/29922">thread</a></li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Invenia blog <a href="https://invenia.github.io/blog/2019/10/30/julialang-features-part-1/">entry</a></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_04/hw/">« Homework</a><a class="docs-footer-nextpage" href="../lab/">Lab »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Friday 29 October 2021 05:25">Friday 29 October 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+@btime find_min!($f, $x₀, $params_tuple; verbose=true)</code></pre><p>–&gt;</p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Adapted from Julia&#39;s discourse <a href="https://discourse.julialang.org/t/numpy-10x-faster-than-julia-what-am-i-doing-wrong-solved-julia-faster-now/29922">thread</a></li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Invenia blog <a href="https://invenia.github.io/blog/2019/10/30/julialang-features-part-1/">entry</a></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_04/hw/">« Homework</a><a class="docs-footer-nextpage" href="../lab/">Lab »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Monday 1 November 2021 17:37">Monday 1 November 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
