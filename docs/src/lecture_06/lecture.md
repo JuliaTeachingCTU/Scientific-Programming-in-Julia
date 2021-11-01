@@ -1,10 +1,25 @@
 # [Language introspection](@id introspection)
 
 Materials:
-- Julia's manula on [metaprogramming](https://docs.julialang.org/en/v1/manual/metaprogramming/)
+- Julia's manual on [metaprogramming](https://docs.julialang.org/en/v1/manual/metaprogramming/)
+_ David P. Sanders' [workshop @ JuliaCon 2021](https://www.youtube.com/watch?v=2QLhw6LVaq0) 
 - Steven Johnson's [keynote talk @ JuliaCon 2019](https://www.youtube.com/watch?v=mSgXWpvQEHE)
 - Andy Ferris's [workshop @ JuliaCon 2018](https://www.youtube.com/watch?v=SeqAQHKLNj4)
 - [From Macros to DSL](https://github.com/johnmyleswhite/julia_tutorials) by John Myles White 
+_ Notes on [JuliaCompilerPlugin](https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project)
+
+**What is metaprogramming?** *A high-level code that writes high-level code* by Stever Johnson.
+
+**Why do we need metaprogramming?** 
+- In general, we do not need it, as we can do whatever we need without it, but it can help us to remove a boilerplate code. 
+
+	+ As an example, consider a `@show` macro, which just prints the name of the variable (or the expression) and its evaluation. This means that instead of writing `println("2+exp(4) = ",  2+exp(4))` we can just write `@show 2+exp(4)`.
+
+	+ Another example is `@time` or `elapsed` The above is difficult to implement using normal function, since the when you pass `2+exp(4)` as a function argument, it will be automatically evaluated. Therefore you need to pass it as an expression, that can be evaluated within the function.
+
+	+ It can be very useful in implementing **encapsulation**.
+
+- **Domain Specific Languages**
 
 ## Stages of compilation
 Julia (as any modern compiler) uses several stages to convert source code to native code. Let's recap them
@@ -292,6 +307,8 @@ end
 https://github.com/FluxML/MacroTools.jl
 
 
+Base.remove_linenums!
+Use of metaprogramming on encapsulation.
 
 ## Computer algebra system
 * Metatheory
