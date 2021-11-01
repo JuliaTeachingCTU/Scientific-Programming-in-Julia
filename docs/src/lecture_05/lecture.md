@@ -135,7 +135,7 @@ end
 	```julia
 	repetitions = 100
 	t₀ = time()
-	for n in 1:100
+	for  in 1:100
 		g(p, n)
 	end
 	(time() - t₀) / n 
@@ -278,10 +278,10 @@ Let's look at the following function computing mean of a columns
 ```julia
 function cmean(x::AbstractMatrix{T}) where {T}
 	o = zeros(T, size(x,1))
-	n = 0 
 	for i in axes(x, 2)
-		o .+= x[:,i]
+		o .+= x[:,i]								# line 4
 	end
+	n = size(x, 2)
 	n > 0 ? o ./ n : o 
 end
 x = randn(2, 10000)
@@ -340,6 +340,7 @@ function rmean(x::AbstractMatrix{T}) where {T}
 	n = size(x,1)
 	n > 0 ? o ./ n : o 
 end
+x = randn(10000, 2)
 ```
 
 ```julia
@@ -404,7 +405,7 @@ function poor_sum(x)
 	s = 0
 	n = length(x)
 	for i in 1:n
-		s += x[i]
+		s += x[i]	
 	end
 	s
 end
@@ -544,14 +545,14 @@ BenchmarkTools.Trial: 90 samples with 1 evaluation.
 ## Global variables introduce type instability (avoid non-const globals)
 ```julia
 function implicit_sum()
-    n = length(x)
-    n == 0 && return(zero(eltype(x)))
-    n == 1 && return(x[1])
-    @inbounds a1 = x[1]
-    @inbounds a2 = x[2]
+    n = length(y)
+    n == 0 && return(zero(eltype(y)))
+    n == 1 && return(y[1])
+    @inbounds a1 = y[1]
+    @inbounds a2 = y[2]
     v = a1 + a2
     @simd for i = 3 : n
-        @inbounds ai = x[i]
+        @inbounds ai = y[i]
         v += ai
     end
     v
@@ -570,7 +571,7 @@ What? The same function where I made the parameters to be implicit has just turn
 Let's look what the profiler says
 ```julia
 Profile.clear()
-x = randn(10^4)
+y = randn(10^4)
 @profile implicit_sum()
 ProfileSVG.save("/tmp/profile5.svg")
 ```
@@ -710,14 +711,14 @@ end;
 
 Another example of closure counting the error and printing it every `steps`
 ```julia
-function initcallback(; steps =10)
+function initcallback(; steps = 10)
 	i = 0
 	ts = time()
 	y = 0.0
 	cby = function evalcb(_y)
-		i += 1
+		i += 1.0
 		y += _y
-		if mod(i, steps) == 0	% line 4
+		if mod(i, steps) == 0
 			l = y / steps
 			y = 0.0
 			println(i, ": loss: ", l," time per step: ",round((time() - ts)/steps, sigdigits = 2))
@@ -728,6 +729,7 @@ function initcallback(; steps =10)
 end
 
 cby = initcallback()
+
 for i in 1:100
 	cby(rand())
 end
