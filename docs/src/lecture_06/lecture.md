@@ -2,11 +2,11 @@
 
 Materials:
 - Julia's manual on [metaprogramming](https://docs.julialang.org/en/v1/manual/metaprogramming/)
-_ David P. Sanders' [workshop @ JuliaCon 2021](https://www.youtube.com/watch?v=2QLhw6LVaq0) 
+- David P. Sanders' [workshop @ JuliaCon 2021](https://www.youtube.com/watch?v=2QLhw6LVaq0) 
 - Steven Johnson's [keynote talk @ JuliaCon 2019](https://www.youtube.com/watch?v=mSgXWpvQEHE)
 - Andy Ferris's [workshop @ JuliaCon 2018](https://www.youtube.com/watch?v=SeqAQHKLNj4)
 - [From Macros to DSL](https://github.com/johnmyleswhite/julia_tutorials) by John Myles White 
-_ Notes on [JuliaCompilerPlugin](https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project)
+- Notes on [JuliaCompilerPlugin](https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project)
 
 **What is metaprogramming?** *A high-level code that writes high-level code* by Stever Johnson.
 
@@ -187,6 +187,53 @@ L16:
 ```
 and the output is used mainly for debugging / inspection. 
 
+## Looking around the language
+Language introspection is very convenient for investigating, how things are implemented and how they are optimized / compiled to the native code. 
+
+- A very useful macro is `@which`, which identifies the concrete function called in the function call. For example `@which mapreduce(sin, +, [1,2,3,4])`. Note again that the macro here is a convenience macro to obtain types of arguments. Under the hood, it calls `InteractiveUtils.which(function_name, (Base.typesof)(args...))`. Funny enough, you can call `@which InteractiveUtils.which(+, (Base.typesof)(1,1))` to inspect, where `which` is defined.
+
+- **Broadcasting** is quite unique to Julia, since it allows easily fuse operation with a convenient function. For example 
+```julia
+x = randn(100)
+sin.(x) .+ 2 .* cos.(x) .+ x
+```
+is all computed in a single loop. We can inspect, how this is achieved, but it is better to start with something simpler
+```julia
+julia> Meta.@lower x .+ 1
+:($(Expr(:thunk, CodeInfo(
+    @ none within `top-level scope'
+1 ─ %1 = Base.broadcasted(+, x, 1)
+│   %2 = Base.materialize(%1)
+└──      return %2
+))))
+```
+Notice that we have not used the usual `@code_lowered` macro, because the statement to be lowered is not a function call. In these cases, we have to use `@code_lowered`, which can handle more general program statements. On these cases, we cannot use `@which` either, as that applies only to function calls.
+
+- **Generators**
+```julia
+Meta.@lower [x for x in 1:4]
+:($(Expr(:thunk, CodeInfo(
+    @ none within `top-level scope'
+1 ─ %1 = 1:4
+│   %2 = Base.Generator(Base.identity, %1)
+│   %3 = Base.collect(%2)
+└──      return %3
+))))
+```
+from which we see that the `Generator` is implemented using the combination of a `Base.collect`, which is a function collecting items of a sequence and `Base.Generator(f,x)`, which implements an iterator, which applies function `f` on elements of `x` over which is being iterated. So an almost magical generators have instantly lost their magic.
+
+```
+<!-- 
+Examples, where this kind of manipulation might be helpful in looking around.
+
+where @which fails
+* generators
+* broadcasting and fusion of loops
+* Emphasize the simplicity of Expr
+* lowering of closures
+adder(x) = y -> y + x
+-->
+
 ## General notes on metaprogramming
 According to an excellent talk of Steven Johnson mentioned above, you shoul use metaprogramming sparingly, as it is very powerfull, but it is generally difficult to read and it can lead to unexpected errors. Julia allows you to interact with the compiler at two levels.
 1. After the code is parsed to AST, you can modify it through **macros**.
@@ -346,7 +393,41 @@ julia> replace_x(e) |> eval
 10
 ```
 
-https://github.com/FluxML/MacroTools.jl
+### Brittleness of code manipulation
+When we are manipulating the AST or creating new expressions from scratch, there is no validation in term of the parser. It is therefore very easy to create AST which does not make any sense and cannot be compiled. We have already seen that we can refer to variables that were not defined yet (this makes perfect sense). The same goes with functions (which also makes a lot of sense).
+```julia
+e = :(g() + 5)
+eval(e)
+g() = 5
+eval(e)
+```
+But we can also introduce keywords which the language does not know. For example 
+```julia
+e = Expr(:my_keyword, 1, 2, 3)
+:($(Expr(:my_keyword, 1, 2, 3)))
+
+julia> e.head
+:my_keyword
+
+julia> e.args
+3-element Vector{Any}:
+ 1
+ 2
+ 3
+
+julia> eval(e)
+ERROR: syntax: invalid syntax (my_keyword 1 2 3)
+Stacktrace:
+ [1] top-level scope
+   @ none:1
+ [2] eval
+   @ ./boot.jl:360 [inlined]
+ [3] eval(x::Expr)
+   @ Base.MainInclude ./client.jl:446
+ [4] top-level scope
+   @ REPL[8]:1
+```
+notice that error is not related to undefined variable / function, but the invalid syntax.
 
 ## Code generation
 
@@ -358,7 +439,7 @@ struct MyMatrix{T} <: AbstractMatrix{T}
 	x::Matrix{T}
 end
 ```
-Now, to make it useful, we should define all the usual methods, like `size`, `length`, `getindex`, `setindex!`, etc. We can list all methods defined with `Matrix` ans an argument `methodswith(Matrix)`. Now, we would like to overload them. To minimize the written code, we can write
+Now, to make it useful, we should define all the usual methods, like `size`, `length`, `getindex`, `setindex!`, etc. We can list methods defined with `Matrix` as an argument `methodswith(Matrix)` (recall this will load methods that are defined with currently loaded libraries). Now, we would like to overload them. To minimize the written code, we can write
 ```julia
 import Base: setindex!, getindex, size, length
 for f in [:setindex!, :getindex, :size, :length]
@@ -392,7 +473,6 @@ end
 ```
 and we are free to use quote blocks as well.
 
-Should we talk about meta-programming without meta-programming
-
-## Computer algebra system
-* Metatheory
+## Cthulhu
+<!-- Should I mention the world clock age and the effect of eval in global scope -->
+<!-- mention the forward macro -->
