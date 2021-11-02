@@ -115,6 +115,7 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Installation" => "installation.md", 
+        "Projects" => "projects.md",
         "1: Introduction" => lecture_01,
         "2: The power of Type System & multiple dispatch" => lecture_02,
         "3: Design patterns" => lecture_03,
