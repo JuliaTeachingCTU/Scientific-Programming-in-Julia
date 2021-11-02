@@ -222,17 +222,20 @@ Meta.@lower [x for x in 1:4]
 ```
 from which we see that the `Generator` is implemented using the combination of a `Base.collect`, which is a function collecting items of a sequence and `Base.Generator(f,x)`, which implements an iterator, which applies function `f` on elements of `x` over which is being iterated. So an almost magical generators have instantly lost their magic.
 
-```
-<!-- 
-Examples, where this kind of manipulation might be helpful in looking around.
-
-where @which fails
-* generators
-* broadcasting and fusion of loops
-* Emphasize the simplicity of Expr
-* lowering of closures
+- **Closures**
+```julia
 adder(x) = y -> y + x
--->
+
+julia> @code_lowered adder(5)
+CodeInfo(
+1 ─ %1 = Main.:(var"#8#9")
+│   %2 = Core.typeof(x)
+│   %3 = Core.apply_type(%1, %2)
+│        #8 = %new(%3, x)
+└──      return #8
+)
+```
+
 
 ## General notes on metaprogramming
 According to an excellent talk of Steven Johnson mentioned above, you shoul use metaprogramming sparingly, as it is very powerfull, but it is generally difficult to read and it can lead to unexpected errors. Julia allows you to interact with the compiler at two levels.
