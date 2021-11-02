@@ -138,19 +138,19 @@ Body<span class="sgr36">::Float64</span>
 <span class="sgr90">│  </span> %19 = Base.not_int(%18)<span class="sgr36">::Bool</span>
 <span class="sgr90">└──</span>       goto #4 if not %19
 <span class="sgr90">3 ─</span>       goto #2
-<span class="sgr90">4 ┄</span>       return accumulator</code></pre><pre><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @time polynomial(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">  0.000005 seconds (1 allocation: 16 bytes)
-128.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @time polynomial_stable(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">  0.000005 seconds (1 allocation: 16 bytes)
-128.0</code></pre><p>Only really visible when evaluating multiple times.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using BenchmarkTools</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  19.639 ns (0 allocations: 0 bytes)
-128.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  13.200 ns (0 allocations: 0 bytes)
-128.0</code></pre><p>Difference only a few nanoseconds.</p><p><em>Note</em>: Recalling homework from lab 1. Adding <code>zero</code> also extends this function to the case of <code>x</code> being a matrix, see <code>?</code> menu.</p></p></details><p>Code stability issues are something unique to Julia, as its JIT compilation allows it to produce code that contains boxed variables, whose type can be inferred during runtime. This is one of the reasons why interpreted languages are slow to run but fast to type. Julia&#39;s way of solving it is based around compiling functions for specific arguments, however in order for this to work without the interpreter, the compiler has to be able to infer the types.</p><p>There are other problems (such as unnecessary allocations), that you can learn to spot in your code, however the code stability issues are by far the most commonly encountered problems among beginner users of Julia wanting to squeeze more out of it.</p><div class="admonition is-info"><header class="admonition-header">Advanced tooling</header><div class="admonition-body"><p>Sometimes <code>@code_warntype</code> shows that the function&#39;s return type is unstable without any hints to the possible problem, fortunately for such cases a more advanced tools such as <a href="https://github.com/JuliaDebug/Cthulhu.jl"><code>Cthuhlu.jl</code></a> or <a href="https://github.com/aviatesk/JET.jl"><code>JET.jl</code></a> have been developed.</p></div></div><h2 id="Benchmarking-with-BenchmarkTools"><a class="docs-heading-anchor" href="#Benchmarking-with-BenchmarkTools">Benchmarking with <code>BenchmarkTools</code></a><a id="Benchmarking-with-BenchmarkTools-1"></a><a class="docs-heading-anchor-permalink" href="#Benchmarking-with-BenchmarkTools" title="Permalink"></a></h2><p>In the last exercise we have encountered the problem of timing of code to see, if we have made any progress in speeding it up. Throughout the course we will advertise the use of the <code>BenchmarkTools</code> package, which provides an easy way to test your code multiple times. In this lab we will focus on some advanced usage tips and gotchas that you may encounter while using it. </p><p>There are few concepts to know in order to understand how the pkg works</p><ul><li>evaluation - a single execution of a benchmark expression (default <code>1</code>)</li><li>sample - a single time/memory measurement obtained by running multiple evaluations (default <code>1e5</code>)</li><li>trial - experiment in which multiple samples are gathered </li></ul><p>The result of a benchmark is a trial in which we collect multiple samples of time/memory measurements, which in turn may be composed of multiple executions of the code in question. This layering of repetition is required to allow for benchmarking code at different runtime magnitudes. Imagine having to benchmark operations which are faster than the act of measuring itself - clock initialization, dispatch of an operation and subsequent time subtraction.</p><p>The number of samples/evaluations can be set manually, however most of the time won&#39;t need to know about them, due to an existence of a tuning method <code>tune!</code>, which tries to run the code once to estimate the correct ration of evaluation/samples. </p><p>The most commonly used interface of <code>Benchmarkools</code> is the <code>@btime</code> macro, which returns an output similar to the regular <code>@time</code> macro however now aggregated over samples by taking their minimum (a robust estimator for the location parameter of the time distribution, should not be considered an outlier - usually the noise from other processes/tasks puts the results to the other tail of the distribution and some miraculous noisy speedups are uncommon. In order to see the underlying sampling better there is also the <code>@benchmark</code> macro, which runs in the same way as <code>@btime</code>, but prints more detailed statistics which are also returned in the <code>Trial</code> type instead of the actual code output.</p><pre><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime sum($(rand(1000)))</code><code class="nohighlight hljs ansi" style="display:block;">  80.063 ns (0 allocations: 0 bytes)
-507.730765999269</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sum($(rand(1000)))</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10000 samples with 963 evaluations.
- Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">80.271 ns</span></span> … <span class="sgr35">120.666 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
- Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">87.644 ns               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
- Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">87.953 ns</span></span> ± <span class="sgr32">  2.470 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
+<span class="sgr90">4 ┄</span>       return accumulator</code></pre><pre><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @time polynomial(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">  0.000007 seconds (1 allocation: 16 bytes)
+128.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @time polynomial_stable(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">  0.000006 seconds (1 allocation: 16 bytes)
+128.0</code></pre><p>Only really visible when evaluating multiple times.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using BenchmarkTools</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  23.046 ns (0 allocations: 0 bytes)
+128.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  15.415 ns (0 allocations: 0 bytes)
+128.0</code></pre><p>Difference only a few nanoseconds.</p><p><em>Note</em>: Recalling homework from lab 1. Adding <code>zero</code> also extends this function to the case of <code>x</code> being a matrix, see <code>?</code> menu.</p></p></details><p>Code stability issues are something unique to Julia, as its JIT compilation allows it to produce code that contains boxed variables, whose type can be inferred during runtime. This is one of the reasons why interpreted languages are slow to run but fast to type. Julia&#39;s way of solving it is based around compiling functions for specific arguments, however in order for this to work without the interpreter, the compiler has to be able to infer the types.</p><p>There are other problems (such as unnecessary allocations), that you can learn to spot in your code, however the code stability issues are by far the most commonly encountered problems among beginner users of Julia wanting to squeeze more out of it.</p><div class="admonition is-info"><header class="admonition-header">Advanced tooling</header><div class="admonition-body"><p>Sometimes <code>@code_warntype</code> shows that the function&#39;s return type is unstable without any hints to the possible problem, fortunately for such cases a more advanced tools such as <a href="https://github.com/JuliaDebug/Cthulhu.jl"><code>Cthuhlu.jl</code></a> or <a href="https://github.com/aviatesk/JET.jl"><code>JET.jl</code></a> have been developed.</p></div></div><h2 id="Benchmarking-with-BenchmarkTools"><a class="docs-heading-anchor" href="#Benchmarking-with-BenchmarkTools">Benchmarking with <code>BenchmarkTools</code></a><a id="Benchmarking-with-BenchmarkTools-1"></a><a class="docs-heading-anchor-permalink" href="#Benchmarking-with-BenchmarkTools" title="Permalink"></a></h2><p>In the last exercise we have encountered the problem of timing of code to see, if we have made any progress in speeding it up. Throughout the course we will advertise the use of the <code>BenchmarkTools</code> package, which provides an easy way to test your code multiple times. In this lab we will focus on some advanced usage tips and gotchas that you may encounter while using it. </p><p>There are few concepts to know in order to understand how the pkg works</p><ul><li>evaluation - a single execution of a benchmark expression (default <code>1</code>)</li><li>sample - a single time/memory measurement obtained by running multiple evaluations (default <code>1e5</code>)</li><li>trial - experiment in which multiple samples are gathered </li></ul><p>The result of a benchmark is a trial in which we collect multiple samples of time/memory measurements, which in turn may be composed of multiple executions of the code in question. This layering of repetition is required to allow for benchmarking code at different runtime magnitudes. Imagine having to benchmark operations which are faster than the act of measuring itself - clock initialization, dispatch of an operation and subsequent time subtraction.</p><p>The number of samples/evaluations can be set manually, however most of the time won&#39;t need to know about them, due to an existence of a tuning method <code>tune!</code>, which tries to run the code once to estimate the correct ration of evaluation/samples. </p><p>The most commonly used interface of <code>Benchmarkools</code> is the <code>@btime</code> macro, which returns an output similar to the regular <code>@time</code> macro however now aggregated over samples by taking their minimum (a robust estimator for the location parameter of the time distribution, should not be considered an outlier - usually the noise from other processes/tasks puts the results to the other tail of the distribution and some miraculous noisy speedups are uncommon. In order to see the underlying sampling better there is also the <code>@benchmark</code> macro, which runs in the same way as <code>@btime</code>, but prints more detailed statistics which are also returned in the <code>Trial</code> type instead of the actual code output.</p><pre><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime sum($(rand(1000)))</code><code class="nohighlight hljs ansi" style="display:block;">  95.374 ns (0 allocations: 0 bytes)
+495.04676260421087</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sum($(rand(1000)))</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10000 samples with 952 evaluations.
+ Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">95.064 ns</span></span> … <span class="sgr35">141.914 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
+ Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">95.274 ns               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
+ Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">95.401 ns</span></span> ± <span class="sgr32">  1.280 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
 
-              ▃▂     █<span class="sgr34">▆</span><span class="sgr32"> </span> ▁        ▁                            ▁
-  ▇▁▁▁▁▁▁▁▁▁▁▃██▁▁▁▁▁█<span class="sgr34">█</span><span class="sgr32">▃</span>▃█▆▅▄▄▁▄▅██▇▆▆▄▅▄▅▅▅▅▆▇▆▇▆▇▆▄▄▁▃▃▃▃▃▅▇ █
-  80.3 ns<span class="sgr90">       Histogram: <span class="sgr1">log(</span>frequency<span class="sgr1">)</span> by time</span>       103 ns <span class="sgr1">&lt;</span>
+  ██<span class="sgr34">▃</span><span class="sgr32"> </span>                                                         ▂
+  ██<span class="sgr34">█</span><span class="sgr32">█</span>▇▄▄▁▁▁▁▁▁▃▃▆▇▇▆▆▄▃▃▁▁▁▁▁▁▁▁▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▄▅▅▅▆▇▆▇▆▆▆▆▇ █
+  95.1 ns<span class="sgr90">       Histogram: <span class="sgr1">log(</span>frequency<span class="sgr1">)</span> by time</span>       101 ns <span class="sgr1">&lt;</span>
 
  Memory estimate<span class="sgr90">: </span><span class="sgr33">0 bytes</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">0</span>.</code></pre><div class="admonition is-danger"><header class="admonition-header">Interpolation ~ `$` in BenchmarkTools</header><div class="admonition-body"><p>In the previous example we have used the interpolation signs <code>$</code> to indicate that the code inside should be evaluated once and stored into a local variable. This allows us to focus only on the benchmarking of code itself instead of the input generation. A more subtle way where this is crops up is the case of using previously defined global variable, where instead of data generation we would measure also the type inference at each evaluation, which is usually not what we want. The following list will help you decide when to use interpolation.</p><pre><code class="language-julia hljs">@btime sum($(rand(1000)))   # rand(1000) is stored as local variable, which is used in each evaluation
 @btime sum(rand(1000))      # rand(1000) is called in each evaluation
@@ -158,185 +158,208 @@ A = rand(1000)
 @btime sum($A)              # global variable A is inferred and stored as local, which is used in each evaluation
 @btime sum(A)               # global variable A has to be inferred in each evaluation</code></pre></div></div><h2 id="Profiling"><a class="docs-heading-anchor" href="#Profiling">Profiling</a><a id="Profiling-1"></a><a class="docs-heading-anchor-permalink" href="#Profiling" title="Permalink"></a></h2><p>Profiling in Julia is part of the standard library in the <code>Profile</code> module. It implements a fairly simple sampling based profiler, which in a nutshell asks at regular intervals, where the code execution is currently at. As a result we get an array of stacktraces (= chain of function calls), which allow us to make sense of where the execution spent the most time. The number of samples, that can be stored and the period in seconds can be checked after loading <code>Profile</code> into the session with the <code>init()</code> function.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using Profile</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Profile.init()</code><code class="nohighlight hljs ansi" style="display:block;">(10000000, 0.001)</code></pre><p>The same function, but with keyword arguments, can be used to change these settings, however these settings are system dependent. For example on Windows, there is a known issue that does not allow to sample faster than at <code>0.003s</code> and even on Linux based system this may not do much. There are some further caveat specific to Julia:</p><ul><li>When running profile from REPL, it is usually dominated by the interactive part which spawns the task and waits for it&#39;s completion.</li><li>Code has to be run before profiling in order to filter out all the type inference and interpretation stuff. (Unless compilation is what we want to profile.)</li><li>When the execution time is short, the sampling may be insufficient -&gt; run multiple times.</li></ul><h3 id="Polynomial-with-scalars"><a class="docs-heading-anchor" href="#Polynomial-with-scalars">Polynomial with scalars</a><a id="Polynomial-with-scalars-1"></a><a class="docs-heading-anchor-permalink" href="#Polynomial-with-scalars" title="Permalink"></a></h3><p>Let&#39;s look at our favorite <code>polynomial</code> function or rather it&#39;s type stable variant <code>polynomial_stable</code> under the profiling lens.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; Profile.clear() # clear the last trace (does not have to be run on fresh start)</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @profile polynomial_stable(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">128.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Profile.print() # text based output of the profiler</code><code class="nohighlight hljs ansi" style="display:block;">Overhead ╎ [+additional indent] Count File:Line; Function
 =========================================================
- ╎1 @Base/client.jl:485; _start()
- ╎ 1 @Base/client.jl:285; exec_options(opts::Base.JLOptions)
- ╎  1 @Base/Base.jl:386; include(mod::Module, _path::String)
- ╎   1 @Base/loading.jl:1170; _include(mapexpr::Function, mod:...
- ╎    1 @Base/loading.jl:1116; include_string(mapexpr::typeof(...
- ╎     1 @Base/boot.jl:360; eval
- ╎    ╎ 1 ...r/src/Documenter.jl:260; (::Documenter.var&quot;#makedocs##kw...
- ╎    ╎  1 ...r/src/Documenter.jl:265; #makedocs#1
- ╎    ╎   1 @Base/file.jl:106; cd(f::Documenter.var&quot;#2#3&quot;{Doc...
- ╎    ╎    1 .../src/Documenter.jl:266; #2
- ╎    ╎     1 ...ities/Selectors.jl:170; dispatch(#unused#::Type{Docu...
- ╎    ╎    ╎ 1 ...er/src/Builder.jl:226; runner(#unused#::Type{Docume...
- ╎    ╎    ╎  1 .../src/Expanders.jl:42; expand(doc::Documenter.Docum...
- ╎    ╎    ╎   1 ...ties/Selectors.jl:170; dispatch(::Type{Documenter....
- ╎    ╎    ╎    1 ...src/Expanders.jl:665; runner(#unused#::Type{Docu...
- ╎    ╎    ╎     1 ...src/IOCapture.jl:75; (::IOCapture.var&quot;#capture#...
- ╎    ╎    ╎    ╎ 1 ...rc/IOCapture.jl:116; capture(f::Documenter.Exp...
- ╎    ╎    ╎    ╎  1 @Base/logging.jl:603; with_logger
- ╎    ╎    ╎    ╎   1 @Base/logging.jl:491; with_logstate(f::Functio...
- ╎    ╎    ╎    ╎    1 ...c/IOCapture.jl:118; (::IOCapture.var&quot;#3#5&quot;{...
- ╎    ╎    ╎    ╎     1 ...c/Expanders.jl:666; (::Documenter.Expander...
- ╎    ╎    ╎    ╎    ╎ 1 @Base/file.jl:106; cd(f::Documenter.Expan...
- ╎    ╎    ╎    ╎    ╎  1 .../Expanders.jl:667; #20
- ╎    ╎    ╎    ╎    ╎   1 @Base/boot.jl:360; eval
-1╎    ╎    ╎    ╎    ╎    1 ...c/Profile.jl:352; stop_timer()
+ ╎2 @Base/client.jl:485; _start()
+ ╎ 2 @Base/client.jl:285; exec_options(opts::Base.JLOptions)
+ ╎  2 @Base/Base.jl:386; include(mod::Module, _path::String)
+ ╎   2 @Base/loading.jl:1170; _include(mapexpr::Function, mod:...
+ ╎    2 @Base/loading.jl:1116; include_string(mapexpr::typeof(...
+ ╎     2 @Base/boot.jl:360; eval
+ ╎    ╎ 2 ...r/src/Documenter.jl:260; (::Documenter.var&quot;#makedocs##kw...
+ ╎    ╎  2 ...r/src/Documenter.jl:265; #makedocs#1
+ ╎    ╎   2 @Base/file.jl:106; cd(f::Documenter.var&quot;#2#3&quot;{Doc...
+ ╎    ╎    2 .../src/Documenter.jl:266; #2
+ ╎    ╎     2 ...ities/Selectors.jl:170; dispatch(#unused#::Type{Docu...
+ ╎    ╎    ╎ 2 ...er/src/Builder.jl:226; runner(#unused#::Type{Docume...
+ ╎    ╎    ╎  2 .../src/Expanders.jl:42; expand(doc::Documenter.Docum...
+ ╎    ╎    ╎   2 ...ties/Selectors.jl:170; dispatch(::Type{Documenter....
+ ╎    ╎    ╎    2 ...src/Expanders.jl:665; runner(#unused#::Type{Docu...
+ ╎    ╎    ╎     2 ...src/IOCapture.jl:75; (::IOCapture.var&quot;#capture#...
+ ╎    ╎    ╎    ╎ 2 ...rc/IOCapture.jl:116; capture(f::Documenter.Exp...
+ ╎    ╎    ╎    ╎  2 @Base/logging.jl:603; with_logger
+ ╎    ╎    ╎    ╎   2 @Base/logging.jl:491; with_logstate(f::Functio...
+ ╎    ╎    ╎    ╎    2 ...c/IOCapture.jl:118; (::IOCapture.var&quot;#3#5&quot;{...
+ ╎    ╎    ╎    ╎     2 ...c/Expanders.jl:666; (::Documenter.Expander...
+ ╎    ╎    ╎    ╎    ╎ 2 @Base/file.jl:106; cd(f::Documenter.Expan...
+ ╎    ╎    ╎    ╎    ╎  2 .../Expanders.jl:667; #20
+1╎    ╎    ╎    ╎    ╎   2 @Base/boot.jl:360; eval
 Total snapshots: 2</code></pre><p>Unless the machine that you run the code on is really slow, the resulting output contains nothing or only some internals of Julia&#39;s interactive REPL. This is due to the fact that our <code>polynomial</code> function take only few nanoseconds to run. When we want to run profiling on something, that takes only a few nanoseconds, we have to repeatedly execute the function.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; function run_polynomial_stable(a, x, n)
            for _ in 1:n
                polynomial_stable(a, x)
            end
        end</code><code class="nohighlight hljs ansi" style="display:block;">run_polynomial_stable (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; a = rand(-10:10, 10) # using longer polynomial</code><code class="nohighlight hljs ansi" style="display:block;">10-element Vector{Int64}:
-   7
- -10
-   6
-   9
-   4
-   2
-   4
-   9
-   1
- -10</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Profile.clear()</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @profile run_polynomial_stable(a, xf, Int(1e5))</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Profile.print()</code><code class="nohighlight hljs ansi" style="display:block;">Overhead ╎ [+additional indent] Count File:Line; Function
+ -2
+  4
+ -2
+ -6
+  8
+ -2
+  4
+ 10
+  1
+ -2</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Profile.clear()</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @profile run_polynomial_stable(a, xf, Int(1e5))</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Profile.print()</code><code class="nohighlight hljs ansi" style="display:block;">Overhead ╎ [+additional indent] Count File:Line; Function
 =========================================================
-  ╎47 @Base/client.jl:485; _start()
-  ╎ 47 @Base/client.jl:285; exec_options(opts::Base.JLOptions)
-  ╎  47 @Base/Base.jl:386; include(mod::Module, _path::String)
-  ╎   47 @Base/loading.jl:1170; _include(mapexpr::Function, mod...
-  ╎    47 @Base/loading.jl:1116; include_string(mapexpr::typeof...
-  ╎     47 @Base/boot.jl:360; eval
-  ╎    ╎ 47 ...r/src/Documenter.jl:260; (::Documenter.var&quot;#makedocs##k...
-  ╎    ╎  47 .../src/Documenter.jl:265; #makedocs#1
-  ╎    ╎   47 @Base/file.jl:106; cd(f::Documenter.var&quot;#2#3&quot;{D...
-  ╎    ╎    47 ...src/Documenter.jl:266; #2
-  ╎    ╎     47 ...ties/Selectors.jl:170; dispatch(#unused#::Type{Doc...
-  ╎    ╎    ╎ 47 ...er/src/Builder.jl:226; runner(#unused#::Type{Docum...
-  ╎    ╎    ╎  47 .../src/Expanders.jl:42; expand(doc::Documenter.Docu...
-  ╎    ╎    ╎   47 ...ies/Selectors.jl:170; dispatch(::Type{Documente...
-  ╎    ╎    ╎    47 ...rc/Expanders.jl:665; runner(#unused#::Type{Doc...
-  ╎    ╎    ╎     47 ...rc/IOCapture.jl:75; (::IOCapture.var&quot;#capture...
-  ╎    ╎    ╎    ╎ 47 ...rc/IOCapture.jl:116; capture(f::Documenter.Ex...
-  ╎    ╎    ╎    ╎  47 @Base/logging.jl:603; with_logger
-  ╎    ╎    ╎    ╎   47 @Base/logging.jl:491; with_logstate(f::Funct...
-  ╎    ╎    ╎    ╎    47 .../IOCapture.jl:118; (::IOCapture.var&quot;#3#5&quot;...
-  ╎    ╎    ╎    ╎     47 .../Expanders.jl:666; (::Documenter.Expande...
-  ╎    ╎    ╎    ╎    ╎ 47 @Base/file.jl:106; cd(f::Documenter.Expa...
-  ╎    ╎    ╎    ╎    ╎  47 ...Expanders.jl:667; #20
-  ╎    ╎    ╎    ╎    ╎   47 @Base/boot.jl:360; eval
-  ╎    ╎    ╎    ╎    ╎    47 REPL[1]:3; run_polynomial_stabl...
-  ╎    ╎    ╎    ╎    ╎     47 REPL[1]:4; polynomial_stable(a...
- 2╎    ╎    ╎    ╎    ╎    ╎ 2  @Base/float.jl:326; +
-44╎    ╎    ╎    ╎    ╎    ╎ 45 @Base/math.jl:920; ^
-Total snapshots: 47</code></pre><p>In order to get more of a visual feel for profiling, there are packages that allow you to generate interactive plots or graphs. In this lab we will use <a href="https://github.com/timholy/ProfileSVG.jl"><code>ProfileSVG.jl</code></a>, which does not require any fancy IDE or GUI libraries.</p><pre><code class="language-julia hljs">using ProfileSVG
+  ╎53 @Base/client.jl:485; _start()
+  ╎ 53 @Base/client.jl:285; exec_options(opts::Base.JLOptions)
+  ╎  53 @Base/Base.jl:386; include(mod::Module, _path::String)
+  ╎   53 @Base/loading.jl:1170; _include(mapexpr::Function, mod...
+  ╎    53 @Base/loading.jl:1116; include_string(mapexpr::typeof...
+  ╎     53 @Base/boot.jl:360; eval
+  ╎    ╎ 53 ...r/src/Documenter.jl:260; (::Documenter.var&quot;#makedocs##k...
+  ╎    ╎  53 .../src/Documenter.jl:265; #makedocs#1
+  ╎    ╎   53 @Base/file.jl:106; cd(f::Documenter.var&quot;#2#3&quot;{D...
+  ╎    ╎    53 ...src/Documenter.jl:266; #2
+  ╎    ╎     53 ...ties/Selectors.jl:170; dispatch(#unused#::Type{Doc...
+  ╎    ╎    ╎ 53 ...er/src/Builder.jl:226; runner(#unused#::Type{Docum...
+  ╎    ╎    ╎  53 .../src/Expanders.jl:42; expand(doc::Documenter.Docu...
+  ╎    ╎    ╎   53 ...ies/Selectors.jl:170; dispatch(::Type{Documente...
+  ╎    ╎    ╎    53 ...rc/Expanders.jl:665; runner(#unused#::Type{Doc...
+  ╎    ╎    ╎     53 ...rc/IOCapture.jl:75; (::IOCapture.var&quot;#capture...
+  ╎    ╎    ╎    ╎ 53 ...rc/IOCapture.jl:116; capture(f::Documenter.Ex...
+  ╎    ╎    ╎    ╎  53 @Base/logging.jl:603; with_logger
+  ╎    ╎    ╎    ╎   53 @Base/logging.jl:491; with_logstate(f::Funct...
+  ╎    ╎    ╎    ╎    53 .../IOCapture.jl:118; (::IOCapture.var&quot;#3#5&quot;...
+  ╎    ╎    ╎    ╎     53 .../Expanders.jl:666; (::Documenter.Expande...
+  ╎    ╎    ╎    ╎    ╎ 53 @Base/file.jl:106; cd(f::Documenter.Expa...
+  ╎    ╎    ╎    ╎    ╎  53 ...Expanders.jl:667; #20
+  ╎    ╎    ╎    ╎    ╎   53 @Base/boot.jl:360; eval
+  ╎    ╎    ╎    ╎    ╎    53 REPL[1]:3; run_polynomial_stabl...
+  ╎    ╎    ╎    ╎    ╎     1  REPL[1]:3; polynomial_stable(...
+  ╎    ╎    ╎    ╎    ╎    ╎ 1  @Base/range.jl:22; Colon
+  ╎    ╎    ╎    ╎    ╎    ╎  1  @Base/range.jl:24; _colon
+  ╎    ╎    ╎    ╎    ╎    ╎   1  ...e/range.jl:263; StepRange
+  ╎    ╎    ╎    ╎    ╎    ╎    1  .../range.jl:208; StepRange
+  ╎    ╎    ╎    ╎    ╎    ╎     1  .../range.jl:238; steprange_last(...
+ 1╎    ╎    ╎    ╎    ╎    ╎    ╎ 1  @Base/int.jl:262; rem
+  ╎    ╎    ╎    ╎    ╎     51 REPL[1]:4; polynomial_stable(...
+ 1╎    ╎    ╎    ╎    ╎    ╎ 1  @Base/float.jl:326; +
+49╎    ╎    ╎    ╎    ╎    ╎ 50 @Base/math.jl:920; ^
+ 1╎    ╎    ╎    ╎    ╎     1  @Base/range.jl:213; steprange_last(sta...
+Total snapshots: 53</code></pre><p>In order to get more of a visual feel for profiling, there are packages that allow you to generate interactive plots or graphs. In this lab we will use <a href="https://github.com/timholy/ProfileSVG.jl"><code>ProfileSVG.jl</code></a>, which does not require any fancy IDE or GUI libraries.</p><pre><code class="language-julia hljs">using ProfileSVG
 ProfileSVG.save(&quot;./scalar_prof.svg&quot;) # can work with already create traces</code></pre><!DOCTYPE html>
 <html>
 <body>
 <svg version="1.1" width="777" height="555" viewBox="0 0 777 555"
-     xmlns="http://www.w3.org/2000/svg" id="fig-bcbed16a1a544124b73f3c588509136c">
+     xmlns="http://www.w3.org/2000/svg" id="fig-dfcbf6c0ebab484c9934cd744dde561e">
 <defs>
-    <clipPath id="fig-bcbed16a1a544124b73f3c588509136c-clip">
+    <clipPath id="fig-dfcbf6c0ebab484c9934cd744dde561e-clip">
         <rect x="0" y="0" width="777" height="555"/>
     </clipPath>
 </defs>
 <style type="text/css">
-    #fig-bcbed16a1a544124b73f3c588509136c text {
+    #fig-dfcbf6c0ebab484c9934cd744dde561e text {
         pointer-events: none;
         font-family: inherit;
         font-size: 12px;
         fill: #000000;
     }
-    text#fig-bcbed16a1a544124b73f3c588509136c-caption {
+    text#fig-dfcbf6c0ebab484c9934cd744dde561e-caption {
         font-size: 16.8px;
         fill: #000000;
         text-anchor: middle;
     }
-    #fig-bcbed16a1a544124b73f3c588509136c-bg {
+    #fig-dfcbf6c0ebab484c9934cd744dde561e-bg {
         fill: #FFFFFF;
     }
-    #fig-bcbed16a1a544124b73f3c588509136c-viewport rect, #fig-bcbed16a1a544124b73f3c588509136c-viewport path {
+    #fig-dfcbf6c0ebab484c9934cd744dde561e-viewport rect, #fig-dfcbf6c0ebab484c9934cd744dde561e-viewport path {
         vector-effect: non-scaling-stroke;
         fill-opacity: 1;
     }
-    #fig-bcbed16a1a544124b73f3c588509136c-viewport text {
+    #fig-dfcbf6c0ebab484c9934cd744dde561e-viewport text {
         stroke: #000000;
         stroke-width: 0;
         stroke-opacity: 0.35;
     }
-    #fig-bcbed16a1a544124b73f3c588509136c-viewport rect:hover, #fig-bcbed16a1a544124b73f3c588509136c-viewport path:hover {
+    #fig-dfcbf6c0ebab484c9934cd744dde561e-viewport rect:hover, #fig-dfcbf6c0ebab484c9934cd744dde561e-viewport path:hover {
         fill-opacity: 0.75;
         stroke: #000000;
         stroke-width: 0.5;
     }
-    #fig-bcbed16a1a544124b73f3c588509136c-viewport + rect {
+    #fig-dfcbf6c0ebab484c9934cd744dde561e-viewport + rect {
         fill: #FFFFFF;
         opacity: 0.8;
     }
-    text#fig-bcbed16a1a544124b73f3c588509136c-details{
+    text#fig-dfcbf6c0ebab484c9934cd744dde561e-details{
         fill: #000000;
     }
 </style>
-<g id="fig-bcbed16a1a544124b73f3c588509136c-frame" clip-path="url(#fig-bcbed16a1a544124b73f3c588509136c-clip)">
-<rect id="fig-bcbed16a1a544124b73f3c588509136c-bg" x="0" y="0" width="777" height="555"/>
-<text id="fig-bcbed16a1a544124b73f3c588509136c-caption" x="388.5" y="24">Profile results</text>
-<g id="fig-bcbed16a1a544124b73f3c588509136c-viewport" transform="scale(1)">
-<rect x="8" y="504" width="761.4" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
+<g id="fig-dfcbf6c0ebab484c9934cd744dde561e-frame" clip-path="url(#fig-dfcbf6c0ebab484c9934cd744dde561e-clip)">
+<rect id="fig-dfcbf6c0ebab484c9934cd744dde561e-bg" x="0" y="0" width="777" height="555"/>
+<text id="fig-dfcbf6c0ebab484c9934cd744dde561e-caption" x="388.5" y="24">Profile results</text>
+<g id="fig-dfcbf6c0ebab484c9934cd744dde561e-viewport" transform="scale(1)">
+<rect x="8" y="504" width="761.88" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
 <text x="8" dx="4" y="515.25"> in :-1</text>
-<rect x="8" y="489" width="761.4" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<rect x="8" y="489" width="761.88" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="8" dx="4" y="500.25">_start in client.jl:485</text>
-<rect x="8" y="474" width="761.4" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<rect x="8" y="474" width="761.88" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
 <text x="8" dx="4" y="485.25">exec_options in client.jl:285</text>
-<rect x="8" y="459" width="761.4" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<rect x="8" y="459" width="761.88" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="8" dx="4" y="470.25">include in Base.jl:386</text>
-<rect x="8" y="444" width="761.4" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<rect x="8" y="444" width="761.88" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
 <text x="8" dx="4" y="455.25">_include in loading.jl:1170</text>
-<rect x="8" y="429" width="761.4" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<rect x="8" y="429" width="761.88" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="8" dx="4" y="440.25">include_string in loading.jl:1116</text>
-<rect x="8" y="414" width="761.4" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<rect x="8" y="414" width="761.88" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
 <text x="8" dx="4" y="425.25">eval in boot.jl:360</text>
-<rect x="8" y="399" width="761.4" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<rect x="8" y="399" width="761.88" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
 <text x="8" dx="4" y="410.25">makedocs##kw in Documenter.jl:260</text>
-<rect x="8" y="384" width="761.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<rect x="8" y="384" width="761.88" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
 <text x="8" dx="4" y="395.25">#makedocs#1 in Documenter.jl:265</text>
-<rect x="8" y="369" width="761.4" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<rect x="8" y="369" width="761.88" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="8" dx="4" y="380.25">cd in file.jl:106</text>
-<rect x="8" y="354" width="761.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<rect x="8" y="354" width="761.88" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
 <text x="8" dx="4" y="365.25">#2 in Documenter.jl:266</text>
-<rect x="8" y="339" width="761.4" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
+<rect x="8" y="339" width="761.88" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
 <text x="8" dx="4" y="350.25">dispatch in Selectors.jl:170</text>
-<rect x="8" y="324" width="761.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<rect x="8" y="324" width="761.88" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
 <text x="8" dx="4" y="335.25">runner in Builder.jl:226</text>
-<rect x="8" y="309" width="761.4" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<rect x="8" y="309" width="761.88" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
 <text x="8" dx="4" y="320.25">expand in Expanders.jl:42</text>
-<rect x="8" y="294" width="761.4" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
+<rect x="8" y="294" width="761.88" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
 <text x="8" dx="4" y="305.25">dispatch in Selectors.jl:170</text>
-<rect x="8" y="279" width="761.4" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<rect x="8" y="279" width="761.88" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
 <text x="8" dx="4" y="290.25">runner in Expanders.jl:665</text>
-<rect x="8" y="264" width="761.4" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
+<rect x="8" y="264" width="761.88" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
 <text x="8" dx="4" y="275.25">capture##kw in IOCapture.jl:75</text>
-<rect x="8" y="249" width="761.4" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
+<rect x="8" y="249" width="761.88" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
 <text x="8" dx="4" y="260.25">#capture#1 in IOCapture.jl:116</text>
-<rect x="8" y="234" width="761.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<rect x="8" y="234" width="761.88" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
 <text x="8" dx="4" y="245.25">with_logger in logging.jl:603</text>
-<rect x="8" y="219" width="761.4" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
+<rect x="8" y="219" width="761.88" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
 <text x="8" dx="4" y="230.25">with_logstate in logging.jl:491</text>
-<rect x="8" y="204" width="761.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
+<rect x="8" y="204" width="761.88" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
 <text x="8" dx="4" y="215.25">#3 in IOCapture.jl:118</text>
-<rect x="8" y="189" width="761.4" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<rect x="8" y="189" width="761.88" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
 <text x="8" dx="4" y="200.25">#19 in Expanders.jl:666</text>
-<rect x="8" y="174" width="761.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<rect x="8" y="174" width="761.88" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
 <text x="8" dx="4" y="185.25">cd in file.jl:106</text>
-<rect x="8" y="159" width="761.4" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<rect x="8" y="159" width="761.88" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
 <text x="8" dx="4" y="170.25">#20 in Expanders.jl:667</text>
-<rect x="8" y="144" width="761.4" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<rect x="8" y="144" width="761.88" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
 <text x="8" dx="4" y="155.25">eval in boot.jl:360</text>
-<rect x="8" y="129" width="761.4" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<rect x="8" y="129" width="761.88" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="8" dx="4" y="140.25">run_polynomial_stable in REPL[1]:3</text>
-<rect x="8" y="114" width="761.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="8" dx="4" y="125.25">polynomial_stable in REPL[1]:4</text>
-<rect x="8" y="99" width="32.4" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="110.25">+ in float.jl:326</text>
-<rect x="40.4" y="99" width="729" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="40.4" dx="4" y="110.25">^ in math.jl:920</text>
+<rect x="8" y="114" width="14.38" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="8" dx="4" y="125.25">polynomial_stable in REPL[1]:3</text>
+<rect x="8" y="99" width="14.38" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="8" dx="4" y="110.25">Colon in range.jl:22</text>
+<rect x="8" y="84" width="14.38" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="8" dx="4" y="95.25">_colon in range.jl:24</text>
+<rect x="8" y="69" width="14.38" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="8" dx="4" y="80.25">StepRange in range.jl:263</text>
+<rect x="8" y="54" width="14.38" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="8" dx="4" y="65.25">StepRange in range.jl:208</text>
+<rect x="8" y="39" width="14.38" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="8" dx="4" y="50.25">steprange_last in range.jl:238</text>
+<rect x="8" y="24" width="14.38" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="8" dx="4" y="35.25">rem in int.jl:262</text>
+<rect x="22.38" y="114" width="733.12" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="22.38" dx="4" y="125.25">polynomial_stable in REPL[1]:4</text>
+<rect x="22.38" y="99" width="14.37" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="22.38" dx="4" y="110.25">+ in float.jl:326</text>
+<rect x="36.75" y="99" width="718.75" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="36.75" dx="4" y="110.25">^ in math.jl:920</text>
+<rect x="755.5" y="114" width="14.38" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="755.5" dx="4" y="125.25">steprange_last in range.jl:213</text>
 </g></g>
 <script><![CDATA[
 // Snap.svg 0.3.0
@@ -731,10 +754,10 @@ f+=g+"]",i[b]=f}return Function("val","return Snap.path.toString.call(["+i+"])")
 <script><![CDATA[
 if (typeof require === 'function' && define.amd) {
     require(['ProfileSVG'], function (ProfileSVG) {
-        ProfileSVG.initialize("fig-bcbed16a1a544124b73f3c588509136c");
+        ProfileSVG.initialize("fig-dfcbf6c0ebab484c9934cd744dde561e");
     });
 } else {
-    ProfileSVG.initialize("fig-bcbed16a1a544124b73f3c588509136c");
+    ProfileSVG.initialize("fig-dfcbf6c0ebab484c9934cd744dde561e");
 }
 ]]></script>
 </svg>
@@ -758,11 +781,11 @@ if (typeof require === 'function' && define.amd) {
                accumulator = accumulator * x + a[i]
            end
            accumulator
-       end</code><code class="nohighlight hljs ansi" style="display:block;">polynomial (generic function with 1 method)</code></pre><p>Speed up:</p><ul><li>42ns -&gt; 12ns ~ 3.5x on integer valued input </li><li>420ns -&gt; 12ns ~ 15x on real valued input</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $x)</code><code class="nohighlight hljs ansi" style="display:block;">  13.013 ns (0 allocations: 0 bytes)
--166586</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $x)</code><code class="nohighlight hljs ansi" style="display:block;">  42.727 ns (0 allocations: 0 bytes)
--166586</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  15.616 ns (0 allocations: 0 bytes)
--166586.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  442.862 ns (0 allocations: 0 bytes)
--166586.0</code></pre><p>These numbers will be different on different HW.</p><p><strong>BONUS</strong>: The profile trace does not even contain the calling of mathematical operators and is mainly dominated by the iteration utilities. In this case we had to increase the number of runs to <code>1e6</code> to get some meaningful trace.</p><pre><code class="language-julia hljs">@profview run_polynomial(a, xf, Int(1e6))</code></pre><p><img src="../scalar_prof_horner.svg" alt="profile_horner"/></p></p></details><h2 id="Ecosystem-debugging"><a class="docs-heading-anchor" href="#Ecosystem-debugging">Ecosystem debugging</a><a id="Ecosystem-debugging-1"></a><a class="docs-heading-anchor-permalink" href="#Ecosystem-debugging" title="Permalink"></a></h2><p>Let&#39;s now apply what we have learned so far on the much bigger codebase of our <code>Ecosystem</code> and <code>EcosystemCore</code> packages. </p><div class="admonition is-info"><header class="admonition-header">Installation of Ecosystem pkg</header><div class="admonition-body"><p>If you do not have Ecosystem readily available you can get it from our <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/Ecosystem.jl">repository</a>.</p></div></div><pre><code class="language-julia hljs">using Profile, ProfileSVG
+       end</code><code class="nohighlight hljs ansi" style="display:block;">polynomial (generic function with 1 method)</code></pre><p>Speed up:</p><ul><li>42ns -&gt; 12ns ~ 3.5x on integer valued input </li><li>420ns -&gt; 12ns ~ 15x on real valued input</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $x)</code><code class="nohighlight hljs ansi" style="display:block;">  16.333 ns (0 allocations: 0 bytes)
+-8027</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $x)</code><code class="nohighlight hljs ansi" style="display:block;">  57.885 ns (0 allocations: 0 bytes)
+-8027</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  18.036 ns (0 allocations: 0 bytes)
+-8027.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  546.037 ns (0 allocations: 0 bytes)
+-8027.0</code></pre><p>These numbers will be different on different HW.</p><p><strong>BONUS</strong>: The profile trace does not even contain the calling of mathematical operators and is mainly dominated by the iteration utilities. In this case we had to increase the number of runs to <code>1e6</code> to get some meaningful trace.</p><pre><code class="language-julia hljs">@profview run_polynomial(a, xf, Int(1e6))</code></pre><p><img src="../scalar_prof_horner.svg" alt="profile_horner"/></p></p></details><h2 id="Ecosystem-debugging"><a class="docs-heading-anchor" href="#Ecosystem-debugging">Ecosystem debugging</a><a id="Ecosystem-debugging-1"></a><a class="docs-heading-anchor-permalink" href="#Ecosystem-debugging" title="Permalink"></a></h2><p>Let&#39;s now apply what we have learned so far on the much bigger codebase of our <code>Ecosystem</code> and <code>EcosystemCore</code> packages. </p><div class="admonition is-info"><header class="admonition-header">Installation of Ecosystem pkg</header><div class="admonition-body"><p>If you do not have Ecosystem readily available you can get it from our <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/Ecosystem.jl">repository</a>.</p></div></div><pre><code class="language-julia hljs">using Profile, ProfileSVG
 
 function create_world()
     n_grass       = 500
@@ -788,615 +811,605 @@ world = create_world();</code></pre><p>Precompile everything by running one step
 <html>
 <body>
 <svg version="1.1" width="777" height="555" viewBox="0 0 777 555"
-     xmlns="http://www.w3.org/2000/svg" id="fig-b7cfd070f8314b129b0f0ea48ccb3c65">
+     xmlns="http://www.w3.org/2000/svg" id="fig-49e16c547f30457e91c68df5c13899d3">
 <defs>
-    <clipPath id="fig-b7cfd070f8314b129b0f0ea48ccb3c65-clip">
+    <clipPath id="fig-49e16c547f30457e91c68df5c13899d3-clip">
         <rect x="0" y="0" width="777" height="555"/>
     </clipPath>
 </defs>
 <style type="text/css">
-    #fig-b7cfd070f8314b129b0f0ea48ccb3c65 text {
+    #fig-49e16c547f30457e91c68df5c13899d3 text {
         pointer-events: none;
         font-family: inherit;
         font-size: 12px;
         fill: #000000;
     }
-    text#fig-b7cfd070f8314b129b0f0ea48ccb3c65-caption {
+    text#fig-49e16c547f30457e91c68df5c13899d3-caption {
         font-size: 16.8px;
         fill: #000000;
         text-anchor: middle;
     }
-    #fig-b7cfd070f8314b129b0f0ea48ccb3c65-bg {
+    #fig-49e16c547f30457e91c68df5c13899d3-bg {
         fill: #FFFFFF;
     }
-    #fig-b7cfd070f8314b129b0f0ea48ccb3c65-viewport rect, #fig-b7cfd070f8314b129b0f0ea48ccb3c65-viewport path {
+    #fig-49e16c547f30457e91c68df5c13899d3-viewport rect, #fig-49e16c547f30457e91c68df5c13899d3-viewport path {
         vector-effect: non-scaling-stroke;
         fill-opacity: 1;
     }
-    #fig-b7cfd070f8314b129b0f0ea48ccb3c65-viewport text {
+    #fig-49e16c547f30457e91c68df5c13899d3-viewport text {
         stroke: #000000;
         stroke-width: 0;
         stroke-opacity: 0.35;
     }
-    #fig-b7cfd070f8314b129b0f0ea48ccb3c65-viewport rect:hover, #fig-b7cfd070f8314b129b0f0ea48ccb3c65-viewport path:hover {
+    #fig-49e16c547f30457e91c68df5c13899d3-viewport rect:hover, #fig-49e16c547f30457e91c68df5c13899d3-viewport path:hover {
         fill-opacity: 0.75;
         stroke: #000000;
         stroke-width: 0.5;
     }
-    #fig-b7cfd070f8314b129b0f0ea48ccb3c65-viewport + rect {
+    #fig-49e16c547f30457e91c68df5c13899d3-viewport + rect {
         fill: #FFFFFF;
         opacity: 0.8;
     }
-    text#fig-b7cfd070f8314b129b0f0ea48ccb3c65-details{
+    text#fig-49e16c547f30457e91c68df5c13899d3-details{
         fill: #000000;
     }
 </style>
-<g id="fig-b7cfd070f8314b129b0f0ea48ccb3c65-frame" clip-path="url(#fig-b7cfd070f8314b129b0f0ea48ccb3c65-clip)">
-<rect id="fig-b7cfd070f8314b129b0f0ea48ccb3c65-bg" x="0" y="0" width="777" height="555"/>
-<text id="fig-b7cfd070f8314b129b0f0ea48ccb3c65-caption" x="388.5" y="24">Profile results</text>
-<g id="fig-b7cfd070f8314b129b0f0ea48ccb3c65-viewport" transform="scale(1)">
-<rect x="8" y="504" width="760.25" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
+<g id="fig-49e16c547f30457e91c68df5c13899d3-frame" clip-path="url(#fig-49e16c547f30457e91c68df5c13899d3-clip)">
+<rect id="fig-49e16c547f30457e91c68df5c13899d3-bg" x="0" y="0" width="777" height="555"/>
+<text id="fig-49e16c547f30457e91c68df5c13899d3-caption" x="388.5" y="24">Profile results</text>
+<g id="fig-49e16c547f30457e91c68df5c13899d3-viewport" transform="scale(1)">
+<rect x="8" y="504" width="761.08" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
 <text x="8" dx="4" y="515.25"> in :-1</text>
-<rect x="17.04" y="489" width="743.77" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="17.04" dx="4" y="500.25">_start in client.jl:485</text>
-<rect x="17.04" y="474" width="743.77" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="17.04" dx="4" y="485.25">exec_options in client.jl:285</text>
-<rect x="17.04" y="459" width="743.77" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="17.04" dx="4" y="470.25">include in Base.jl:386</text>
-<rect x="17.04" y="444" width="743.77" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="17.04" dx="4" y="455.25">_include in loading.jl:1170</text>
-<rect x="17.04" y="429" width="743.77" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="17.04" dx="4" y="440.25">include_string in loading.jl:1116</text>
-<rect x="17.04" y="414" width="743.77" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="17.04" dx="4" y="425.25">eval in boot.jl:360</text>
-<rect x="17.04" y="399" width="743.77" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="17.04" dx="4" y="410.25">makedocs##kw in Documenter.jl:260</text>
-<rect x="17.04" y="384" width="743.77" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="17.04" dx="4" y="395.25">#makedocs#1 in Documenter.jl:265</text>
-<rect x="17.04" y="369" width="743.77" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="17.04" dx="4" y="380.25">cd in file.jl:106</text>
-<rect x="17.04" y="354" width="743.77" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="17.04" dx="4" y="365.25">#2 in Documenter.jl:266</text>
-<rect x="17.04" y="339" width="743.77" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
-<text x="17.04" dx="4" y="350.25">dispatch in Selectors.jl:170</text>
-<rect x="17.04" y="324" width="743.77" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="17.04" dx="4" y="335.25">runner in Builder.jl:226</text>
-<rect x="17.04" y="309" width="743.77" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="17.04" dx="4" y="320.25">expand in Expanders.jl:42</text>
-<rect x="17.04" y="294" width="743.77" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
-<text x="17.04" dx="4" y="305.25">dispatch in Selectors.jl:170</text>
-<rect x="17.04" y="279" width="743.77" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="17.04" dx="4" y="290.25">runner in Expanders.jl:581</text>
-<rect x="17.04" y="264" width="743.77" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="17.04" dx="4" y="275.25">capture##kw in IOCapture.jl:75</text>
-<rect x="17.04" y="249" width="743.77" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="17.04" dx="4" y="260.25">#capture#1 in IOCapture.jl:116</text>
-<rect x="17.04" y="234" width="743.77" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="17.04" dx="4" y="245.25">with_logger in logging.jl:603</text>
-<rect x="17.04" y="219" width="743.77" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
-<text x="17.04" dx="4" y="230.25">with_logstate in logging.jl:491</text>
-<rect x="17.04" y="204" width="743.77" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="17.04" dx="4" y="215.25">#3 in IOCapture.jl:118</text>
-<rect x="17.04" y="189" width="743.77" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="17.04" dx="4" y="200.25">#15 in Expanders.jl:582</text>
-<rect x="17.04" y="174" width="743.77" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="17.04" dx="4" y="185.25">cd in file.jl:106</text>
-<rect x="17.04" y="159" width="743.77" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="17.04" dx="4" y="170.25">#16 in Expanders.jl:583</text>
-<rect x="17.04" y="144" width="743.77" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="17.04" dx="4" y="155.25">eval in boot.jl:360</text>
-<rect x="17.04" y="129" width="743.77" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/work/Scientific-Programming-in-Julia/Scientific-Programming-in-Julia/src/"/>
-<text x="17.04" dx="4" y="140.25">simulate! in Ecosystem.jl:28</text>
-<rect x="17.04" y="114" width="743.77" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/work/Scientific-Programming-in-Julia/Scientific-Programming-in-Julia/src/"/>
-<text x="17.04" dx="4" y="125.25">#simulate!#1 in Ecosystem.jl:29</text>
-<rect x="17.04" y="99" width="15.95" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="17.04" dx="4" y="110.25">world_step! in world.jl:13</text>
-<rect x="17.04" y="84" width="15.95" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="17.04" dx="4" y="95.25">deepcopy in deepcopy.jl:26</text>
-<rect x="17.04" y="69" width="15.95" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
-<text x="17.04" dx="4" y="80.25">deepcopy_internal in deepcopy.jl:76</text>
-<rect x="17.04" y="54" width="15.95" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="17.04" dx="4" y="65.25">deepcopy_internal in deepcopy.jl:125</text>
-<rect x="17.04" y="39" width="0.26" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="17.04" dx="4" y="50.25">deepcopy_internal in deepcopy.jl:57</text>
-<rect x="17.04" y="24" width="0.26" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="17.04" dx="4" y="35.25">haskey in abstractdict.jl:17</text>
-<rect x="17.04" y="9" width="0.26" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="17.04" dx="4" y="20.25">in in iddict.jl:174</text>
-<rect x="17.04" y="-6" width="0.26" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="17.04" dx="4" y="5.25">get in iddict.jl:87</text>
-<rect x="17.3" y="39" width="1.07" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="17.3" dx="4" y="50.25">deepcopy_internal in deepcopy.jl:61</text>
-<rect x="17.3" y="24" width="1.07" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="17.3" dx="4" y="35.25">setindex! in iddict.jl:81</text>
-<rect x="18.37" y="39" width="0.53" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="18.37" dx="4" y="50.25">deepcopy_internal in deepcopy.jl:64</text>
-<rect x="18.9" y="39" width="12.76" height="15" rx="2" fill="#C5312F" data-dinfo="./"/>
-<text x="18.9" dx="4" y="50.25">deepcopy_internal in deepcopy.jl:65</text>
-<rect x="31.66" y="39" width="0.8" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="31.66" dx="4" y="50.25">deepcopy_internal in deepcopy.jl:66</text>
-<rect x="32.72" y="39" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="32.72" dx="4" y="50.25">setindex! in dict.jl:390</text>
-<rect x="32.72" y="24" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="32.72" dx="4" y="35.25">_setindex! in dict.jl:356</text>
-<rect x="32.72" y="9" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="32.72" dx="4" y="20.25">getproperty in Base.jl:33</text>
-<rect x="32.99" y="99" width="0.26" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="32.99" dx="4" y="110.25">world_step! in world.jl:14</text>
-<rect x="32.99" y="84" width="0.26" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="32.99" dx="4" y="95.25">getproperty in Base.jl:33</text>
-<rect x="33.25" y="99" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="33.25" dx="4" y="110.25">world_step! in world.jl:15</text>
-<rect x="33.25" y="84" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="33.25" dx="4" y="95.25">getindex in dict.jl:481</text>
-<rect x="33.25" y="69" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="33.25" dx="4" y="80.25">ht_keyindex in dict.jl:284</text>
-<rect x="33.25" y="54" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="33.25" dx="4" y="65.25">hashindex in dict.jl:169</text>
-<rect x="33.25" y="39" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="33.25" dx="4" y="50.25">hash in hashing.jl:18</text>
-<rect x="33.25" y="24" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="33.25" dx="4" y="35.25">hash in hashing.jl:71</text>
-<rect x="33.25" y="9" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="33.25" dx="4" y="20.25">hash_uint64 in hashing.jl:62</text>
-<rect x="33.25" y="-6" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="33.25" dx="4" y="5.25">hash_64_64 in hashing.jl:34</text>
-<rect x="33.25" y="-21" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="33.25" dx="4" y="-9.75">&amp;gt;&amp;gt; in int.jl:462</text>
-<rect x="33.25" y="-36" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="33.25" dx="4" y="-24.75">&amp;gt;&amp;gt; in int.jl:456</text>
-<rect x="33.52" y="99" width="727.29" height="15" rx="2" fill="#C5312F" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="33.52" dx="4" y="110.25">world_step! in world.jl:16</text>
-<rect x="33.52" y="84" width="0.26" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="33.52" dx="4" y="95.25">iterate in dict.jl:695</text>
-<rect x="33.52" y="69" width="0.26" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="33.52" dx="4" y="80.25">skip_deleted in dict.jl:670</text>
-<rect x="33.52" y="54" width="0.26" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="33.52" dx="4" y="65.25">isslotfilled in dict.jl:172</text>
-<rect x="33.52" y="39" width="0.26" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="33.52" dx="4" y="50.25">getindex in array.jl:0</text>
-<rect x="33.78" y="84" width="0.54" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="33.78" dx="4" y="95.25">agent_step! in animal.jl:22</text>
-<rect x="33.78" y="69" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
-<text x="33.78" dx="4" y="80.25">rand in Random.jl:256</text>
-<rect x="33.78" y="54" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
-<text x="33.78" dx="4" y="65.25">rand in Random.jl:256</text>
-<rect x="33.78" y="39" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
-<text x="33.78" dx="4" y="50.25">rand in generation.jl:35</text>
-<rect x="33.78" y="24" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
-<text x="33.78" dx="4" y="35.25">rand in Random.jl:253</text>
-<rect x="33.78" y="9" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
-<text x="33.78" dx="4" y="20.25">rand in RNGs.jl:460</text>
-<rect x="33.78" y="-6" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
-<text x="33.78" dx="4" y="5.25">rand_inbounds in RNGs.jl:435</text>
-<rect x="33.78" y="-21" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
-<text x="33.78" dx="4" y="-9.75">mt_pop! in RNGs.jl:225</text>
-<rect x="33.78" y="-36" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="33.78" dx="4" y="-24.75">getindex in array.jl:805</text>
-<rect x="34.05" y="69" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="34.05" dx="4" y="80.25">foodprob in animal.jl:12</text>
-<rect x="34.05" y="54" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="34.05" dx="4" y="65.25">getproperty in Base.jl:33</text>
-<rect x="34.32" y="84" width="311.27" height="15" rx="2" fill="#6FDC91" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="34.32" dx="4" y="95.25">agent_step! in animal.jl:23</text>
-<rect x="34.32" y="69" width="311.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="34.32" dx="4" y="80.25">find_food in animal.jl:41</text>
-<rect x="34.32" y="54" width="311.27" height="15" rx="2" fill="#E40041" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="34.32" dx="4" y="65.25">find_rand in animal.jl:37</text>
-<rect x="34.32" y="39" width="90.11" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="34.32" dx="4" y="50.25">|&amp;gt; in operators.jl:858</text>
-<rect x="34.32" y="24" width="90.11" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="34.32" dx="4" y="35.25">collect in array.jl:602</text>
-<rect x="34.32" y="9" width="90.11" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="34.32" dx="4" y="20.25">_collect in array.jl:608</text>
-<rect x="34.32" y="-6" width="1.06" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="34.32" dx="4" y="5.25">copyto! in abstractarray.jl:0</text>
-<rect x="35.38" y="-6" width="0.53" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="35.38" dx="4" y="5.25">copyto! in abstractarray.jl:840</text>
-<rect x="35.91" y="-6" width="9.31" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="35.91" dx="4" y="5.25">copyto! in abstractarray.jl:846</text>
-<rect x="35.91" y="-21" width="9.31" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="35.91" dx="4" y="-9.75">setindex! in array.jl:843</text>
-<rect x="45.22" y="-6" width="74.69" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="45.22" dx="4" y="5.25">copyto! in abstractarray.jl:847</text>
-<rect x="45.22" y="-21" width="37.21" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="45.22" dx="4" y="-9.75">iterate in dict.jl:695</text>
-<rect x="45.22" y="-36" width="1.06" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="45.22" dx="4" y="-24.75">skip_deleted in dict.jl:669</text>
-<rect x="45.22" y="-51" width="1.06" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="45.22" dx="4" y="-39.75">iterate in range.jl:670</text>
-<rect x="45.22" y="-66" width="1.06" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="45.22" dx="4" y="-54.75">isempty in range.jl:519</text>
-<rect x="45.22" y="-81" width="1.06" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="45.22" dx="4" y="-69.75">&amp;gt; in operators.jl:305</text>
-<rect x="45.22" y="-96" width="1.06" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="45.22" dx="4" y="-84.75">&amp;lt; in int.jl:83</text>
-<rect x="46.28" y="-36" width="13.02" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="46.28" dx="4" y="-24.75">skip_deleted in dict.jl:670</text>
-<rect x="46.28" y="-51" width="5.85" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="46.28" dx="4" y="-39.75">isslotfilled in dict.jl:172</text>
-<rect x="46.28" y="-66" width="5.85" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="46.28" dx="4" y="-54.75">== in promotion.jl:410</text>
-<rect x="59.3" y="-36" width="23.13" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="59.3" dx="4" y="-24.75">skip_deleted in dict.jl:671</text>
-<rect x="59.3" y="-51" width="23.13" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="59.3" dx="4" y="-39.75">iterate in range.jl:674</text>
-<rect x="59.3" y="-66" width="5.59" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="59.3" dx="4" y="-54.75">== in promotion.jl:410</text>
-<rect x="82.43" y="-21" width="17.81" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="82.43" dx="4" y="-9.75">iterate in dict.jl:696</text>
-<rect x="82.43" y="-36" width="17.81" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="82.43" dx="4" y="-24.75">== in promotion.jl:410</text>
-<rect x="100.24" y="-21" width="18.34" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="100.24" dx="4" y="-9.75">iterate in dict.jl:698</text>
-<rect x="100.24" y="-36" width="14.89" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="100.24" dx="4" y="-24.75">getindex in array.jl:805</text>
-<rect x="115.13" y="-36" width="3.45" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="115.13" dx="4" y="-24.75">== in promotion.jl:410</text>
-<rect x="118.58" y="-21" width="1.33" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="118.58" dx="4" y="-9.75">iterate in range.jl:674</text>
-<rect x="118.58" y="-36" width="1.33" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="118.58" dx="4" y="-24.75">== in promotion.jl:410</text>
-<rect x="119.91" y="-6" width="4.52" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="119.91" dx="4" y="5.25">_similar_for in array.jl:575</text>
-<rect x="119.91" y="-21" width="4.52" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="119.91" dx="4" y="-9.75">similar in abstractarray.jl:742</text>
-<rect x="119.91" y="-36" width="4.52" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="119.91" dx="4" y="-24.75">similar in abstractarray.jl:750</text>
-<rect x="119.91" y="-51" width="4.52" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="119.91" dx="4" y="-39.75">Array in boot.jl:457</text>
-<rect x="119.91" y="-66" width="4.52" height="15" rx="2" fill="#FFA400" data-dinfo="./"/>
-<text x="119.91" dx="4" y="-54.75">Array in boot.jl:448</text>
-<rect x="127.62" y="39" width="3.46" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="127.62" dx="4" y="50.25">filter in array.jl:0</text>
-<rect x="131.08" y="39" width="17.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="131.08" dx="4" y="50.25">filter in array.jl:2508</text>
-<rect x="131.08" y="24" width="17.01" height="15" rx="2" fill="#FFA000" data-dinfo="./"/>
-<text x="131.08" dx="4" y="35.25">Array in boot.jl:448</text>
-<rect x="148.09" y="39" width="7.44" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="148.09" dx="4" y="50.25">filter in array.jl:2510</text>
-<rect x="148.09" y="24" width="7.44" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="148.09" dx="4" y="35.25">setindex! in array.jl:843</text>
-<rect x="155.53" y="39" width="183.69" height="15" rx="2" fill="#C5312F" data-dinfo="./"/>
-<text x="155.53" dx="4" y="50.25">filter in array.jl:2511</text>
-<rect x="155.53" y="24" width="10.9" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="155.53" dx="4" y="35.25">iterate in array.jl:781</text>
-<rect x="155.53" y="9" width="9.31" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="155.53" dx="4" y="20.25">getindex in array.jl:805</text>
-<rect x="164.84" y="9" width="1.59" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="164.84" dx="4" y="20.25">&amp;lt; in int.jl:448</text>
-<rect x="164.84" y="-6" width="1.59" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="164.84" dx="4" y="5.25">&amp;lt; in int.jl:441</text>
-<rect x="317.42" y="24" width="0.26" height="15" rx="2" fill="#6FDC91" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="317.42" dx="4" y="35.25">#3 in animal.jl:41</text>
-<rect x="339.22" y="39" width="1.06" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="339.22" dx="4" y="50.25">filter in array.jl:2514</text>
-<rect x="339.22" y="24" width="1.06" height="15" rx="2" fill="#FFA000" data-dinfo="./"/>
-<text x="339.22" dx="4" y="35.25">sizehint! in array.jl:1139</text>
-<rect x="345.59" y="84" width="1.33" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="345.59" dx="4" y="95.25">agent_step! in animal.jl:24</text>
-<rect x="345.59" y="69" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="345.59" dx="4" y="80.25">typeinf_ext_toplevel in typeinfer.jl:921</text>
-<rect x="345.59" y="54" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="345.59" dx="4" y="65.25">typeinf_ext_toplevel in typeinfer.jl:925</text>
-<rect x="345.59" y="39" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="345.59" dx="4" y="50.25">typeinf_ext in typeinfer.jl:892</text>
-<rect x="345.59" y="24" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="345.59" dx="4" y="35.25">typeinf in typeinfer.jl:209</text>
-<rect x="345.59" y="9" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="345.59" dx="4" y="20.25">_typeinf in typeinfer.jl:244</text>
-<rect x="345.59" y="-6" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="345.59" dx="4" y="5.25">optimize in optimize.jl:272</text>
-<rect x="345.59" y="-21" width="0.27" height="15" rx="2" fill="#D42137" data-dinfo="./compiler/ssair/"/>
-<text x="345.59" dx="4" y="-9.75">run_passes in driver.jl:129</text>
-<rect x="345.59" y="-36" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/ssair/"/>
-<text x="345.59" dx="4" y="-24.75">ssa_inlining_pass! in inlining.jl:71</text>
-<rect x="345.59" y="-51" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/ssair/"/>
-<text x="345.59" dx="4" y="-39.75">batch_inline! in inlining.jl:520</text>
-<rect x="345.59" y="-66" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/ssair/"/>
-<text x="345.59" dx="4" y="-54.75">IncrementalCompact in ir.jl:582</text>
-<rect x="345.59" y="-81" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/ssair/"/>
-<text x="345.59" dx="4" y="-69.75">NewNodeStream in ir.jl:240</text>
-<rect x="345.59" y="-96" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/ssair/"/>
-<text x="345.59" dx="4" y="-84.75">NewNodeStream in ir.jl:240</text>
-<rect x="345.59" y="-111" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="345.59" dx="4" y="-99.75">fill in array.jl:449</text>
-<rect x="345.59" y="-126" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="345.59" dx="4" y="-114.75">fill in array.jl:451</text>
-<rect x="345.59" y="-141" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="345.59" dx="4" y="-129.75">Array in boot.jl:457</text>
-<rect x="345.59" y="-156" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="345.59" dx="4" y="-144.75">Array in boot.jl:448</text>
-<rect x="346.92" y="84" width="413.89" height="15" rx="2" fill="#6FDC91" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="346.92" dx="4" y="95.25">agent_step! in animal.jl:31</text>
-<rect x="346.92" y="69" width="362.59" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="346.92" dx="4" y="80.25">reproduce! in animal.jl:58</text>
-<rect x="346.92" y="54" width="362.59" height="15" rx="2" fill="#E40041" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="346.92" dx="4" y="65.25">find_mate in animal.jl:69</text>
-<rect x="347.19" y="39" width="362.32" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="347.19" dx="4" y="50.25">find_rand in animal.jl:37</text>
-<rect x="347.19" y="24" width="112.97" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="347.19" dx="4" y="35.25">|&amp;gt; in operators.jl:858</text>
-<rect x="347.19" y="9" width="112.97" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="347.19" dx="4" y="20.25">collect in array.jl:602</text>
-<rect x="347.19" y="-6" width="112.97" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="347.19" dx="4" y="5.25">_collect in array.jl:608</text>
-<rect x="347.19" y="-21" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="347.19" dx="4" y="-9.75">copyto! in abstractarray.jl:0</text>
-<rect x="347.46" y="-21" width="0.26" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="347.46" dx="4" y="-9.75">copyto! in abstractarray.jl:843</text>
-<rect x="347.46" y="-36" width="0.26" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="347.46" dx="4" y="-24.75">iterate in dict.jl:694</text>
-<rect x="347.46" y="-51" width="0.26" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="347.46" dx="4" y="-39.75">iterate in dict.jl:695</text>
-<rect x="347.46" y="-66" width="0.26" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="347.46" dx="4" y="-54.75">skip_deleted in dict.jl:669</text>
-<rect x="347.46" y="-81" width="0.26" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="347.46" dx="4" y="-69.75">Colon in range.jl:5</text>
-<rect x="347.46" y="-96" width="0.26" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="347.46" dx="4" y="-84.75">UnitRange in range.jl:287</text>
-<rect x="347.46" y="-111" width="0.26" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="347.46" dx="4" y="-99.75">unitrange_last in range.jl:292</text>
-<rect x="347.46" y="-126" width="0.26" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="347.46" dx="4" y="-114.75">- in int.jl:86</text>
-<rect x="347.72" y="-21" width="11.17" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="347.72" dx="4" y="-9.75">copyto! in abstractarray.jl:846</text>
-<rect x="347.72" y="-36" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="347.72" dx="4" y="-24.75">setindex! in array.jl:0</text>
-<rect x="347.99" y="-36" width="10.9" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="347.99" dx="4" y="-24.75">setindex! in array.jl:843</text>
-<rect x="358.89" y="-21" width="91.97" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="358.89" dx="4" y="-9.75">copyto! in abstractarray.jl:847</text>
-<rect x="358.89" y="-36" width="1.59" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="358.89" dx="4" y="-24.75">iterate in dict.jl:694</text>
-<rect x="358.89" y="-51" width="1.59" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="358.89" dx="4" y="-39.75">== in promotion.jl:410</text>
-<rect x="360.48" y="-36" width="46.79" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="360.48" dx="4" y="-24.75">iterate in dict.jl:695</text>
-<rect x="360.48" y="-51" width="3.46" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="360.48" dx="4" y="-39.75">skip_deleted in dict.jl:669</text>
-<rect x="360.48" y="-66" width="1.6" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="360.48" dx="4" y="-54.75">Colon in range.jl:5</text>
-<rect x="360.48" y="-81" width="1.6" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="360.48" dx="4" y="-69.75">UnitRange in range.jl:287</text>
-<rect x="360.48" y="-96" width="1.6" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="360.48" dx="4" y="-84.75">unitrange_last in range.jl:292</text>
-<rect x="360.48" y="-111" width="1.33" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="360.48" dx="4" y="-99.75">- in int.jl:86</text>
-<rect x="362.08" y="-66" width="1.86" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="362.08" dx="4" y="-54.75">iterate in range.jl:670</text>
-<rect x="362.08" y="-81" width="1.86" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="362.08" dx="4" y="-69.75">isempty in range.jl:519</text>
-<rect x="362.08" y="-96" width="1.86" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="362.08" dx="4" y="-84.75">&amp;gt; in operators.jl:305</text>
-<rect x="362.08" y="-111" width="1.86" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="362.08" dx="4" y="-99.75">&amp;lt; in int.jl:83</text>
-<rect x="363.94" y="-51" width="20.47" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="363.94" dx="4" y="-39.75">skip_deleted in dict.jl:670</text>
-<rect x="363.94" y="-66" width="5.31" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="363.94" dx="4" y="-54.75">isslotfilled in dict.jl:172</text>
-<rect x="363.94" y="-81" width="5.31" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="363.94" dx="4" y="-69.75">== in promotion.jl:410</text>
-<rect x="384.41" y="-51" width="22.86" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="384.41" dx="4" y="-39.75">skip_deleted in dict.jl:671</text>
-<rect x="384.41" y="-66" width="22.86" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="384.41" dx="4" y="-54.75">iterate in range.jl:674</text>
-<rect x="384.41" y="-81" width="6.11" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="384.41" dx="4" y="-69.75">== in promotion.jl:410</text>
-<rect x="407.27" y="-36" width="20.46" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="407.27" dx="4" y="-24.75">iterate in dict.jl:696</text>
-<rect x="407.27" y="-51" width="20.46" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="407.27" dx="4" y="-39.75">== in promotion.jl:410</text>
-<rect x="427.73" y="-36" width="21" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="427.73" dx="4" y="-24.75">iterate in dict.jl:698</text>
-<rect x="427.73" y="-51" width="18.08" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="427.73" dx="4" y="-39.75">getindex in array.jl:805</text>
-<rect x="445.81" y="-51" width="2.66" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="445.81" dx="4" y="-39.75">== in promotion.jl:410</text>
-<rect x="448.73" y="-36" width="2.13" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="448.73" dx="4" y="-24.75">iterate in range.jl:674</text>
-<rect x="448.73" y="-51" width="2.13" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="448.73" dx="4" y="-39.75">== in promotion.jl:410</text>
-<rect x="450.86" y="-21" width="9.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="450.86" dx="4" y="-9.75">_similar_for in array.jl:575</text>
-<rect x="450.86" y="-36" width="9.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="450.86" dx="4" y="-24.75">similar in abstractarray.jl:742</text>
-<rect x="450.86" y="-51" width="9.3" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="450.86" dx="4" y="-39.75">similar in abstractarray.jl:750</text>
-<rect x="450.86" y="-66" width="9.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="450.86" dx="4" y="-54.75">Array in boot.jl:457</text>
-<rect x="450.86" y="-81" width="9.3" height="15" rx="2" fill="#E4A71C" data-dinfo="./"/>
-<text x="450.86" dx="4" y="-69.75">Array in boot.jl:448</text>
-<rect x="467.87" y="24" width="1.6" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="467.87" dx="4" y="35.25">filter in array.jl:0</text>
-<rect x="469.47" y="24" width="17.54" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="469.47" dx="4" y="35.25">filter in array.jl:2508</text>
-<rect x="469.47" y="9" width="17.54" height="15" rx="2" fill="#E4A71C" data-dinfo="./"/>
-<text x="469.47" dx="4" y="20.25">Array in boot.jl:448</text>
-<rect x="487.01" y="24" width="12.23" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="487.01" dx="4" y="35.25">filter in array.jl:2510</text>
-<rect x="487.01" y="9" width="12.23" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="487.01" dx="4" y="20.25">setindex! in array.jl:843</text>
-<rect x="499.24" y="24" width="197.77" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="499.24" dx="4" y="35.25">filter in array.jl:2511</text>
-<rect x="499.24" y="9" width="15.15" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="499.24" dx="4" y="20.25">iterate in array.jl:781</text>
-<rect x="499.24" y="-6" width="13.56" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="499.24" dx="4" y="5.25">getindex in array.jl:805</text>
-<rect x="512.8" y="-6" width="1.59" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="512.8" dx="4" y="5.25">&amp;lt; in int.jl:448</text>
-<rect x="512.8" y="-21" width="1.59" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="512.8" dx="4" y="-9.75">&amp;lt; in int.jl:441</text>
-<rect x="672.56" y="9" width="0.26" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="672.56" dx="4" y="20.25">typeinf_ext_toplevel in typeinfer.jl:921</text>
-<rect x="672.56" y="-6" width="0.26" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="672.56" dx="4" y="5.25">typeinf_ext_toplevel in typeinfer.jl:925</text>
-<rect x="672.56" y="-21" width="0.26" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="672.56" dx="4" y="-9.75">typeinf_ext in typeinfer.jl:892</text>
-<rect x="672.56" y="-36" width="0.26" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="672.56" dx="4" y="-24.75">typeinf in typeinfer.jl:209</text>
-<rect x="672.56" y="-51" width="0.26" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="672.56" dx="4" y="-39.75">_typeinf in typeinfer.jl:244</text>
-<rect x="672.56" y="-66" width="0.26" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="672.56" dx="4" y="-54.75">optimize in optimize.jl:272</text>
-<rect x="672.56" y="-81" width="0.26" height="15" rx="2" fill="#D42137" data-dinfo="./compiler/ssair/"/>
-<text x="672.56" dx="4" y="-69.75">run_passes in driver.jl:129</text>
-<rect x="697.01" y="24" width="5.05" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="697.01" dx="4" y="35.25">filter in array.jl:2514</text>
-<rect x="697.01" y="9" width="5.05" height="15" rx="2" fill="#E4A71C" data-dinfo="./"/>
-<text x="697.01" dx="4" y="20.25">sizehint! in array.jl:1139</text>
-<rect x="709.51" y="69" width="0.26" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="709.51" dx="4" y="80.25">reproduce! in animal.jl:59</text>
-<rect x="709.77" y="69" width="48.91" height="15" rx="2" fill="#C5312F" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="709.77" dx="4" y="80.25">reproduce! in animal.jl:61</text>
-<rect x="709.77" y="54" width="1.86" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="709.77" dx="4" y="65.25">fieldnames in reflection.jl:177</text>
-<rect x="713.76" y="54" width="5.85" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="65.25">typeinf_ext_toplevel in typeinfer.jl:921</text>
-<rect x="713.76" y="39" width="5.85" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="50.25">typeinf_ext_toplevel in typeinfer.jl:925</text>
-<rect x="713.76" y="24" width="5.85" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="35.25">typeinf_ext in typeinfer.jl:892</text>
-<rect x="713.76" y="9" width="5.85" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="20.25">typeinf in typeinfer.jl:209</text>
-<rect x="713.76" y="-6" width="5.58" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="5.25">_typeinf in typeinfer.jl:214</text>
-<rect x="713.76" y="-21" width="5.58" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-9.75">typeinf_nocycle in abstractinterpretation.jl:1534</text>
-<rect x="713.76" y="-36" width="1.33" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-24.75">typeinf_local in abstractinterpretation.jl:1455</text>
-<rect x="713.76" y="-51" width="1.33" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-39.75">abstract_eval_statement in abstractinterpretation.jl:1182</text>
-<rect x="713.76" y="-66" width="1.33" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-54.75">abstract_call in abstractinterpretation.jl:1055</text>
-<rect x="713.76" y="-81" width="1.33" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-69.75">abstract_call in abstractinterpretation.jl:1071</text>
-<rect x="713.76" y="-96" width="1.33" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-84.75">abstract_call_known in abstractinterpretation.jl:997</text>
-<rect x="713.76" y="-111" width="1.33" height="15" rx="2" fill="#D42137" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-99.75">return_type_tfunc in tfuncs.jl:1598</text>
-<rect x="713.76" y="-126" width="1.33" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-114.75">abstract_call in abstractinterpretation.jl:1071</text>
-<rect x="713.76" y="-141" width="1.33" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-129.75">abstract_call_known in abstractinterpretation.jl:1048</text>
-<rect x="713.76" y="-156" width="1.33" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-144.75">abstract_call_gf_by_type in abstractinterpretation.jl:143</text>
-<rect x="713.76" y="-171" width="1.33" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-159.75">abstract_call_method in abstractinterpretation.jl:490</text>
-<rect x="713.76" y="-186" width="1.33" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-174.75">typeinf_edge in typeinfer.jl:806</text>
-<rect x="713.76" y="-201" width="1.33" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-189.75">typeinf in typeinfer.jl:209</text>
-<rect x="713.76" y="-216" width="0.8" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-204.75">_typeinf in typeinfer.jl:214</text>
-<rect x="713.76" y="-231" width="0.8" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="713.76" dx="4" y="-219.75">typeinf_nocycle in abstractinterpretation.jl:1534</text>
-<rect x="714.56" y="-216" width="0.53" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="714.56" dx="4" y="-204.75">_typeinf in typeinfer.jl:244</text>
-<rect x="714.56" y="-231" width="0.53" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="714.56" dx="4" y="-219.75">optimize in optimize.jl:272</text>
-<rect x="715.09" y="-36" width="4.25" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-24.75">typeinf_local in abstractinterpretation.jl:1470</text>
-<rect x="715.09" y="-51" width="4.25" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-39.75">abstract_eval_statement in abstractinterpretation.jl:1182</text>
-<rect x="715.09" y="-66" width="4.25" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-54.75">abstract_call in abstractinterpretation.jl:1055</text>
-<rect x="715.09" y="-81" width="4.25" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-69.75">abstract_call in abstractinterpretation.jl:1071</text>
-<rect x="715.09" y="-96" width="4.25" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-84.75">abstract_call_known in abstractinterpretation.jl:1048</text>
-<rect x="715.09" y="-111" width="3.99" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-99.75">abstract_call_gf_by_type in abstractinterpretation.jl:143</text>
-<rect x="715.09" y="-126" width="3.99" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-114.75">abstract_call_method in abstractinterpretation.jl:490</text>
-<rect x="715.09" y="-141" width="3.99" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-129.75">typeinf_edge in typeinfer.jl:806</text>
-<rect x="715.09" y="-156" width="3.99" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-144.75">typeinf in typeinfer.jl:209</text>
-<rect x="715.09" y="-171" width="3.19" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-159.75">_typeinf in typeinfer.jl:214</text>
-<rect x="715.09" y="-186" width="3.19" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-174.75">typeinf_nocycle in abstractinterpretation.jl:1534</text>
-<rect x="715.09" y="-201" width="3.19" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-189.75">typeinf_local in abstractinterpretation.jl:1470</text>
-<rect x="715.09" y="-216" width="3.19" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-204.75">abstract_eval_statement in abstractinterpretation.jl:1182</text>
-<rect x="715.09" y="-231" width="3.19" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="715.09" dx="4" y="-219.75">abstract_call in abstractinterpretation.jl:1055</text>
-<rect x="718.28" y="-171" width="0.8" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="718.28" dx="4" y="-159.75">_typeinf in typeinfer.jl:244</text>
-<rect x="718.28" y="-186" width="0.8" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="718.28" dx="4" y="-174.75">optimize in optimize.jl:272</text>
-<rect x="718.28" y="-201" width="0.53" height="15" rx="2" fill="#D42137" data-dinfo="./compiler/ssair/"/>
-<text x="718.28" dx="4" y="-189.75">run_passes in driver.jl:129</text>
-<rect x="718.28" y="-216" width="0.53" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/ssair/"/>
-<text x="718.28" dx="4" y="-204.75">ssa_inlining_pass! in inlining.jl:68</text>
-<rect x="718.28" y="-231" width="0.53" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/ssair/"/>
-<text x="718.28" dx="4" y="-219.75">assemble_inline_todo! in inlining.jl:1203</text>
-<rect x="718.81" y="-201" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/ssair/"/>
-<text x="718.81" dx="4" y="-189.75">run_passes in driver.jl:136</text>
-<rect x="718.81" y="-216" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/ssair/"/>
-<text x="718.81" dx="4" y="-204.75">adce_pass! in passes.jl:874</text>
-<rect x="718.81" y="-231" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/ssair/"/>
-<text x="718.81" dx="4" y="-219.75">iterate in ir.jl:1248</text>
-<rect x="719.08" y="-111" width="0.26" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
-<text x="719.08" dx="4" y="-99.75">abstract_call_gf_by_type in abstractinterpretation.jl:168</text>
-<rect x="719.08" y="-126" width="0.26" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="719.08" dx="4" y="-114.75">abstract_call_method_with_const_args in abstractinterpretation.jl:330</text>
-<rect x="719.08" y="-141" width="0.26" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="719.08" dx="4" y="-129.75">typeinf in typeinfer.jl:209</text>
-<rect x="719.08" y="-156" width="0.26" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="719.08" dx="4" y="-144.75">_typeinf in typeinfer.jl:245</text>
-<rect x="719.08" y="-171" width="0.26" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="719.08" dx="4" y="-159.75">finish in typeinfer.jl:469</text>
-<rect x="719.08" y="-186" width="0.26" height="15" rx="2" fill="#E40041" data-dinfo="./compiler/"/>
-<text x="719.08" dx="4" y="-174.75">widen_all_consts! in typeinfer.jl:501</text>
-<rect x="719.34" y="-6" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="719.34" dx="4" y="5.25">_typeinf in typeinfer.jl:227</text>
-<rect x="719.34" y="-21" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
-<text x="719.34" dx="4" y="-9.75">finish in typeinfer.jl:455</text>
-<rect x="719.34" y="-36" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
-<text x="719.34" dx="4" y="-24.75">type_annotate! in typeinfer.jl:608</text>
-<rect x="719.34" y="-51" width="0.27" height="15" rx="2" fill="#D42137" data-dinfo="./compiler/"/>
-<text x="719.34" dx="4" y="-39.75">record_slot_assign! in typeinfer.jl:575</text>
-<rect x="719.34" y="-66" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
-<text x="719.34" dx="4" y="-54.75">widenconst in typelattice.jl:234</text>
-<rect x="757.35" y="54" width="1.07" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="757.35" dx="4" y="65.25">collect in array.jl:678</text>
-<rect x="757.35" y="39" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="757.35" dx="4" y="50.25">grow_to! in array.jl:743</text>
-<rect x="757.35" y="24" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="757.35" dx="4" y="35.25">iterate in generator.jl:47</text>
-<rect x="757.35" y="9" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="757.35" dx="4" y="20.25">#5 in none:0</text>
-<rect x="757.35" y="-6" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="757.35" dx="4" y="5.25">getproperty in Base.jl:33</text>
-<rect x="757.62" y="39" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="757.62" dx="4" y="50.25">grow_to! in array.jl:746</text>
-<rect x="757.62" y="24" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="757.62" dx="4" y="35.25">push! in array.jl:933</text>
-<rect x="757.62" y="9" width="0.27" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="757.62" dx="4" y="20.25">_growend! in array.jl:888</text>
-<rect x="757.89" y="39" width="0.53" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="757.89" dx="4" y="50.25">grow_to! in array.jl:747</text>
-<rect x="757.89" y="24" width="0.53" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="757.89" dx="4" y="35.25">grow_to! in array.jl:774</text>
-<rect x="757.89" y="9" width="0.53" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="757.89" dx="4" y="20.25">iterate in generator.jl:47</text>
-<rect x="757.89" y="-6" width="0.53" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="757.89" dx="4" y="5.25">#5 in none:0</text>
-<rect x="757.89" y="-21" width="0.53" height="15" rx="2" fill="#F6A60A" data-dinfo="./"/>
-<text x="757.89" dx="4" y="-9.75">getproperty in Base.jl:33</text>
-<rect x="758.68" y="69" width="1.86" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="758.68" dx="4" y="80.25">reproduce! in animal.jl:63</text>
-<rect x="760.54" y="69" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
-<text x="760.54" dx="4" y="80.25">reproduce! in animal.jl:64</text>
-<rect x="760.54" y="54" width="0.27" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="760.54" dx="4" y="65.25">setindex! in dict.jl:390</text>
-<rect x="760.54" y="39" width="0.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="760.54" dx="4" y="50.25">_setindex! in dict.jl:358</text>
-<rect x="760.54" y="24" width="0.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="760.54" dx="4" y="35.25">getproperty in Base.jl:33</text>
+<rect x="16.62" y="489" width="745.03" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="16.62" dx="4" y="500.25">_start in client.jl:485</text>
+<rect x="16.62" y="474" width="745.03" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="16.62" dx="4" y="485.25">exec_options in client.jl:285</text>
+<rect x="16.62" y="459" width="745.03" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="16.62" dx="4" y="470.25">include in Base.jl:386</text>
+<rect x="16.62" y="444" width="745.03" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="16.62" dx="4" y="455.25">_include in loading.jl:1170</text>
+<rect x="16.62" y="429" width="745.03" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="16.62" dx="4" y="440.25">include_string in loading.jl:1116</text>
+<rect x="16.62" y="414" width="745.03" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="16.62" dx="4" y="425.25">eval in boot.jl:360</text>
+<rect x="16.62" y="399" width="745.03" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="16.62" dx="4" y="410.25">makedocs##kw in Documenter.jl:260</text>
+<rect x="16.62" y="384" width="745.03" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="16.62" dx="4" y="395.25">#makedocs#1 in Documenter.jl:265</text>
+<rect x="16.62" y="369" width="745.03" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="16.62" dx="4" y="380.25">cd in file.jl:106</text>
+<rect x="16.62" y="354" width="745.03" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="16.62" dx="4" y="365.25">#2 in Documenter.jl:266</text>
+<rect x="16.62" y="339" width="745.03" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
+<text x="16.62" dx="4" y="350.25">dispatch in Selectors.jl:170</text>
+<rect x="16.62" y="324" width="745.03" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="16.62" dx="4" y="335.25">runner in Builder.jl:226</text>
+<rect x="16.62" y="309" width="745.03" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="16.62" dx="4" y="320.25">expand in Expanders.jl:42</text>
+<rect x="16.62" y="294" width="745.03" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
+<text x="16.62" dx="4" y="305.25">dispatch in Selectors.jl:170</text>
+<rect x="16.62" y="279" width="745.03" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="16.62" dx="4" y="290.25">runner in Expanders.jl:581</text>
+<rect x="16.62" y="264" width="745.03" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
+<text x="16.62" dx="4" y="275.25">capture##kw in IOCapture.jl:75</text>
+<rect x="16.62" y="249" width="745.03" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
+<text x="16.62" dx="4" y="260.25">#capture#1 in IOCapture.jl:116</text>
+<rect x="16.62" y="234" width="745.03" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="16.62" dx="4" y="245.25">with_logger in logging.jl:603</text>
+<rect x="16.62" y="219" width="745.03" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
+<text x="16.62" dx="4" y="230.25">with_logstate in logging.jl:491</text>
+<rect x="16.62" y="204" width="745.03" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
+<text x="16.62" dx="4" y="215.25">#3 in IOCapture.jl:118</text>
+<rect x="16.62" y="189" width="745.03" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="16.62" dx="4" y="200.25">#15 in Expanders.jl:582</text>
+<rect x="16.62" y="174" width="745.03" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="16.62" dx="4" y="185.25">cd in file.jl:106</text>
+<rect x="16.62" y="159" width="745.03" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="16.62" dx="4" y="170.25">#16 in Expanders.jl:583</text>
+<rect x="16.62" y="144" width="745.03" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="16.62" dx="4" y="155.25">eval in boot.jl:360</text>
+<rect x="16.62" y="129" width="745.03" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/work/Scientific-Programming-in-Julia/Scientific-Programming-in-Julia/src/"/>
+<text x="16.62" dx="4" y="140.25">simulate! in Ecosystem.jl:28</text>
+<rect x="16.62" y="114" width="745.03" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/work/Scientific-Programming-in-Julia/Scientific-Programming-in-Julia/src/"/>
+<text x="16.62" dx="4" y="125.25">#simulate!#1 in Ecosystem.jl:29</text>
+<rect x="16.62" y="99" width="15.46" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="16.62" dx="4" y="110.25">world_step! in world.jl:13</text>
+<rect x="16.62" y="84" width="15.46" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="16.62" dx="4" y="95.25">deepcopy in deepcopy.jl:26</text>
+<rect x="16.62" y="69" width="15.46" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
+<text x="16.62" dx="4" y="80.25">deepcopy_internal in deepcopy.jl:76</text>
+<rect x="16.62" y="54" width="15.46" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="16.62" dx="4" y="65.25">deepcopy_internal in deepcopy.jl:125</text>
+<rect x="16.62" y="39" width="0.6" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="16.62" dx="4" y="50.25">deepcopy_internal in deepcopy.jl:61</text>
+<rect x="16.62" y="24" width="0.6" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="16.62" dx="4" y="35.25">setindex! in iddict.jl:81</text>
+<rect x="17.22" y="39" width="0.59" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="17.22" dx="4" y="50.25">deepcopy_internal in deepcopy.jl:63</text>
+<rect x="17.81" y="39" width="1.19" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="17.81" dx="4" y="50.25">deepcopy_internal in deepcopy.jl:64</text>
+<rect x="19" y="39" width="11.3" height="15" rx="2" fill="#C5312F" data-dinfo="./"/>
+<text x="19" dx="4" y="50.25">deepcopy_internal in deepcopy.jl:65</text>
+<rect x="30.3" y="39" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="30.3" dx="4" y="50.25">deepcopy_internal in deepcopy.jl:66</text>
+<rect x="30.59" y="39" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="30.59" dx="4" y="50.25">deepcopy_internal in deepcopy.jl:85</text>
+<rect x="30.89" y="39" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="30.89" dx="4" y="50.25">iterate in dict.jl:688</text>
+<rect x="30.89" y="24" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="30.89" dx="4" y="35.25">_iterate in dict.jl:684</text>
+<rect x="30.89" y="9" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="30.89" dx="4" y="20.25">getindex in array.jl:805</text>
+<rect x="31.78" y="39" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="31.78" dx="4" y="50.25">setindex! in dict.jl:390</text>
+<rect x="31.78" y="24" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="31.78" dx="4" y="35.25">_setindex! in dict.jl:369</text>
+<rect x="31.78" y="9" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="31.78" dx="4" y="20.25">rehash! in dict.jl:200</text>
+<rect x="31.78" y="-6" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="31.78" dx="4" y="5.25">== in promotion.jl:410</text>
+<rect x="32.08" y="99" width="729.57" height="15" rx="2" fill="#C5312F" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="32.08" dx="4" y="110.25">world_step! in world.jl:16</text>
+<rect x="32.08" y="84" width="302.35" height="15" rx="2" fill="#6FDC91" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="32.08" dx="4" y="95.25">agent_step! in animal.jl:23</text>
+<rect x="32.08" y="69" width="302.35" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="32.08" dx="4" y="80.25">find_food in animal.jl:41</text>
+<rect x="32.08" y="54" width="301.76" height="15" rx="2" fill="#E40041" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="32.08" dx="4" y="65.25">find_rand in animal.jl:37</text>
+<rect x="32.08" y="39" width="89.49" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="32.08" dx="4" y="50.25">|&amp;gt; in operators.jl:858</text>
+<rect x="32.08" y="24" width="89.49" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="32.08" dx="4" y="35.25">collect in array.jl:602</text>
+<rect x="32.08" y="9" width="89.49" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="32.08" dx="4" y="20.25">_collect in array.jl:608</text>
+<rect x="32.08" y="-6" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="32.08" dx="4" y="5.25">copyto! in abstractarray.jl:0</text>
+<rect x="32.38" y="-6" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="32.38" dx="4" y="5.25">copyto! in abstractarray.jl:843</text>
+<rect x="32.38" y="-21" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="32.38" dx="4" y="-9.75">iterate in dict.jl:694</text>
+<rect x="32.38" y="-36" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="32.38" dx="4" y="-24.75">iterate in dict.jl:695</text>
+<rect x="32.38" y="-51" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="32.38" dx="4" y="-39.75">skip_deleted in dict.jl:670</text>
+<rect x="32.68" y="-6" width="5.94" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="32.68" dx="4" y="5.25">copyto! in abstractarray.jl:846</text>
+<rect x="32.68" y="-21" width="0.29" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="32.68" dx="4" y="-9.75">setindex! in array.jl:0</text>
+<rect x="32.97" y="-21" width="5.65" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="32.97" dx="4" y="-9.75">setindex! in array.jl:843</text>
+<rect x="38.62" y="-6" width="72.24" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="38.62" dx="4" y="5.25">copyto! in abstractarray.jl:847</text>
+<rect x="38.62" y="-21" width="2.38" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="38.62" dx="4" y="-9.75">iterate in dict.jl:694</text>
+<rect x="38.62" y="-36" width="2.38" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="38.62" dx="4" y="-24.75">== in promotion.jl:410</text>
+<rect x="41" y="-21" width="35.38" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="41" dx="4" y="-9.75">iterate in dict.jl:695</text>
+<rect x="41" y="-36" width="1.49" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="41" dx="4" y="-24.75">skip_deleted in dict.jl:669</text>
+<rect x="41" y="-51" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="41" dx="4" y="-39.75">Colon in range.jl:5</text>
+<rect x="41" y="-66" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="41" dx="4" y="-54.75">UnitRange in range.jl:287</text>
+<rect x="41" y="-81" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="41" dx="4" y="-69.75">unitrange_last in range.jl:292</text>
+<rect x="41" y="-96" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="41" dx="4" y="-84.75">- in int.jl:86</text>
+<rect x="41.3" y="-51" width="1.19" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="41.3" dx="4" y="-39.75">iterate in range.jl:670</text>
+<rect x="41.3" y="-66" width="1.19" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="41.3" dx="4" y="-54.75">isempty in range.jl:519</text>
+<rect x="41.3" y="-81" width="1.19" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="41.3" dx="4" y="-69.75">&amp;gt; in operators.jl:305</text>
+<rect x="41.3" y="-96" width="1.19" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="41.3" dx="4" y="-84.75">&amp;lt; in int.jl:83</text>
+<rect x="42.49" y="-36" width="14.56" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="42.49" dx="4" y="-24.75">skip_deleted in dict.jl:670</text>
+<rect x="42.49" y="-51" width="6.24" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="42.49" dx="4" y="-39.75">isslotfilled in dict.jl:172</text>
+<rect x="42.49" y="-66" width="6.24" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="42.49" dx="4" y="-54.75">== in promotion.jl:410</text>
+<rect x="57.05" y="-36" width="19.33" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="57.05" dx="4" y="-24.75">skip_deleted in dict.jl:671</text>
+<rect x="57.05" y="-51" width="19.33" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="57.05" dx="4" y="-39.75">iterate in range.jl:674</text>
+<rect x="57.05" y="-66" width="3.57" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="57.05" dx="4" y="-54.75">== in promotion.jl:410</text>
+<rect x="76.38" y="-21" width="16.05" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="76.38" dx="4" y="-9.75">iterate in dict.jl:696</text>
+<rect x="76.38" y="-36" width="16.05" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="76.38" dx="4" y="-24.75">== in promotion.jl:410</text>
+<rect x="92.43" y="-21" width="16.35" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="92.43" dx="4" y="-9.75">iterate in dict.jl:698</text>
+<rect x="92.43" y="-36" width="14.57" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="92.43" dx="4" y="-24.75">getindex in array.jl:805</text>
+<rect x="107" y="-36" width="1.49" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="107" dx="4" y="-24.75">== in promotion.jl:410</text>
+<rect x="108.78" y="-21" width="2.08" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="108.78" dx="4" y="-9.75">iterate in range.jl:674</text>
+<rect x="108.78" y="-36" width="2.08" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="108.78" dx="4" y="-24.75">== in promotion.jl:410</text>
+<rect x="110.86" y="-6" width="10.71" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="110.86" dx="4" y="5.25">_similar_for in array.jl:575</text>
+<rect x="110.86" y="-21" width="10.71" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="110.86" dx="4" y="-9.75">similar in abstractarray.jl:742</text>
+<rect x="110.86" y="-36" width="10.71" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="110.86" dx="4" y="-24.75">similar in abstractarray.jl:750</text>
+<rect x="110.86" y="-51" width="10.71" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="110.86" dx="4" y="-39.75">Array in boot.jl:457</text>
+<rect x="110.86" y="-66" width="10.71" height="15" rx="2" fill="#FFA000" data-dinfo="./"/>
+<text x="110.86" dx="4" y="-54.75">Array in boot.jl:448</text>
+<rect x="129.89" y="39" width="1.79" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="129.89" dx="4" y="50.25">filter in array.jl:0</text>
+<rect x="131.68" y="39" width="9.51" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="131.68" dx="4" y="50.25">filter in array.jl:2508</text>
+<rect x="131.68" y="24" width="9.51" height="15" rx="2" fill="#FFA000" data-dinfo="./"/>
+<text x="131.68" dx="4" y="35.25">Array in boot.jl:448</text>
+<rect x="141.19" y="39" width="5.35" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="141.19" dx="4" y="50.25">filter in array.jl:2510</text>
+<rect x="141.19" y="24" width="5.35" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="141.19" dx="4" y="35.25">setindex! in array.jl:843</text>
+<rect x="146.54" y="39" width="182.24" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
+<text x="146.54" dx="4" y="50.25">filter in array.jl:2511</text>
+<rect x="146.54" y="24" width="14.27" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="146.54" dx="4" y="35.25">iterate in array.jl:781</text>
+<rect x="146.54" y="9" width="11.89" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="146.54" dx="4" y="20.25">getindex in array.jl:805</text>
+<rect x="158.43" y="9" width="2.38" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="158.43" dx="4" y="20.25">&amp;lt; in int.jl:448</text>
+<rect x="158.43" y="-6" width="2.38" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="158.43" dx="4" y="5.25">&amp;lt; in int.jl:441</text>
+<rect x="305.89" y="24" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="305.89" dx="4" y="35.25">typeinf_ext_toplevel in typeinfer.jl:921</text>
+<rect x="305.89" y="9" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="305.89" dx="4" y="20.25">typeinf_ext_toplevel in typeinfer.jl:925</text>
+<rect x="305.89" y="-6" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="305.89" dx="4" y="5.25">typeinf_ext in typeinfer.jl:890</text>
+<rect x="305.89" y="-21" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="305.89" dx="4" y="-9.75">InferenceState in inferencestate.jl:205</text>
+<rect x="305.89" y="-36" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="305.89" dx="4" y="-24.75">retrieve_code_info in utilities.jl:127</text>
+<rect x="328.78" y="39" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="328.78" dx="4" y="50.25">filter in array.jl:2514</text>
+<rect x="328.78" y="24" width="0.3" height="15" rx="2" fill="#FFA000" data-dinfo="./"/>
+<text x="328.78" dx="4" y="35.25">sizehint! in array.jl:1139</text>
+<rect x="333.84" y="54" width="0.59" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="333.84" dx="4" y="65.25">find_rand in animal.jl:38</text>
+<rect x="333.84" y="39" width="0.59" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/StatsBase/Q76Ni/src/"/>
+<text x="333.84" dx="4" y="50.25">sample in sampling.jl:432</text>
+<rect x="333.84" y="24" width="0.59" height="15" rx="2" fill="#6FDC91" data-dinfo="/home/runner/.julia/packages/StatsBase/Q76Ni/src/"/>
+<text x="333.84" dx="4" y="35.25">sample in sampling.jl:431</text>
+<rect x="333.84" y="9" width="0.59" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="333.84" dx="4" y="20.25">rand in Random.jl:253</text>
+<rect x="333.84" y="-6" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="333.84" dx="4" y="5.25">rand in int.jl:0</text>
+<rect x="334.14" y="-6" width="0.29" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="334.14" dx="4" y="5.25">rand in generation.jl:332</text>
+<rect x="334.14" y="-21" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="334.14" dx="4" y="-9.75">rand in Random.jl:256</text>
+<rect x="334.14" y="-36" width="0.29" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="334.14" dx="4" y="-24.75">rand in RNGs.jl:413</text>
+<rect x="334.14" y="-51" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="334.14" dx="4" y="-39.75">rand in RNGs.jl:464</text>
+<rect x="334.14" y="-66" width="0.29" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="334.14" dx="4" y="-54.75">mt_pop! in RNGs.jl:301</text>
+<rect x="334.14" y="-81" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="334.14" dx="4" y="-69.75">* in int.jl:88</text>
+<rect x="334.43" y="84" width="1.79" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="334.43" dx="4" y="95.25">agent_step! in animal.jl:24</text>
+<rect x="334.43" y="69" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="334.43" dx="4" y="80.25">typeinf_ext_toplevel in typeinfer.jl:921</text>
+<rect x="334.43" y="54" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="334.43" dx="4" y="65.25">typeinf_ext_toplevel in typeinfer.jl:925</text>
+<rect x="334.43" y="39" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="334.43" dx="4" y="50.25">typeinf_ext in typeinfer.jl:890</text>
+<rect x="334.43" y="24" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="334.43" dx="4" y="35.25">InferenceResult in types.jl:33</text>
+<rect x="334.43" y="9" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="334.43" dx="4" y="20.25">InferenceResult in types.jl:33</text>
+<rect x="334.43" y="-6" width="0.3" height="15" rx="2" fill="#F3004D" data-dinfo="./compiler/"/>
+<text x="334.43" dx="4" y="5.25">matching_cache_argtypes in inferenceresult.jl:50</text>
+<rect x="336.22" y="84" width="425.13" height="15" rx="2" fill="#6FDC91" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="336.22" dx="4" y="95.25">agent_step! in animal.jl:31</text>
+<rect x="336.22" y="69" width="360.62" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="336.22" dx="4" y="80.25">reproduce! in animal.jl:58</text>
+<rect x="336.22" y="54" width="360.62" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="336.22" dx="4" y="65.25">find_mate in animal.jl:69</text>
+<rect x="336.22" y="39" width="360.32" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="336.22" dx="4" y="50.25">find_rand in animal.jl:37</text>
+<rect x="336.22" y="24" width="111.48" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="336.22" dx="4" y="35.25">|&amp;gt; in operators.jl:858</text>
+<rect x="336.22" y="9" width="111.48" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="336.22" dx="4" y="20.25">collect in array.jl:602</text>
+<rect x="336.22" y="-6" width="111.48" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="336.22" dx="4" y="5.25">_collect in array.jl:608</text>
+<rect x="336.22" y="-21" width="0.59" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="336.22" dx="4" y="-9.75">copyto! in abstractarray.jl:0</text>
+<rect x="336.81" y="-21" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="336.81" dx="4" y="-9.75">copyto! in abstractarray.jl:844</text>
+<rect x="337.11" y="-21" width="9.21" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="337.11" dx="4" y="-9.75">copyto! in abstractarray.jl:846</text>
+<rect x="337.11" y="-36" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="337.11" dx="4" y="-24.75">setindex! in array.jl:0</text>
+<rect x="337.41" y="-36" width="8.91" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="337.41" dx="4" y="-24.75">setindex! in array.jl:843</text>
+<rect x="346.32" y="-21" width="85.33" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="346.32" dx="4" y="-9.75">copyto! in abstractarray.jl:847</text>
+<rect x="346.32" y="-36" width="0.9" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="346.32" dx="4" y="-24.75">iterate in dict.jl:694</text>
+<rect x="346.32" y="-51" width="0.9" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="346.32" dx="4" y="-39.75">== in promotion.jl:410</text>
+<rect x="347.22" y="-36" width="40.43" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="347.22" dx="4" y="-24.75">iterate in dict.jl:695</text>
+<rect x="347.22" y="-51" width="2.08" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="347.22" dx="4" y="-39.75">skip_deleted in dict.jl:669</text>
+<rect x="347.22" y="-66" width="0.29" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="347.22" dx="4" y="-54.75">Colon in range.jl:5</text>
+<rect x="347.22" y="-81" width="0.29" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="347.22" dx="4" y="-69.75">UnitRange in range.jl:287</text>
+<rect x="347.22" y="-96" width="0.29" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="347.22" dx="4" y="-84.75">unitrange_last in range.jl:292</text>
+<rect x="347.22" y="-111" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="347.22" dx="4" y="-99.75">- in int.jl:86</text>
+<rect x="347.51" y="-66" width="1.79" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="347.51" dx="4" y="-54.75">iterate in range.jl:670</text>
+<rect x="347.51" y="-81" width="1.79" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="347.51" dx="4" y="-69.75">isempty in range.jl:519</text>
+<rect x="347.51" y="-96" width="1.79" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="347.51" dx="4" y="-84.75">&amp;gt; in operators.jl:305</text>
+<rect x="347.51" y="-111" width="1.79" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="347.51" dx="4" y="-99.75">&amp;lt; in int.jl:83</text>
+<rect x="349.3" y="-51" width="15.46" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="349.3" dx="4" y="-39.75">skip_deleted in dict.jl:670</text>
+<rect x="349.3" y="-66" width="6.84" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="349.3" dx="4" y="-54.75">isslotfilled in dict.jl:172</text>
+<rect x="349.3" y="-81" width="6.84" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="349.3" dx="4" y="-69.75">== in promotion.jl:410</text>
+<rect x="364.76" y="-51" width="22.89" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="364.76" dx="4" y="-39.75">skip_deleted in dict.jl:671</text>
+<rect x="364.76" y="-66" width="22.89" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="364.76" dx="4" y="-54.75">iterate in range.jl:674</text>
+<rect x="364.76" y="-81" width="6.83" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="364.76" dx="4" y="-69.75">== in promotion.jl:410</text>
+<rect x="387.65" y="-36" width="22.89" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="387.65" dx="4" y="-24.75">iterate in dict.jl:696</text>
+<rect x="387.65" y="-51" width="22.89" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="387.65" dx="4" y="-39.75">== in promotion.jl:410</text>
+<rect x="410.54" y="-36" width="19.32" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="410.54" dx="4" y="-24.75">iterate in dict.jl:698</text>
+<rect x="410.54" y="-51" width="16.05" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="410.54" dx="4" y="-39.75">getindex in array.jl:805</text>
+<rect x="426.59" y="-51" width="3.27" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="426.59" dx="4" y="-39.75">== in promotion.jl:410</text>
+<rect x="429.86" y="-36" width="1.79" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="429.86" dx="4" y="-24.75">iterate in range.jl:674</text>
+<rect x="429.86" y="-51" width="1.79" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="429.86" dx="4" y="-39.75">== in promotion.jl:410</text>
+<rect x="431.65" y="-21" width="16.05" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="431.65" dx="4" y="-9.75">_similar_for in array.jl:575</text>
+<rect x="431.65" y="-36" width="16.05" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="431.65" dx="4" y="-24.75">similar in abstractarray.jl:742</text>
+<rect x="431.65" y="-51" width="16.05" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="431.65" dx="4" y="-39.75">similar in abstractarray.jl:750</text>
+<rect x="431.65" y="-66" width="16.05" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="431.65" dx="4" y="-54.75">Array in boot.jl:457</text>
+<rect x="431.65" y="-81" width="16.05" height="15" rx="2" fill="#E4A71C" data-dinfo="./"/>
+<text x="431.65" dx="4" y="-69.75">Array in boot.jl:448</text>
+<rect x="456.03" y="24" width="2.08" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="456.03" dx="4" y="35.25">filter in array.jl:0</text>
+<rect x="458.11" y="24" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="458.11" dx="4" y="35.25">filter in array.jl:2506</text>
+<rect x="458.41" y="24" width="11.29" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="458.41" dx="4" y="35.25">filter in array.jl:2508</text>
+<rect x="458.41" y="9" width="11.29" height="15" rx="2" fill="#E4A71C" data-dinfo="./"/>
+<text x="458.41" dx="4" y="20.25">Array in boot.jl:448</text>
+<rect x="469.7" y="24" width="10.11" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="469.7" dx="4" y="35.25">filter in array.jl:2510</text>
+<rect x="469.7" y="9" width="10.11" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="469.7" dx="4" y="20.25">setindex! in array.jl:843</text>
+<rect x="479.81" y="24" width="207.81" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="479.81" dx="4" y="35.25">filter in array.jl:2511</text>
+<rect x="479.81" y="9" width="13.68" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="479.81" dx="4" y="20.25">iterate in array.jl:781</text>
+<rect x="479.81" y="-6" width="12.49" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="479.81" dx="4" y="5.25">getindex in array.jl:805</text>
+<rect x="492.3" y="-6" width="1.19" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="492.3" dx="4" y="5.25">&amp;lt; in int.jl:448</text>
+<rect x="492.3" y="-21" width="1.19" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="492.3" dx="4" y="-9.75">&amp;lt; in int.jl:441</text>
+<rect x="660.57" y="9" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="660.57" dx="4" y="20.25">typeinf_ext_toplevel in typeinfer.jl:921</text>
+<rect x="660.57" y="-6" width="0.29" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="660.57" dx="4" y="5.25">typeinf_ext_toplevel in typeinfer.jl:925</text>
+<rect x="660.57" y="-21" width="0.29" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="660.57" dx="4" y="-9.75">typeinf_ext in typeinfer.jl:892</text>
+<rect x="660.57" y="-36" width="0.29" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="660.57" dx="4" y="-24.75">typeinf in typeinfer.jl:209</text>
+<rect x="660.57" y="-51" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="660.57" dx="4" y="-39.75">_typeinf in typeinfer.jl:244</text>
+<rect x="660.57" y="-66" width="0.29" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="660.57" dx="4" y="-54.75">optimize in optimize.jl:272</text>
+<rect x="660.57" y="-81" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/ssair/"/>
+<text x="660.57" dx="4" y="-69.75">run_passes in driver.jl:133</text>
+<rect x="660.57" y="-96" width="0.29" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/ssair/"/>
+<text x="660.57" dx="4" y="-84.75">getfield_elim_pass! in passes.jl:717</text>
+<rect x="660.57" y="-111" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/ssair/"/>
+<text x="660.57" dx="4" y="-99.75">construct_domtree in domtree.jl:204</text>
+<rect x="660.57" y="-126" width="0.29" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/ssair/"/>
+<text x="660.57" dx="4" y="-114.75">DomTree in domtree.jl:200</text>
+<rect x="660.57" y="-141" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/ssair/"/>
+<text x="660.57" dx="4" y="-129.75">DFSTree in domtree.jl:88</text>
+<rect x="660.57" y="-156" width="0.29" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="660.57" dx="4" y="-144.75">zeros in array.jl:499</text>
+<rect x="660.57" y="-171" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="660.57" dx="4" y="-159.75">zeros in array.jl:503</text>
+<rect x="660.57" y="-186" width="0.29" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="660.57" dx="4" y="-174.75">Array in boot.jl:457</text>
+<rect x="660.57" y="-201" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="660.57" dx="4" y="-189.75">Array in boot.jl:448</text>
+<rect x="687.62" y="24" width="2.08" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="687.62" dx="4" y="35.25">filter in array.jl:2514</text>
+<rect x="687.62" y="9" width="2.08" height="15" rx="2" fill="#E4A71C" data-dinfo="./"/>
+<text x="687.62" dx="4" y="20.25">sizehint! in array.jl:1139</text>
+<rect x="696.54" y="39" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="696.54" dx="4" y="50.25">find_rand in animal.jl:38</text>
+<rect x="696.54" y="24" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/StatsBase/Q76Ni/src/"/>
+<text x="696.54" dx="4" y="35.25">sample in sampling.jl:432</text>
+<rect x="696.54" y="9" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/StatsBase/Q76Ni/src/"/>
+<text x="696.54" dx="4" y="20.25">sample in sampling.jl:431</text>
+<rect x="696.54" y="-6" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="696.54" dx="4" y="5.25">rand in Random.jl:253</text>
+<rect x="696.54" y="-21" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="696.54" dx="4" y="-9.75">rand in int.jl:0</text>
+<rect x="696.84" y="69" width="0.59" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="696.84" dx="4" y="80.25">reproduce! in animal.jl:59</text>
+<rect x="697.43" y="69" width="61.54" height="15" rx="2" fill="#C5312F" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="697.43" dx="4" y="80.25">reproduce! in animal.jl:61</text>
+<rect x="697.43" y="54" width="0.89" height="15" rx="2" fill="#E40041" data-dinfo="./"/>
+<text x="697.43" dx="4" y="65.25">fieldnames in reflection.jl:177</text>
+<rect x="699.51" y="54" width="6.84" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="65.25">typeinf_ext_toplevel in typeinfer.jl:921</text>
+<rect x="699.51" y="39" width="6.84" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="50.25">typeinf_ext_toplevel in typeinfer.jl:925</text>
+<rect x="699.51" y="24" width="6.84" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="35.25">typeinf_ext in typeinfer.jl:892</text>
+<rect x="699.51" y="9" width="6.84" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="20.25">typeinf in typeinfer.jl:209</text>
+<rect x="699.51" y="-6" width="6.25" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="5.25">_typeinf in typeinfer.jl:214</text>
+<rect x="699.51" y="-21" width="6.25" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-9.75">typeinf_nocycle in abstractinterpretation.jl:1534</text>
+<rect x="699.51" y="-36" width="1.79" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-24.75">typeinf_local in abstractinterpretation.jl:1455</text>
+<rect x="699.51" y="-51" width="1.79" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-39.75">abstract_eval_statement in abstractinterpretation.jl:1182</text>
+<rect x="699.51" y="-66" width="1.79" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-54.75">abstract_call in abstractinterpretation.jl:1055</text>
+<rect x="699.51" y="-81" width="1.79" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-69.75">abstract_call in abstractinterpretation.jl:1071</text>
+<rect x="699.51" y="-96" width="1.79" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-84.75">abstract_call_known in abstractinterpretation.jl:997</text>
+<rect x="699.51" y="-111" width="1.79" height="15" rx="2" fill="#C5312F" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-99.75">return_type_tfunc in tfuncs.jl:1598</text>
+<rect x="699.51" y="-126" width="1.79" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-114.75">abstract_call in abstractinterpretation.jl:1071</text>
+<rect x="699.51" y="-141" width="1.79" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-129.75">abstract_call_known in abstractinterpretation.jl:1048</text>
+<rect x="699.51" y="-156" width="1.79" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-144.75">abstract_call_gf_by_type in abstractinterpretation.jl:143</text>
+<rect x="699.51" y="-171" width="1.79" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-159.75">abstract_call_method in abstractinterpretation.jl:490</text>
+<rect x="699.51" y="-186" width="1.79" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-174.75">typeinf_edge in typeinfer.jl:806</text>
+<rect x="699.51" y="-201" width="1.79" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-189.75">typeinf in typeinfer.jl:209</text>
+<rect x="699.51" y="-216" width="1.19" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-204.75">_typeinf in typeinfer.jl:214</text>
+<rect x="699.51" y="-231" width="1.19" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="699.51" dx="4" y="-219.75">typeinf_nocycle in abstractinterpretation.jl:1534</text>
+<rect x="700.7" y="-216" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="700.7" dx="4" y="-204.75">_typeinf in typeinfer.jl:227</text>
+<rect x="700.7" y="-231" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="700.7" dx="4" y="-219.75">finish in typeinfer.jl:455</text>
+<rect x="701" y="-216" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="701" dx="4" y="-204.75">_typeinf in typeinfer.jl:244</text>
+<rect x="701" y="-231" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="701" dx="4" y="-219.75">optimize in optimize.jl:272</text>
+<rect x="701.3" y="-36" width="4.46" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-24.75">typeinf_local in abstractinterpretation.jl:1470</text>
+<rect x="701.3" y="-51" width="4.46" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-39.75">abstract_eval_statement in abstractinterpretation.jl:1182</text>
+<rect x="701.3" y="-66" width="4.46" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-54.75">abstract_call in abstractinterpretation.jl:1055</text>
+<rect x="701.3" y="-81" width="4.46" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-69.75">abstract_call in abstractinterpretation.jl:1071</text>
+<rect x="701.3" y="-96" width="4.46" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-84.75">abstract_call_known in abstractinterpretation.jl:1048</text>
+<rect x="701.3" y="-111" width="4.46" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-99.75">abstract_call_gf_by_type in abstractinterpretation.jl:143</text>
+<rect x="701.3" y="-126" width="4.46" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-114.75">abstract_call_method in abstractinterpretation.jl:490</text>
+<rect x="701.3" y="-141" width="4.46" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-129.75">typeinf_edge in typeinfer.jl:806</text>
+<rect x="701.3" y="-156" width="4.46" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-144.75">typeinf in typeinfer.jl:209</text>
+<rect x="701.3" y="-171" width="3.86" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-159.75">_typeinf in typeinfer.jl:214</text>
+<rect x="701.3" y="-186" width="3.86" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-174.75">typeinf_nocycle in abstractinterpretation.jl:1534</text>
+<rect x="701.3" y="-201" width="3.86" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-189.75">typeinf_local in abstractinterpretation.jl:1470</text>
+<rect x="701.3" y="-216" width="3.86" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-204.75">abstract_eval_statement in abstractinterpretation.jl:1182</text>
+<rect x="701.3" y="-231" width="3.86" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="701.3" dx="4" y="-219.75">abstract_call in abstractinterpretation.jl:1055</text>
+<rect x="705.16" y="-171" width="0.6" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="705.16" dx="4" y="-159.75">_typeinf in typeinfer.jl:244</text>
+<rect x="705.16" y="-186" width="0.6" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="705.16" dx="4" y="-174.75">optimize in optimize.jl:272</text>
+<rect x="705.16" y="-201" width="0.6" height="15" rx="2" fill="#C5312F" data-dinfo="./compiler/ssair/"/>
+<text x="705.16" dx="4" y="-189.75">run_passes in driver.jl:129</text>
+<rect x="705.16" y="-216" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/ssair/"/>
+<text x="705.16" dx="4" y="-204.75">ssa_inlining_pass! in inlining.jl:68</text>
+<rect x="705.16" y="-231" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./compiler/ssair/"/>
+<text x="705.16" dx="4" y="-219.75">assemble_inline_todo! in inlining.jl:1203</text>
+<rect x="705.46" y="-216" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/ssair/"/>
+<text x="705.46" dx="4" y="-204.75">ssa_inlining_pass! in inlining.jl:71</text>
+<rect x="705.46" y="-231" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/ssair/"/>
+<text x="705.46" dx="4" y="-219.75">batch_inline! in inlining.jl:551</text>
+<rect x="705.76" y="-6" width="0.29" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/"/>
+<text x="705.76" dx="4" y="5.25">_typeinf in typeinfer.jl:217</text>
+<rect x="705.76" y="-21" width="0.29" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="705.76" dx="4" y="-9.75">push! in array.jl:933</text>
+<rect x="705.76" y="-36" width="0.29" height="15" rx="2" fill="#FFA400" data-dinfo="./"/>
+<text x="705.76" dx="4" y="-24.75">_growend! in array.jl:888</text>
+<rect x="706.05" y="-6" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/"/>
+<text x="706.05" dx="4" y="5.25">_typeinf in typeinfer.jl:244</text>
+<rect x="706.05" y="-21" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/"/>
+<text x="706.05" dx="4" y="-9.75">optimize in optimize.jl:272</text>
+<rect x="706.05" y="-36" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/ssair/"/>
+<text x="706.05" dx="4" y="-24.75">run_passes in driver.jl:128</text>
+<rect x="706.05" y="-51" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/ssair/"/>
+<text x="706.05" dx="4" y="-39.75">compact! in ir.jl:1395</text>
+<rect x="706.05" y="-66" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./compiler/ssair/"/>
+<text x="706.05" dx="4" y="-54.75">compact! in ir.jl:1395</text>
+<rect x="706.05" y="-81" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/ssair/"/>
+<text x="706.05" dx="4" y="-69.75">IncrementalCompact in ir.jl:581</text>
+<rect x="706.05" y="-96" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/ssair/"/>
+<text x="706.05" dx="4" y="-84.75">NewNodeStream in ir.jl:240</text>
+<rect x="706.05" y="-111" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./compiler/ssair/"/>
+<text x="706.05" dx="4" y="-99.75">NewNodeStream in ir.jl:240</text>
+<rect x="706.05" y="-126" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./compiler/ssair/"/>
+<text x="706.05" dx="4" y="-114.75">InstructionStream in ir.jl:162</text>
+<rect x="706.05" y="-141" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="706.05" dx="4" y="-129.75">Array in boot.jl:462</text>
+<rect x="706.05" y="-156" width="0.3" height="15" rx="2" fill="#FFA400" data-dinfo="./"/>
+<text x="706.05" dx="4" y="-144.75">Array in boot.jl:448</text>
+<rect x="757.78" y="54" width="0.9" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="757.78" dx="4" y="65.25">collect in array.jl:678</text>
+<rect x="757.78" y="39" width="0.6" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="757.78" dx="4" y="50.25">grow_to! in array.jl:745</text>
+<rect x="757.78" y="24" width="0.6" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="757.78" dx="4" y="35.25">empty in abstractarray.jl:802</text>
+<rect x="757.78" y="9" width="0.6" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="757.78" dx="4" y="20.25">Array in boot.jl:467</text>
+<rect x="757.78" y="-6" width="0.6" height="15" rx="2" fill="#FFA400" data-dinfo="./"/>
+<text x="757.78" dx="4" y="5.25">Array in boot.jl:448</text>
+<rect x="758.38" y="39" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="758.38" dx="4" y="50.25">grow_to! in array.jl:747</text>
+<rect x="758.38" y="24" width="0.3" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="758.38" dx="4" y="35.25">grow_to! in array.jl:774</text>
+<rect x="758.38" y="9" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="758.38" dx="4" y="20.25">iterate in generator.jl:47</text>
+<rect x="758.38" y="-6" width="0.3" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="758.38" dx="4" y="5.25">#5 in none:0</text>
+<rect x="758.38" y="-21" width="0.3" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="758.38" dx="4" y="-9.75">getproperty in Base.jl:33</text>
+<rect x="758.97" y="69" width="2.08" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="758.97" dx="4" y="80.25">reproduce! in animal.jl:63</text>
+<rect x="761.05" y="69" width="0.3" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/runner/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="761.05" dx="4" y="80.25">reproduce! in animal.jl:65</text>
 </g></g>
 <script><![CDATA[
 // Snap.svg 0.3.0
@@ -1791,10 +1804,10 @@ f+=g+"]",i[b]=f}return Function("val","return Snap.path.toString.call(["+i+"])")
 <script><![CDATA[
 if (typeof require === 'function' && define.amd) {
     require(['ProfileSVG'], function (ProfileSVG) {
-        ProfileSVG.initialize("fig-b7cfd070f8314b129b0f0ea48ccb3c65");
+        ProfileSVG.initialize("fig-49e16c547f30457e91c68df5c13899d3");
     });
 } else {
-    ProfileSVG.initialize("fig-b7cfd070f8314b129b0f0ea48ccb3c65");
+    ProfileSVG.initialize("fig-49e16c547f30457e91c68df5c13899d3");
 }
 ]]></script>
 </svg>
@@ -1824,29 +1837,29 @@ Body<span class="sgr33"><span class="sgr1">::Union{Nothing, EcosystemCore.Agent}
 <span class="sgr90">3 ─</span> %8 = EcosystemCore.sample(xs)<span class="sgr91"><span class="sgr1">::EcosystemCore.Agent</span></span>
 <span class="sgr90">└──</span>      return %8</code></pre><p>Indeed we see that the return type is not inferred precisely but ends up being just the <code>Union{Nothing, Agent}</code>, however this is better than straight out <code>Any</code>, which is the union of all types and thus the compiler has to search much wider space. This uncertainty is propagated further resulting in the two parent functions to be inferred imperfectly.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_warntype EcosystemCore.find_food(w, world)</code><code class="nohighlight hljs ansi" style="display:block;">Variables
   #self#<span class="sgr36">::Core.Const(EcosystemCore.find_food)</span>
-  a<span class="sgr36">::EcosystemCore.Animal{🐺, ♀}</span>
+  a<span class="sgr36">::EcosystemCore.Animal{🐺, ♂}</span>
   w<span class="sgr36">::World{EcosystemCore.Agent}</span>
-  #3<span class="sgr36">::EcosystemCore.var&quot;#3#4&quot;{EcosystemCore.Animal{🐺, ♀}}</span>
+  #3<span class="sgr36">::EcosystemCore.var&quot;#3#4&quot;{EcosystemCore.Animal{🐺, ♂}}</span>
 
 Body<span class="sgr33"><span class="sgr1">::Union{Nothing, EcosystemCore.Agent}</span></span>
 <span class="sgr90">1 ─</span> %1 = EcosystemCore.:(var&quot;#3#4&quot;)<span class="sgr36">::Core.Const(EcosystemCore.var&quot;#3#4&quot;)</span>
-<span class="sgr90">│  </span> %2 = Core.typeof(a)<span class="sgr36">::Core.Const(EcosystemCore.Animal{🐺, ♀})</span>
-<span class="sgr90">│  </span> %3 = Core.apply_type(%1, %2)<span class="sgr36">::Core.Const(EcosystemCore.var&quot;#3#4&quot;{EcosystemCore.Animal{🐺, ♀}})</span>
+<span class="sgr90">│  </span> %2 = Core.typeof(a)<span class="sgr36">::Core.Const(EcosystemCore.Animal{🐺, ♂})</span>
+<span class="sgr90">│  </span> %3 = Core.apply_type(%1, %2)<span class="sgr36">::Core.Const(EcosystemCore.var&quot;#3#4&quot;{EcosystemCore.Animal{🐺, ♂}})</span>
 <span class="sgr90">│  </span>      (#3 = %new(%3, a))
-<span class="sgr90">│  </span> %5 = #3<span class="sgr36">::EcosystemCore.var&quot;#3#4&quot;{EcosystemCore.Animal{🐺, ♀}}</span>
+<span class="sgr90">│  </span> %5 = #3<span class="sgr36">::EcosystemCore.var&quot;#3#4&quot;{EcosystemCore.Animal{🐺, ♂}}</span>
 <span class="sgr90">│  </span> %6 = EcosystemCore.find_rand(%5, w)<span class="sgr33"><span class="sgr1">::Union{Nothing, EcosystemCore.Agent}</span></span>
 <span class="sgr90">└──</span>      return %6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_warntype EcosystemCore.find_mate(w, world)</code><code class="nohighlight hljs ansi" style="display:block;">Variables
   #self#<span class="sgr36">::Core.Const(EcosystemCore.find_mate)</span>
-  a<span class="sgr36">::EcosystemCore.Animal{🐺, ♀}</span>
+  a<span class="sgr36">::EcosystemCore.Animal{🐺, ♂}</span>
   w<span class="sgr36">::World{EcosystemCore.Agent}</span>
-  #9<span class="sgr36">::EcosystemCore.var&quot;#9#10&quot;{EcosystemCore.Animal{🐺, ♀}}</span>
+  #9<span class="sgr36">::EcosystemCore.var&quot;#9#10&quot;{EcosystemCore.Animal{🐺, ♂}}</span>
 
 Body<span class="sgr33"><span class="sgr1">::Union{Nothing, EcosystemCore.Agent}</span></span>
 <span class="sgr90">1 ─</span> %1 = EcosystemCore.:(var&quot;#9#10&quot;)<span class="sgr36">::Core.Const(EcosystemCore.var&quot;#9#10&quot;)</span>
-<span class="sgr90">│  </span> %2 = Core.typeof(a)<span class="sgr36">::Core.Const(EcosystemCore.Animal{🐺, ♀})</span>
-<span class="sgr90">│  </span> %3 = Core.apply_type(%1, %2)<span class="sgr36">::Core.Const(EcosystemCore.var&quot;#9#10&quot;{EcosystemCore.Animal{🐺, ♀}})</span>
+<span class="sgr90">│  </span> %2 = Core.typeof(a)<span class="sgr36">::Core.Const(EcosystemCore.Animal{🐺, ♂})</span>
+<span class="sgr90">│  </span> %3 = Core.apply_type(%1, %2)<span class="sgr36">::Core.Const(EcosystemCore.var&quot;#9#10&quot;{EcosystemCore.Animal{🐺, ♂}})</span>
 <span class="sgr90">│  </span>      (#9 = %new(%3, a))
-<span class="sgr90">│  </span> %5 = #9<span class="sgr36">::EcosystemCore.var&quot;#9#10&quot;{EcosystemCore.Animal{🐺, ♀}}</span>
+<span class="sgr90">│  </span> %5 = #9<span class="sgr36">::EcosystemCore.var&quot;#9#10&quot;{EcosystemCore.Animal{🐺, ♂}}</span>
 <span class="sgr90">│  </span> %6 = EcosystemCore.find_rand(%5, w)<span class="sgr33"><span class="sgr1">::Union{Nothing, EcosystemCore.Agent}</span></span>
 <span class="sgr90">└──</span>      return %6</code></pre><p>The underlying issue here is that we are enumerating over an array of type <code>Vector{Agent}</code>, where <code>Agent</code> is abstract, which does not allow Julia compiler to specialize the code for the loop body as it has to always check first the type of the item in the vector. This is even more pronounced in the <code>filter</code> function that filters the array by creating a copy of their elements, thus needing to know what the resulting array should look like.</p><div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
@@ -1885,15 +1898,15 @@ world = create_world();
     Random.seed!(7);
     simulate!(w, 10)
 end setup=(w=deepcopy($world)) evals=1 samples=20 seconds=30</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">BenchmarkTools.Trial: 20 samples with 1 evaluation.
- Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">1.081 s</span></span> … <span class="sgr35"> 1.113 s</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>3.19% … 4.05%
- Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">1.102 s             </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>3.44%
- Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">1.100 s</span></span> ± <span class="sgr32">7.943 ms</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>3.50% ± 0.28%
+ Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">1.264 s</span></span> … <span class="sgr35">  1.335 s</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>3.09% … 3.40%
+ Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">1.289 s              </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>3.22%
+ Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">1.291 s</span></span> ± <span class="sgr32">18.349 ms</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>3.21% ± 0.30%
 
-  ▁           ▁      ▁ █▁ ▁     ▁  <span class="sgr32">▁</span> <span class="sgr34">█</span>  ▁▁ █▁▁  ▁      ▁ ▁  
-  █▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁█▁██▁█▁▁▁▁▁█▁▁<span class="sgr32">█</span>▁<span class="sgr34">█</span>▁▁██▁███▁▁█▁▁▁▁▁▁█▁█ ▁
-  1.08 s<span class="sgr90">        Histogram: frequency by time</span>        1.11 s <span class="sgr1">&lt;</span>
+  ▁▁ ▁   ▁     █▁ █  <span class="sgr34">▁</span>▁ <span class="sgr32">▁</span>▁ ▁▁▁▁              ▁    ▁       ▁  
+  ██▁█▁▁▁█▁▁▁▁▁██▁█▁▁<span class="sgr34">█</span>█▁<span class="sgr32">█</span>█▁████▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁▁▁█▁▁▁▁▁▁▁█ ▁
+  1.26 s<span class="sgr90">         Histogram: frequency by time</span>        1.33 s <span class="sgr1">&lt;</span>
 
- Memory estimate<span class="sgr90">: </span><span class="sgr33">341.47 MiB</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">22112230</span>.</code></pre><p>Recall that when using <code>setup</code>, we have to limit number of evaluations to <code>evals=1</code> in order not to mutate the <code>world</code> struct.</p></p></details><h3 id="Tracking-allocations"><a class="docs-heading-anchor" href="#Tracking-allocations">Tracking allocations</a><a id="Tracking-allocations-1"></a><a class="docs-heading-anchor-permalink" href="#Tracking-allocations" title="Permalink"></a></h3><p>Memory allocation is oftentimes the most CPU heavy part of the computation, thus working with memory correctly, i.e. avoiding unnecessary allocation is key for a well performing code. In order to get a sense of how much memory is allocated at individual places of the your codebase, we can instruct Julia to keep track of the allocations with a command line option <code>--track-allocation={all|user}</code></p><ul><li><code>user</code> - measure memory allocation everywhere except Julia&#39;s core code</li><li><code>all</code> - measure memory allocation at each line of Julia code</li></ul><p>After exiting, Julia will create a copy of each source file, that has been touched during execution and assign to each line the number of allocations in bytes. In order to avoid including allocation from compilation the memory allocation statistics have to be cleared after first run by calling <code>Profile.clear_malloc_data()</code>, resulting in this kind of workflow</p><pre><code class="language-julia hljs">using Profile
+ Memory estimate<span class="sgr90">: </span><span class="sgr33">351.01 MiB</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">22736204</span>.</code></pre><p>Recall that when using <code>setup</code>, we have to limit number of evaluations to <code>evals=1</code> in order not to mutate the <code>world</code> struct.</p></p></details><h3 id="Tracking-allocations"><a class="docs-heading-anchor" href="#Tracking-allocations">Tracking allocations</a><a id="Tracking-allocations-1"></a><a class="docs-heading-anchor-permalink" href="#Tracking-allocations" title="Permalink"></a></h3><p>Memory allocation is oftentimes the most CPU heavy part of the computation, thus working with memory correctly, i.e. avoiding unnecessary allocation is key for a well performing code. In order to get a sense of how much memory is allocated at individual places of the your codebase, we can instruct Julia to keep track of the allocations with a command line option <code>--track-allocation={all|user}</code></p><ul><li><code>user</code> - measure memory allocation everywhere except Julia&#39;s core code</li><li><code>all</code> - measure memory allocation at each line of Julia code</li></ul><p>After exiting, Julia will create a copy of each source file, that has been touched during execution and assign to each line the number of allocations in bytes. In order to avoid including allocation from compilation the memory allocation statistics have to be cleared after first run by calling <code>Profile.clear_malloc_data()</code>, resulting in this kind of workflow</p><pre><code class="language-julia hljs">using Profile
 run_code()
 Profile.clear_malloc_data()
 run_code()
@@ -1989,39 +2002,39 @@ julia&gt; analyze_malloc(expanduser(&quot;~/.julia/packages/EcosystemCore/8dzJF/
     ├── logs
     ├── packages        # packages are here
     └── registries</code></pre><p>If you are using VSCode, the paths visible in the REPL can be clicked through to he actual source code. Moreover in that environment the documentation is usually available upon hovering over code.</p><h3 id="Setting-up-benchmarks-to-our-liking"><a class="docs-heading-anchor" href="#Setting-up-benchmarks-to-our-liking">Setting up benchmarks to our liking</a><a id="Setting-up-benchmarks-to-our-liking-1"></a><a class="docs-heading-anchor-permalink" href="#Setting-up-benchmarks-to-our-liking" title="Permalink"></a></h3><p>In order to control the number of samples/evaluation and the amount of time given to a given benchmark, we can simply append these as keyword arguments to <code>@btime</code> or <code>@benchmark</code> in the following way</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sum($(rand(1000))) evals=100 samples=10 seconds=5</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10 samples with 100 evaluations.
- Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1"> 85.000 ns</span></span> … <span class="sgr35">206.000 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
- Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1"> 86.000 ns               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
- Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">111.601 ns</span></span> ± <span class="sgr32"> 47.949 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
+ Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1"> 93.000 ns</span></span> … <span class="sgr35">225.000 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
+ Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1"> 93.000 ns               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
+ Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">112.301 ns</span></span> ± <span class="sgr32"> 41.873 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
 
-  █<span class="sgr34"> </span>           <span class="sgr32"> </span>                                                
-  █<span class="sgr34">▁</span>▁▁▁▁▁▁▁▁▁▁▁<span class="sgr32">▁</span>▁▁▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▄▁▁▁▁▄ ▁
-  85 ns<span class="sgr90">            Histogram: frequency by time</span>          206 ns <span class="sgr1">&lt;</span>
+  <span class="sgr34">█</span>        <span class="sgr32"> </span>                                                    
+  <span class="sgr34">█</span>▁▁▁▁▁▁▁▁<span class="sgr32">▄</span>▁▁▁▁▁▁▁▁▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▄ ▁
+  93 ns<span class="sgr90">            Histogram: frequency by time</span>          225 ns <span class="sgr1">&lt;</span>
 
  Memory estimate<span class="sgr90">: </span><span class="sgr33">0 bytes</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">0</span>.</code></pre><p>which runs the code repeatedly for up to <code>5s</code>, where each of the <code>10</code> samples in the trial is composed of <code>10</code> evaluations. Setting up these parameters ourselves creates a more controlled environment in which performance regressions can be more easily identified.</p><p>Another axis of customization is needed when we are benchmarking mutable operations such as <code>sort!</code>, which sorts an array in-place. One way of achieving a consistent benchmark is by omitting the interpolation such as</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sort!(rand(1000))</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10000 samples with 1 evaluation.
- Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">34.800 μs</span></span> … <span class="sgr35">189.402 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
- Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">37.301 μs               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
- Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">37.710 μs</span></span> ± <span class="sgr32">  2.902 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
+ Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">38.501 μs</span></span> … <span class="sgr35">83.101 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
+ Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">41.100 μs              </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
+ Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">41.245 μs</span></span> ± <span class="sgr32"> 1.562 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
 
-          ▁▃▅█<span class="sgr34">▇</span><span class="sgr32">▂</span>                                               
-  ▂▂▂▂▃▄▆▇████<span class="sgr34">█</span><span class="sgr32">█</span>█▇▅▅▄▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂ ▃
-  34.8 μs<span class="sgr90">         Histogram: frequency by time</span>         47.8 μs <span class="sgr1">&lt;</span>
+            ▁▄▇▁█<span class="sgr34">█</span>▅▃                                          
+  ▂▂▂▂▂▃▃▅▆▅█████<span class="sgr34">█</span>██▅▇▅▄▃▃▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▂▁▂▁▂▂▂▂▂▂▂▂▂▂▂▂▂ ▃
+  38.5 μs<span class="sgr90">         Histogram: frequency by time</span>          49 μs <span class="sgr1">&lt;</span>
 
  Memory estimate<span class="sgr90">: </span><span class="sgr33">7.94 KiB</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">1</span>.</code></pre><p>however now we are again measuring the data generation as well. A better way of doing such timing is using the built in <code>setup</code> keyword, into which you can put a code that has to be run before each sample and which won&#39;t be measured.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sort!(y) setup=(y=rand(1000))</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10000 samples with 6 evaluations.
- Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1"> 9.434 μs</span></span> … <span class="sgr35"> 17.634 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
- Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">10.417 μs               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
- Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">10.505 μs</span></span> ± <span class="sgr32">446.812 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
+ Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">11.067 μs</span></span> … <span class="sgr35"> 15.617 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
+ Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">11.483 μs               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
+ Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">11.499 μs</span></span> ± <span class="sgr32">214.189 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
 
-            ▂▃▄▄▅▆▇█<span class="sgr34">▇</span><span class="sgr32">▇</span>▄▄▄▄▃▃                         ▁         ▂
-  ▅▁▅▅▃▁▄▅▇█████████<span class="sgr34">█</span><span class="sgr32">█</span>███████▅▃▅▅▇▇▇█▆▆▆▄▆▆▅▇▆▇▇▇▇██▇█▇▇▆▅▁▅▃▆ █
-  9.43 μs<span class="sgr90">       Histogram: <span class="sgr1">log(</span>frequency<span class="sgr1">)</span> by time</span>      12.8 μs <span class="sgr1">&lt;</span>
+             ▂▄ █<span class="sgr34">█</span><span class="sgr32"> </span>▅▃                                          
+  ▂▂▂▂▂▂▃▄▃▆▅████<span class="sgr34">█</span><span class="sgr32">█</span>██▅▆▃▄▃▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▂▁▁▁▁▁▂▂▂▂▂▂▂▂▂▂▂▂▂ ▃
+  11.1 μs<span class="sgr90">         Histogram: frequency by time</span>         12.7 μs <span class="sgr1">&lt;</span>
 
  Memory estimate<span class="sgr90">: </span><span class="sgr33">0 bytes</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">0</span>.</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sort!(AA) setup=(AA=copy($A))</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10000 samples with 6 evaluations.
- Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">7.217 μs</span></span> … <span class="sgr35"> 15.067 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
- Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">7.567 μs               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
- Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">7.588 μs</span></span> ± <span class="sgr32">222.475 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
+ Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">8.567 μs</span></span> … <span class="sgr35"> 14.667 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
+ Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">8.850 μs               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
+ Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">8.876 μs</span></span> ± <span class="sgr32">198.533 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
 
-                █<span class="sgr34">▁</span><span class="sgr32">▆</span>                                           
-  ▂▂▂▂▂▂▂▂▃▃▄█▇██<span class="sgr34">█</span><span class="sgr32">█</span>▇▆▇▄▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▁▁▂▂▂▁▂▂▂▁▂▂▁▂▂▂▂▂▂ ▃
-  7.22 μs<span class="sgr90">         Histogram: frequency by time</span>        8.55 μs <span class="sgr1">&lt;</span>
+           ▅▁█<span class="sgr34">▂</span><span class="sgr32">▆</span> ▁                                            
+  ▂▂▂▂▃▃▆▅▆███<span class="sgr34">█</span><span class="sgr32">█</span>▇█▅▄▄▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▁▂▁▁▂▁▁▁▁▁▁▂▁▁▂▂▂▂▂▂▂ ▃
+  8.57 μs<span class="sgr90">         Histogram: frequency by time</span>        9.98 μs <span class="sgr1">&lt;</span>
 
- Memory estimate<span class="sgr90">: </span><span class="sgr33">0 bytes</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">0</span>.</code></pre><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Explanation of the Horner schema can be found on <a href="https://en.wikipedia.org/wiki/Horner%27s_method">https://en.wikipedia.org/wiki/Horner%27s_method</a>.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Reservoir sampling <a href="https://en.wikipedia.org/wiki/Reservoir_sampling">https://en.wikipedia.org/wiki/Reservoir_sampling</a></li><li class="footnote" id="footnote-3"><a class="tag is-link" href="#citeref-3">3</a>A simple algorithm <a href="https://stackoverflow.com/q/9690009">https://stackoverflow.com/q/9690009</a></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Monday 1 November 2021 18:39">Monday 1 November 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ Memory estimate<span class="sgr90">: </span><span class="sgr33">0 bytes</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">0</span>.</code></pre><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Explanation of the Horner schema can be found on <a href="https://en.wikipedia.org/wiki/Horner%27s_method">https://en.wikipedia.org/wiki/Horner%27s_method</a>.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Reservoir sampling <a href="https://en.wikipedia.org/wiki/Reservoir_sampling">https://en.wikipedia.org/wiki/Reservoir_sampling</a></li><li class="footnote" id="footnote-3"><a class="tag is-link" href="#citeref-3">3</a>A simple algorithm <a href="https://stackoverflow.com/q/9690009">https://stackoverflow.com/q/9690009</a></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Tuesday 2 November 2021 06:29">Tuesday 2 November 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
