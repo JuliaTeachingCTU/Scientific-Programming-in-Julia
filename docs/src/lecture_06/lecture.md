@@ -17,7 +17,7 @@ _ Notes on [JuliaCompilerPlugin](https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#J
 
 	+ Another example is `@time` or `elapsed` The above is difficult to implement using normal function, since the when you pass `2+exp(4)` as a function argument, it will be automatically evaluated. Therefore you need to pass it as an expression, that can be evaluated within the function.
 
-	+ It can be very useful in implementing **encapsulation**.
+	+ It can help when implementing **encapsulation**.
 
 - **Domain Specific Languages**
 
@@ -68,7 +68,7 @@ julia> parsed_fib = Meta.parse(
       return b
   end)
 ```
-AST is a tree representation of the source code, where the parser has already identified what is function call, argument blocks, etc. The parsed code can be read and modified from Julia at your wish (the homoiconicity of the language). Using `TreeView`
+AST is a tree representation of the source code, where the parser has already identified what is function call, argument blocks, etc. The parsed code is represented by Julia's objects, therefore it can be read and modified by Julia from Julia at your wish (this is what is called homo-iconicity of the language). Using `TreeView`
 ```julia
 using TreeView, TikzPictures
 g = tikz_representation(walk_tree(parsed_fib))
@@ -201,7 +201,7 @@ The best way to inspect the AST is through the combination
 - `dump` which print AST to terminal, 
 - `eval` which evaluates the AST within the current module.
 
-Let's start by investigating a very simple statement `1+1`. An alternative to `Meta.parse("1 + 1")` is `:(1 + 1)` or `quote ... end`
+Let's start by investigating a very simple statement `1 + 1`. An alternative to `Meta.parse("1 + 1")` is `:(1 + 1)` or `quote ... end`
 ```julia
 julia> p = :(1+1)
 :(1 + 1)
@@ -217,7 +217,49 @@ Expr
     2: Int64 1
     3: Int64 1
 ```
-Notice that the parsed code `p` is of type `Expr`. From Julia's help: *A type representing compound expressions in parsed julia code (ASTs). Each expression consists: of a head Symbol identifying which kind of expression it is (e.g. a call, for loop, conditional statement, etc.), and subexpressions (e.g. the arguments of a call). The subexpressions are stored in a Vector{Any} field called args.*
+The parsed code `p` is of type `Expr`, which according to Julia's help is *a type representing compound expressions in parsed julia code (ASTs). Each expression consists: of a head Symbol identifying which kind of expression it is (e.g. a call, for loop, conditional statement, etc.), and subexpressions (e.g. the arguments of a call). The subexpressions are stored in a Vector{Any} field called args.*
+
+!!! info 
+	### Symbol
+
+	In the manipulations of expressions, we encounter the term `Symbol`. `Symbol` is the smallest atom from which the program (in AST representation) is built. It is used to identify an element in the language, for example the variable, keyword, and function name. Symbol is not a string, since string represents itself, whereas Symbol can represent something else (a variable). An [example](https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia) provided by Stefan Karpinski is as follows.
+	```julia
+	julia> eval(:foo)
+	ERROR: foo not defined
+
+	julia> foo = "hello"
+	"hello"
+
+	julia> eval(:foo)
+	"hello"
+
+	julia> eval("foo")
+	"foo"
+	```
+	which shows that what the symbol `:foo` evaluates to depends on what – if anything – the variable `foo` is bound to, whereas "foo" always just evaluates to "foo".
+
+	Symbols can be constructed either by prepending any string with `:` or by calling `Symbol(...)`, which concatenates the arguments and create the symbol out of it. All of the following are symbols
+	```julia
+	julia> :+
+	:+
+
+	julia> :function
+	:function
+
+	julia> :call
+	:call
+
+	julia> :x
+	:x
+
+	julia> Symbol(:Very,"_twisted_",:symbol,"_definition")
+	:Very_twisted_symbol_definition
+	```
+	Symbols therefore allows us to operate with a piece of code without evaluating it.
+
+	In Julia, symbols are "interned strings", which means that compiler attaches each string a unique identifier (integer), such that it can quickly compare them. Compiler uses Symbols exclusively and the important feature is that they can be quickly compared. This is why people like to use them as keys in `Dict`.
+
+
 Since `Expr` is a Julia structure, we can construct it manually as we can construct any other structure
 ```julia
 julia> Expr(:call, :+, 1 , 1) |> dump
@@ -228,7 +270,7 @@ Expr
     2: Int64 1
     3: Int64 1
 ```
-yielding to the same structure as we have created above. In the above, you will notice that instead of denoting names with `Strings`, we use `Symbol`s, which is a name for string prepend with `:` and which can be constructed also by `Symbol(call)`. Symbols are "interned strings", which means that compiler attaches each string a unique identifier (integer), such that it can quickly compare them. Compiler uses Symbols exclusively and the important feature is that they can be quickly compared. To conclude, `Symbol` is the compiler's `String` --- u unique identifier.
+yielding to the same structure as we have created above. 
 Expressions can be evaluated using `eval`, as has been said. to programmatically evaluate our expression, let's do 
 ```julia
 e = Expr(:call, :+, 1, 1)
@@ -293,22 +335,64 @@ end
 ```
 
 ```julia
-julia> replace_x(e)
+julia> replace_x(e) |> Base.remove_linenums!
 quote
-    #= REPL[66]:2 =#
     a = 2x + 3
-    #= REPL[66]:3 =#
     b = 2 - 2x
-    #= REPL[66]:4 =#
     2a + 2b
 end
+
+julia> replace_x(e) |> eval
+10
 ```
 
 https://github.com/FluxML/MacroTools.jl
 
+## Code generation
 
-Base.remove_linenums!
-Use of metaprogramming on encapsulation.
+### Using metaprogramming in inheritance by encapsulation
+Recall that Julia (at the moment) does not support inheritance, therefore the only way to adopt functionality of some object and extend it is through *encapsulation*. Assuming we have some object `T`, we wrap that object into a new structure.
+Let's work out a concrete example, where we define the our own matrix. 
+```julia
+struct MyMatrix{T} <: AbstractMatrix{T}
+	x::Matrix{T}
+end
+```
+Now, to make it useful, we should define all the usual methods, like `size`, `length`, `getindex`, `setindex!`, etc. We can list all methods defined with `Matrix` ans an argument `methodswith(Matrix)`. Now, we would like to overload them. To minimize the written code, we can write
+```julia
+import Base: setindex!, getindex, size, length
+for f in [:setindex!, :getindex, :size, :length]
+	eval(:($(f)(A::MyMatrix, args...) = $(f)(A.x, args...)))
+end
+```
+which we can verify now that it works as expected 
+```julia
+julia> a = MyMatrix([1 2 ; 3 4])
+2×2 MyMatrix{Int64}:
+ 1  2
+ 3  4
+
+julia> a[4]
+4
+
+julia> a[3] = 0
+0
+
+julia> a
+2×2 MyMatrix{Int64}:
+ 1  0
+ 3  4
+```
+In this way, Julia acts as its own pre-processor.
+The above look can be equally written as 
+```julia
+for f in [:setindex!, :getindex, :size, :length]
+	@eval $(f)(A::MyMatrix, args...) = $(f)(A.x, args...)
+end
+```
+and we are free to use quote blocks as well.
+
+Should we talk about meta-programming without meta-programming
 
 ## Computer algebra system
 * Metatheory
