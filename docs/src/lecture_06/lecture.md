@@ -13,11 +13,11 @@ Materials:
 **Why do we need metaprogramming?** 
 - In general, we do not need it, as we can do whatever we need without it, but it can help us to remove a boilerplate code. 
 
-	+ As an example, consider a `@show` macro, which just prints the name of the variable (or the expression) and its evaluation. This means that instead of writing `println("2+exp(4) = ",  2+exp(4))` we can just write `@show 2+exp(4)`.
+	- As an example, consider a `@show` macro, which just prints the name of the variable (or the expression) and its evaluation. This means that instead of writing `println("2+exp(4) = ",  2+exp(4))` we can just write `@show 2+exp(4)`.
 
-	+ Another example is `@time` or `elapsed` The above is difficult to implement using normal function, since the when you pass `2+exp(4)` as a function argument, it will be automatically evaluated. Therefore you need to pass it as an expression, that can be evaluated within the function.
+	- Another example is `@time` or `elapsed` The above is difficult to implement using normal function, since the when you pass `2+exp(4)` as a function argument, it will be automatically evaluated. Therefore you need to pass it as an expression, that can be evaluated within the function.
 
-	+ It can help when implementing **encapsulation**.
+	- It can help when implementing **encapsulation**.
 
 - **Domain Specific Languages**
 
@@ -236,12 +236,57 @@ CodeInfo(
 )
 ```
 
+## Cthulhu.jl
+`Cthulhu.jl` is a library (tool) which simplifies the above, where we want to iteratively dive into functions called in some piece of code (typically some function). `Cthulhu` is different from te normal debugger, since the debugger is executing the code, while `Cthulhu` is just lower_typing the code and presenting functions (with type of arguments inferred) that would be called.
+
+```
+using Cthulhu
+struct Wolf
+	name::String
+	energy::Int
+end
+
+struct Sheep
+	name::String
+	energy::Int
+end
+
+sound(wolf::Wolf) = println(wolf.name, " has howled.")
+sound(sheep::Sheep) = println(sheep.name, " has baaed.")
+pack = [Wolf("1", 1), Wolf("2", 2), Sheep("3", 3)]
+@descend map(sound, pack)
+```
+
 
 ## General notes on metaprogramming
 According to an excellent talk of Steven Johnson mentioned above, you shoul use metaprogramming sparingly, as it is very powerfull, but it is generally difficult to read and it can lead to unexpected errors. Julia allows you to interact with the compiler at two levels.
 1. After the code is parsed to AST, you can modify it through **macros**.
 2. When SSA form is being typed, you can create custom functions trough the **generated functions**.
 3. More functionalities are coming from through the [JuliaCompilerPlugins](https://github.com/JuliaCompilerPlugins) project, but we will not talk about them (yet). 
+
+## What is Quotation?
+When we are doing metaprogramming, we need to somehow tell the compiler that the next block of code is not the normal block of code, but that it should be interpretted as data and in any sense it should not be evaluated. **Quotation** referes to an exactly this syntactic sugar. In Julia, quotation is achieved either through `:(...)` or `quote ... end`.
+
+Notice the difference between
+```julia
+1 + 1 
+```
+and 
+```julia
+:(1 + 1)
+```
+
+The type returned by the quotation depends on what is quoted. Observe the returned type of the following quoted code
+```julia
+:(1)
+:(:x)
+:(1 + x)
+quote
+    1 + x
+    x + 1
+end
+```
+All of these snippets are examples of the quoted code going forward. But only `:(1 + x)` and the quote block produce objects of type `Expr`. The wide range of types produced by quoting code is a bit confusing and it can on one side complicate the meta-programming, and on the other-side simplify it as one can utilize multiple dispatch. An interesting return type is the `QuoteNode`, which allows to insert piece of code which should contain elements that should not be interpolated. Most of the time, quoting returns `Expr`essions, which is the output of Julia's parser.
 
 ## Expressions
 Abstract Syntax Tree, the output of Julia's parser, is expressed using Julia's own datastructures, which means that you can freely manipulate it (and constructed) from the language itself. This property is called **homoiconicity**. Julia's compiler allows you to intercept compilation just after it has parsed the source code, but before we will take advantage of it, we will spent time with just AST and how it is constructed.
@@ -309,6 +354,17 @@ The parsed code `p` is of type `Expr`, which according to Julia's help is *a typ
 
 	In Julia, symbols are "interned strings", which means that compiler attaches each string a unique identifier (integer), such that it can quickly compare them. Compiler uses Symbols exclusively and the important feature is that they can be quickly compared. This is why people like to use them as keys in `Dict`.
 
+!!! info 
+	### Expressions
+
+	From Julia's help:
+
+	`Expr(head::Symbol, args...)`
+
+	A type representing compound expressions in parsed julia code (ASTs). Each expression consists of a head `Symbol` identifying which kind of expression it is (e.g. a call, for loop, conditional statement, etc.), and subexpressions (e.g. the arguments of a call).
+	The subexpressions are stored in a `Vector{Any}` field called args. 
+
+	The expression is simple yet very flexible. The head `Symbol` tells how the expression should be treated and arguments provide all needed parameters. Notice that the structure is also type-unstable. This is not a big deal, since the expression is used to generate code, hence it is not executed repeatedly.
 
 Since `Expr` is a Julia structure, we can construct it manually as we can construct any other structure
 ```julia
@@ -335,6 +391,10 @@ but unless they are not defined within the scope, the expression cannot produce 
 ```
 x = 3
 eval(e)
+```
+
+```julia
+:(1 + sin(x)) == Expr(:call, :+, 1, Expr(:call, :sin, :x))
 ```
 
 Since the expression is a Julia structure, we are free to manipulate. Let's for example substitutue `x` in  `e = :(x + 5)` with `2x`.
@@ -374,6 +434,16 @@ julia> e = :(2(3 + x) + 2(2 - x))
 :(2 * (3 + x) + 2 * (2 - x))
 julia> f = replace_x(e)
 :(2 * (3 + 2x) + 2 * (2 - 2x))
+```
+
+or we can replace the `sin` function
+```julia
+replace_sin(x::Symbol) = x == :sin ? :cos : x
+replace_sin(e::Expr) = Expr(e.head, map(replace_sin, e.args)...)
+replace_sin(u) = u
+``` 
+```julia
+replace_sin(:(1 + sin(x)))
 ```
 Sometimes, we want to operate on the block of code. This is easiest to do with `quote ... end`. We demonstrate the functionality with the above example
 ```julia
@@ -430,7 +500,7 @@ Stacktrace:
  [4] top-level scope
    @ REPL[8]:1
 ```
-notice that error is not related to undefined variable / function, but the invalid syntax.
+notice that error is not related to undefined variable / function, but the invalid syntax. This also demonstrates the role of `head` in `Args`.
 
 ## Code generation
 
@@ -474,8 +544,7 @@ for f in [:setindex!, :getindex, :size, :length]
 	@eval $(f)(A::MyMatrix, args...) = $(f)(A.x, args...)
 end
 ```
-and we are free to use quote blocks as well.
+Notice that we have just hand-implemented parts of `@forward` macro from [MacroTools](https://github.com/FluxML/MacroTools.jl/blob/master/src/examples/forward.jl), which does exactly this.
 
-## Cthulhu
 <!-- Should I mention the world clock age and the effect of eval in global scope -->
 <!-- mention the forward macro -->
