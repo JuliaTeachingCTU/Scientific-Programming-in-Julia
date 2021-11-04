@@ -1,5 +1,5 @@
 # Homework 6: Find variables
-Following the lab exercises, you may thing that metaprogramming is a fun little exercise. Let's challenge this notion in this homework, where *YOU* are being trusted with catching all the edge cases in a AST.
+Following the lab exercises, you may thing that metaprogramming is a fun little exercise. Let's challenge this notion in this homework, where *YOU* are being trusted with catching all the edge cases in an AST.
 
 ## How to submit?
 Put the code of the compulsory task inside `hw.jl`. Zip only this file (not its parent folder) and upload it to BRUTE. Your file should not use any 3rd party dependency.
@@ -18,8 +18,8 @@ return a tuple of *unique sorted symbols* representing variables in an expressio
 (:x, :y, :z, :c)
 ```
 Implement this in a function called `find_variables`. Note that there may be some edge cases that you may have to handle in a special way, such as 
-- variable assignments
-- ignoring symbols representing function calls
+- variable assignments `r = x*x` should return `r` as well
+- ignoring symbols representing function calls such as `log`, `exp`, etc.
 
 ```@raw html
 </div></div>
@@ -40,8 +40,15 @@ Nothing to see here.
 <header class="admonition-header">Voluntary exercise</header>
 <div class="admonition-body">
 ```
-Create a function that replaces each of `+`, `-`, `*` and `/` with the corresponding checked operation, which checks for overflow. E.g. `+` should be replaced by `Base.checked_add`.
+Create a function that replaces each of `+`, `-`, `*` and `/` with the respective checked operation, which checks for overflow. E.g. `+` should be replaced by `Base.checked_add`.
 
 ```@raw html
 </div></div>
+<details class = "solution-body" hidden>
+<summary class = "solution-header">Solution:</summary><p>
+```
+Not yet published.
+
+```@raw html
+</p></details>
 ```
