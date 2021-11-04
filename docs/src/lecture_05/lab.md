@@ -227,7 +227,7 @@ Other options for viewing profiler outputs
 - [PProf](https://github.com/vchuravy/PProf.jl) - serializes the profiler output to protobuffer and loads it in `pprof` web app, graph visualization of stacktraces
 
 
-## Applying fixes
+## [Applying fixes](@id horner)
 We have noticed that no matter if the function is type stable or unstable the majority of the computation falls onto the power function `^` and there is a way to solve this using a clever technique called Horner schema[^1], which uses distributive and associative rules to convert the sum of powers into an incremental multiplication of partial results.
 
 
