@@ -1,133 +1,767 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" width="777" height="555" viewBox="0 0 777 555"
-     xmlns="http://www.w3.org/2000/svg" id="fig-ee615038315a45dfaf450b5f211b1b36">
+<svg version="1.1" width="960" height="361" viewBox="0 0 960 361"
+     xmlns="http://www.w3.org/2000/svg" id="fig-8e19326c4f6d44a0818bd53b1dfe320e">
 <defs>
-    <clipPath id="fig-ee615038315a45dfaf450b5f211b1b36-clip">
-        <rect x="0" y="0" width="777" height="555"/>
+    <clipPath id="fig-8e19326c4f6d44a0818bd53b1dfe320e-clip">
+        <rect x="0" y="0" width="960" height="361"/>
     </clipPath>
 </defs>
 <style type="text/css">
-    #fig-ee615038315a45dfaf450b5f211b1b36 text {
+    #fig-8e19326c4f6d44a0818bd53b1dfe320e text {
         pointer-events: none;
         font-family: inherit;
         font-size: 12px;
         fill: #000000;
     }
-    text#fig-ee615038315a45dfaf450b5f211b1b36-caption {
+    text#fig-8e19326c4f6d44a0818bd53b1dfe320e-caption {
         font-size: 16.8px;
         fill: #000000;
         text-anchor: middle;
     }
-    #fig-ee615038315a45dfaf450b5f211b1b36-bg {
+    #fig-8e19326c4f6d44a0818bd53b1dfe320e-bg {
         fill: #FFFFFF;
     }
-    #fig-ee615038315a45dfaf450b5f211b1b36-viewport rect, #fig-ee615038315a45dfaf450b5f211b1b36-viewport path {
+    #fig-8e19326c4f6d44a0818bd53b1dfe320e-viewport rect, #fig-8e19326c4f6d44a0818bd53b1dfe320e-viewport path {
         vector-effect: non-scaling-stroke;
         fill-opacity: 1;
     }
-    #fig-ee615038315a45dfaf450b5f211b1b36-viewport text {
+    #fig-8e19326c4f6d44a0818bd53b1dfe320e-viewport text {
         stroke: #000000;
         stroke-width: 0;
         stroke-opacity: 0.35;
     }
-    #fig-ee615038315a45dfaf450b5f211b1b36-viewport rect:hover, #fig-ee615038315a45dfaf450b5f211b1b36-viewport path:hover {
+    #fig-8e19326c4f6d44a0818bd53b1dfe320e-viewport rect:hover, #fig-8e19326c4f6d44a0818bd53b1dfe320e-viewport path:hover {
         fill-opacity: 0.75;
         stroke: #000000;
         stroke-width: 0.5;
     }
-    #fig-ee615038315a45dfaf450b5f211b1b36-viewport + rect {
+    #fig-8e19326c4f6d44a0818bd53b1dfe320e-viewport + rect {
         fill: #FFFFFF;
         opacity: 0.8;
     }
-    text#fig-ee615038315a45dfaf450b5f211b1b36-details{
+    text#fig-8e19326c4f6d44a0818bd53b1dfe320e-details{
         fill: #000000;
     }
 </style>
-<g id="fig-ee615038315a45dfaf450b5f211b1b36-frame" clip-path="url(#fig-ee615038315a45dfaf450b5f211b1b36-clip)">
-<rect id="fig-ee615038315a45dfaf450b5f211b1b36-bg" x="0" y="0" width="777" height="555"/>
-<text id="fig-ee615038315a45dfaf450b5f211b1b36-caption" x="388.5" y="24">Profile results</text>
-<g id="fig-ee615038315a45dfaf450b5f211b1b36-viewport" transform="scale(1)">
-<rect x="8" y="504" width="761.73" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
-<text x="8" dx="4" y="515.25"> in :-1</text>
-<rect x="8" y="489" width="761.73" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="500.25">_start in client.jl:485</text>
-<rect x="8" y="474" width="761.73" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="8" dx="4" y="485.25">exec_options in client.jl:285</text>
-<rect x="8" y="459" width="761.73" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="470.25">include in Base.jl:386</text>
-<rect x="8" y="444" width="761.73" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="8" dx="4" y="455.25">_include in loading.jl:1170</text>
-<rect x="8" y="429" width="761.73" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="440.25">include_string in loading.jl:1116</text>
-<rect x="8" y="414" width="761.73" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="8" dx="4" y="425.25">eval in boot.jl:360</text>
-<rect x="8" y="399" width="761.73" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="8" dx="4" y="410.25">makedocs##kw in Documenter.jl:260</text>
-<rect x="8" y="384" width="761.73" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="8" dx="4" y="395.25">#makedocs#1 in Documenter.jl:265</text>
-<rect x="8" y="369" width="761.73" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="380.25">cd in file.jl:106</text>
-<rect x="8" y="354" width="761.73" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="8" dx="4" y="365.25">#2 in Documenter.jl:266</text>
-<rect x="8" y="339" width="761.73" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
-<text x="8" dx="4" y="350.25">dispatch in Selectors.jl:170</text>
-<rect x="8" y="324" width="761.73" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="8" dx="4" y="335.25">runner in Builder.jl:226</text>
-<rect x="8" y="309" width="761.73" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="8" dx="4" y="320.25">expand in Expanders.jl:42</text>
-<rect x="8" y="294" width="761.73" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
-<text x="8" dx="4" y="305.25">dispatch in Selectors.jl:170</text>
-<rect x="8" y="279" width="761.73" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="8" dx="4" y="290.25">runner in Expanders.jl:581</text>
-<rect x="8" y="264" width="761.73" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="8" dx="4" y="275.25">capture##kw in IOCapture.jl:75</text>
-<rect x="8" y="249" width="761.73" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="8" dx="4" y="260.25">#capture#1 in IOCapture.jl:116</text>
-<rect x="8" y="234" width="761.73" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="8" dx="4" y="245.25">with_logger in logging.jl:603</text>
-<rect x="8" y="219" width="761.73" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
-<text x="8" dx="4" y="230.25">with_logstate in logging.jl:491</text>
-<rect x="8" y="204" width="761.73" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="8" dx="4" y="215.25">#3 in IOCapture.jl:118</text>
-<rect x="8" y="189" width="761.73" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="8" dx="4" y="200.25">#15 in Expanders.jl:582</text>
-<rect x="8" y="174" width="761.73" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="8" dx="4" y="185.25">cd in file.jl:106</text>
-<rect x="8" y="159" width="761.73" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="8" dx="4" y="170.25">#16 in Expanders.jl:583</text>
-<rect x="8" y="144" width="761.73" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="8" dx="4" y="155.25">eval in boot.jl:360</text>
-<rect x="8" y="129" width="761.73" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="140.25">run_polynomial in REPL[1]:3</text>
-<rect x="8" y="114" width="12.09" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="8" dx="4" y="125.25">polynomial in REPL[1]:3</text>
-<rect x="8" y="99" width="12.09" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="110.25">Colon in range.jl:22</text>
-<rect x="8" y="84" width="12.09" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="8" dx="4" y="95.25">_colon in range.jl:24</text>
-<rect x="8" y="69" width="12.09" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="80.25">StepRange in range.jl:263</text>
-<rect x="8" y="54" width="12.09" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="8" dx="4" y="65.25">StepRange in range.jl:208</text>
-<rect x="8" y="39" width="12.09" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="50.25">steprange_last in range.jl:226</text>
-<rect x="8" y="24" width="12.09" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="8" dx="4" y="35.25">&amp;gt; in operators.jl:305</text>
-<rect x="8" y="9" width="12.09" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="20.25">&amp;lt; in int.jl:83</text>
-<rect x="20.09" y="114" width="749.64" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="20.09" dx="4" y="125.25">polynomial in REPL[1]:4</text>
-<rect x="20.09" y="99" width="12.09" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="20.09" dx="4" y="110.25">getindex in REPL[1]:0</text>
-<rect x="32.18" y="99" width="12.09" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="32.18" dx="4" y="110.25">^ in math.jl:919</text>
-<rect x="32.18" y="84" width="12.09" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="32.18" dx="4" y="95.25">* in operators.jl:560</text>
-<rect x="32.18" y="69" width="12.09" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="32.18" dx="4" y="80.25">* in REPL[1]:0</text>
-<rect x="44.27" y="99" width="725.46" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="44.27" dx="4" y="110.25">^ in math.jl:920</text>
+<g id="fig-8e19326c4f6d44a0818bd53b1dfe320e-frame" clip-path="url(#fig-8e19326c4f6d44a0818bd53b1dfe320e-clip)">
+<rect id="fig-8e19326c4f6d44a0818bd53b1dfe320e-bg" x="0" y="0" width="960" height="361"/>
+<text id="fig-8e19326c4f6d44a0818bd53b1dfe320e-caption" x="480" y="24">Profile results</text>
+<g id="fig-8e19326c4f6d44a0818bd53b1dfe320e-viewport" transform="scale(1)">
+<rect x="10" y="308" width="939.55" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
+<text x="10" dx="4" y="319.25"> in :-1</text>
+<rect x="10" y="293" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="10" dx="4" y="304.25">setindex! in dict.jl:381</text>
+<rect x="127.35" y="293" width="822.1" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="127.35" dx="4" y="304.25">task_done_hook in task.jl:494</text>
+<rect x="127.35" y="278" width="822.1" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="127.35" dx="4" y="289.25">wait in task.jl:768</text>
+<rect x="127.35" y="263" width="822.1" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="127.35" dx="4" y="274.25">poptask in task.jl:760</text>
+<rect x="10.01" y="293" width="117.33" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
+<text x="10.01" dx="4" y="304.25">eval in boot.jl:360</text>
+<rect x="10.01" y="278" width="117.33" height="15" rx="2" fill="#6FDC91" data-dinfo="/home/honza/Projects/lectures/JuliaTeachingCTU/MS/Scientific Programming in Julia/src/"/>
+<text x="10.01" dx="4" y="289.25">simulate! in Ecosystem.jl:28</text>
+<rect x="10.01" y="263" width="117.33" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/honza/Projects/lectures/JuliaTeachingCTU/MS/Scientific Programming in Julia/src/"/>
+<text x="10.01" dx="4" y="274.25">#simulate!#1 in Ecosystem.jl:29</text>
+<rect x="10.01" y="248" width="2.61" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="10.01" dx="4" y="259.25">world_step! in world.jl:13</text>
+<rect x="10.01" y="233" width="2.61" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="10.01" dx="4" y="244.25">deepcopy in deepcopy.jl:26</text>
+<rect x="10.01" y="218" width="2.61" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="10.01" dx="4" y="229.25">deepcopy_internal in deepcopy.jl:76</text>
+<rect x="10.01" y="203" width="2.61" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
+<text x="10.01" dx="4" y="214.25">deepcopy_internal in deepcopy.jl:125</text>
+<rect x="10.01" y="188" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="10.01" dx="4" y="199.25">deepcopy_internal in deepcopy.jl:0</text>
+<rect x="10.02" y="188" width="0.02" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="10.02" dx="4" y="199.25">deepcopy_internal in deepcopy.jl:54</text>
+<rect x="10.04" y="188" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="10.04" dx="4" y="199.25">deepcopy_internal in deepcopy.jl:56</text>
+<rect x="10.04" y="173" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="10.04" dx="4" y="184.25">getproperty in Base.jl:28</text>
+<rect x="10.04" y="188" width="0.03" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="10.04" dx="4" y="199.25">deepcopy_internal in deepcopy.jl:57</text>
+<rect x="10.04" y="173" width="0.03" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="10.04" dx="4" y="184.25">haskey in abstractdict.jl:17</text>
+<rect x="10.04" y="158" width="0.03" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="10.04" dx="4" y="169.25">in in iddict.jl:174</text>
+<rect x="10.04" y="143" width="0.03" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="10.04" dx="4" y="154.25">get in iddict.jl:87</text>
+<rect x="10.07" y="188" width="0.02" height="15" rx="2" fill="#FFA000" data-dinfo="./"/>
+<text x="10.07" dx="4" y="199.25">deepcopy_internal in deepcopy.jl:60</text>
+<rect x="10.09" y="188" width="0.08" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="10.09" dx="4" y="199.25">deepcopy_internal in deepcopy.jl:61</text>
+<rect x="10.09" y="173" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="10.09" dx="4" y="184.25">setindex! in iddict.jl:71</text>
+<rect x="10.1" y="173" width="0.07" height="15" rx="2" fill="#E4A71C" data-dinfo="./"/>
+<text x="10.1" dx="4" y="184.25">setindex! in iddict.jl:81</text>
+<rect x="10.17" y="188" width="0.06" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="10.17" dx="4" y="199.25">deepcopy_internal in deepcopy.jl:63</text>
+<rect x="10.23" y="188" width="0.11" height="15" rx="2" fill="#FFA400" data-dinfo="./"/>
+<text x="10.23" dx="4" y="199.25">deepcopy_internal in deepcopy.jl:64</text>
+<rect x="10.34" y="188" width="2.09" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="10.34" dx="4" y="199.25">deepcopy_internal in deepcopy.jl:65</text>
+<rect x="12.36" y="173" width="0.03" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.36" dx="4" y="184.25">deepcopy_internal in deepcopy.jl:53</text>
+<rect x="12.39" y="173" width="0.02" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.39" dx="4" y="184.25">deepcopy_internal in deepcopy.jl:85</text>
+<rect x="12.43" y="188" width="0.06" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.43" dx="4" y="199.25">deepcopy_internal in deepcopy.jl:66</text>
+<rect x="12.49" y="188" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.49" dx="4" y="199.25">deepcopy_internal in deepcopy.jl:85</text>
+<rect x="12.5" y="188" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.5" dx="4" y="199.25">iterate in dict.jl:688</text>
+<rect x="12.5" y="173" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.5" dx="4" y="184.25">_iterate in dict.jl:0</text>
+<rect x="12.51" y="173" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.51" dx="4" y="184.25">_iterate in dict.jl:684</text>
+<rect x="12.51" y="158" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.51" dx="4" y="169.25">== in promotion.jl:410</text>
+<rect x="12.51" y="173" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.51" dx="4" y="184.25">skip_deleted in dict.jl:669</text>
+<rect x="12.51" y="158" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.51" dx="4" y="169.25">Colon in range.jl:5</text>
+<rect x="12.51" y="143" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.51" dx="4" y="154.25">UnitRange in range.jl:287</text>
+<rect x="12.51" y="128" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.51" dx="4" y="139.25">unitrange_last in range.jl:292</text>
+<rect x="12.51" y="113" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.51" dx="4" y="124.25">- in int.jl:86</text>
+<rect x="12.56" y="188" width="0.02" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.56" dx="4" y="199.25">setindex! in dict.jl:383</text>
+<rect x="12.56" y="173" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.56" dx="4" y="184.25">ht_keyindex2! in dict.jl:310</text>
+<rect x="12.56" y="158" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.56" dx="4" y="169.25">hashindex in dict.jl:169</text>
+<rect x="12.56" y="143" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.56" dx="4" y="154.25">hash in hashing.jl:18</text>
+<rect x="12.56" y="128" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.56" dx="4" y="139.25">hash in hashing.jl:71</text>
+<rect x="12.56" y="113" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.56" dx="4" y="124.25">hash_uint64 in hashing.jl:62</text>
+<rect x="12.56" y="98" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.56" dx="4" y="109.25">hash_64_64 in hashing.jl:33</text>
+<rect x="12.56" y="83" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.56" dx="4" y="94.25">+ in operators.jl:560</text>
+<rect x="12.56" y="68" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.56" dx="4" y="79.25">+ in int.jl:87</text>
+<rect x="12.56" y="143" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.56" dx="4" y="154.25">+ in int.jl:87</text>
+<rect x="12.57" y="173" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.57" dx="4" y="184.25">ht_keyindex2! in dict.jl:315</text>
+<rect x="12.57" y="173" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.57" dx="4" y="184.25">ht_keyindex2! in dict.jl:328</text>
+<rect x="12.57" y="173" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.57" dx="4" y="184.25">ht_keyindex2! in dict.jl:332</text>
+<rect x="12.57" y="158" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.57" dx="4" y="169.25">&amp; in int.jl:309</text>
+<rect x="12.58" y="188" width="0.02" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.58" dx="4" y="199.25">setindex! in dict.jl:390</text>
+<rect x="12.58" y="173" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.58" dx="4" y="184.25">_setindex! in dict.jl:356</text>
+<rect x="12.58" y="158" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.58" dx="4" y="169.25">getproperty in Base.jl:33</text>
+<rect x="12.58" y="173" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.58" dx="4" y="184.25">_setindex! in dict.jl:358</text>
+<rect x="12.58" y="158" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.58" dx="4" y="169.25">setindex! in array.jl:839</text>
+<rect x="12.59" y="173" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.59" dx="4" y="184.25">_setindex! in dict.jl:369</text>
+<rect x="12.59" y="158" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.59" dx="4" y="169.25">rehash! in dict.jl:193</text>
+<rect x="12.59" y="143" width="0" height="15" rx="2" fill="#F6A60A" data-dinfo="./"/>
+<text x="12.59" dx="4" y="154.25">Array in boot.jl:448</text>
+<rect x="12.59" y="158" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.59" dx="4" y="169.25">rehash! in dict.jl:203</text>
+<rect x="12.59" y="143" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.59" dx="4" y="154.25">hashindex in dict.jl:169</text>
+<rect x="12.59" y="128" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.59" dx="4" y="139.25">hash in hashing.jl:18</text>
+<rect x="12.59" y="113" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.59" dx="4" y="124.25">hash in hashing.jl:71</text>
+<rect x="12.59" y="98" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.59" dx="4" y="109.25">hash_uint64 in hashing.jl:62</text>
+<rect x="12.59" y="83" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.59" dx="4" y="94.25">hash_64_64 in hashing.jl:29</text>
+<rect x="12.59" y="68" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.59" dx="4" y="79.25">~ in int.jl:285</text>
+<rect x="12.59" y="83" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.59" dx="4" y="94.25">hash_64_64 in hashing.jl:32</text>
+<rect x="12.59" y="68" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.59" dx="4" y="79.25">xor in int.jl:333</text>
+<rect x="12.6" y="83" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.6" dx="4" y="94.25">hash_64_64 in hashing.jl:34</text>
+<rect x="12.6" y="68" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.6" dx="4" y="79.25">&amp;gt;&amp;gt; in int.jl:462</text>
+<rect x="12.6" y="53" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.6" dx="4" y="64.25">&amp;gt;&amp;gt; in int.jl:456</text>
+<rect x="12.62" y="248" width="0.02" height="15" rx="2" fill="#6FDC91" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="12.62" dx="4" y="259.25">world_step! in world.jl:14</text>
+<rect x="12.62" y="233" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.62" dx="4" y="244.25">getproperty in Base.jl:33</text>
+<rect x="12.62" y="233" width="0.02" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.62" dx="4" y="244.25">haskey in dict.jl:550</text>
+<rect x="12.62" y="218" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.62" dx="4" y="229.25">ht_keyindex in dict.jl:0</text>
+<rect x="12.63" y="218" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.63" dx="4" y="229.25">ht_keyindex in dict.jl:284</text>
+<rect x="12.63" y="203" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.63" dx="4" y="214.25">hashindex in dict.jl:169</text>
+<rect x="12.63" y="188" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.63" dx="4" y="199.25">hash in hashing.jl:18</text>
+<rect x="12.63" y="173" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.63" dx="4" y="184.25">hash in hashing.jl:71</text>
+<rect x="12.63" y="158" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.63" dx="4" y="169.25">hash_uint64 in hashing.jl:62</text>
+<rect x="12.63" y="143" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.63" dx="4" y="154.25">hash_64_64 in hashing.jl:32</text>
+<rect x="12.63" y="128" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.63" dx="4" y="139.25">xor in int.jl:333</text>
+<rect x="12.63" y="218" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.63" dx="4" y="229.25">ht_keyindex in dict.jl:288</text>
+<rect x="12.64" y="218" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.64" dx="4" y="229.25">ht_keyindex in dict.jl:295</text>
+<rect x="12.64" y="203" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.64" dx="4" y="214.25">&amp; in int.jl:309</text>
+<rect x="12.64" y="248" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="12.64" dx="4" y="259.25">world_step! in world.jl:15</text>
+<rect x="12.64" y="233" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.64" dx="4" y="244.25">getindex in dict.jl:481</text>
+<rect x="12.64" y="218" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.64" dx="4" y="229.25">ht_keyindex in dict.jl:284</text>
+<rect x="12.64" y="203" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.64" dx="4" y="214.25">hashindex in dict.jl:169</text>
+<rect x="12.64" y="188" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.64" dx="4" y="199.25">hash in hashing.jl:18</text>
+<rect x="12.64" y="173" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.64" dx="4" y="184.25">hash in hashing.jl:71</text>
+<rect x="12.64" y="158" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.64" dx="4" y="169.25">hash_uint64 in hashing.jl:62</text>
+<rect x="12.64" y="143" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.64" dx="4" y="154.25">hash_64_64 in hashing.jl:29</text>
+<rect x="12.64" y="128" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.64" dx="4" y="139.25">&amp;lt;&amp;lt; in int.jl:464</text>
+<rect x="12.64" y="113" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.64" dx="4" y="124.25">&amp;lt;&amp;lt; in int.jl:457</text>
+<rect x="12.64" y="143" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.64" dx="4" y="154.25">hash_64_64 in hashing.jl:33</text>
+<rect x="12.64" y="128" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.64" dx="4" y="139.25">+ in operators.jl:560</text>
+<rect x="12.64" y="113" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.64" dx="4" y="124.25">+ in int.jl:87</text>
+<rect x="12.65" y="233" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.65" dx="4" y="244.25">getindex in dict.jl:482</text>
+<rect x="12.65" y="218" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.65" dx="4" y="229.25">getindex in array.jl:801</text>
+<rect x="12.65" y="248" width="114.69" height="15" rx="2" fill="#E40041" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="12.65" dx="4" y="259.25">world_step! in world.jl:16</text>
+<rect x="12.65" y="233" width="0.03" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.65" dx="4" y="244.25">iterate in dict.jl:695</text>
+<rect x="12.65" y="218" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.65" dx="4" y="229.25">getproperty in Base.jl:33</text>
+<rect x="12.66" y="218" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.66" dx="4" y="229.25">skip_deleted in dict.jl:668</text>
+<rect x="12.66" y="203" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.66" dx="4" y="214.25">getproperty in Base.jl:33</text>
+<rect x="12.66" y="203" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.66" dx="4" y="214.25">length in array.jl:197</text>
+<rect x="12.67" y="218" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.67" dx="4" y="229.25">skip_deleted in dict.jl:669</text>
+<rect x="12.67" y="203" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.67" dx="4" y="214.25">Colon in range.jl:5</text>
+<rect x="12.67" y="188" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.67" dx="4" y="199.25">UnitRange in range.jl:287</text>
+<rect x="12.67" y="173" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.67" dx="4" y="184.25">unitrange_last in range.jl:292</text>
+<rect x="12.67" y="158" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.67" dx="4" y="169.25">- in int.jl:86</text>
+<rect x="12.67" y="218" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.67" dx="4" y="229.25">skip_deleted in dict.jl:670</text>
+<rect x="12.68" y="233" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.68" dx="4" y="244.25">iterate in dict.jl:697</text>
+<rect x="12.68" y="218" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="12.68" dx="4" y="229.25">getproperty in Base.jl:33</text>
+<rect x="12.69" y="233" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.69" dx="4" y="244.25">iterate in dict.jl:698</text>
+<rect x="12.69" y="218" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="12.69" dx="4" y="229.25">== in promotion.jl:410</text>
+<rect x="12.77" y="233" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="12.77" dx="4" y="244.25">default_rng in RNGs.jl:372</text>
+<rect x="12.77" y="218" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="12.77" dx="4" y="229.25">&amp;lt; in RNGs.jl:371</text>
+<rect x="12.77" y="233" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="12.77" dx="4" y="244.25">agent_step! in animal.jl:22</text>
+<rect x="12.77" y="218" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="12.77" dx="4" y="229.25">rand in Random.jl:256</text>
+<rect x="12.77" y="203" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="12.77" dx="4" y="214.25">rand in Random.jl:256</text>
+<rect x="12.77" y="188" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="12.77" dx="4" y="199.25">rand in generation.jl:35</text>
+<rect x="12.77" y="173" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="12.77" dx="4" y="184.25">rand in Random.jl:253</text>
+<rect x="12.77" y="158" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="12.77" dx="4" y="169.25">rand in RNGs.jl:459</text>
+<rect x="12.77" y="143" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="12.77" dx="4" y="154.25">reserve_1 in RNGs.jl:233</text>
+<rect x="12.77" y="128" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="12.77" dx="4" y="139.25">mt_empty in RNGs.jl:222</text>
+<rect x="12.77" y="113" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="12.77" dx="4" y="124.25">== in promotion.jl:410</text>
+<rect x="12.77" y="233" width="60.84" height="15" rx="2" fill="#00B58B" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="12.77" dx="4" y="244.25">agent_step! in animal.jl:23</text>
+<rect x="12.77" y="218" width="60.84" height="15" rx="2" fill="#E40041" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="12.77" dx="4" y="229.25">find_food in animal.jl:41</text>
+<rect x="12.77" y="203" width="0.49" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="12.77" dx="4" y="214.25">find_rand in REPL[20]:0</text>
+<rect x="13.26" y="203" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="13.26" dx="4" y="214.25">find_rand in REPL[20]:4</text>
+<rect x="13.26" y="188" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="13.26" dx="4" y="199.25">iterate in dict.jl:694</text>
+<rect x="13.26" y="173" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="13.26" dx="4" y="184.25">iterate in dict.jl:695</text>
+<rect x="13.26" y="158" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="13.26" dx="4" y="169.25">skip_deleted in dict.jl:670</text>
+<rect x="13.27" y="173" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="13.27" dx="4" y="184.25">iterate in dict.jl:698</text>
+<rect x="13.27" y="158" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="13.27" dx="4" y="169.25">getindex in array.jl:801</text>
+<rect x="13.27" y="203" width="41.71" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
+<text x="13.27" dx="4" y="214.25">find_rand in REPL[20]:5</text>
+<rect x="49.66" y="188" width="0.03" height="15" rx="2" fill="#6FDC91" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="49.66" dx="4" y="199.25">#3 in animal.jl:41</text>
+<rect x="49.66" y="173" width="0.02" height="15" rx="2" fill="#00B58B" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="49.66" dx="4" y="184.25">eats in animal.jl:43</text>
+<rect x="49.66" y="158" width="0.02" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="49.66" dx="4" y="169.25">&amp;gt; in operators.jl:305</text>
+<rect x="49.66" y="143" width="0.02" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="49.66" dx="4" y="154.25">&amp;lt; in int.jl:83</text>
+<rect x="51.52" y="188" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="51.52" dx="4" y="199.25">#3 in animal.jl:41</text>
+<rect x="51.52" y="173" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="51.52" dx="4" y="184.25">eats in animal.jl:43</text>
+<rect x="51.52" y="158" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="51.52" dx="4" y="169.25">&amp;gt; in operators.jl:305</text>
+<rect x="51.52" y="143" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="51.52" dx="4" y="154.25">&amp;lt; in int.jl:83</text>
+<rect x="54.98" y="203" width="0.03" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="54.98" dx="4" y="214.25">find_rand in REPL[20]:6</text>
+<rect x="54.98" y="188" width="0.03" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="54.98" dx="4" y="199.25">rand in Random.jl:256</text>
+<rect x="54.98" y="173" width="0.02" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="54.98" dx="4" y="184.25">default_rng in RNGs.jl:370</text>
+<rect x="54.98" y="158" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="54.98" dx="4" y="169.25">threadid in threadingconstructs.jl:10</text>
+<rect x="54.98" y="143" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="54.98" dx="4" y="154.25">+ in int.jl:923</text>
+<rect x="54.98" y="128" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="54.98" dx="4" y="139.25">+ in int.jl:87</text>
+<rect x="54.99" y="158" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="54.99" dx="4" y="169.25">default_rng in RNGs.jl:373</text>
+<rect x="54.99" y="143" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="54.99" dx="4" y="154.25">isassigned in array.jl:205</text>
+<rect x="55" y="173" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="55" dx="4" y="184.25">rand in Random.jl:256</text>
+<rect x="55" y="158" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="55" dx="4" y="169.25">rand in generation.jl:35</text>
+<rect x="55" y="143" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="55" dx="4" y="154.25">rand in Random.jl:253</text>
+<rect x="55" y="128" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="55" dx="4" y="139.25">rand in RNGs.jl:459</text>
+<rect x="55" y="113" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="55" dx="4" y="124.25">reserve_1 in RNGs.jl:233</text>
+<rect x="55" y="98" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="55" dx="4" y="109.25">gen_rand in RNGs.jl:228</text>
+<rect x="55" y="83" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="55" dx="4" y="94.25">getproperty in Base.jl:33</text>
+<rect x="55" y="128" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="55" dx="4" y="139.25">rand in RNGs.jl:460</text>
+<rect x="55" y="113" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="55" dx="4" y="124.25">rand_inbounds in RNGs.jl:435</text>
+<rect x="55" y="98" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="55" dx="4" y="109.25">mt_pop! in RNGs.jl:225</text>
+<rect x="55" y="83" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="55" dx="4" y="94.25">getindex in array.jl:801</text>
+<rect x="55.01" y="203" width="17.13" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="55.01" dx="4" y="214.25">find_rand in REPL[20]:9</text>
+<rect x="55.01" y="188" width="0.4" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="55.01" dx="4" y="199.25">iterate in dict.jl:694</text>
+<rect x="55.01" y="173" width="0.4" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="55.01" dx="4" y="184.25">== in promotion.jl:410</text>
+<rect x="55.41" y="188" width="7.56" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="55.41" dx="4" y="199.25">iterate in dict.jl:695</text>
+<rect x="55.41" y="173" width="0.56" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="55.41" dx="4" y="184.25">skip_deleted in dict.jl:668</text>
+<rect x="55.41" y="158" width="0.02" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="55.41" dx="4" y="169.25">getproperty in Base.jl:33</text>
+<rect x="55.43" y="158" width="0.54" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="55.43" dx="4" y="169.25">length in array.jl:197</text>
+<rect x="55.97" y="173" width="1.27" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="55.97" dx="4" y="184.25">skip_deleted in dict.jl:669</text>
+<rect x="55.97" y="158" width="0.92" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="55.97" dx="4" y="169.25">Colon in range.jl:5</text>
+<rect x="55.97" y="143" width="0.92" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="55.97" dx="4" y="154.25">UnitRange in range.jl:287</text>
+<rect x="55.97" y="128" width="0.92" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="55.97" dx="4" y="139.25">unitrange_last in range.jl:292</text>
+<rect x="55.97" y="113" width="0.73" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="55.97" dx="4" y="124.25">- in int.jl:86</text>
+<rect x="56.89" y="158" width="0.35" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="56.89" dx="4" y="169.25">iterate in range.jl:670</text>
+<rect x="56.89" y="143" width="0.35" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="56.89" dx="4" y="154.25">isempty in range.jl:519</text>
+<rect x="56.89" y="128" width="0.35" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="56.89" dx="4" y="139.25">&amp;gt; in operators.jl:305</text>
+<rect x="56.89" y="113" width="0.35" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="56.89" dx="4" y="124.25">&amp;lt; in int.jl:83</text>
+<rect x="57.24" y="173" width="2.95" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="57.24" dx="4" y="184.25">skip_deleted in dict.jl:670</text>
+<rect x="57.24" y="158" width="0.93" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="57.24" dx="4" y="169.25">isslotfilled in dict.jl:172</text>
+<rect x="57.24" y="143" width="0.26" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="57.24" dx="4" y="154.25">getindex in array.jl:0</text>
+<rect x="57.5" y="143" width="0.67" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="57.5" dx="4" y="154.25">== in promotion.jl:410</text>
+<rect x="60.19" y="173" width="2.78" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="60.19" dx="4" y="184.25">skip_deleted in dict.jl:671</text>
+<rect x="60.19" y="158" width="2.78" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="60.19" dx="4" y="169.25">iterate in range.jl:674</text>
+<rect x="60.19" y="143" width="0.78" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="60.19" dx="4" y="154.25">== in promotion.jl:410</text>
+<rect x="62.97" y="188" width="2.68" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="62.97" dx="4" y="199.25">iterate in dict.jl:696</text>
+<rect x="62.97" y="173" width="2.68" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="62.97" dx="4" y="184.25">== in promotion.jl:410</text>
+<rect x="65.65" y="188" width="1.51" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="65.65" dx="4" y="199.25">iterate in dict.jl:697</text>
+<rect x="65.65" y="173" width="1.51" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="65.65" dx="4" y="184.25">getproperty in Base.jl:33</text>
+<rect x="67.16" y="188" width="4.97" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="67.16" dx="4" y="199.25">iterate in dict.jl:698</text>
+<rect x="67.16" y="173" width="4.26" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="67.16" dx="4" y="184.25">getindex in array.jl:801</text>
+<rect x="72.14" y="203" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="72.14" dx="4" y="214.25">find_rand in REPL[20]:12</text>
+<rect x="72.14" y="203" width="0.39" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="72.14" dx="4" y="214.25">find_rand in int.jl:0</text>
+<rect x="73.61" y="233" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="73.61" dx="4" y="244.25">agent_step! in animal.jl:24</text>
+<rect x="73.61" y="233" width="0.02" height="15" rx="2" fill="#00B58B" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="73.61" dx="4" y="244.25">agent_step! in animal.jl:27</text>
+<rect x="73.61" y="218" width="0.02" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="73.61" dx="4" y="229.25">kill_agent! in animal.jl:80</text>
+<rect x="73.61" y="203" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="73.61" dx="4" y="214.25">delete! in dict.jl:660</text>
+<rect x="73.61" y="188" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="73.61" dx="4" y="199.25">ht_keyindex in dict.jl:283</text>
+<rect x="73.61" y="173" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="73.61" dx="4" y="184.25">getproperty in Base.jl:33</text>
+<rect x="73.62" y="188" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="73.62" dx="4" y="199.25">ht_keyindex in dict.jl:291</text>
+<rect x="73.62" y="203" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="73.62" dx="4" y="214.25">id in EcosystemCore.jl:26</text>
+<rect x="73.62" y="188" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="73.62" dx="4" y="199.25">getproperty in Base.jl:33</text>
+<rect x="73.63" y="233" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="73.63" dx="4" y="244.25">agent_step! in animal.jl:28</text>
+<rect x="73.63" y="233" width="0.02" height="15" rx="2" fill="#00B58B" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="73.63" dx="4" y="244.25">agent_step! in animal.jl:30</text>
+<rect x="73.63" y="218" width="0.02" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.63" dx="4" y="229.25">rand in Random.jl:256</text>
+<rect x="73.63" y="203" width="0.02" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.63" dx="4" y="214.25">rand in Random.jl:256</text>
+<rect x="73.63" y="188" width="0.02" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.63" dx="4" y="199.25">rand in generation.jl:35</text>
+<rect x="73.63" y="173" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="73.63" dx="4" y="184.25">- in float.jl:329</text>
+<rect x="73.64" y="173" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.64" dx="4" y="184.25">rand in Random.jl:253</text>
+<rect x="73.64" y="158" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.64" dx="4" y="169.25">rand in RNGs.jl:459</text>
+<rect x="73.64" y="143" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.64" dx="4" y="154.25">reserve_1 in RNGs.jl:233</text>
+<rect x="73.64" y="128" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.64" dx="4" y="139.25">gen_rand in RNGs.jl:229</text>
+<rect x="73.64" y="113" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.64" dx="4" y="124.25">fill_array! in RNGs.jl:542</text>
+<rect x="73.64" y="98" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.64" dx="4" y="109.25">fill_array! in RNGs.jl:548</text>
+<rect x="73.64" y="83" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.64" dx="4" y="94.25">dsfmt_fill_array_close1_open2! in DSFMT.jl:85</text>
+<rect x="73.64" y="158" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.64" dx="4" y="169.25">rand in RNGs.jl:460</text>
+<rect x="73.64" y="143" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.64" dx="4" y="154.25">rand_inbounds in RNGs.jl:435</text>
+<rect x="73.64" y="128" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="73.64" dx="4" y="139.25">mt_pop! in RNGs.jl:225</text>
+<rect x="73.64" y="113" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="73.64" dx="4" y="124.25">getindex in array.jl:801</text>
+<rect x="73.65" y="233" width="53.68" height="15" rx="2" fill="#2CA3FF" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="73.65" dx="4" y="244.25">agent_step! in animal.jl:31</text>
+<rect x="73.65" y="218" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="73.65" dx="4" y="229.25">reproduce! in animal.jl:57</text>
+<rect x="73.66" y="218" width="52.84" height="15" rx="2" fill="#6FDC91" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="73.66" dx="4" y="229.25">reproduce! in animal.jl:58</text>
+<rect x="73.66" y="203" width="52.84" height="15" rx="2" fill="#D42137" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="73.66" dx="4" y="214.25">find_mate in animal.jl:69</text>
+<rect x="73.66" y="188" width="0.39" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="73.66" dx="4" y="199.25">find_rand in REPL[20]:0</text>
+<rect x="74.05" y="188" width="34.5" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="74.05" dx="4" y="199.25">find_rand in REPL[20]:5</text>
+<rect x="108.55" y="188" width="3.63" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="108.55" dx="4" y="199.25">find_rand in REPL[20]:6</text>
+<rect x="108.55" y="173" width="0.17" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="108.55" dx="4" y="184.25">&amp;lt; in float.jl:416</text>
+<rect x="108.55" y="158" width="0.17" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="108.55" dx="4" y="169.25">&amp;lt; in float.jl:371</text>
+<rect x="108.72" y="173" width="0.43" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="108.72" dx="4" y="184.25">* in promotion.jl:322</text>
+<rect x="108.72" y="158" width="0.43" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="108.72" dx="4" y="169.25">* in float.jl:332</text>
+<rect x="109.15" y="173" width="2.98" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="109.15" dx="4" y="184.25">rand in Random.jl:256</text>
+<rect x="109.15" y="158" width="0.88" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="109.15" dx="4" y="169.25">default_rng in RNGs.jl:370</text>
+<rect x="109.15" y="143" width="0.18" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="109.15" dx="4" y="154.25">threadid in threadingconstructs.jl:10</text>
+<rect x="109.15" y="128" width="0.1" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="109.15" dx="4" y="139.25">+ in int.jl:923</text>
+<rect x="109.15" y="113" width="0.1" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="109.15" dx="4" y="124.25">+ in int.jl:87</text>
+<rect x="109.33" y="143" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="109.33" dx="4" y="154.25">default_rng in RNGs.jl:0</text>
+<rect x="109.33" y="143" width="0.11" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="109.33" dx="4" y="154.25">default_rng in RNGs.jl:372</text>
+<rect x="109.44" y="143" width="0.4" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="109.44" dx="4" y="154.25">default_rng in RNGs.jl:373</text>
+<rect x="109.44" y="128" width="0.4" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="109.44" dx="4" y="139.25">isassigned in array.jl:205</text>
+<rect x="109.84" y="143" width="0.14" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="109.84" dx="4" y="154.25">default_rng in RNGs.jl:379</text>
+<rect x="110.03" y="158" width="2.1" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="110.03" dx="4" y="169.25">rand in Random.jl:256</text>
+<rect x="110.03" y="143" width="2.1" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="110.03" dx="4" y="154.25">rand in generation.jl:35</text>
+<rect x="110.03" y="128" width="1.04" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="110.03" dx="4" y="139.25">- in float.jl:329</text>
+<rect x="111.07" y="128" width="1.06" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.07" dx="4" y="139.25">rand in Random.jl:253</text>
+<rect x="111.07" y="113" width="0.62" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.07" dx="4" y="124.25">rand in RNGs.jl:459</text>
+<rect x="111.07" y="98" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.07" dx="4" y="109.25">reserve_1 in RNGs.jl:0</text>
+<rect x="111.08" y="98" width="0.61" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.08" dx="4" y="109.25">reserve_1 in RNGs.jl:233</text>
+<rect x="111.08" y="83" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.08" dx="4" y="94.25">gen_rand in RNGs.jl:227</text>
+<rect x="111.08" y="83" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.08" dx="4" y="94.25">gen_rand in RNGs.jl:228</text>
+<rect x="111.08" y="68" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="111.08" dx="4" y="79.25">getproperty in Base.jl:33</text>
+<rect x="111.09" y="68" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="111.09" dx="4" y="79.25">setproperty! in Base.jl:34</text>
+<rect x="111.09" y="83" width="0.39" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.09" dx="4" y="94.25">gen_rand in RNGs.jl:229</text>
+<rect x="111.09" y="68" width="0.39" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.09" dx="4" y="79.25">fill_array! in RNGs.jl:542</text>
+<rect x="111.09" y="53" width="0.39" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.09" dx="4" y="64.25">fill_array! in RNGs.jl:548</text>
+<rect x="111.09" y="38" width="0.39" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.09" dx="4" y="49.25">dsfmt_fill_array_close1_open2! in DSFMT.jl:85</text>
+<rect x="111.48" y="83" width="0.21" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.48" dx="4" y="94.25">mt_empty in RNGs.jl:222</text>
+<rect x="111.48" y="68" width="0.02" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="111.48" dx="4" y="79.25">getproperty in Base.jl:33</text>
+<rect x="111.5" y="68" width="0.19" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="111.5" dx="4" y="79.25">== in promotion.jl:410</text>
+<rect x="111.69" y="113" width="0.44" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.69" dx="4" y="124.25">rand in RNGs.jl:460</text>
+<rect x="111.69" y="98" width="0.44" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.69" dx="4" y="109.25">rand_inbounds in RNGs.jl:435</text>
+<rect x="111.69" y="83" width="0.44" height="15" rx="2" fill="#2CA3FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="111.69" dx="4" y="94.25">mt_pop! in RNGs.jl:225</text>
+<rect x="111.69" y="68" width="0.06" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="111.69" dx="4" y="79.25">getproperty in Base.jl:33</text>
+<rect x="111.75" y="68" width="0.37" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="111.75" dx="4" y="79.25">getindex in array.jl:801</text>
+<rect x="112.12" y="68" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="112.12" dx="4" y="79.25">+ in int.jl:87</text>
+<rect x="112.18" y="188" width="12.64" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="112.18" dx="4" y="199.25">find_rand in REPL[20]:9</text>
+<rect x="112.18" y="173" width="0.23" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="112.18" dx="4" y="184.25">iterate in dict.jl:694</text>
+<rect x="112.18" y="158" width="0.23" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="112.18" dx="4" y="169.25">== in promotion.jl:410</text>
+<rect x="112.41" y="173" width="5.46" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="112.41" dx="4" y="184.25">iterate in dict.jl:695</text>
+<rect x="112.41" y="158" width="0.31" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="112.41" dx="4" y="169.25">skip_deleted in dict.jl:668</text>
+<rect x="112.41" y="143" width="0.1" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="112.41" dx="4" y="154.25">getproperty in Base.jl:33</text>
+<rect x="112.51" y="143" width="0.21" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="112.51" dx="4" y="154.25">length in array.jl:197</text>
+<rect x="112.72" y="158" width="0.71" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="112.72" dx="4" y="169.25">skip_deleted in dict.jl:669</text>
+<rect x="112.72" y="143" width="0.56" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="112.72" dx="4" y="154.25">Colon in range.jl:5</text>
+<rect x="112.72" y="128" width="0.56" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="112.72" dx="4" y="139.25">UnitRange in range.jl:287</text>
+<rect x="112.72" y="113" width="0.56" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="112.72" dx="4" y="124.25">unitrange_last in range.jl:292</text>
+<rect x="112.72" y="98" width="0.39" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="112.72" dx="4" y="109.25">- in int.jl:86</text>
+<rect x="113.28" y="143" width="0.15" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="113.28" dx="4" y="154.25">iterate in range.jl:670</text>
+<rect x="113.28" y="128" width="0.15" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="113.28" dx="4" y="139.25">isempty in range.jl:519</text>
+<rect x="113.28" y="113" width="0.15" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="113.28" dx="4" y="124.25">&amp;gt; in operators.jl:305</text>
+<rect x="113.28" y="98" width="0.15" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="113.28" dx="4" y="109.25">&amp;lt; in int.jl:83</text>
+<rect x="113.43" y="158" width="2.43" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="113.43" dx="4" y="169.25">skip_deleted in dict.jl:670</text>
+<rect x="113.43" y="143" width="0.62" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="113.43" dx="4" y="154.25">isslotfilled in dict.jl:172</text>
+<rect x="113.43" y="128" width="0.13" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="113.43" dx="4" y="139.25">getindex in array.jl:0</text>
+<rect x="113.56" y="128" width="0.49" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="113.56" dx="4" y="139.25">== in promotion.jl:410</text>
+<rect x="115.86" y="158" width="2.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="115.86" dx="4" y="169.25">skip_deleted in dict.jl:671</text>
+<rect x="115.86" y="143" width="2.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="115.86" dx="4" y="154.25">iterate in range.jl:674</text>
+<rect x="115.86" y="128" width="0.74" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="115.86" dx="4" y="139.25">== in promotion.jl:410</text>
+<rect x="117.87" y="173" width="1.78" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="117.87" dx="4" y="184.25">iterate in dict.jl:696</text>
+<rect x="117.87" y="158" width="1.78" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="117.87" dx="4" y="169.25">== in promotion.jl:410</text>
+<rect x="119.65" y="173" width="0.95" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="119.65" dx="4" y="184.25">iterate in dict.jl:697</text>
+<rect x="119.65" y="158" width="0.95" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="119.65" dx="4" y="169.25">getproperty in Base.jl:33</text>
+<rect x="120.6" y="173" width="4.03" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="120.6" dx="4" y="184.25">iterate in dict.jl:698</text>
+<rect x="120.6" y="158" width="3.44" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="120.6" dx="4" y="169.25">getindex in array.jl:801</text>
+<rect x="124.04" y="158" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="124.04" dx="4" y="169.25">== in promotion.jl:410</text>
+<rect x="124.63" y="173" width="0.19" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="124.63" dx="4" y="184.25">+ in int.jl:87</text>
+<rect x="124.82" y="188" width="0.28" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="124.82" dx="4" y="199.25">find_rand in int.jl:0</text>
+<rect x="125.96" y="188" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="125.96" dx="4" y="199.25">dsfmt_fill_array_close1_open2! in DSFMT.jl:82</text>
+<rect x="125.97" y="188" width="0.11" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="125.97" dx="4" y="199.25">default_rng in RNGs.jl:372</text>
+<rect x="125.97" y="173" width="0.11" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="125.97" dx="4" y="184.25">&amp;lt; in RNGs.jl:371</text>
+<rect x="126.08" y="188" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="126.08" dx="4" y="199.25">gen_rand in RNGs.jl:227</text>
+<rect x="126.16" y="188" width="0.19" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="126.16" dx="4" y="199.25">default_rng in RNGs.jl:372</text>
+<rect x="126.16" y="173" width="0.07" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="126.16" dx="4" y="184.25">&amp;lt; in int.jl:83</text>
+<rect x="126.23" y="173" width="0.12" height="15" rx="2" fill="#00B58B" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="126.23" dx="4" y="184.25">&amp;lt; in RNGs.jl:371</text>
+<rect x="126.35" y="188" width="0.14" height="15" rx="2" fill="#E1B2FF" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="126.35" dx="4" y="199.25">default_rng in RNGs.jl:379</text>
+<rect x="126.49" y="188" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="/buildworker/worker/package_linux64/build/usr/share/julia/stdlib/v1.6/Random/src/"/>
+<text x="126.49" dx="4" y="199.25">gen_rand in RNGs.jl:227</text>
+<rect x="126.5" y="218" width="0.02" height="15" rx="2" fill="#F3004D" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="126.5" dx="4" y="229.25">reproduce! in animal.jl:59</text>
+<rect x="126.52" y="218" width="0.62" height="15" rx="2" fill="#E40041" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="126.52" dx="4" y="229.25">reproduce! in animal.jl:61</text>
+<rect x="126.52" y="203" width="0.29" height="15" rx="2" fill="#C5312F" data-dinfo="./"/>
+<text x="126.52" dx="4" y="214.25">fieldnames in reflection.jl:177</text>
+<rect x="126.96" y="203" width="0.14" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="126.96" dx="4" y="214.25">collect in array.jl:676</text>
+<rect x="126.96" y="188" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="126.96" dx="4" y="199.25">grow_to! in array.jl:739</text>
+<rect x="126.96" y="173" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="126.96" dx="4" y="184.25">iterate in generator.jl:44</text>
+<rect x="126.96" y="158" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="126.96" dx="4" y="169.25">iterate in iterators.jl:456</text>
+<rect x="126.96" y="173" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="126.96" dx="4" y="184.25">iterate in generator.jl:47</text>
+<rect x="126.96" y="158" width="0.01" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="126.96" dx="4" y="169.25">#5 in none:0</text>
+<rect x="126.96" y="143" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="126.96" dx="4" y="154.25">getproperty in Base.jl:33</text>
+<rect x="126.97" y="188" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="126.97" dx="4" y="199.25">grow_to! in array.jl:741</text>
+<rect x="126.97" y="173" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="126.97" dx="4" y="184.25">empty in abstractarray.jl:802</text>
+<rect x="126.97" y="158" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="126.97" dx="4" y="169.25">Array in boot.jl:467</text>
+<rect x="126.97" y="143" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="126.97" dx="4" y="154.25">Array in boot.jl:448</text>
+<rect x="126.98" y="188" width="0.02" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="126.98" dx="4" y="199.25">grow_to! in array.jl:742</text>
+<rect x="126.98" y="173" width="0.02" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="126.98" dx="4" y="184.25">push! in array.jl:929</text>
+<rect x="126.98" y="158" width="0.02" height="15" rx="2" fill="#FFA000" data-dinfo="./"/>
+<text x="126.98" dx="4" y="169.25">_growend! in array.jl:884</text>
+<rect x="127" y="188" width="0.04" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="127" dx="4" y="199.25">grow_to! in array.jl:743</text>
+<rect x="127" y="173" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="127" dx="4" y="184.25">grow_to! in array.jl:759</text>
+<rect x="127" y="173" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="127" dx="4" y="184.25">grow_to! in array.jl:761</text>
+<rect x="127" y="158" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="127" dx="4" y="169.25">iterate in generator.jl:44</text>
+<rect x="127" y="143" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="127" dx="4" y="154.25">iterate in iterators.jl:449</text>
+<rect x="127" y="128" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="127" dx="4" y="139.25">iterate in tuple.jl:66</text>
+<rect x="127.01" y="158" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="127.01" dx="4" y="169.25">iterate in generator.jl:47</text>
+<rect x="127.01" y="143" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="127.01" dx="4" y="154.25">#5 in none:0</text>
+<rect x="127.01" y="128" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="127.01" dx="4" y="139.25">getproperty in Base.jl:33</text>
+<rect x="127.01" y="173" width="0.01" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="127.01" dx="4" y="184.25">grow_to! in array.jl:765</text>
+<rect x="127.01" y="158" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="127.01" dx="4" y="169.25">push! in array.jl:929</text>
+<rect x="127.01" y="143" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="127.01" dx="4" y="154.25">_growend! in array.jl:884</text>
+<rect x="127.02" y="158" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="127.02" dx="4" y="169.25">push! in array.jl:930</text>
+<rect x="127.02" y="143" width="0" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="127.02" dx="4" y="154.25">setindex! in array.jl:839</text>
+<rect x="127.02" y="173" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="127.02" dx="4" y="184.25">grow_to! in array.jl:770</text>
+<rect x="127.02" y="158" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="127.02" dx="4" y="169.25">iterate in generator.jl:47</text>
+<rect x="127.02" y="143" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="127.02" dx="4" y="154.25">#5 in none:0</text>
+<rect x="127.02" y="128" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="127.02" dx="4" y="139.25">getproperty in Base.jl:33</text>
+<rect x="127.04" y="188" width="0.06" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="127.04" dx="4" y="199.25">Array in boot.jl:467</text>
+<rect x="127.04" y="173" width="0.06" height="15" rx="2" fill="#E4A71C" data-dinfo="./"/>
+<text x="127.04" dx="4" y="184.25">Array in boot.jl:448</text>
+<rect x="127.14" y="218" width="0.17" height="15" rx="2" fill="#F3004D" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="127.14" dx="4" y="229.25">reproduce! in animal.jl:63</text>
+<rect x="127.28" y="203" width="0.01" height="15" rx="2" fill="#E4A71C" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="127.28" dx="4" y="214.25">Animal in animal.jl:2</text>
+<rect x="127.31" y="218" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="127.31" dx="4" y="229.25">reproduce! in animal.jl:64</text>
+<rect x="127.31" y="203" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="127.31" dx="4" y="214.25">setindex! in dict.jl:383</text>
+<rect x="127.31" y="188" width="0" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="127.31" dx="4" y="199.25">ht_keyindex2! in dict.jl:315</text>
+<rect x="127.31" y="188" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="127.31" dx="4" y="199.25">ht_keyindex2! in dict.jl:323</text>
+<rect x="127.31" y="188" width="0.01" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="127.31" dx="4" y="199.25">ht_keyindex2! in dict.jl:332</text>
+<rect x="127.31" y="173" width="0.01" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="127.31" dx="4" y="184.25">&amp; in int.jl:309</text>
+<rect x="127.33" y="233" width="0" height="15" rx="2" fill="#00B58B" data-dinfo="/home/honza/.julia/packages/EcosystemCore/8dzJF/src/"/>
+<text x="127.33" dx="4" y="244.25">reproduce! in animal.jl:57</text>
+<rect x="127.34" y="248" width="0" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="127.34" dx="4" y="259.25">ht_keyindex in dict.jl:292</text>
 </g></g>
 <script><![CDATA[
 // Snap.svg 0.3.0
@@ -522,10 +1156,10 @@ f+=g+"]",i[b]=f}return Function("val","return Snap.path.toString.call(["+i+"])")
 <script><![CDATA[
 if (typeof require === 'function' && define.amd) {
     require(['ProfileSVG'], function (ProfileSVG) {
-        ProfileSVG.initialize("fig-ee615038315a45dfaf450b5f211b1b36");
+        ProfileSVG.initialize("fig-8e19326c4f6d44a0818bd53b1dfe320e");
     });
 } else {
-    ProfileSVG.initialize("fig-ee615038315a45dfaf450b5f211b1b36");
+    ProfileSVG.initialize("fig-8e19326c4f6d44a0818bd53b1dfe320e");
 }
 ]]></script>
 </svg>
