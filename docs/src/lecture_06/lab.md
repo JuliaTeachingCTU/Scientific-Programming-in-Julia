@@ -1,24 +1,23 @@
-# [Lab 06: Digging deeper part 1](@id introspection_lab)
+# [Lab 06: Code introspection and metaprogramming](@id introspection_lab)
 In this lab we are first going to inspect some tooling to help you understand what Julia does under the hood such as:
 - looking at the code at different levels
 - understanding what method is being called
-- where to find the source code
 - showing different levels of code optimization
 
 Secondly we will start playing with the metaprogramming side of Julia, mainly covering:
 - how to view abstract syntax tree (AST) of Julia code
 - how to manipulate AST
 
-These topics will be extended in the next [lecture](@ref macro_lecture)/[lab](@ref macro_lab), where we are going use metaprogramming to achieve greater good with macros and generated functions, which lie at the core of some state of the art Julia pkgs.
+These topics will be extended in the next [lecture](@ref macro_lecture)/[lab](@ref macro_lab), where we are going use metaprogramming to manipulate code with macros.
 
-We will be again a little getting ahead of ourselves as we are going to use quite a few macros, which will be properly explained in the nextr lecture as well, however for now the important thing to know is that macro is just a special function, that accepts as an argument Julia code, which it modifies.
+We will be again a little getting ahead of ourselves as we are going to use quite a few macros, which will be properly explained in the next lecture as well, however for now the important thing to know is that macro is just a special function, that accepts as an argument Julia code, which it modifies.
 
-## Introspection
+## Introspection intro
 Let's start with the topic of code inspection, e.g. we may ask the following: What happens when I execute this
 ```julia
 [i for i in 1:10]
 ```
-We may be tempted to think, that this is some function call, for which we can call the `@which` macro to infer what is being called under the hood, however when we do this Julia will warn us that this is something "more complex"
+We may be tempted to think, that this is some function call, for which we can call the `@which` macro to infer what is being called under the hood, however when we do this Julia will warn us that this is something "more complex" 
 ```@repl lab06_intro
 using InteractiveUtils #hide
 @which [i for i in 1:10]
@@ -27,28 +26,199 @@ and that we should rather call the `Meta.@lower` macro, which spits out the so c
 ```@repl lab06_intro
 Meta.@lower [i for i in 1:10]
 ```
+Now we see that the result is constructed by first creating the range, then a generator, which is subsequently collected. That is the reason, why simple `@which` macro cannot help.
 
-## Type introspection
-
-```@repl lab06_intro
-using EcosystemCore
-dump(Animal)
+So why it is not a call, let's look at how the code is parsed
+```@example lab06_intro
+using GraphRecipes, Plots
+code = :([i for i in 1:10])
+plot(code, fontsize=12, shorten=0.01, axis_buffer=0.15, nodeshape=:rect)
+```
+Comparing this to a simple call to collect
+```@example lab06_intro
+code = :(collect(1:10))
+plot(code, fontsize=12, shorten=0.01, axis_buffer=0.15, nodeshape=:rect)
 ```
 
+introduce `@code_llvm`, `@code_lowered` macros ???
+
+Let's see how these tools can help us understand some of Julia's internals on examples from previous labs and lectures.
 
 
-### Optimization of broadcasting as seen from the different levels
+
+### Understanding the runtime dispatch and type instabilities
+We will start with a question: Can we spot internally some difference between type stable/unstable code?
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Inspect the following two functions using `@code_lowered`, `@code_typed`, `@code_llvm` and `@code_native`.
+```@example 
+x = rand(10^5)
+function explicit_len(x)
+    length(x)
+end
+
+function implicit_len()
+    length(x)
+end
+nothing #hide
+```
+
+!!! info "Redirecting `stdout`"
+    If the output of the method introspection tools is too long you can use a general way of redirecting standard output `stdout` to a file
+    ```julia
+    open("./llvm_fun.ll", "w") do file
+        original_stdout = stdout
+        redirect_stdout(file)
+        @code_llvm fun()
+        redirect_stdout(original_stdout)
+    end
+    ```
+    In case of `@code_llvm` and `@code_native` there are special options, that allow this out of the box, see help `?` for underlying `code_llvm` and `code_native`. If you don't mind adding dependencies there is also the `@capture_out` from [`Suppressor.jl`](https://github.com/JuliaIO/Suppressor.jl)
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+
+```julia
+@code_warntype explicit_sum(x)
+@code_warntype implicit_sum()
+
+@code_typed explicit_sum(x)
+@code_typed implicit_sum()
+
+@code_llvm explicit_sum(x)
+@code_llvm implicit_sum()
+
+@code_native explicit_sum(x)
+@code_native implicit_sum()
+```
+
+In this case we see that the generated code for such a simple operation is much longer in the type unstable case resulting in longer run times. However in the next example we will see that having longer code is not always a bad thing.
+```@raw html
+</p></details>
+```
+
+### Loop unrolling
+In some cases the compiler uses loop unrolling[^1] optimization to speed up loops at the expense of binary size. The result of such optimization is removal of the loop control instructions and rewriting the loop into a repeated sequence of independent statements.
+
+[^1]: [https://en.wikipedia.org/wiki/Loop_unrolling](https://en.wikipedia.org/wiki/Loop\_unrolling)
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Inspect under what conditions does the compiler unroll the for loop in the `polynomial` function from the last [lab](@ref horner).
+```julia
+function polynomial(a, x)
+    accumulator = a[end] * one(x)
+    for i in length(a)-1:-1:1
+        accumulator = accumulator * x + a[i]
+    end
+    accumulator  
+end
+```
+
+Compare the speed of execution with and without loop unrolling.
+
+**HINTS**:
+- these kind of optimization are lower level than intermediate language
+- loop unrolling is possible when compiler knows the length of the input
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```julia
+using Test #hide
+using BenchmarkTools
+a = Tuple(ones(20)) # tuple has known size
+ac = collect(a)
+x = 2.0
+
+@test polynomial(a,x) == evalpoly(x,a)    # compare with built-in function
+
+@code_lowered polynomial(a,x)       # cannot be seen here as optimizations are not applied
+@code_typed polynomial(a,x)         # loop unrolling is not part of type inference optimization
+
+@code_llvm polynomial(a,x)
+@code_llvm polynomial(ac,x)
+```
+
+More than 2x speedup
+```julia
+@btime polynomial($a,$x)
+@btime polynomial($ac,$x)
+```
+
+```@raw html
+</p></details>
+```
+
+### Recursion inlining depth
+Inlining[^2] is another compiler optimization that allows us to speed up the code by avoiding function calls. Where applicable compiler can replace `f(args)` directly with the function body of `f`, thus removing the need to modify stack to transfer the control flow to a different place. This is yet another optimization that may improve speed at the expense of binary size.
+
+[^2]: [https://en.wikipedia.org/wiki/Inline_expansion](https://en.wikipedia.org/wiki/Inline\_expansion)
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Rewrite the `polynomial` function from the last [lab](@ref horner) using recursion and find the length of the coefficients, at which inlining of the recursive calls stops occuring.
+
+```julia
+function polynomial(a, x)
+    accumulator = a[end] * one(x)
+    for i in length(a)-1:-1:1
+        accumulator = accumulator * x + a[i]
+    end
+    accumulator  
+end
+```
+
+**HINTS**:
+- define two methods `_polynomial(x, a...)` and `_polynomial(x, a)`
+- recall that these kind of optimization are run just after type inference
+- use container of known length to store the coefficients
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+
+```julia
+_polynomial!(ac, x, a...) = _polynomial!(x * ac + a[end], x, a[1:end-1]...)
+_polynomial!(ac, x, a) = x * ac + a
+polynomial(a, x) = _polynomial!(a[end] * one(x), x, a[1:end-1]...)
+
+# the coefficients have to be a tuple
+a = Tuple(ones(Int, 21)) # everything less than 22 gets inlined
+x = 2
+polynomial(a,x) == evalpoly(x,a) # compare with built-in function
 
 
+@code_lowered polynomial(a,x) # cannot be seen here as optimizations are not applied
+@code_typed polynomial(a,x)
+@code_llvm polynomial(a,x)    # seen here too, but code_typed is a better option
+```
 
-## Calling LLVM/C/Fortran/(C++)/Pointers?
-
+```@raw html
+</p></details>
+```
 
 ## Let's do some metaprogramming
 Julia is so called homoiconic language, as it allows the language to reason about its code. This capability is inspired by years of development in other languages such as Lisp, Clojure or Prolog.
 
-There are two easy ways to extract/construct the code structure [^1]
-[^1]: Once you understand the recursive structure of expressions, the AST can be constructed manually like any other type.
+There are two easy ways to extract/construct the code structure [^2]
 - parsing code stored in string with internal `Meta.parse`
 ```@repl lab06_meta
 code_parse = Meta.parse("x = 2")    # for single line expressions (additional spaces are ignored)
@@ -81,8 +251,8 @@ dump(code_parse_block)
 The type of both multiline and single line expression is `Expr` with fields `head` and `args`. Notice that `Expr` type is recursive in the `args`, which can store other expressions resulting in a tree structure - abstract syntax tree (AST) - that can be visualized for example with the combination of `GraphRecipes` and `Plots` packages. 
 
 ```@example lab06_meta
-using GraphRecipes
-using Plots
+using GraphRecipes #hide
+using Plots #hide
 plot(code_expr_block, fontsize=12, shorten=0.01, axis_buffer=0.15, nodeshape=:rect)
 ```
 
@@ -130,51 +300,52 @@ eval(code), eval(code2), eval(code3)
 </p></details>
 ```
 
-As the previous exercise has been focused on substitution of a single instance of expression. Let's try doing similar stuff in more general way.
+Following up on the more general substitution of variables in an expression from the lecture, let's see how the situation becomes more complicated, when we are dealing with strings instead of a parsed AST.
 
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Write function `substitute!(ex::Expr)` which replaces all `x` with `y`. Test this on the following expression
 ```@example lab06_meta
-ex = :(x + x*x + y*x - sin(z))
+using Test #hide
+replace_i(s::Symbol) = s == :i ? :k : s
+replace_i(e::Expr) = Expr(e.head, map(replace_i, e.args)...)
+replace_i(u) = u
 nothing #hide
 ```
+Given a function `replace_i`, which replaces variables `i` for `k` in an expression like the following
+```@repl lab06_meta
+ex = :(i + i*i + y*i - sin(z))
+@test replace_i(ex) == :(k + k*k + y*k - sin(z))
+```
+write function `sreplace_i(s)` which does the same thing but instead of a parsed expression (AST) it manipulates a string, such as
+```@repl lab06_meta
+s = string(ex)
+```
+Think of some corner cases, that the method may not handle properly.
 
-**HINT**: Use recursion because we are working with a recursive structure.
+**HINTS**:
+- Use `Meta.parse` in combination with `replace_i` **only** for checking of correctness.
+- You can use the `replace` function.
 
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
+The naive solution
 ```@repl lab06_meta
-using Test #hide
-function substitute!(ex)
-    args = ex.args
-    
-    for i in 1:length(args)
-        if args[i] == :x
-            args[i] = :y
-        
-        elseif args[i] isa Expr
-            substitute!(args[i])
-        end
-    end
-    
-    return ex
-end
-
-@test substitute!(ex) == :(y + y*y + y*y - sin(z))
+sreplace_i(s) = replace(s, 'i' => 'k')
+@test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
 ```
+does not work in this simple case, because it will replace "i" inside the `sin(z)` expression. Avoiding these corner cases would require some more involved logic (like complicated regular expressions in `replace`), therefore using the parsed AST is preferable when manipulating the code.
 
 ```@raw html
 </p></details>
 ```
 
-Manipulating expressions allows us to create a wide variety of exercises, so here goes another, whose result may be more useful in the near future.
+If the exercises so far did not feel very useful let's focus on one, that is actually useful as a part of the [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) pkg.
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
@@ -183,12 +354,13 @@ Manipulating expressions allows us to create a wide variety of exercises, so her
 Write function `wrap!(ex::Expr)` which wraps literal values (numbers) with a call to `f()`. You can test it on the following example
 ```@example lab06_meta
 f = x -> convert(Float64, x)
-ex = :(x*x + 2*y*x + y*y)
+ex = :(x*x + 2*y*x + y*y)     # original expression
+rex = :(x*x + f(2)*y*x + y*y) # result expression
 nothing #hide
 ```
 
 **HINTS**:
-- use recursion
+- use recursion and multiple dispatch
 - dispatch on `::Number` to detect numbers in an expression
 - for testing purposes, create a copy of `ex` before mutating
 
@@ -222,41 +394,10 @@ eval(ex)
 </p></details>
 ```
 
-This kind of manipulation is at the core of some pkgs, such as [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) where every number is replaced with a narrow interval in order to find some bounds on the result of a computation.
+This kind of manipulation is at the core of some pkgs, such as aforementioned [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) where every number is replaced with a narrow interval in order to find some bounds on the result of a computation.
+
+
+[^2]: Once you understand the recursive structure of expressions, the AST can be constructed manually like any other type.
+---
 
 ## Resources
-!!! note "Where to find source code?"
-    As most of Julia is written in Julia itself it is sometimes helpful to look inside for some details or inspiration. The code of `Base` and stdlib pkgs is located just next to Julia's installation in the `./share/julia` subdirectory
-    ```bash
-    ./julia-1.6.2/
-        ├── bin
-        ├── etc
-        │   └── julia
-        ├── include
-        │   └── julia
-        │       └── uv
-        ├── lib
-        │   └── julia
-        ├── libexec
-        └── share
-            ├── appdata
-            ├── applications
-            ├── doc
-            │   └── julia       # offline documentation (https://docs.julialang.org/en/v1/)
-            └── julia
-                ├── base        # base library
-                ├── stdlib      # standard library
-                └── test
-    ```
-    Other packages installed through Pkg interface are located in the `.julia/` directory which is located in your `$HOMEDIR`, i.e. `/home/$(user)/.julia/` on Unix based systems and `/Users/$(user)/.julia/` on Windows.
-    ```bash
-    ~/.julia/
-        ├── artifacts
-        ├── compiled
-        ├── config          # startup.jl lives here
-        ├── environments
-        ├── logs
-        ├── packages        # packages are here
-        └── registries
-    ```
-    If you are using VSCode, the paths visible in the REPL can be clicked through to he actual source code. Moreover in that environment the documentation is usually available upon hovering over code.
