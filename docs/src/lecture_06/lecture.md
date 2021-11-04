@@ -1,38 +1,27 @@
 # [Language introspection](@id introspection)
 
-Materials:
-- Julia's manual on [metaprogramming](https://docs.julialang.org/en/v1/manual/metaprogramming/)
-- David P. Sanders' [workshop @ JuliaCon 2021](https://www.youtube.com/watch?v=2QLhw6LVaq0) 
-- Steven Johnson's [keynote talk @ JuliaCon 2019](https://www.youtube.com/watch?v=mSgXWpvQEHE)
-- Andy Ferris's [workshop @ JuliaCon 2018](https://www.youtube.com/watch?v=SeqAQHKLNj4)
-- [From Macros to DSL](https://github.com/johnmyleswhite/julia_tutorials) by John Myles White 
-- Notes on [JuliaCompilerPlugin](https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project)
-
 **What is metaprogramming?** *A high-level code that writes high-level code* by Stever Johnson.
 
 **Why do we need metaprogramming?** 
 - In general, we do not need it, as we can do whatever we need without it, but it can help us to remove a boilerplate code. 
-
-	+ As an example, consider a `@show` macro, which just prints the name of the variable (or the expression) and its evaluation. This means that instead of writing `println("2+exp(4) = ",  2+exp(4))` we can just write `@show 2+exp(4)`.
-
-	+ Another example is `@time` or `elapsed` The above is difficult to implement using normal function, since the when you pass `2+exp(4)` as a function argument, it will be automatically evaluated. Therefore you need to pass it as an expression, that can be evaluated within the function.
-
-	+ It can help when implementing **encapsulation**.
-
+    + As an example, consider a `@show` macro, which just prints the name of the variable (or the expression) and its evaluation. This means that instead of writing `println("2+exp(4) = ",  2+exp(4))` we can just write `@show 2+exp(4)`.
+    + Another example is `@time` or `elapsed` The above is difficult to implement using normal function, since the when you pass `2+exp(4)` as a function argument, it will be automatically evaluated. Therefore you need to pass it as an expression, that can be evaluated within the function.
+    + It can help when implementing **encapsulation**.
 - **Domain Specific Languages**
+
 
 ## Stages of compilation
 Julia (as any modern compiler) uses several stages to convert source code to native code. Let's recap them
 - parsing the source code to **abstract syntax tree** (AST)
 - lowering the abstract syntax tree **static single assignment** form (SSA) [see wiki](https://en.wikipedia.org/wiki/Static_single_assignment_form)
-- assigniting types to variables and performing type inference on called functions
+- assigning types to variables and performing type inference on called functions
 - lowering the typed code to LLVM intermediate representation (LLVM Ir)
 - using LLVM compiler to produce a native code.
 
 
 ### Example: Fibonacci numbers
 Example taken from [StackOverflow](https://stackoverflow.com/questions/43453944/what-is-the-difference-between-code-native-code-typed-and-code-llvm-in-julia)
-Consider function for example a function computing the fibonacci
+Consider function for example a function computing the Fibonacci numbers
 ```julia
 function nextfib(n)
 	a, b = one(n), one(n)
@@ -43,7 +32,8 @@ function nextfib(n)
 end
 ```
 
-- **Parsing** The first thing the compiler do is that it will parse the source code (represented as a string) to the abstract syntax tree. We can inspect the results of this stage as 
+### Parsing
+The first thing the compiler does is that it will parse the source code (represented as a string) to the abstract syntax tree. We can inspect the results of this stage as 
 ```julia
 julia> parsed_fib = Meta.parse(
 """
@@ -76,9 +66,10 @@ TikzPictures.save(SVG("parsed_fib.svg"), g)
 ```
 ![parsed_fib.svg](parsed_fib.svg)
 
-We can see that the AST is indeed a tree, with `function` being a root node (caused by us parsing a function). Each inner node represents a function call with childrens of the inner node being its arguments. An interesting inner node is the `Block` representing a sequence of statements, where we can also see inserted information about lines in the source code. Lisp-like S-Expression can be printed using `Meta.show_sexpr(parsed_fib)`.
+We can see that the AST is indeed a tree, with `function` being a root node (caused by us parsing a function). Each inner node represents a function call with children of the inner node being its arguments. An interesting inner node is the `Block` representing a sequence of statements, where we can also see inserted information about lines in the source code. Lisp-like S-Expression can be printed using `Meta.show_sexpr(parsed_fib)`.
 
-- The next stage is **lowering**, where AST is converted to Static Single Assignment Form (SSA), in which "each variable is assigned exactly once, and every variable is defined before it is used". Loops and conditionals are transformed into gotos and labels using a single unless/goto construct (this is not exposed in user-level Julia). 
+### Lowering
+The next stage is **lowering**, where AST is converted to Static Single Assignment Form (SSA), in which "each variable is assigned exactly once, and every variable is defined before it is used". Loops and conditionals are transformed into gotos and labels using a single unless/goto construct (this is not exposed in user-level Julia). 
 ```julia
 julia> @code_lowered nextfib(3)
 CodeInfo(
@@ -96,11 +87,12 @@ CodeInfo(
 4 ─      return b
 )
 ```
-or alternatively `lowered_fib = Meta.lower(@__MODULE__, parsed_fib)`. For inserted debugging informations, there is an option `@code_lowered debuginfo=:source nextfib(123)`. We can see that 
-	- compiler has introduced a lot of variables 
-	- `while` (and `for`) loops has been replaced by a `goto` prepended by conditional statements
+or alternatively `lowered_fib = Meta.lower(@__MODULE__, parsed_fib)`. For inserted debugging information, there is an option `@code_lowered debuginfo=:source nextfib(123)`. We can see that 
+- compiler has introduced a lot of variables 
+- `while` (and `for`) loops has been replaced by a `goto` prepended by conditional statements
 
-- **Code typying** is the process in which the compiler attaches types to variables and tries to infer types of objects returned from called functions. If the compiler fails to infer the returned type, it will give the variable type `Any`, in which case a dynamic dispatch will be used in subsequent operations with the variable. Inspecting typed code is therefore important for detecting type instabilities (the process can be difficult and error prone, fortunatelly, new tools like `Jet.jl` might simplify this task). The output of typing can be inspected using `@code_typed` macro (`@code_warntype` further highlights type instabilities.) The macro is used to simplify the call, as you need to know the type of parameters, you can directly call `InteractiveUtils.code_typed(nextfib, (typeof(3),))`.
+### Code typing
+**Code typying** is the process in which the compiler attaches types to variables and tries to infer types of objects returned from called functions. If the compiler fails to infer the returned type, it will give the variable type `Any`, in which case a dynamic dispatch will be used in subsequent operations with the variable. Inspecting typed code is therefore important for detecting type instabilities (the process can be difficult and error prone, fortunately, new tools like `Jet.jl` might simplify this task). The output of typing can be inspected using `@code_typed` macro (`@code_warntype` further highlights type instabilities.) The macro is used to simplify the call, as you need to know the type of parameters, you can directly call `InteractiveUtils.code_typed(nextfib, (typeof(3),))`.
 ```julia
 julia> @code_typed nextfib(3)
 CodeInfo(
@@ -114,14 +106,17 @@ CodeInfo(
 4 ─      return %2
 ) => Int64
 ```
-We can see that 
-	- some calls have been inlined, e.g. `one(n)` was replaced by `1` and the type was inferred as `Int`. 
-	-  The expression `b < n` has been replaced with its implementation in terms of the `slt_int` intrinsic ("signed integer less than") and the result of this has been annotated with return type `Bool`. 
-	- The expression `a + b` has been also replaced with its implementation in terms of the `add_int` intrinsic and its result type annotated as Int64. 
-	- And the return type of the entire function body has been annotated as `Int64`.
-	- The phi-instruction `%2 = φ (#1 => 1, #3 => %6)` is a selector function, which returns the value depending on from which branch do you come from. In this case, variable `%2` will have value 1, if the control was transfered from block `#1` and it will have value copied from variable `%6` if the control was transferreed from block `3` [see also](https://llvm.org/docs/LangRef.html#phi-instruction).
-	When we have called `@code_lower`, the role of types of the argument was in selecting the approapriate function body, they are needed for multiple dispatch. Contrary in `@code_typed`, the types of parameters determine the choice if inner methods that needs to be called (again the multiple dispatch), which can trigger other optimization, such as inlining, which seen in `One(n)`. 
-- ** Lowering to LLVM IR** LLVM IR. Julia uses the LLVM compiler framework to generate machine code. LLVM stands for low-level virtual machine and it is basis of many modern compilers (see [wiki](https://en.wikipedia.org/wiki/LLVM)).
+We can see that:
+- some calls have been inlined, e.g. `one(n)` was replaced by `1` and the type was inferred as `Int`. 
+- The expression `b < n` has been replaced with its implementation in terms of the `slt_int` intrinsic ("signed integer less than") and the result of this has been annotated with return type `Bool`. 
+- The expression `a + b` has been also replaced with its implementation in terms of the `add_int` intrinsic and its result type annotated as Int64. 
+- And the return type of the entire function body has been annotated as `Int64`.
+- The phi-instruction `%2 = φ (#1 => 1, #3 => %6)` is a selector function, which returns the value depending on from which branch do you come from. In this case, variable `%2` will have value 1, if the control was transferred from block `#1` and it will have value copied from variable `%6` if the control was transferreed from block `3` [see also](https://llvm.org/docs/LangRef.html#phi-instruction).
+- When we have called `@code_lower`, the role of types of the argument was in selecting the appropriate function body, they are needed for multiple dispatch. Contrary in `@code_typed`, the types of parameters determine the choice if inner methods that needs to be called (again the multiple dispatch), which can trigger other optimization, such as inlining, which seen in `One(n)`. 
+
+
+### Lowering to LLVM IR
+Julia uses the **LLVM** compiler framework to generate machine code. LLVM stands for low-level virtual machine and it is basis of many modern compilers (see [wiki](https://en.wikipedia.org/wiki/LLVM)).
 We can see the textual form of code lowered to LLVM IR by invoking 
 ```julia
 julia> @code_llvm nextfib(3)
@@ -149,17 +144,19 @@ L8:                                               ; preds = %L2
   ret i64 %value_phi
 }
 ```
-LLVM code can be tricky to understand first, but one get used to it. Notice references to the source code, which helps orientation. We can read
-	- code start by jumping to label L2, from where it reads values of two variables to two "registers" `value_phi` and `value_phi1` (variables in LLVM starts with `%`). 
-	- Both registers are treated as `int64` and initialized by `1`. 
-	- `[ 1, %top ], [ %value_phi, %L2 ]` means that values are initialized as `1` if you come from the label `top` and as value `value_phi` if you come from `%2`.
-	- `icmp slt i64 %value_phi, %0` compares the variable `%value_phi` to the content of variable `%0`. Notice the anotation that we are comparing `Int64`.
-	- `%1 = add i64 %value_phi1, %value_phi` adds two variables `%value_phi1` and `%value_phi`. Notce again than we are using `Int64` addition. 
-	- `br i1 %.not, label %L2, label %L8` implements a conditional jump depending on the content of `%.not` variable. 
-	- `ret i64 %value_phi` returns the value indicating it to be an `Int64`.
-It is not expected you will be directly operating on the LLVM code, though there are libraries which does that. For example `Enzyme.jl` performs automatic differentiation of LLVM code, which has the benefit of being able to take a gradeint through `setdiff`.
+LLVM code can be tricky to understand first, but one gets used to it. Notice references to the source code, which helps orientation. We can read
+- code start by jumping to label L2, from where it reads values of two variables to two "registers" `value_phi` and `value_phi1` (variables in LLVM starts with `%`). 
+- Both registers are treated as `int64` and initialized by `1`. 
+- `[ 1, %top ], [ %value_phi, %L2 ]` means that values are initialized as `1` if you come from the label `top` and as value `value_phi` if you come from `%2`.
+- `icmp slt i64 %value_phi, %0` compares the variable `%value_phi` to the content of variable `%0`. Notice the anotation that we are comparing `Int64`.
+- `%1 = add i64 %value_phi1, %value_phi` adds two variables `%value_phi1` and `%value_phi`. Notice again than we are using `Int64` addition. 
+- `br i1 %.not, label %L2, label %L8` implements a conditional jump depending on the content of `%.not` variable. 
+- `ret i64 %value_phi` returns the value indicating it to be an `Int64`.
 
-- **Native code** The last stage is generation of the native code, which Julia executes. The native code can depend on your platform, especially if you use SIMD registers. The compiled code can be viewed as
+It is not expected you will be directly operating on the LLVM code, though there are libraries which does that. For example `Enzyme.jl` performs automatic differentiation of LLVM code, which has the benefit of being able to take a gradient through `setdiff`.
+
+### Native code
+**Native code** The last stage is generation of the native code, which Julia executes. The native code can depend on your platform, especially if you use SIMD registers. The compiled code can be viewed as
 ```julia
 julia> @code_native nextfib(3)
 	.section	__TEXT,__text,regular,pure_instructions
@@ -238,7 +235,7 @@ CodeInfo(
 
 
 ## General notes on metaprogramming
-According to an excellent talk of Steven Johnson mentioned above, you shoul use metaprogramming sparingly, as it is very powerfull, but it is generally difficult to read and it can lead to unexpected errors. Julia allows you to interact with the compiler at two levels.
+According to an excellent [talk](https://www.youtube.com/watch?v=mSgXWpvQEHE) of Steven Johnson, you should use metaprogramming sparingly, as it is very powerful, but it is generally difficult to read and it can lead to unexpected errors. Julia allows you to interact with the compiler at two levels.
 1. After the code is parsed to AST, you can modify it through **macros**.
 2. When SSA form is being typed, you can create custom functions trough the **generated functions**.
 3. More functionalities are coming from through the [JuliaCompilerPlugins](https://github.com/JuliaCompilerPlugins) project, but we will not talk about them (yet). 
@@ -269,9 +266,7 @@ Expr
 ```
 The parsed code `p` is of type `Expr`, which according to Julia's help is *a type representing compound expressions in parsed julia code (ASTs). Each expression consists: of a head Symbol identifying which kind of expression it is (e.g. a call, for loop, conditional statement, etc.), and subexpressions (e.g. the arguments of a call). The subexpressions are stored in a Vector{Any} field called args.*
 
-!!! info 
-	### Symbol
-
+!!! info "`Symbol` type"
 	In the manipulations of expressions, we encounter the term `Symbol`. `Symbol` is the smallest atom from which the program (in AST representation) is built. It is used to identify an element in the language, for example the variable, keyword, and function name. Symbol is not a string, since string represents itself, whereas Symbol can represent something else (a variable). An [example](https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia) provided by Stefan Karpinski is as follows.
 	```julia
 	julia> eval(:foo)
@@ -479,3 +474,13 @@ and we are free to use quote blocks as well.
 ## Cthulhu
 <!-- Should I mention the world clock age and the effect of eval in global scope -->
 <!-- mention the forward macro -->
+
+---
+
+# Resources
+- Julia's manual on [metaprogramming](https://docs.julialang.org/en/v1/manual/metaprogramming/)
+- David P. Sanders' [workshop @ JuliaCon 2021](https://www.youtube.com/watch?v=2QLhw6LVaq0) 
+- Steven Johnson's [keynote talk @ JuliaCon 2019](https://www.youtube.com/watch?v=mSgXWpvQEHE)
+- Andy Ferris's [workshop @ JuliaCon 2018](https://www.youtube.com/watch?v=SeqAQHKLNj4)
+- [From Macros to DSL](https://github.com/johnmyleswhite/julia_tutorials) by John Myles White 
+- Notes on [JuliaCompilerPlugin](https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project)

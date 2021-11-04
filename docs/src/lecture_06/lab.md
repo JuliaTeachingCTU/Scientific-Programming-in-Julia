@@ -10,41 +10,34 @@ Secondly we will start playing with the metaprogramming side of Julia, mainly co
 
 These topics will be extended in the next [lecture](@ref macro_lecture)/[lab](@ref macro_lab), where we are going use metaprogramming to manipulate code with macros.
 
-We will be again a little getting ahead of ourselves as we are going to use quite a few macros, which will be properly explained in the next lecture as well, however for now the important thing to know is that macro is just a special function, that accepts as an argument Julia code, which it modifies.
+We will be again a little getting ahead of ourselves as we are going to use quite a few macros, which will be properly explained in the next lecture as well, however for now the important thing to know is that a macro is just a special function, that accepts as an argument Julia code, which it can modify.
 
-## Introspection intro
-Let's start with the topic of code inspection, e.g. we may ask the following: What happens when I execute this
-```julia
-[i for i in 1:10]
-```
-We may be tempted to think, that this is some function call, for which we can call the `@which` macro to infer what is being called under the hood, however when we do this Julia will warn us that this is something "more complex" 
+## Quick reminder of introspection tooling
+Let's start with the topic of code inspection, e.g. we may ask the following: What happens when Julia evaluates `[i for i in 1:10]`?
+- parsing 
 ```@repl lab06_intro
 using InteractiveUtils #hide
-@which [i for i in 1:10]
+:([i for i in 1:10]) |> dump
 ```
-and that we should rather call the `Meta.@lower` macro, which spits out the so called lowered code of the expression.
+- lowering
 ```@repl lab06_intro
 Meta.@lower [i for i in 1:10]
 ```
-Now we see that the result is constructed by first creating the range, then a generator, which is subsequently collected. That is the reason, why simple `@which` macro cannot help.
-
-So why it is not a call, let's look at how the code is parsed
-```@example lab06_intro
-using GraphRecipes, Plots
-code = :([i for i in 1:10])
-plot(code, fontsize=12, shorten=0.01, axis_buffer=0.15, nodeshape=:rect)
+- typing
+```@repl lab06_intro
+f() = [i for i in 1:10]
+@code_typed f()
 ```
-Comparing this to a simple call to collect
-```@example lab06_intro
-code = :(collect(1:10))
-plot(code, fontsize=12, shorten=0.01, axis_buffer=0.15, nodeshape=:rect)
+- LLVM code generation
+```@repl lab06_intro
+@code_llvm f()
 ```
-
-introduce `@code_llvm`, `@code_lowered` macros ???
+- native code generation
+```@repl lab06_intro
+@code_native f()
+```
 
 Let's see how these tools can help us understand some of Julia's internals on examples from previous labs and lectures.
-
-
 
 ### Understanding the runtime dispatch and type instabilities
 We will start with a question: Can we spot internally some difference between type stable/unstable code?
@@ -55,7 +48,7 @@ We will start with a question: Can we spot internally some difference between ty
 <div class="admonition-body">
 ```
 Inspect the following two functions using `@code_lowered`, `@code_typed`, `@code_llvm` and `@code_native`.
-```@example 
+```@example lab06_intro
 x = rand(10^5)
 function explicit_len(x)
     length(x)
@@ -115,7 +108,7 @@ In some cases the compiler uses loop unrolling[^1] optimization to speed up loop
 <div class="admonition-body">
 ```
 Inspect under what conditions does the compiler unroll the for loop in the `polynomial` function from the last [lab](@ref horner).
-```julia
+```@example lab06_intro
 function polynomial(a, x)
     accumulator = a[end] * one(x)
     for i in length(a)-1:-1:1
@@ -123,6 +116,7 @@ function polynomial(a, x)
     end
     accumulator  
 end
+nothing #hide
 ```
 
 Compare the speed of execution with and without loop unrolling.
@@ -136,24 +130,25 @@ Compare the speed of execution with and without loop unrolling.
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-```julia
+```@example lab06_intro
 using Test #hide
 using BenchmarkTools
 a = Tuple(ones(20)) # tuple has known size
 ac = collect(a)
 x = 2.0
 
-@test polynomial(a,x) == evalpoly(x,a)    # compare with built-in function
-
 @code_lowered polynomial(a,x)       # cannot be seen here as optimizations are not applied
 @code_typed polynomial(a,x)         # loop unrolling is not part of type inference optimization
+nothing #hide
+```
 
+```@repl lab06_intro
 @code_llvm polynomial(a,x)
 @code_llvm polynomial(ac,x)
 ```
 
 More than 2x speedup
-```julia
+```@repl lab06_intro
 @btime polynomial($a,$x)
 @btime polynomial($ac,$x)
 ```
@@ -172,7 +167,7 @@ Inlining[^2] is another compiler optimization that allows us to speed up the cod
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Rewrite the `polynomial` function from the last [lab](@ref horner) using recursion and find the length of the coefficients, at which inlining of the recursive calls stops occuring.
+Rewrite the `polynomial` function from the last [lab](@ref horner) using recursion and find the length of the coefficients, at which inlining of the recursive calls stops occurring.
 
 ```julia
 function polynomial(a, x)
@@ -195,7 +190,7 @@ end
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
-```julia
+```@example lab06_intro
 _polynomial!(ac, x, a...) = _polynomial!(x * ac + a[end], x, a[1:end-1]...)
 _polynomial!(ac, x, a) = x * ac + a
 polynomial(a, x) = _polynomial!(a[end] * one(x), x, a[1:end-1]...)
@@ -205,20 +200,23 @@ a = Tuple(ones(Int, 21)) # everything less than 22 gets inlined
 x = 2
 polynomial(a,x) == evalpoly(x,a) # compare with built-in function
 
-
 @code_lowered polynomial(a,x) # cannot be seen here as optimizations are not applied
-@code_typed polynomial(a,x)
 @code_llvm polynomial(a,x)    # seen here too, but code_typed is a better option
+nothing #hide
+```
+
+```@repl lab06_intro
+@code_typed polynomial(a,x)
 ```
 
 ```@raw html
 </p></details>
 ```
 
-## Let's do some metaprogramming
+## AST manipulation: The first steps to metaprogramming
 Julia is so called homoiconic language, as it allows the language to reason about its code. This capability is inspired by years of development in other languages such as Lisp, Clojure or Prolog.
 
-There are two easy ways to extract/construct the code structure [^2]
+There are two easy ways to extract/construct the code structure [^3]
 - parsing code stored in string with internal `Meta.parse`
 ```@repl lab06_meta
 code_parse = Meta.parse("x = 2")    # for single line expressions (additional spaces are ignored)
@@ -230,7 +228,7 @@ begin
 end
 """) # for multiline expressions
 ```
-- constructing an expression using `quote ... end` or  simple `:()` syntax
+- constructing an expression using `quote ... end` or simple `:()` syntax
 ```@repl lab06_meta
 code_expr = :(x = 2)    # for single line expressions (additional spaces are ignored)
 code_expr_block = quote
@@ -326,7 +324,7 @@ s = string(ex)
 Think of some corner cases, that the method may not handle properly.
 
 **HINTS**:
-- Use `Meta.parse` in combination with `replace_i` **only** for checking of correctness.
+- Use `Meta.parse` in combination with `replace_i` **ONLY** for checking of correctness.
 - You can use the `replace` function.
 
 ```@raw html
@@ -345,7 +343,7 @@ does not work in this simple case, because it will replace "i" inside the `sin(z
 </p></details>
 ```
 
-If the exercises so far did not feel very useful let's focus on one, that is actually useful as a part of the [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) pkg.
+If the exercises so far did not feel very useful let's focus on one, that is similar to a part of the [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) pkg.
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
@@ -397,7 +395,13 @@ eval(ex)
 This kind of manipulation is at the core of some pkgs, such as aforementioned [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) where every number is replaced with a narrow interval in order to find some bounds on the result of a computation.
 
 
-[^2]: Once you understand the recursive structure of expressions, the AST can be constructed manually like any other type.
+[^3]: Once you understand the recursive structure of expressions, the AST can be constructed manually like any other type.
 ---
 
 ## Resources
+- Julia's manual on [metaprogramming](https://docs.julialang.org/en/v1/manual/metaprogramming/)
+- David P. Sanders' [workshop @ JuliaCon 2021](https://www.youtube.com/watch?v=2QLhw6LVaq0) 
+- Steven Johnson's [keynote talk @ JuliaCon 2019](https://www.youtube.com/watch?v=mSgXWpvQEHE)
+- Andy Ferris's [workshop @ JuliaCon 2018](https://www.youtube.com/watch?v=SeqAQHKLNj4)
+- [From Macros to DSL](https://github.com/johnmyleswhite/julia_tutorials) by John Myles White 
+- Notes on [JuliaCompilerPlugin](https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project)
