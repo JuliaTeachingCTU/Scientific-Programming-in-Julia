@@ -9,17 +9,17 @@ Put the code of the compulsory task inside `hw.jl`. Zip only this file (not its 
 <header class="admonition-header">Homework (2 points)</header>
 <div class="admonition-body">
 ```
-Following the lab exercises, the task now is to find all variables in an expression, i.e. for example when given expression
-```math
+Your task is to find all single letter variables in an expression, i.e. for example when given expression
+```julia
 x + 2*y*z - c*x
 ```
-return a tuple of *unique sorted symbols* representing variables in an expression.
+return an array of *unique alphabetically sorted symbols* representing variables in an expression.
 ```julia
-(:x, :y, :z, :c)
+[:x, :y, :z, :c]
 ```
 Implement this in a function called `find_variables`. Note that there may be some edge cases that you may have to handle in a special way, such as 
-- variable assignments `r = x*x` should return `r` as well
-- ignoring symbols representing function calls such as `log`, `exp`, etc.
+- variable assignments `r = x*x` should return the variable on the left as well (`r` in this case)
+- ignoring symbols representing single letter function calls such as `f(x)`
 
 ```@raw html
 </div></div>
