@@ -620,10 +620,6 @@ end
 Notice that we have just hand-implemented parts of `@forward` macro from [MacroTools](https://github.com/FluxML/MacroTools.jl/blob/master/src/examples/forward.jl), which does exactly this.
 
 <!-- Should I mention the world clock age and the effect of eval in global scope -->
-<!-- mention the forward macro -->
-
-<<<<<<< HEAD
-
 
 
 
