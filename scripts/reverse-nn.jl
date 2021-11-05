@@ -43,7 +43,7 @@ network = Chain(
 
 function loss(network,x::TrackedArray,y::TrackedArray)
     err = network(x) - y
-    err |> square |> sum
+    err |> abs2 |> sum
 end
 
 # TODO: can we make broadcasting work? so that we can use batches?
@@ -52,3 +52,6 @@ y = track(rand(2))
 l = loss(network,x,y)
 l.grad = 1.0
 accum!(network.layers[1].W)
+
+#using FiniteDifferences
+#df = grad(central_fdm(5,1), n->loss(n,x,y), network)[1]
