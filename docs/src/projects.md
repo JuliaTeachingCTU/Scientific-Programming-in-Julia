@@ -31,7 +31,23 @@ Julia expression.
 
 ## An Evolutionary Algorithm Applied To Julia's AST
 
+Most of the approaches to equation learning have to be differentiable by default
+in order to use the traditional machinery of stochastic gradient descent with
+backpropagation. This often leads to equations with too many terms, requiring 
+special techniques for enforcing sparsity for terms with low weights.
+
+In Julia we can however use a different learning paradigm of evolutionary 
+algorithms, which can work on discrete set of expressions. The goal is to 
+write mutation and recombination - the basic operators of a genetic algorithm,
+but applied on top of Julia AST.
+
 ## Distributed Optimization Package
+
+One click distributed optimization is at the heart of other machine learning 
+and optimization libraries such as pytorch, however some equivalents are 
+missing in the Julia's Flux ecosystem. The goal of this project is to explore,
+implement and compare at least two state-of-the-art methods of distributed 
+gradient descent on data that will be provided for you.
 
 ## A Rule Learning Algorithm
 
