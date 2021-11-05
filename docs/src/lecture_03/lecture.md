@@ -1,6 +1,11 @@
 # Design patterns: good practices and structured thinking
 
-Design guiding principles:
+Every software developer has a desire to write better code. A desire
+to improve system performance. A desire to design software that is easy to maintain, easy to understand and explain.
+
+Design patterns are recommendations and good practices accumulating knowledge of experienced  programmers.
+
+The highest level of experience contains the design guiding principles:
 - SOLID: Single Responsibility, Open/Closed, Liskov Substitution, Interface
 - Segregation, Dependency Inversion
 - DRY: Don't Repeat Yourself
@@ -9,23 +14,49 @@ Design guiding principles:
 - YAGNI: You Aren't Gonna Need It (overengineering)
 - POLP: Principle of Least Privilege 
 
-These hig-level concepts are guiding principles for 
+While these high-level concepts are intuitive, they are too general to give specific answers.
 
-Julia does not fit into any methodological classes like *object-oriented* or *functional* programming. The key concept of julia are:
+More detailed patterns arise for programming paradigms (declarative, imperative) with specific instances of functional or object-oriented programming.
+
+Julia is a multi-paradigm, taking features of both *object-oriented* and *functional* programming. The key concept of julia are:
  - *type system* of data structures
  -  *multiple dispatch*, respecting the types,
  - functional programming concepts such as *closures*
 
-These simple concepts allows to construct design patters common in other languages.
-- the language does not enforce many formalisms structures (can be limiting as well as advantageous). 
-    - the compiler cannot check for correctness of "patterns"
+How do I correctly use these tools to express what I want to achieve?
+
+The concept of design patterns originates in the OOP paradigm. OOP defines a strict way how to write software:
+- class
+- interface
+- virtual methods
+It is often unclear how to use these concepts to solve a particular programming task.
+
+A cookbook:
+- Gamma, E., Johnson, R., Helm, R., Johnson, R. E., & Vlissides, J. (1995). Design patterns: elements of reusable object-oriented software. Pearson Deutschland GmbH.
+
+Defining 23 design patterns in three categories. Became extremely popular.
+
+Fundamental tradeoff: rules vs. freedom
+- freedom: in the C language it is possible to access assembler instructions, use pointer aritmetics:
+    - it is possible to write extremely efficient code
+    - it is easy to segfault, leak memory, etc.
+- rules: in strict languages (strict OOP, strict functional programing) you lose freedom for certain guarantees:
+    - e.g. strict functional programing guarantees that the program provably terminates
+    - operations that are simple e.g. in pointer arithmetics may become clumsy and inefficient in those strict rules.
+    - the compiler can validate the rules and complain if the code does not comply with them. 
+
+Julia is again a dance between freedom and strict rules. It is more inclined to freedom. 
+Provides few simple concepts that allow to construct design patterns common in other languages.
+- the language does not enforce too many formalisms (via keywords (interfac, trait, etc.) but they can be 
+    - the compiler cannot check for correctness of these "patterns"
     - the user has a lot of freedom (and responsibility)
 - lots of features can be added by Julia packages (with various level of comfort)
     - macros
 
+Read: 
+- Hands-On Design Patterns and Best Practices with Julia Proven solutions to common problems in software design for Julia 1.x Tom Kwong, CFA
 
-
-## Closures
+## Functional tools: Closures
 
 !!! tip "Closure (lexical closure, function closure)"
     A technique for implementing lexically scoped name binding in a language with first-class functions. Operationally, a closure is a record storing a function together with an environment.
@@ -41,7 +72,7 @@ function adder(x)
     return y->x+y
 end
 ```
-creates a function that "closes" the argument ```x```.
+creates a function that "closes" the argument ```x```. Try: ```f=adder(5); f(3)```.
 
 ```julia
 x = 30;
@@ -84,7 +115,7 @@ function adder(x)
 end
 ```
 
-Note that the structure ##1 is not directly accessible. 
+Note that the structure ##1 is not directly accessible. Try ```f.x``` and ```g.x```.
 
 ### Functor = Function-like structure
 Each structure can have a method that is invoked when called as a function.
@@ -111,7 +142,7 @@ function train!(loss, ps, data, opt; cb = () -> ())
   end
 end
 ```
-Is this confusing? What can ```cb()``` do?
+Is this confusing? What can ```cb()``` do and what it can not?
 
 Note that function ```train!``` does not have many local variables. The important ones are arguments, i.e. exist in the scope from which the function was invoked.
 
@@ -135,12 +166,14 @@ Usage of closures:
 
 ## Design Patterns of OOP from the Julia viewpoint
 
+OOP is currently very popular concept (C++, Java, Python).  It has strenghts and weaknesses. The Julia authors tried to keep the strength and overcome weaknesses. 
+
 Key features of OOP:
 - Encapsulation 
 - Inheritance 
 - Polymorphism 
 
-Classical OOP languages define classes that bind processing functions to the data.
+Classical OOP languages define classes that bind processing functions to the data. Virtual methods are defined only for the attached methods of the classes.
 
 !!! tip "Encapsulation"
     Refers to bundling of data with the methods that operate on that data, or the restricting of direct access to some of an object's components. Encapsulation is used to hide the values or state of a structured data object inside a class, preventing direct access to them by clients in a way that could expose hidden implementation details or violate state invariance maintained by the methods. 
@@ -159,6 +192,7 @@ What if I create Grass with larger size than ```max_size```?
 ```julia
 grass = Grass(1,50,5)
 ```
+Freedom over Rules. Maybe I would prefer to introduce some rules.
 
 Some encapsulation may be handy keeping it consistent. Julia has ```inner constructor```.
 ```julia
@@ -169,6 +203,7 @@ mutable struct Grass <: Plant
     Grass(id,sz,msz) = sz > msz ? error("size can not be gerater that max_size") : new(id,sz,msz)
 end
 ```
+When defined, Julia does not provide the default outer constructor. 
 
 But fields are still accessible:
 ```julia
@@ -189,11 +224,12 @@ Julia has *partial encapsulation* via a mechanism for consistency checks.
 
 
 ### Encapsulation Disadvantage: the Expression Problem 
-Matrix of methods/types(data-structures)
+
+Encapsulation limits the operations I can do with an object. Sometimes too much. Consider a matrix of methods/types(data-structures)
 
 Consider an existing matrix of data and functions:
 
-| data \ methods | find_food | eat! |  |  | |
+| data \ methods | find_food | eat! | grow! |  | |
 | --- | --- | --- | --- | --- | --- |
 | Wolf |  | | | | |
 | Sheep | | | | | |
@@ -233,26 +269,26 @@ https://stackoverflow.com/questions/39133424/how-to-create-a-single-dispatch-obj
 !!! tip "Polymorphism in OOP"
     Polymorphism is the method in an object-oriented programming language that performs different things as per the object’s class, which calls it. With Polymorphism, a message is sent to multiple class objects, and every object responds appropriately according to the properties of the class. 
 
-Example animals of different classes make different sounds:
+Example animals of different classes make different sounds. In Python:
 ```python
 sheep.make_sound()
 wolf.make_sound()
 ```
-Will make distinct sounds (baa, bark). 
+Will make distinct sounds (baa, Howl). 
 
 Can we achieve this in Julia?
 ```
 make_sound(s::Sheep)=println("Baa")
-make_sound(w::Wolf)=println("Bark")
+make_sound(w::Wolf)=println("Howl")
 ```
 
-Multiple dispatch is an extension of classical polymorphism of OOP, which is only single dispatch.
+Multiple dispatch is an *extension* of the classical polymorphism of OOP, which is only a single dispatch.
 
 !!! tip "Implementation of virtual methods"
     Virtual methods in OOP are typically implemented using Virtual Method Table, one for each class.
     ![](vtable.gif)
 
-NotesDuck typing:
+*Freedom* vs. Rules. 
 - julia does not check if ```make_sound``` exists for all animals. May result in MethodError. Responsibility of a programmer.
     - define ```make_sound(A::AbstractAnimal)```
 - Duck typing is a type of polymorphism without static types
@@ -270,7 +306,6 @@ meet(w1::Wolf, w2::Wolf)=
 meet(w1::Sheep, w2::Wolf)=
 meet(w1::Sheep, w2::Sheep)=
 ```
-
 
 
 
@@ -326,21 +361,21 @@ The type hierarchy is only one way of subtyping. Julia allows many variations, e
 fancy_method(O::Union{Sheep,Grass})=println("Fancy")
 ```
 
-Is this a good idea? It can be done completely Ad-hoc!
+Is this a good idea? It can be done completely Ad-hoc! Freedom over Rules.
 
-There are very good usecases:
+There are very good use-cases:
 - Missing values:
 ```x::AbstractVector{<:Union{<:Number, Missing}}```
 
 !!! theorem "SubTyping issues"
-    With parametric types, unions and other construction, subtype resoltion may become a complicated problem. Julia can even crash.
+    With parametric types, unions and other construction, subtype resolution may become a complicated problem. Julia can even crash.
     https://www.youtube.com/watch?v=LT4AP7CUMAw
 
 
 ### Sharing of data field via composition
 Composition is also recommended in OOP: https://en.wikipedia.org/wiki/Composition_over_inheritance
 
-```julia
+```julia 
 struct ⚥Sheep <: Animal
     sheep::Sheep
     sex::Symbol
@@ -352,11 +387,11 @@ If we want our new ⚥Sheep to behave like the original Sheep, we need to *forwa
 ```julia
 eat!(a::⚥Sheep, b::Grass, w::World)=eat!(a.sheep, b, w)
 ```
-and all other methods. Boring!
+and all other methods. Routine work. Boring!  
 The whole process can be automated using macros ```@forward``` from Lazy.jl.
 
 
-Why so complicated? Wasn't original tree structure better?
+Why so complicated? Wasn't the original inheritance tree structure better?
 
 - multiple inheritance:
     - you just compose two different "trees".
@@ -376,9 +411,9 @@ Why so complicated? Wasn't original tree structure better?
 
     Idea #2: Split by the way they move!
 
-    Idea #3: Split by way of child care (Feeding, Ignoring, Protecting)
+    Idea #3: Split by way of ...
 
- In fact we do not have a tree, but more like a matrix/tensor:
+ In fact, we do not have a tree, but more like a matrix/tensor:
 
 | | swims | flies | walks |
 | --- | --- |  --- | --- | 
@@ -405,55 +440,90 @@ end
 
 Now, we can define methods dispatching on parameters of the main type.
 
-## Interfaces
+Composition is simpler in such a general case. Composition over inheritance. 
 
-Just functions, often informal. Not so strict validation by compiler as in other languages.
+## Interfaces: inheritance/subtyping without a hierarchy tree
+
+In OOP languages such as Java, interfaces have a dedicated keyword such taht compiler can check correctes of the interface implementation. 
+
+In Julia, interfaces can be achived by defining ordinary functions.  Not so strict validation by the compiler as in other languages. Freedom...
+
+### Example: Iterators
+
+Many fundamental objects can be iterated: Arrays, Tuples, Data collections...
+- They do not have any common "predecessor". They are almost "primitive" types.
+- they share just the property of being iterable
+- we do not want to modify them in any way
 
 Example: of interface ```Iterators```
+defined by "duck typing" via two functions.
+
 |Required methods	|	Brief description|
 | --- | --- |
 |iterate(iter)		| Returns either a tuple of the first item and initial state or nothing if empty|
 |iterate(iter, state)	|	Returns either a tuple of the next item and next state or nothing if no items remain|
 
-Definig these two methods for any object/collection ```C``` will make the following work:
+Defining these two methods for any object/collection ```C``` will make the following work:
 ```julia
 for o in C
    # do something
 end
 ```
 
+- The compiler will not check if both functions exist.
+- If one is missing, it will complain about it when it needs it
+- The error message may be less informative than in the case of formal definition
+
+Note:
+- even iterators may have different features: they can be finite or infinite
+- for finite iterators we can define useful functions (```collect```)
+- how to pass this information in an extensible way?
+
+Poor solution: if statements.
+```julia
+function collect(iter)
+ if iter isa Tuple...
+
+end
+```
+The compiler can do that for us.
+
 ## Traits: cherry picking subtyping
 
-When a decision if the Type can or cannot perform certain method is complicated, we can infer this by a function.
+Trait mechanism in Julia is build using the existing tools: Type System and Multiple Dispatch.
 
-Example ```_AsList``` from PyTorch:
-```python
-def _AsList(x):
-    return x if isinstance(x, (list, tuple)) else [x]
-```
-Hold on, how about ndarray? How to add it? What else to add?
+Traits have a few key parts:
 
-Types can be computed by a function:
+- Trait types: the different traits a type can have.
+- Trait function: what traits a type has.
+- Trait dispatch: using the traits.
 
+From iterators:
 ```julia
-# trait types
-struct List end
-struct Nonlist end
+# trait types:
 
-# trait function: input general Type, return trait Type 
-islist(::Type{<:AbstractVector}) = List()
-islist(::Type{<:Tuple}) = List()
-islist(::Type{<:Number}) = Nonlist()
+abstract type IteratorSize end
+struct SizeUnknown <: IteratorSize end
+struct HasLength <: IteratorSize end
+struct IsInfinite <: IteratorSize end
 
-# Trait dispatch:
-function aslist(x::T) where T 
-     aslist(islist(T), x) # try to call it again with different function-inferred type
-end
-aslist(::List, x) = x
-aslist(::Nonlist, x) = [x]
+# Trait function: Input is a Type, output is a Type
+IteratorSize(::Type{<:Tuple}) = HasLength()
+IteratorSize(::Type) = HasLength()  # HasLength is the default
+
+# ...
+
+# Trait dispatch
+BitArray(itr) = gen_bitarray(IteratorSize(itr), itr)
+gen_bitarray(isz::IteratorSize, itr) = gen_bitarray_from_itr(itr)
+gen_bitarray(::IsInfinite, itr) =  throw(ArgumentError("infinite-size iterable used in BitArray constructor"))
+
 ```
+What is needed to define for a new type that I want to iterate over? 
 
-Many packages:
+Do you still miss inheritance in the OOP style?
+
+Many packages automating this with more structure:
 - https://github.com/andyferris/Traitor.jl
 - https://github.com/mauro3/SimpleTraits.jl
 - https://github.com/tk3369/BinaryTraits.jl

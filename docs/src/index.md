@@ -78,7 +78,7 @@ the standard grading scale below.
 
 | --          | E-mail                                                     | Room     | Role           |
 | :--         | :--                                                        | :--      | :--            |
-| Tomáš Pevný | [pevnytom@fel.cvut.cz](mailto:pevnytom@fel.cvut.cz)        | KN:E-333 | Lecturer       |
+| Tomáš Pevný | [pevnak@protonmail.ch](mailto:pevnak@protonmail.ch)        | KN:E-406 | Lecturer       |
 | Vašek Šmídl | [smidlva1@fjfi.cvut.cz](mailto:smidlva1@fjfi.cvut.cz)      | KN:E-333 | Lecturer       |
 | Jan Franců  | [francja5@fel.cvut.cz](mailto:francja5@fel.cvut.cz)       | KN:E-333 | Lab Instructor |
 | Niklas Heim | [heimnikl@fel.cvut.cz](mailto:heimnikl@fel.cvut.cz)        | KN:E-333 | Lab Instructor |

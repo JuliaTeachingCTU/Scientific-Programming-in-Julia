@@ -1,0 +1,1 @@
+# [Lab 06: Macros](@id macro_lab)
