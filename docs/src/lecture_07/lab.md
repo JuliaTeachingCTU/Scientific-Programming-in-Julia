@@ -1,1 +1,1 @@
-# Lab 06: Digging deeper part 2
+# [Lab 06: Macros](@id macro_lab)

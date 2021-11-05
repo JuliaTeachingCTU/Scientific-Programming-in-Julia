@@ -1,13 +1,5 @@
 # [Language introspection](@id introspection)
 
-Materials:
-- Julia's manual on [metaprogramming](https://docs.julialang.org/en/v1/manual/metaprogramming/)
-- David P. Sanders' [workshop @ JuliaCon 2021](https://www.youtube.com/watch?v=2QLhw6LVaq0) 
-- Steven Johnson's [keynote talk @ JuliaCon 2019](https://www.youtube.com/watch?v=mSgXWpvQEHE)
-- Andy Ferris's [workshop @ JuliaCon 2018](https://www.youtube.com/watch?v=SeqAQHKLNj4)
-- [From Macros to DSL](https://github.com/johnmyleswhite/julia_tutorials) by John Myles White 
-- Notes on [JuliaCompilerPlugin](https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project)
-
 **What is metaprogramming?** *A high-level code that writes high-level code* by Stever Johnson.
 
 **Why do we need metaprogramming?** 
@@ -17,18 +9,19 @@ Materials:
     + It can help when implementing **encapsulation**.
 - **Domain Specific Languages**
 
+
 ## Stages of compilation
 Julia (as any modern compiler) uses several stages to convert source code to native code. Let's recap them
 - parsing the source code to **abstract syntax tree** (AST)
 - lowering the abstract syntax tree **static single assignment** form (SSA) [see wiki](https://en.wikipedia.org/wiki/Static_single_assignment_form)
-- assigniting types to variables and performing type inference on called functions
+- assigning types to variables and performing type inference on called functions
 - lowering the typed code to LLVM intermediate representation (LLVM Ir)
 - using LLVM compiler to produce a native code.
 
 
 ### Example: Fibonacci numbers
 Example taken from [StackOverflow](https://stackoverflow.com/questions/43453944/what-is-the-difference-between-code-native-code-typed-and-code-llvm-in-julia)
-Consider function for example a function computing the fibonacci
+Consider function for example a function computing the Fibonacci numbers
 ```julia
 function nextfib(n)
 	a, b = one(n), one(n)
@@ -39,8 +32,9 @@ function nextfib(n)
 end
 ```
 
-#### Parsing 
-The first thing the compiler do is that it will parse the source code (represented as a string) to the abstract syntax tree. We can inspect the results of this stage as 
+
+#### Parsing
+The first thing the compiler does is that it will parse the source code (represented as a string) to the abstract syntax tree. We can inspect the results of this stage as 
 ```julia
 julia> parsed_fib = Meta.parse(
 """
@@ -76,7 +70,8 @@ TikzPictures.save(SVG("parsed_fib.svg"), g)
 We can see that the AST is indeed a tree, with `function` being a root node (caused by us parsing a function). Each inner node represents a function call with childrens of the inner node being its arguments. An interesting inner node is the `Block` representing a sequence of statements, where we can also see information about lines in the source code are inserted as comments. Lisp-like S-Expression can be printed using `Meta.show_sexpr(parsed_fib)`.
 
 #### Lowering
-The next stage is **lowering**, where AST is converted to Static Single Assignment Form (SSA), in which "each variable is assigned exactly once, and every variable is defined before it is used". Loops and conditionals are transformed into gotos and labels using a single unless/goto construct (this is not exposed in user-level Julia). 
+We can see that the AST is indeed a tree, with `function` being a root node (caused by us parsing a function). Each inner node represents a function call with children of the inner node being its arguments. An interesting inner node is the `Block` representing a sequence of statements, where we can also see inserted information about lines in the source code. Lisp-like S-Expression can be printed using `Meta.show_sexpr(parsed_fib)`.
+Julia). 
 ```julia
 julia> @code_lowered debuginfo=:source nextfib(3)
 CodeInfo(
@@ -118,6 +113,7 @@ CodeInfo(
 4 ─      return %2
 ) => Int64
 ```
+
 We can see that 
 - some calls have been inlined, e.g. `one(n)` was replaced by `1` and the type was inferred as `Int`. 
 -  The expression `b < n` has been replaced with its implementation in terms of the `slt_int` intrinsic ("signed integer less than") and the result of this has been annotated with return type `Bool`. 
@@ -273,7 +269,7 @@ using Cthulhu
 ```
 
 ## General notes on metaprogramming
-According to an excellent talk of Steven Johnson mentioned above, you shoul use metaprogramming sparingly, as it is very powerfull, but it is generally difficult to read and it can lead to unexpected errors. Julia allows you to interact with the compiler at two levels.
+According to an excellent [talk](https://www.youtube.com/watch?v=mSgXWpvQEHE) of Steven Johnson, you should use metaprogramming sparingly, as it is very powerful, but it is generally difficult to read and it can lead to unexpected errors. Julia allows you to interact with the compiler at two levels.
 1. After the code is parsed to AST, you can modify it through **macros**.
 2. When SSA form is being typed, you can create custom functions trough the **generated functions**.
 3. More functionalities are coming through the [JuliaCompilerPlugins](https://github.com/JuliaCompilerPlugins) project, but we will not talk about them (yet). 
@@ -332,9 +328,7 @@ Expr
 ```
 The parsed code `p` is of type `Expr`, which according to Julia's help is *a type representing compound expressions in parsed julia code (ASTs). Each expression consists: of a head Symbol identifying which kind of expression it is (e.g. a call, for loop, conditional statement, etc.), and subexpressions (e.g. the arguments of a call). The subexpressions are stored in a Vector{Any} field called args.* If you recall the figure above, where AST was represented as a tree, `head` gives each node the name name `args` are either some parameters of the node, or they point to childs of that node. The interpretation of the node depends on the its type stored in head (note that the word type used here is not in the Julia sense).
 
-!!! info 
-	### Symbol
-
+!!! info "`Symbol` type"
 	In the manipulations of expressions, we encounter the term `Symbol`. `Symbol` is the smallest atom from which the program (in AST representation) is built. It is used to identify an element in the language, for example the variable, keyword, and function name. Symbol is not a string, since string represents itself, whereas Symbol can represent something else (a variable). An [example](https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia) provided by Stefan Karpinski is as follows.
 	```julia
 	julia> eval(:foo)
@@ -628,6 +622,7 @@ Notice that we have just hand-implemented parts of `@forward` macro from [MacroT
 <!-- Should I mention the world clock age and the effect of eval in global scope -->
 <!-- mention the forward macro -->
 
+<<<<<<< HEAD
 
 
 
@@ -651,3 +646,14 @@ Notice that we have just hand-implemented parts of `@forward` macro from [MacroT
 
 
 
+=======
+---
+
+# Resources
+- Julia's manual on [metaprogramming](https://docs.julialang.org/en/v1/manual/metaprogramming/)
+- David P. Sanders' [workshop @ JuliaCon 2021](https://www.youtube.com/watch?v=2QLhw6LVaq0) 
+- Steven Johnson's [keynote talk @ JuliaCon 2019](https://www.youtube.com/watch?v=mSgXWpvQEHE)
+- Andy Ferris's [workshop @ JuliaCon 2018](https://www.youtube.com/watch?v=SeqAQHKLNj4)
+- [From Macros to DSL](https://github.com/johnmyleswhite/julia_tutorials) by John Myles White 
+- Notes on [JuliaCompilerPlugin](https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project)
+>>>>>>> 1eea7c8e68b756df87e8e0bab4d0bec6598924a8
