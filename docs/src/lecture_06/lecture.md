@@ -5,7 +5,7 @@
 **Why do we need metaprogramming?** 
 - In general, we do not need it, as we can do whatever we need without it, but it can help us to remove a boilerplate code. 
     + As an example, consider a `@show` macro, which just prints the name of the variable (or the expression) and its evaluation. This means that instead of writing `println("2+exp(4) = ",  2+exp(4))` we can just write `@show 2+exp(4)`.
-    + Another example is `@time` or `elapsed` The above is difficult to implement using normal function, since the when you pass `2+exp(4)` as a function argument, it will be automatically evaluated. Therefore you need to pass it as an expression, that can be evaluated within the function.
+    + Another example is `@time` or `elapsed` The above is difficult to implement using normal function, since when you pass `2+exp(4)` as a function argument, it will be automatically evaluated. Therefore you need to pass it as an expression, that can be evaluated within the function.
     + It can help when implementing **encapsulation**.
 - **Domain Specific Languages**
 
@@ -20,8 +20,7 @@ Julia (as any modern compiler) uses several stages to convert source code to nat
 
 
 ### Example: Fibonacci numbers
-Example taken from [StackOverflow](https://stackoverflow.com/questions/43453944/what-is-the-difference-between-code-native-code-typed-and-code-llvm-in-julia)
-Consider function for example a function computing the Fibonacci numbers
+Consider for example a function computing the Fibonacci numbers[^1]
 ```julia
 function nextfib(n)
 	a, b = one(n), one(n)
@@ -32,9 +31,11 @@ function nextfib(n)
 end
 ```
 
+[^1]: From StackOverflow [https://stackoverflow.com/questions/43453944/what-is-the-difference-between-code-native-code-typed-and-code-llvm-in-julia](https://stackoverflow.com/questions/43453944/what-is-the-difference-between-code-native-code-typed-and-code-llvm-in-julia)
+
 
 #### Parsing
-The first thing the compiler does is that it will parse the source code (represented as a string) to the abstract syntax tree. We can inspect the results of this stage as 
+The first thing the compiler does is that it will parse the source code (represented as a string) to the abstract syntax tree (AST). We can inspect the results of this stage as 
 ```julia
 julia> parsed_fib = Meta.parse(
 """
@@ -44,8 +45,7 @@ julia> parsed_fib = Meta.parse(
 			a, b = b, a + b
 		end
 		return b
-	end
-""")
+	end""")
 :(function nextfib(n)
       #= none:1 =#
       #= none:2 =#
@@ -59,7 +59,7 @@ julia> parsed_fib = Meta.parse(
       return b
   end)
 ```
-AST is a tree representation of the source code, where the parser has already identified what is function call, argument blocks, etc. The parsed code is represented by Julia's objects, therefore it can be read and modified by Julia from Julia at your wish (this is what is called homo-iconicity of the language). Using `TreeView`
+AST is a tree representation of the source code, where the parser has already identified individual code elements function call, argument blocks, etc. The parsed code is represented by Julia objects, therefore it can be read and modified by Julia from Julia at your wish (this is what is called homo-iconicity of a language). Using `TreeView`
 ```julia
 using TreeView, TikzPictures
 g = tikz_representation(walk_tree(parsed_fib))
@@ -67,13 +67,26 @@ TikzPictures.save(SVG("parsed_fib.svg"), g)
 ```
 ![parsed_fib.svg](parsed_fib.svg)
 
-We can see that the AST is indeed a tree, with `function` being a root node (caused by us parsing a function). Each inner node represents a function call with childrens of the inner node being its arguments. An interesting inner node is the `Block` representing a sequence of statements, where we can also see information about lines in the source code are inserted as comments. Lisp-like S-Expression can be printed using `Meta.show_sexpr(parsed_fib)`.
+We can see that the AST is indeed a tree, with `function` being the root node (caused by us parsing a function). Each inner node represents a function call with children of the inner node being its arguments. An interesting inner node is the `Block` representing a sequence of statements, where we can also see information about lines in the source code inserted as comments. Lisp-like S-Expression can be printed using `Meta.show_sexpr(parsed_fib)`.
+```julia
+(:function, (:call, :nextfib, :n), (:block,
+    :(#= none:1 =#),
+    :(#= none:2 =#),
+    (:(=), (:tuple, :a, :b), (:tuple, (:call, :one, :n), (:call, :one, :n))),
+    :(#= none:3 =#),
+    (:while, (:call, :<, :b, :n), (:block,
+        :(#= none:4 =#),
+        (:(=), (:tuple, :a, :b), (:tuple, :b, (:call, :+, :a, :b)))
+      )),
+    :(#= none:6 =#),
+    (:return, :b)
+  ))
+```
 
 #### Lowering
-We can see that the AST is indeed a tree, with `function` being a root node (caused by us parsing a function). Each inner node represents a function call with children of the inner node being its arguments. An interesting inner node is the `Block` representing a sequence of statements, where we can also see inserted information about lines in the source code. Lisp-like S-Expression can be printed using `Meta.show_sexpr(parsed_fib)`.
-Julia). 
+The next stage is **lowering**, where AST is converted to Static Single Assignment Form (SSA), in which "each variable is assigned exactly once, and every variable is defined before it is used". Loops and conditionals are transformed into gotos and labels using a single unless/goto construct (this is not exposed in user-level Julia).
 ```julia
-julia> @code_lowered debuginfo=:source nextfib(3)
+julia> @code_lowered nextfib(3)
 CodeInfo(
 1 ─ %1 = Main.one(n)
 │   %2 = Main.one(n)
@@ -89,19 +102,39 @@ CodeInfo(
 4 ─      return b
 )
 ```
-or alternatively `lowered_fib = Meta.lower(@__MODULE__, parsed_fib)`. For inserted debugging informations, there is an option `@code_lowered debuginfo=:source nextfib(123)`. We can see that 
+or alternatively `lowered_fib = Meta.lower(@__MODULE__, parsed_fib)`. 
+
+We can see that 
 - compiler has introduced a lot of variables 
 - `while` (and `for`) loops has been replaced by a `goto` prepended by conditional statements
 
-####
-
-julia> @code_warntype debuginfo=:none nextfib(3)
-
-
-#### Typeing
-**Code typeing** is the process in which the compiler attaches types to variables and tries to infer types of objects returned from called functions. If the compiler fails to infer the returned type, it will give the variable type `Any`, in which case a dynamic dispatch will be used in subsequent operations with the variable. Inspecting typed code is therefore important for detecting type instabilities (the process can be difficult and error prone, fortunatelly, new tools like `Jet.jl` might simplify this task). The output of typing can be inspected using `@code_typed` macro (`@code_warntype` further highlights type instabilities.) The macro is used to simplify the call, as you need to know the type of parameters, you can directly call `InteractiveUtils.code_typed(nextfib, (typeof(3),))`.
+For inserted debugging information, there is an option to pass keyword argument `debuginfo=:source`.  
 ```julia
-julia> @code_typed debuginfo=:source nextfib(3)
+julia> @code_lowered debuginfo=:source nextfib(3)
+CodeInfo(
+    @ none:2 within `nextfib'
+1 ─ %1 = Main.one(n)
+│   %2 = Main.one(n)
+│        a = %1
+└──      b = %2
+    @ none:3 within `nextfib'
+2 ┄ %5 = b < n
+└──      goto #4 if not %5
+    @ none:4 within `nextfib'
+3 ─ %7 = b
+│   %8 = a + b
+│        a = %7
+│        b = %8
+└──      goto #2
+    @ none:6 within `nextfib'
+4 ─      return b
+)
+```
+
+#### Code Typing
+**Code typing** is the process in which the compiler attaches types to variables and tries to infer types of objects returned from called functions. If the compiler fails to infer the returned type, it will give the variable type `Any`, in which case a dynamic dispatch will be used in subsequent operations with the variable. Inspecting typed code is therefore important for detecting type instabilities (the process can be difficult and error prone, fortunately, new tools like `Jet.jl` may simplify this task). The output of typing can be inspected using `@code_typed` macro. If you know the types of function arguments, aka function signature, you can call directly function `InteractiveUtils.code_typed(nextfib, (typeof(3),))`.
+```julia
+julia> @code_typed nextfib(3)
 CodeInfo(
 1 ─      nothing::Nothing
 2 ┄ %2 = φ (#1 => 1, #3 => %6)::Int64
@@ -121,6 +154,25 @@ We can see that
 - And the return type of the entire function body has been annotated as `Int64`.
 - The phi-instruction `%2 = φ (#1 => 1, #3 => %6)` is a **selector function**, which returns the value depending on from which branch do you come from. In this case, variable `%2` will have value 1, if the control was transfered from block `#1` and it will have value copied from variable `%6` if the control was transferreed from block `3` [see also](https://llvm.org/docs/LangRef.html#phi-instruction). The `φ` stands from *phony* variable.
 	When we have called `@code_lower`, the role of types of the argument was in selecting the approapriate function body, they are needed for multiple dispatch. Contrary in `@code_typed`, the types of parameters determine the choice if inner methods that needs to be called (again the multiple dispatch), which can trigger other optimization, such as inlining, which seen in `One(n)`. 
+
+Note that the same view of the code is offered by the `@code_warntype` macro, which we have seen in the previous [lecture](@ref perf_lecture). The main difference from `@code_typed` is that it highlights type instabilities with red color and shows only unoptimized view of the code. You can view the unoptimized code with a keyword argument `optimize=false`:
+```julia
+julia> @code_typed optimize=false nextfib(3)
+CodeInfo(
+1 ─ %1 = Main.one(n)::Core.Const(1)
+│   %2 = Main.one(n)::Core.Const(1)
+│        (a = %1)::Core.Const(1)
+└──      (b = %2)::Core.Const(1)
+2 ┄ %5 = (b < n)::Bool
+└──      goto #4 if not %5
+3 ─ %7 = b::Int64
+│   %8 = (a + b)::Int64
+│        (a = %7)::Int64
+│        (b = %8)::Int64
+└──      goto #2
+4 ─      return b
+) => Int64
+```
 
 #### Lowering to LLVM IR
 Julia uses the LLVM compiler framework to generate machine code. LLVM stands for low-level virtual machine and it is basis of many modern compilers (see [wiki](https://en.wikipedia.org/wiki/LLVM)).
@@ -151,18 +203,19 @@ L8:                                               ; preds = %L2
   ret i64 %value_phi
 }
 ```
-LLVM code can be tricky to understand first, but one get used to it. Notice references to the source code, which helps orientation. We can read
-- code start by jumping to label L2, from where it reads values of two variables to two "registers" `value_phi` and `value_phi1` (variables in LLVM starts with `%`). 
+LLVM code can be tricky to understand first, but one gets used to it. Notice references to the source code, which help with orientation. From the code above, we may infer
+- code starts by jumping to label L2, from where it reads values of two variables to two "registers" `value_phi` and `value_phi1` (variables in LLVM starts with `%`). 
 - Both registers are treated as `int64` and initialized by `1`. 
 - `[ 1, %top ], [ %value_phi, %L2 ]` means that values are initialized as `1` if you come from the label `top` and as value `value_phi` if you come from `%2`. This is the LLVM's selector (phony `φ`).
 - `icmp slt i64 %value_phi, %0` compares the variable `%value_phi` to the content of variable `%0`. Notice the anotation that we are comparing `Int64`.
 - `%1 = add i64 %value_phi1, %value_phi` adds two variables `%value_phi1` and `%value_phi`. Note again than we are using `Int64` addition. 
 - `br i1 %.not, label %L2, label %L8` implements a conditional jump depending on the content of `%.not` variable. 
 - `ret i64 %value_phi` returns the value indicating it to be an `Int64`.
+
 It is not expected you will be directly operating on the LLVM code, though there are libraries which does that. For example `Enzyme.jl` performs automatic differentiation of LLVM code, which has the benefit of being able to take a gradeint through `setdiff`.
 
 #### Producing the native vode
-**Native code** The last stage is generation of the native code, which Julia executes. The native code can depend on your platform, especially if you use SIMD registers. The compiled code can be viewed as
+**Native code** The last stage is generation of the native code, which Julia executes. The native code depends on the target architecture (e.g. x86, ARM). As in previous cases there is a macro for viewing the compiled code `@code_native`
 ```julia
 julia> @code_native debuginfo=:source nextfib(3)
 	.section	__TEXT,__text,regular,pure_instructions
@@ -191,29 +244,34 @@ L16:
 and the output is used mainly for debugging / inspection. 
 
 ## Looking around the language
-Language introspection is very convenient for investigating, how things are implemented and how they are optimized / compiled to the native code. 
+Language introspection is very convenient for investigating, how things are implemented and how they are optimized / compiled to the native code.
 
-- A very useful macro is `@which`, which identifies the concrete function called in the function call. For example `@which mapreduce(sin, +, [1,2,3,4])`. Note again that the macro here is a convenience macro to obtain types of arguments. Under the hood, it calls `InteractiveUtils.which(function_name, (Base.typesof)(args...))`. Funny enough, you can call `@which InteractiveUtils.which(+, (Base.typesof)(1,1))` to inspect, where `which` is defined.
+!!! note "Reminder `@which`"
+	Though we have already used it quite a few times, recall the very useful macro `@which`, which identifies the concrete function called in the function call. For example `@which mapreduce(sin, +, [1,2,3,4])`. Note again that the macro here is a convenience macro to obtain types of arguments from the expression. Under the hood, it calls `InteractiveUtils.which(function_name, (Base.typesof)(args...))`. Funnily enough, you can call `@which InteractiveUtils.which(+, (Base.typesof)(1,1))` to inspect, where `which` is defined.
 
-#### Broadcasting 
-Broadcasting is quite unique to Julia, since it allows easily fuse operation with a convenient function. For example 
+### Broadcasting
+Broadcasting is not a unique concept in programming languages (Python/Numpy, MATLAB), however its implementation in Julia allows to easily fuse operations. For example 
 ```julia
 x = randn(100)
 sin.(x) .+ 2 .* cos.(x) .+ x
 ```
-is all computed in a single loop. We can inspect, how this is achieved, but it is better to start with something simpler
+is all computed in a single loop. We can inspect, how this is achieved in the lowered code:
 ```julia
-julia> Meta.@lower x .+ 1
+julia> Meta.@lower sin.(x) .+ 2 .* cos.(x) .+ x
 :($(Expr(:thunk, CodeInfo(
     @ none within `top-level scope'
-1 ─ %1 = Base.broadcasted(+, x, 1)
-│   %2 = Base.materialize(%1)
-└──      return %2
+1 ─ %1 = Base.broadcasted(sin, x)
+│   %2 = Base.broadcasted(cos, x)
+│   %3 = Base.broadcasted(*, 2, %2)
+│   %4 = Base.broadcasted(+, %1, %3)
+│   %5 = Base.broadcasted(+, %4, x)
+│   %6 = Base.materialize(%5)
+└──      return %6
 ))))
 ```
-Notice that we have not used the usual `@code_lowered` macro, because the statement to be lowered is not a function call. In these cases, we have to use `@code_lowered`, which can handle more general program statements. On these cases, we cannot use `@which` either, as that applies only to function calls.
+Notice that we have not used the usual `@code_lowered` macro, because the statement to be lowered is not a function call. In these cases, we have to use `@code_lowered`, which can handle more general program statements. On these cases, we cannot use `@which` either, as that applies to function calls only as well.
 
-#### Generators
+### Generators
 ```julia
 Meta.@lower [x for x in 1:4]
 :($(Expr(:thunk, CodeInfo(
@@ -240,7 +298,7 @@ CodeInfo(
 )
 ```
 
-#### Let's observe the effecto of type-instability
+### The effect of type-instability
 ```julia
 struct Wolf
 	name::String
@@ -263,19 +321,20 @@ unstable_pack = [Wolf("1", 1), Wolf("2", 2), Sheep("3", 3)]
 	## Cthulhu.jl
 	`Cthulhu.jl` is a library (tool) which simplifies the above, where we want to iteratively dive into functions called in some piece of code (typically some function). `Cthulhu` is different from te normal debugger, since the debugger is executing the code, while `Cthulhu` is just lower_typing the code and presenting functions (with type of arguments inferred).
 
-```
+```julia
 using Cthulhu
 @descend map(sound, unstable_pack)
 ```
 
 ## General notes on metaprogramming
-According to an excellent [talk](https://www.youtube.com/watch?v=mSgXWpvQEHE) of Steven Johnson, you should use metaprogramming sparingly, as it is very powerful, but it is generally difficult to read and it can lead to unexpected errors. Julia allows you to interact with the compiler at two levels.
-1. After the code is parsed to AST, you can modify it through **macros**.
-2. When SSA form is being typed, you can create custom functions trough the **generated functions**.
-3. More functionalities are coming through the [JuliaCompilerPlugins](https://github.com/JuliaCompilerPlugins) project, but we will not talk about them (yet). 
+According to an excellent [talk](https://www.youtube.com/watch?v=mSgXWpvQEHE) by Steven Johnson, you should use metaprogramming sparingly, because on one hand it's very powerful, but  on the other it is generally difficult to read and it can lead to unexpected errors. Julia allows you to interact with the compiler at two different levels.
+1. After the code is parsed to AST, you can modify it directly or through **macros**.
+2. When SSA form is being typed, you can create custom functions using the concept of **generated functions**.
+
+More functionalities are coming through the [JuliaCompilerPlugins](https://github.com/JuliaCompilerPlugins) project, but we will not talk about them (yet). 
 
 ## What is Quotation?
-When we are doing metaprogramming, we need to somehow tell the compiler that the next block of code is not the normal block of code, but that it should be interpretted as data and in any sense it should not be evaluated. **Quotation** referes to an exactly this syntactic sugar. In Julia, quotation is achieved either through `:(...)` or `quote ... end`.
+When we are doing metaprogramming, we need to somehow tell the compiler that the next block of code is not a normal block of code to be executed, but that it should be interpreted as data and in any sense it should not be evaluated. **Quotation** refers to exactly this syntactic sugar. In Julia, quotation is achieved either through `:(...)` or `quote ... end`.
 
 Notice the difference between
 ```julia
@@ -285,32 +344,28 @@ and
 ```julia
 :(1 + 1)
 ```
-inspecting what we get
-```julia
-:(1 + 1) |> typeof
-```
 
 The type returned by the quotation depends on what is quoted. Observe the returned type of the following quoted code
 ```julia
-:(1)
-:(:x)
-:(1 + x)
+:(1)			|> typeof
+:(:x)		 	|> typeof
+:(1 + x) 	|> typeof
 quote
     1 + x
     x + 1
-end
+end 			|> typeof
 ```
-All of these snippets are examples of the quoted code going forward. But only `:(1 + x)` and the quote block produce objects of type `Expr`. The wide range of types produced by quoting code is a bit confusing and it can on one side complicate the meta-programming, and on the other-side simplify it as one can utilize multiple dispatch. An interesting return type is the `QuoteNode`, which allows to insert piece of code which should contain elements that should not be interpolated. Most of the time, quoting returns `Expr`essions.
+All of these snippets are examples of the quoted code, but only `:(1 + x)` and the quote block produce objects of type `Expr`. An interesting return type is the `QuoteNode`, which allows to insert piece of code which should contain elements that should not be interpolated. Most of the time, quoting returns `Expr`essions.
 
 ## Expressions
-Abstract Syntax Tree, the output of Julia's parser, is expressed using Julia's own datastructures, which means that you can freely manipulate it (and constructed) from the language itself. This property is called **homoiconicity**. Julia's compiler allows you to intercept compilation just after it has parsed the source code, but before we will take advantage of it, we will spent time with just AST and how it is constructed.
+Abstract Syntax Tree, the output of Julia's parser, is expressed using Julia's own datastructures, which means that you can freely manipulate it (and constructed) from the language itself. This property is called **homoiconicity**. Julia's compiler allows you to intercept compilation just after it has parsed the source code. Before we will take advantage of this power, we should get familiar with the strucute of the AST.
 
 The best way to inspect the AST is through the combination 
 - `Meta.parse,`  which parses the source code to AST, 
 - `dump` which print AST to terminal, 
 - `eval` which evaluates the AST within the current module.
 
-Let's start by investigating a very simple statement `1 + 1`. An alternative to `Meta.parse("1 + 1")` is `:(1 + 1)` or `quote ... end`
+Let's start by investigating a very simple statement `1 + 1`, whose AST can be constructed either by `Meta.parse("1 + 1")` or `:(1 + 1)` or `quote 1+1 end` (the last one includes also the line information metadata).
 ```julia
 julia> p = :(1+1)
 :(1 + 1)
@@ -326,10 +381,12 @@ Expr
     2: Int64 1
     3: Int64 1
 ```
-The parsed code `p` is of type `Expr`, which according to Julia's help is *a type representing compound expressions in parsed julia code (ASTs). Each expression consists: of a head Symbol identifying which kind of expression it is (e.g. a call, for loop, conditional statement, etc.), and subexpressions (e.g. the arguments of a call). The subexpressions are stored in a Vector{Any} field called args.* If you recall the figure above, where AST was represented as a tree, `head` gives each node the name name `args` are either some parameters of the node, or they point to childs of that node. The interpretation of the node depends on the its type stored in head (note that the word type used here is not in the Julia sense).
+The parsed code `p` is of type `Expr`, which according to Julia's help[^2] is *a type representing compound expressions in parsed julia code (ASTs). Each expression consists: of a head Symbol identifying which kind of expression it is (e.g. a call, for loop, conditional statement, etc.), and subexpressions (e.g. the arguments of a call). The subexpressions are stored in a Vector{Any} field called args.* If you recall the figure above, where AST was represented as a tree, `head` gives each node the name name `args` are either some parameters of the node, or they point to childs of that node. The interpretation of the node depends on the its type stored in head (note that the word type used here is not in the Julia sense).
+
+[^2]: [https://docs.julialang.org/en/v1/base/base/#Core.Expr](https://docs.julialang.org/en/v1/base/base/#Core.Expr)
 
 !!! info "`Symbol` type"
-	In the manipulations of expressions, we encounter the term `Symbol`. `Symbol` is the smallest atom from which the program (in AST representation) is built. It is used to identify an element in the language, for example the variable, keyword, and function name. Symbol is not a string, since string represents itself, whereas Symbol can represent something else (a variable). An [example](https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia) provided by Stefan Karpinski is as follows.
+	When manipulations of expressions, we encounter the term `Symbol`. `Symbol` is the smallest atom from which the program (in AST representation) is built. It is used to identify an element in the language, for example variable, keyword or function name. Symbol is not a string, since string represents itself, whereas `Symbol` can represent something else (a variable). An illustrative example[^3] goes as follows.
 	```julia
 	julia> eval(:foo)
 	ERROR: foo not defined
@@ -369,10 +426,12 @@ The parsed code `p` is of type `Expr`, which according to Julia's help is *a typ
 
 	In Julia, symbols are "interned strings", which means that compiler attaches each string a unique identifier (integer), such that it can quickly compare them. Compiler uses Symbols exclusively and the important feature is that they can be quickly compared. This is why people like to use them as keys in `Dict`.
 
+[^3]: An example provided by Stefan Karpinski [https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia](https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia)
+
 !!! info 
 	### Expressions
 
-	From Julia's help:
+	From Julia's help[^2]:
 
 	`Expr(head::Symbol, args...)`
 
@@ -381,7 +440,7 @@ The parsed code `p` is of type `Expr`, which according to Julia's help is *a typ
 
 	The expression is simple yet very flexible. The head `Symbol` tells how the expression should be treated and arguments provide all needed parameters. Notice that the structure is also type-unstable. This is not a big deal, since the expression is used to generate code, hence it is not executed repeatedly.
 
-## Construct the code from scratch
+## Construct code from scratch
 Since `Expr` is a Julia structure, we can construct it manually as we can construct any other structure
 ```julia
 julia> Expr(:call, :+, 1 , 1) |> dump
@@ -404,7 +463,7 @@ e = Expr(:call, :+, :x, 5)
 eval(e)
 ```
 but unless they are not defined within the scope, the expression cannot produce a meaningful result
-```
+```julia
 x = 3
 eval(e)
 ```
@@ -413,7 +472,7 @@ eval(e)
 :(1 + sin(x)) == Expr(:call, :+, 1, Expr(:call, :sin, :x))
 ```
 
-Since the expression is a Julia structure, we are free to manipulate. Let's for example substitutue `x` in  `e = :(x + 5)` with `2x`.
+Since the expression is a Julia structure, we are free to manipulate it. Let's for example substitutue `x` in  `e = :(x + 5)` with `2x`.
 ```julia
 e = :(x + 5)
 e.args = map(e.args) do a 
@@ -429,7 +488,7 @@ e.args = map(e.args) do a
 end
 ```
 and verify that the results are correct.
-```
+```julia
 julia> dump(e)
 Expr
   head: Symbol call
@@ -446,14 +505,14 @@ Expr
 julia> eval(e)
 11
 ```
-As mentioned, the manipulation with Expression can be arbitrary and we can go arbitrarily deep. In the above example, we have been operating directly on the arguments. But what if `x` would be deeper in the expression, as is for example in `2(3 + x) + 2(2 - x) `? We can implement the substitution using multiple dispatch as we would do when implementing any other function in Julia.
+As already mentioned, the manipulation of Expression can be arbitrary. In the above example, we have been operating directly on the arguments. But what if `x` would be deeper in the expression, as for example in `2(3 + x) + 2(2 - x) `? We can implement the substitution using multiple dispatch as we would do when implementing any other function in Julia.
 ```julia
 replace_x(x::Symbol) = x == :x ? :(2*x) : x
 replace_x(e::Expr) = Expr(e.head, map(replace_x, e.args)...)
 replace_x(u) = u
 ```
-which works as has been promissed.
-```
+which works as promised.
+```julia
 julia> e = :(2(3 + 2x) + 2(2 - x))
 :(2 * (3 + x) + 2 * (2 - x))
 julia> f = replace_x(e)
@@ -462,14 +521,14 @@ julia> f = replace_x(e)
 
 or we can replace the `sin` function
 ```julia
-	replace_sin(x::Symbol) = x == :sin ? :cos : x
-	replace_sin(e::Expr) = Expr(e.head, map(replace_sin, e.args)...)
-	replace_sin(u) = u
-``` 
+replace_sin(x::Symbol) = x == :sin ? :cos : x
+replace_sin(e::Expr) = Expr(e.head, map(replace_sin, e.args)...)
+replace_sin(u) = u
+```
 ```julia
 replace_sin(:(1 + sin(x)))
 ```
-Sometimes, we want to operate on the block of code. This is easiest to do with `quote ... end`. We demonstrate the functionality with the above example
+Sometimes, we want to operate on a block of code as opposed to single line expressions. Recall that a block of code is defined-quoted with `quote ... end`. Let us see how `replace_x` can handle the following example:
 ```julia
 e = quote 
 	a = x + 3
@@ -524,7 +583,7 @@ Stacktrace:
  [4] top-level scope
    @ REPL[8]:1
 ```
-notice that error is not related to undefined variable / function, but the invalid syntax. This also demonstrates the role of `head` in `Args`.
+notice that error is not related to undefined variable / function, but the invalid syntax. This also demonstrates the role of `head` in `Expr`. More on Julia AST can be found in the developer [documentation](https://docs.julialang.org/en/v1/devdocs/ast/#Julia-ASTs).
 
 ### Alternative way to look at code
 ```julia
@@ -568,7 +627,7 @@ end
 
 expand_sin_xy(:(sin(x + 2*(z + y))))
 ```
- -->
+-->
 ## Code generation
 
 ### Using metaprogramming in inheritance by encapsulation
@@ -604,7 +663,7 @@ julia> a
  1  0
  3  4
 ```
-In this way, Julia acts as its own pre-processor.
+In this way, Julia acts as its own preprocessor.
 The above look can be equally written as 
 ```julia
 for f in [:setindex!, :getindex, :size, :length]
@@ -621,28 +680,6 @@ Notice that we have just hand-implemented parts of `@forward` macro from [MacroT
 
 <!-- Should I mention the world clock age and the effect of eval in global scope -->
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
 ---
 
 # Resources
@@ -652,4 +689,3 @@ Notice that we have just hand-implemented parts of `@forward` macro from [MacroT
 - Andy Ferris's [workshop @ JuliaCon 2018](https://www.youtube.com/watch?v=SeqAQHKLNj4)
 - [From Macros to DSL](https://github.com/johnmyleswhite/julia_tutorials) by John Myles White 
 - Notes on [JuliaCompilerPlugin](https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project)
->>>>>>> 1eea7c8e68b756df87e8e0bab4d0bec6598924a8
