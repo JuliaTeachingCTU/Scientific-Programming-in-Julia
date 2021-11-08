@@ -59,7 +59,7 @@ julia> parsed_fib = Meta.parse(
       return b
   end)
 ```
-AST is a tree representation of the source code, where the parser has already identified individual code elements function call, argument blocks, etc. The parsed code is represented by Julia objects, therefore it can be read and modified by Julia from Julia at your wish (this is what is called homo-iconicity of a language). Using `TreeView`
+AST is a tree representation of the source code, where the parser has already identified individual code elements function call, argument blocks, etc. The parsed code is represented by Julia objects, therefore it can be read and modified by Julia from Julia at your wish (this is what is called homo-iconicity of a language the itself being derived from Greek words *homo*- meaning "the same" and *icon* meaning "representation"). Using `TreeView`
 ```julia
 using TreeView, TikzPictures
 g = tikz_representation(walk_tree(parsed_fib))
