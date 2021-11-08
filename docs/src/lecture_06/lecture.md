@@ -153,7 +153,8 @@ We can see that
 - The expression `a + b` has been also replaced with its implementation in terms of the `add_int` intrinsic and its result type annotated as Int64. 
 - And the return type of the entire function body has been annotated as `Int64`.
 - The phi-instruction `%2 = φ (#1 => 1, #3 => %6)` is a **selector function**, which returns the value depending on from which branch do you come from. In this case, variable `%2` will have value 1, if the control was transfered from block `#1` and it will have value copied from variable `%6` if the control was transferreed from block `3` [see also](https://llvm.org/docs/LangRef.html#phi-instruction). The `φ` stands from *phony* variable.
-	When we have called `@code_lower`, the role of types of the argument was in selecting the approapriate function body, they are needed for multiple dispatch. Contrary in `@code_typed`, the types of parameters determine the choice if inner methods that needs to be called (again the multiple dispatch), which can trigger other optimization, such as inlining, which seen in `One(n)`. 
+
+When we have called `@code_lower`, the role of types of arguments was in selecting - via multiple dispatch - the appropriate function body among different methods. Contrary in `@code_typed`, the types of parameters determine the choice of inner methods that need to be called (again with multiple dispatch). This process can trigger other optimization, such as inlining, as seen in the case of `one(n)` being replaced with `1` directly, though here this replacement is hidden in the `φ` function. 
 
 Note that the same view of the code is offered by the `@code_warntype` macro, which we have seen in the previous [lecture](@ref perf_lecture). The main difference from `@code_typed` is that it highlights type instabilities with red color and shows only unoptimized view of the code. You can view the unoptimized code with a keyword argument `optimize=false`:
 ```julia
@@ -247,7 +248,7 @@ and the output is used mainly for debugging / inspection.
 Language introspection is very convenient for investigating, how things are implemented and how they are optimized / compiled to the native code.
 
 !!! note "Reminder `@which`"
-	Though we have already used it quite a few times, recall the very useful macro `@which`, which identifies the concrete function called in the function call. For example `@which mapreduce(sin, +, [1,2,3,4])`. Note again that the macro here is a convenience macro to obtain types of arguments from the expression. Under the hood, it calls `InteractiveUtils.which(function_name, (Base.typesof)(args...))`. Funnily enough, you can call `@which InteractiveUtils.which(+, (Base.typesof)(1,1))` to inspect, where `which` is defined.
+	Though we have already used it quite a few times, recall the very useful macro `@which`, which identifies the concrete function called in a function call. For example `@which mapreduce(sin, +, [1,2,3,4])`. Note again that the macro here is a convenience macro to obtain types of arguments from the expression. Under the hood, it calls `InteractiveUtils.which(function_name, (Base.typesof)(args...))`. Funnily enough, you can call `@which InteractiveUtils.which(+, (Base.typesof)(1,1))` to inspect, where `which` is defined.
 
 ### Broadcasting
 Broadcasting is not a unique concept in programming languages (Python/Numpy, MATLAB), however its implementation in Julia allows to easily fuse operations. For example 
@@ -349,7 +350,7 @@ The type returned by the quotation depends on what is quoted. Observe the return
 ```julia
 :(1)			|> typeof
 :(:x)		 	|> typeof
-:(1 + x) 	|> typeof
+:(1 + x) 		|> typeof
 quote
     1 + x
     x + 1
@@ -428,9 +429,7 @@ The parsed code `p` is of type `Expr`, which according to Julia's help[^2] is *a
 
 [^3]: An example provided by Stefan Karpinski [https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia](https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia)
 
-!!! info 
-	### Expressions
-
+!!! info "`Expr`essions"
 	From Julia's help[^2]:
 
 	`Expr(head::Symbol, args...)`
