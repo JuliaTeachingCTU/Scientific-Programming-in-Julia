@@ -68,7 +68,7 @@ function Base.show(io::IO, g::Grass)
     x = size(g)/max_size(g) * 100
     print(io,&quot;🌿 #$(id(g)) $(round(Int,x))% grown&quot;)
 end</code></pre><p>Creation of a world with a few grass agents:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; w = World([Grass(id,3) for id in 1:2])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Grass}
-  🌿 #2 67% grown
+  🌿 #2 100% grown
   🌿 #1 67% grown</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for _ in 1:3
            world_step!(w)
            @info w
@@ -210,8 +210,8 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
   🐑 #1 E=10.0 ΔE=5.0 pr=1.0 pf=1.0
 
 world = Main.World{Main.Animal}
+  🐑 #2 E=10.0 ΔE=5.0 pr=1.0 pf=1.0
   🐺 #3 E=120.0 ΔE=10.0 pr=1.0 pf=1.0
-  🐑 #1 E=10.0 ΔE=5.0 pr=1.0 pf=1.0
 
 world = Main.World{Main.Animal}
   🐺 #3 E=220.0 ΔE=10.0 pr=1.0 pf=1.0
@@ -242,18 +242,18 @@ for _ in 1:4
     @show world
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world = Main.World{Main.Grass}
   🌿 #2 100% grown
-  🌿 #3 100% grown
-  🌿 #1 62% grown
+  🌿 #3 62% grown
+  🌿 #1 100% grown
 
 world = Main.World{Main.Grass}
   🌿 #2 100% grown
-  🌿 #3 100% grown
-  🌿 #1 75% grown
+  🌿 #3 75% grown
+  🌿 #1 100% grown
 
 world = Main.World{Main.Grass}
   🌿 #2 100% grown
-  🌿 #3 100% grown
-  🌿 #1 88% grown
+  🌿 #3 88% grown
+  🌿 #1 100% grown
 
 world = Main.World{Main.Grass}
   🌿 #2 100% grown
@@ -289,32 +289,29 @@ for _ in 1:2
     @show world
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world = Main.World{Main.Agent}
   🌿 #5 0% grown
-  🐺 #12 E=19.0 ΔE=10.0 pr=0.1 pf=0.1
-  🐑 #8 E=9.0 ΔE=5.0 pr=0.5 pf=0.5
+  🐺 #12 E=119.0 ΔE=10.0 pr=0.1 pf=0.1
+  🐑 #8 E=24.0 ΔE=5.0 pr=0.5 pf=0.5
   🌿 #1 60% grown
-  🐑 #6 E=4.5 ΔE=5.0 pr=0.5 pf=0.5
+  🐑 #6 E=9.0 ΔE=5.0 pr=0.5 pf=0.5
   🐺 #11 E=19.0 ΔE=10.0 pr=0.1 pf=0.1
-  🐑 #9 E=24.0 ΔE=5.0 pr=0.5 pf=0.5
   🌿 #3 0% grown
   🐑 #7 E=34.0 ΔE=5.0 pr=0.5 pf=0.5
-  🌿 #4 100% grown
-  🐑 #13 E=4.5 ΔE=5.0 pr=0.5 pf=0.5
-  🌿 #2 40% grown
-  🐑 #10 E=9.0 ΔE=5.0 pr=0.5 pf=0.5
+  🌿 #4 40% grown
+  🐑 #13 E=7.0 ΔE=5.0 pr=0.5 pf=0.5
+  🌿 #2 80% grown
+  🐑 #10 E=7.0 ΔE=5.0 pr=0.5 pf=0.5
 
 world = Main.World{Main.Agent}
   🌿 #5 20% grown
-  🐑 #16 E=1.75 ΔE=5.0 pr=0.5 pf=0.5
-  🐺 #12 E=9.0 ΔE=10.0 pr=0.1 pf=0.1
-  🐑 #8 E=4.0 ΔE=5.0 pr=0.5 pf=0.5
+  🐺 #12 E=118.0 ΔE=10.0 pr=0.1 pf=0.1
+  🐑 #8 E=11.5 ΔE=5.0 pr=0.5 pf=0.5
   🌿 #1 80% grown
-  🐑 #6 E=1.75 ΔE=5.0 pr=0.5 pf=0.5
-  🐺 #11 E=63.0 ΔE=10.0 pr=0.1 pf=0.1
-  🐑 #9 E=23.0 ΔE=5.0 pr=0.5 pf=0.5
-  🐺 #14 E=9.0 ΔE=10.0 pr=0.1 pf=0.1
+  🐑 #6 E=4.0 ΔE=5.0 pr=0.5 pf=0.5
+  🐺 #11 E=58.0 ΔE=10.0 pr=0.1 pf=0.1
+  🐑 #14 E=11.5 ΔE=5.0 pr=0.5 pf=0.5
   🌿 #3 20% grown
   🐑 #7 E=33.0 ΔE=5.0 pr=0.5 pf=0.5
-  🌿 #4 100% grown
-  🐑 #15 E=4.0 ΔE=5.0 pr=0.5 pf=0.5
-  🌿 #2 60% grown
-  🐑 #10 E=8.0 ΔE=5.0 pr=0.5 pf=0.5</code></pre><p>The code for this lab is inspired by the predator-prey model of <a href="https://juliadynamics.github.io/Agents.jl/v3.5/examples/predator_prey/"><code>Agents.jl</code></a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Monday 8 November 2021 08:20">Monday 8 November 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  🌿 #4 60% grown
+  🐑 #13 E=6.0 ΔE=5.0 pr=0.5 pf=0.5
+  🌿 #2 100% grown
+  🐑 #10 E=6.0 ΔE=5.0 pr=0.5 pf=0.5</code></pre><p>The code for this lab is inspired by the predator-prey model of <a href="https://juliadynamics.github.io/Agents.jl/v3.5/examples/predator_prey/"><code>Agents.jl</code></a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Monday 8 November 2021 10:24">Monday 8 November 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
