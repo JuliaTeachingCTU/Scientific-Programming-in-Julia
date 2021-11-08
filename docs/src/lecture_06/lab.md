@@ -59,6 +59,7 @@ function implicit_len()
 end
 nothing #hide
 ```
+For now do not try to understand the details, but focus on the overall differences such as length of the code.
 
 !!! info "Redirecting `stdout`"
     If the output of the method introspection tools is too long you can use a general way of redirecting standard output `stdout` to a file
@@ -179,9 +180,36 @@ function polynomial(a, x)
 end
 ```
 
+!!! info "Splatting/slurping operator `...`"
+    The operator `...` serves two purposes inside function calls [^3][^4]:
+    - combines multiple arguments into one
+    ```@repl lab06_splat
+    function printargs(args...)
+        println(typeof(args))
+        for (i, arg) in enumerate(args)
+            println("Arg #$i = $arg")
+        end
+    end
+    printargs(1, 2, 3)
+    ```
+    - splits one argument into many different arguments
+    ```@repl lab06_splat
+    function threeargs(a, b, c)
+        println("a = $a::$(typeof(a))")
+        println("b = $b::$(typeof(b))")
+        println("c = $c::$(typeof(c))")
+    end
+    threeargs([1,2,3]...) # or with a variable threeargs(x...)
+    ```
+
+    [^3]: [https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?](https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?)
+    [^4]: [https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions](https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions)
+
 **HINTS**:
-- define two methods `_polynomial(x, a...)` and `_polynomial(x, a)`
-- recall that these kind of optimization are run just after type inference
+- define two methods `_polynomial!(ac, x, a...)` and `_polynomial!(ac, x, a)` for the case of ≥2 coefficients and the last coefficient
+- use splatting together with range indexing `a[1:end-1]...`
+- the correctness can be checked using the built-in `evalpoly`
+- recall that these kind of optimization are possible just around the type inference stage
 - use container of known length to store the coefficients
 
 ```@raw html
@@ -200,8 +228,8 @@ a = Tuple(ones(Int, 21)) # everything less than 22 gets inlined
 x = 2
 polynomial(a,x) == evalpoly(x,a) # compare with built-in function
 
+# @code_llvm polynomial(a,x)    # seen here too, but code_typed is a better option
 @code_lowered polynomial(a,x) # cannot be seen here as optimizations are not applied
-@code_llvm polynomial(a,x)    # seen here too, but code_typed is a better option
 nothing #hide
 ```
 
@@ -216,7 +244,7 @@ nothing #hide
 ## AST manipulation: The first steps to metaprogramming
 Julia is so called homoiconic language, as it allows the language to reason about its code. This capability is inspired by years of development in other languages such as Lisp, Clojure or Prolog.
 
-There are two easy ways to extract/construct the code structure [^3]
+There are two easy ways to extract/construct the code structure [^5]
 - parsing code stored in string with internal `Meta.parse`
 ```@repl lab06_meta
 code_parse = Meta.parse("x = 2")    # for single line expressions (additional spaces are ignored)
@@ -317,15 +345,14 @@ Given a function `replace_i`, which replaces variables `i` for `k` in an express
 ex = :(i + i*i + y*i - sin(z))
 @test replace_i(ex) == :(k + k*k + y*k - sin(z))
 ```
-write function `sreplace_i(s)` which does the same thing but instead of a parsed expression (AST) it manipulates a string, such as
+write a different function `sreplace_i(s)`, which does the same thing but instead of a parsed expression (AST) it manipulates a string, such as
 ```@repl lab06_meta
 s = string(ex)
 ```
-Think of some corner cases, that the method may not handle properly.
-
 **HINTS**:
 - Use `Meta.parse` in combination with `replace_i` **ONLY** for checking of correctness.
-- You can use the `replace` function.
+- You can use the `replace` function in combination with regular expressions.
+- Think of some corner cases, that the method may not handle properly.
 
 ```@raw html
 </div></div>
@@ -394,9 +421,8 @@ eval(ex)
 
 This kind of manipulation is at the core of some pkgs, such as aforementioned [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) where every number is replaced with a narrow interval in order to find some bounds on the result of a computation.
 
-
-[^3]: Once you understand the recursive structure of expressions, the AST can be constructed manually like any other type.
 ---
+[^5]: Once you understand the recursive structure of expressions, the AST can be constructed manually like any other type.
 
 ## Resources
 - Julia's manual on [metaprogramming](https://docs.julialang.org/en/v1/manual/metaprogramming/)
