@@ -398,32 +398,25 @@ module Exfiltrator
 
 const environment = Dict{Symbol, Any}()
 
-add_variable!(name::Symbol, value) = environment[name] = value
-
-function add_variables!(d::Dict)
-	for (k, v) in d
-		add_variable!(k, v)
-	end
-end
-
-function reset!()
+function copy_variables!(d::Dict)
 	foreach(k -> delete!(environment, k), keys(environment))
+	for (k, v) in d
+		environment[k] = v
+	end
 end
 
 macro exfiltrate()
 	v = gensym(:vars)
 	quote
-		reset!()
 		$(v) = $(esc((Expr(:locals))))
-		add_variables!($(v))
+		copy_variables!($(v))
 	end
 end
-
-export @exfiltrate
 
 end
 ```
 
+Test it to 
 ```julia
 using Main.Exfiltrator: @exfiltrate
 let 
