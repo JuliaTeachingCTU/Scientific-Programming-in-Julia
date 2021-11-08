@@ -393,7 +393,43 @@ also notice that the escaping is only partial (running `@macroexpand @m2 @m1 1 +
 
 <!-- Why are variables on right-hand side replaced by access to global variables? -->
 ## Write @exfiltrate macro
-`Base.@locals`
+```julia
+module Exfiltrator
+
+const environment = Dict{Symbol, Any}()
+
+add_variable!(name::Symbol, value) = environment[name] = value
+
+function add_variables!(d::Dict)
+	for (k, v) in d
+		add_variable!(k, v)
+	end
+end
+
+function reset!()
+	foreach(k -> delete!(environment, k), keys(environment))
+end
+
+macro exfiltrate()
+	quote
+		reset!()
+		add_variables!(Base.@locals)
+	end
+end
+
+export @exfiltrate
+
+end
+```
+
+```julia
+let 
+	x,y,z = 1,"hello", (a = "1", b = "b")
+	@exfiltrate
+end
+Exfiltrator.environment
+```
+
 
 
 ## Domain Specifis Languages (DSL)
