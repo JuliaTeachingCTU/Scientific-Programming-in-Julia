@@ -411,9 +411,11 @@ function reset!()
 end
 
 macro exfiltrate()
+	v = gensym(:vars)
 	quote
 		reset!()
-		add_variables!(Base.@locals)
+		$(v) = $(esc((Expr(:locals))))
+		add_variables!($(v))
 	end
 end
 
@@ -423,10 +425,21 @@ end
 ```
 
 ```julia
+using Main.Exfiltrator: @exfiltrate
 let 
 	x,y,z = 1,"hello", (a = "1", b = "b")
 	@exfiltrate
 end
+
+Exfiltrator.environment
+
+function inside_function()
+	a,b,c = 1,2,3
+	@exfiltrate
+end
+
+inside_function()
+
 Exfiltrator.environment
 ```
 
