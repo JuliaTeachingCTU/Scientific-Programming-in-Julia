@@ -41,6 +41,12 @@ algorithms, which can work on discrete set of expressions. The goal is to
 write mutation and recombination - the basic operators of a genetic algorithm,
 but applied on top of Julia AST.
 
+Data: AI Feyman [database](https://space.mit.edu/home/tegmark/aifeynman.html) on symbolic regression (from [article](https://arxiv.org/pdf/1905.11481.pdf)/[code](https://github.com/SJ001/AI-Feynman))
+Inspiration: 
+- Logic Guided Genetic Algorithms [article](https://arxiv.org/pdf/2010.11328.pdf)/[code](https://github.com/DhananjayAshok/LGGA)
+- AI Feynman 2.0: Pareto-optimal symbolic regression exploiting graph modularity [article](https://arxiv.org/pdf/2006.10782)
+- Genetic Programming for Julia: fast performance and parallel island model implementation [report](http://courses.csail.mit.edu/18.337/2015/projects/MorganFrank/projectReport.pdf)
+
 ## Distributed Optimization Package
 
 One click distributed optimization is at the heart of other machine learning 
@@ -48,6 +54,9 @@ and optimization libraries such as pytorch, however some equivalents are
 missing in the Julia's Flux ecosystem. The goal of this project is to explore,
 implement and compare at least two state-of-the-art methods of distributed 
 gradient descent on data that will be provided for you.
+
+Some of the work has already been done in this area by one of our former students, 
+see [link](https://dspace.cvut.cz/handle/10467/97057).
 
 ## A Rule Learning Algorithm
 
