@@ -15,7 +15,7 @@ x + 2*y*z - c*x
 ```
 return an array of *unique alphabetically sorted symbols* representing variables in an expression.
 ```julia
-[:x, :y, :z, :c]
+[:c, :x, :y, :z]
 ```
 Implement this in a function called `find_variables`. Note that there may be some edge cases that you may have to handle in a special way, such as 
 - variable assignments `r = x*x` should return the variable on the left as well (`r` in this case)
