@@ -393,6 +393,13 @@ also notice that the escaping is only partial (running `@macroexpand @m2 @m1 1 +
 
 <!-- Why are variables on right-hand side replaced by access to global variables? -->
 ## Write @exfiltrate macro
+Since Julia's debugger is a complicated story, people have been looking for tools, which would simplify the debugging. One of them is a macro `@exfiltrate`, which copies all variables in a given scope to a dafe place, from where they can be collected later on. This helps you in evaluating the function. 
+
+Let's try to implement such facility. What is our strategy
+- we can collect names and values of variables in a given scope using the macro `Base.@locals`
+- We will store variables in some global variable in a module, such that we have one place from which we can retrieve them and we are certain that this storage would not interact with existing code
+- the `@exfiltrate` macro should be as easy to use as possible.
+
 ```julia
 module Exfiltrator
 
