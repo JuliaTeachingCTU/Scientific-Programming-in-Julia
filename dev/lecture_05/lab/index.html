@@ -138,19 +138,19 @@ Body<span class="sgr36">::Float64</span>
 <span class="sgr90">│  </span> %19 = Base.not_int(%18)<span class="sgr36">::Bool</span>
 <span class="sgr90">└──</span>       goto #4 if not %19
 <span class="sgr90">3 ─</span>       goto #2
-<span class="sgr90">4 ┄</span>       return accumulator</code></pre><pre><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @time polynomial(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">  0.000013 seconds (1 allocation: 16 bytes)
-128.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @time polynomial_stable(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">  0.000011 seconds (1 allocation: 16 bytes)
-128.0</code></pre><p>Only really visible when evaluating multiple times.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using BenchmarkTools</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  23.370 ns (0 allocations: 0 bytes)
-128.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  15.415 ns (0 allocations: 0 bytes)
-128.0</code></pre><p>Difference only a few nanoseconds.</p><p><em>Note</em>: Recalling homework from lab 1. Adding <code>zero</code> also extends this function to the case of <code>x</code> being a matrix, see <code>?</code> menu.</p></p></details><p>Code stability issues are something unique to Julia, as its JIT compilation allows it to produce code that contains boxed variables, whose type can be inferred during runtime. This is one of the reasons why interpreted languages are slow to run but fast to type. Julia&#39;s way of solving it is based around compiling functions for specific arguments, however in order for this to work without the interpreter, the compiler has to be able to infer the types.</p><p>There are other problems (such as unnecessary allocations), that you can learn to spot in your code, however the code stability issues are by far the most commonly encountered problems among beginner users of Julia wanting to squeeze more out of it.</p><div class="admonition is-info"><header class="admonition-header">Advanced tooling</header><div class="admonition-body"><p>Sometimes <code>@code_warntype</code> shows that the function&#39;s return type is unstable without any hints to the possible problem, fortunately for such cases a more advanced tools such as <a href="https://github.com/JuliaDebug/Cthulhu.jl"><code>Cthuhlu.jl</code></a> or <a href="https://github.com/aviatesk/JET.jl"><code>JET.jl</code></a> have been developed.</p></div></div><h2 id="Benchmarking-with-BenchmarkTools"><a class="docs-heading-anchor" href="#Benchmarking-with-BenchmarkTools">Benchmarking with <code>BenchmarkTools</code></a><a id="Benchmarking-with-BenchmarkTools-1"></a><a class="docs-heading-anchor-permalink" href="#Benchmarking-with-BenchmarkTools" title="Permalink"></a></h2><p>In the last exercise we have encountered the problem of timing of code to see, if we have made any progress in speeding it up. Throughout the course we will advertise the use of the <code>BenchmarkTools</code> package, which provides an easy way to test your code multiple times. In this lab we will focus on some advanced usage tips and gotchas that you may encounter while using it. </p><p>There are few concepts to know in order to understand how the pkg works</p><ul><li>evaluation - a single execution of a benchmark expression (default <code>1</code>)</li><li>sample - a single time/memory measurement obtained by running multiple evaluations (default <code>1e5</code>)</li><li>trial - experiment in which multiple samples are gathered </li></ul><p>The result of a benchmark is a trial in which we collect multiple samples of time/memory measurements, which in turn may be composed of multiple executions of the code in question. This layering of repetition is required to allow for benchmarking code at different runtime magnitudes. Imagine having to benchmark operations which are faster than the act of measuring itself - clock initialization, dispatch of an operation and subsequent time subtraction.</p><p>The number of samples/evaluations can be set manually, however most of the time won&#39;t need to know about them, due to an existence of a tuning method <code>tune!</code>, which tries to run the code once to estimate the correct ration of evaluation/samples. </p><p>The most commonly used interface of <code>Benchmarkools</code> is the <code>@btime</code> macro, which returns an output similar to the regular <code>@time</code> macro however now aggregated over samples by taking their minimum (a robust estimator for the location parameter of the time distribution, should not be considered an outlier - usually the noise from other processes/tasks puts the results to the other tail of the distribution and some miraculous noisy speedups are uncommon. In order to see the underlying sampling better there is also the <code>@benchmark</code> macro, which runs in the same way as <code>@btime</code>, but prints more detailed statistics which are also returned in the <code>Trial</code> type instead of the actual code output.</p><pre><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime sum($(rand(1000)))</code><code class="nohighlight hljs ansi" style="display:block;">  95.059 ns (0 allocations: 0 bytes)
-491.7525015738923</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sum($(rand(1000)))</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10000 samples with 950 evaluations.
- Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">96.106 ns</span></span> … <span class="sgr35">130.948 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
- Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">96.527 ns               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
- Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">96.700 ns</span></span> ± <span class="sgr32">  1.321 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
+<span class="sgr90">4 ┄</span>       return accumulator</code></pre><pre><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @time polynomial(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">  0.000006 seconds (1 allocation: 16 bytes)
+128.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @time polynomial_stable(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">  0.000005 seconds (1 allocation: 16 bytes)
+128.0</code></pre><p>Only really visible when evaluating multiple times.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using BenchmarkTools</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  23.170 ns (0 allocations: 0 bytes)
+128.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  18.337 ns (0 allocations: 0 bytes)
+128.0</code></pre><p>Difference only a few nanoseconds.</p><p><em>Note</em>: Recalling homework from lab 1. Adding <code>zero</code> also extends this function to the case of <code>x</code> being a matrix, see <code>?</code> menu.</p></p></details><p>Code stability issues are something unique to Julia, as its JIT compilation allows it to produce code that contains boxed variables, whose type can be inferred during runtime. This is one of the reasons why interpreted languages are slow to run but fast to type. Julia&#39;s way of solving it is based around compiling functions for specific arguments, however in order for this to work without the interpreter, the compiler has to be able to infer the types.</p><p>There are other problems (such as unnecessary allocations), that you can learn to spot in your code, however the code stability issues are by far the most commonly encountered problems among beginner users of Julia wanting to squeeze more out of it.</p><div class="admonition is-info"><header class="admonition-header">Advanced tooling</header><div class="admonition-body"><p>Sometimes <code>@code_warntype</code> shows that the function&#39;s return type is unstable without any hints to the possible problem, fortunately for such cases a more advanced tools such as <a href="https://github.com/JuliaDebug/Cthulhu.jl"><code>Cthuhlu.jl</code></a> or <a href="https://github.com/aviatesk/JET.jl"><code>JET.jl</code></a> have been developed.</p></div></div><h2 id="Benchmarking-with-BenchmarkTools"><a class="docs-heading-anchor" href="#Benchmarking-with-BenchmarkTools">Benchmarking with <code>BenchmarkTools</code></a><a id="Benchmarking-with-BenchmarkTools-1"></a><a class="docs-heading-anchor-permalink" href="#Benchmarking-with-BenchmarkTools" title="Permalink"></a></h2><p>In the last exercise we have encountered the problem of timing of code to see, if we have made any progress in speeding it up. Throughout the course we will advertise the use of the <code>BenchmarkTools</code> package, which provides an easy way to test your code multiple times. In this lab we will focus on some advanced usage tips and gotchas that you may encounter while using it. </p><p>There are few concepts to know in order to understand how the pkg works</p><ul><li>evaluation - a single execution of a benchmark expression (default <code>1</code>)</li><li>sample - a single time/memory measurement obtained by running multiple evaluations (default <code>1e5</code>)</li><li>trial - experiment in which multiple samples are gathered </li></ul><p>The result of a benchmark is a trial in which we collect multiple samples of time/memory measurements, which in turn may be composed of multiple executions of the code in question. This layering of repetition is required to allow for benchmarking code at different runtime magnitudes. Imagine having to benchmark operations which are faster than the act of measuring itself - clock initialization, dispatch of an operation and subsequent time subtraction.</p><p>The number of samples/evaluations can be set manually, however most of the time won&#39;t need to know about them, due to an existence of a tuning method <code>tune!</code>, which tries to run the code once to estimate the correct ration of evaluation/samples. </p><p>The most commonly used interface of <code>Benchmarkools</code> is the <code>@btime</code> macro, which returns an output similar to the regular <code>@time</code> macro however now aggregated over samples by taking their minimum (a robust estimator for the location parameter of the time distribution, should not be considered an outlier - usually the noise from other processes/tasks puts the results to the other tail of the distribution and some miraculous noisy speedups are uncommon. In order to see the underlying sampling better there is also the <code>@benchmark</code> macro, which runs in the same way as <code>@btime</code>, but prints more detailed statistics which are also returned in the <code>Trial</code> type instead of the actual code output.</p><pre><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime sum($(rand(1000)))</code><code class="nohighlight hljs ansi" style="display:block;">  95.379 ns (0 allocations: 0 bytes)
+488.6746413869674</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sum($(rand(1000)))</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10000 samples with 951 evaluations.
+ Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">96.005 ns</span></span> … <span class="sgr35">160.044 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
+ Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">96.216 ns               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
+ Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">96.335 ns</span></span> ± <span class="sgr32">  1.356 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
 
-  ▄▁▆<span class="sgr34">█</span><span class="sgr32">▂</span>                                                        ▁
-  ███<span class="sgr34">█</span><span class="sgr32">█</span>▆▄▁▄▃▁▃▃▅▇▇▆▅▅▄▁▁▃▁▁▁▁▁▁▁▁▁▁▁▃▁▃▆▆▅▅▆▄▆▆▆▅▅▆▃▅▃▅▃▄▃▅▅▄▃ █
-  96.1 ns<span class="sgr90">       Histogram: <span class="sgr1">log(</span>frequency<span class="sgr1">)</span> by time</span>       104 ns <span class="sgr1">&lt;</span>
+  ▃█<span class="sgr34">█</span>▁<span class="sgr32"> </span>                                                        ▂
+  ██<span class="sgr34">█</span>█<span class="sgr32">▅</span>▁▃▁▁▁▁▁▁▁▁▃▁▄▅██▁▆▄▁▃▁▁▁▁▃▁▁▁▁▁▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▃▅▁▆███▇ █
+  96 ns<span class="sgr90">         Histogram: <span class="sgr1">log(</span>frequency<span class="sgr1">)</span> by time</span>       101 ns <span class="sgr1">&lt;</span>
 
  Memory estimate<span class="sgr90">: </span><span class="sgr33">0 bytes</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">0</span>.</code></pre><div class="admonition is-danger"><header class="admonition-header">Interpolation ~ `$` in BenchmarkTools</header><div class="admonition-body"><p>In the previous example we have used the interpolation signs <code>$</code> to indicate that the code inside should be evaluated once and stored into a local variable. This allows us to focus only on the benchmarking of code itself instead of the input generation. A more subtle way where this is crops up is the case of using previously defined global variable, where instead of data generation we would measure also the type inference at each evaluation, which is usually not what we want. The following list will help you decide when to use interpolation.</p><pre><code class="language-julia hljs">@btime sum($(rand(1000)))   # rand(1000) is stored as local variable, which is used in each evaluation
 @btime sum(rand(1000))      # rand(1000) is called in each evaluation
@@ -187,16 +187,16 @@ Total snapshots: 2</code></pre><p>Unless the machine that you run the code on is
                polynomial_stable(a, x)
            end
        end</code><code class="nohighlight hljs ansi" style="display:block;">run_polynomial_stable (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; a = rand(-10:10, 10) # using longer polynomial</code><code class="nohighlight hljs ansi" style="display:block;">10-element Vector{Int64}:
- -2
- -2
- -1
-  5
-  6
- -4
-  8
- -6
- -6
- -7</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Profile.clear()</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @profile run_polynomial_stable(a, xf, Int(1e5))</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Profile.print()</code><code class="nohighlight hljs ansi" style="display:block;">Overhead ╎ [+additional indent] Count File:Line; Function
+  10
+  -6
+   7
+   8
+  -9
+   5
+ -10
+  -7
+  -1
+  -5</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Profile.clear()</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @profile run_polynomial_stable(a, xf, Int(1e5))</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Profile.print()</code><code class="nohighlight hljs ansi" style="display:block;">Overhead ╎ [+additional indent] Count File:Line; Function
 =========================================================
   ╎53 @Base/client.jl:485; _start()
   ╎ 53 @Base/client.jl:285; exec_options(opts::Base.JLOptions)
@@ -224,60 +224,62 @@ Total snapshots: 2</code></pre><p>Unless the machine that you run the code on is
   ╎    ╎    ╎    ╎    ╎   53 @Base/boot.jl:360; eval
   ╎    ╎    ╎    ╎    ╎    53 REPL[1]:3; run_polynomial_stabl...
   ╎    ╎    ╎    ╎    ╎     53 REPL[1]:4; polynomial_stable(a...
- 2╎    ╎    ╎    ╎    ╎    ╎ 2  @Base/float.jl:326; +
 50╎    ╎    ╎    ╎    ╎    ╎ 51 @Base/math.jl:920; ^
+ 1╎    ╎    ╎    ╎    ╎    ╎ 1  @Base/math.jl:920; getindex
+  ╎    ╎    ╎    ╎    ╎    ╎ 1  ...romotion.jl:322; *
+ 1╎    ╎    ╎    ╎    ╎    ╎  1  ...e/float.jl:332; *
 Total snapshots: 53</code></pre><p>In order to get more of a visual feel for profiling, there are packages that allow you to generate interactive plots or graphs. In this lab we will use <a href="https://github.com/timholy/ProfileSVG.jl"><code>ProfileSVG.jl</code></a>, which does not require any fancy IDE or GUI libraries.</p><pre><code class="language-julia hljs">using ProfileSVG
 ProfileSVG.save(&quot;./profile_poly.svg&quot;) # can work with already created traces</code></pre><!DOCTYPE html>
 <html>
 <body>
 <svg version="1.1" width="777" height="555" viewBox="0 0 777 555"
-     xmlns="http://www.w3.org/2000/svg" id="fig-07f280eb740a42cfb371f2e87df2ca05">
+     xmlns="http://www.w3.org/2000/svg" id="fig-a6f6fec3c66d4b32b19bff8b7bdea709">
 <defs>
-    <clipPath id="fig-07f280eb740a42cfb371f2e87df2ca05-clip">
+    <clipPath id="fig-a6f6fec3c66d4b32b19bff8b7bdea709-clip">
         <rect x="0" y="0" width="777" height="555"/>
     </clipPath>
 </defs>
 <style type="text/css">
-    #fig-07f280eb740a42cfb371f2e87df2ca05 text {
+    #fig-a6f6fec3c66d4b32b19bff8b7bdea709 text {
         pointer-events: none;
         font-family: inherit;
         font-size: 12px;
         fill: #000000;
     }
-    text#fig-07f280eb740a42cfb371f2e87df2ca05-caption {
+    text#fig-a6f6fec3c66d4b32b19bff8b7bdea709-caption {
         font-size: 16.8px;
         fill: #000000;
         text-anchor: middle;
     }
-    #fig-07f280eb740a42cfb371f2e87df2ca05-bg {
+    #fig-a6f6fec3c66d4b32b19bff8b7bdea709-bg {
         fill: #FFFFFF;
     }
-    #fig-07f280eb740a42cfb371f2e87df2ca05-viewport rect, #fig-07f280eb740a42cfb371f2e87df2ca05-viewport path {
+    #fig-a6f6fec3c66d4b32b19bff8b7bdea709-viewport rect, #fig-a6f6fec3c66d4b32b19bff8b7bdea709-viewport path {
         vector-effect: non-scaling-stroke;
         fill-opacity: 1;
     }
-    #fig-07f280eb740a42cfb371f2e87df2ca05-viewport text {
+    #fig-a6f6fec3c66d4b32b19bff8b7bdea709-viewport text {
         stroke: #000000;
         stroke-width: 0;
         stroke-opacity: 0.35;
     }
-    #fig-07f280eb740a42cfb371f2e87df2ca05-viewport rect:hover, #fig-07f280eb740a42cfb371f2e87df2ca05-viewport path:hover {
+    #fig-a6f6fec3c66d4b32b19bff8b7bdea709-viewport rect:hover, #fig-a6f6fec3c66d4b32b19bff8b7bdea709-viewport path:hover {
         fill-opacity: 0.75;
         stroke: #000000;
         stroke-width: 0.5;
     }
-    #fig-07f280eb740a42cfb371f2e87df2ca05-viewport + rect {
+    #fig-a6f6fec3c66d4b32b19bff8b7bdea709-viewport + rect {
         fill: #FFFFFF;
         opacity: 0.8;
     }
-    text#fig-07f280eb740a42cfb371f2e87df2ca05-details{
+    text#fig-a6f6fec3c66d4b32b19bff8b7bdea709-details{
         fill: #000000;
     }
 </style>
-<g id="fig-07f280eb740a42cfb371f2e87df2ca05-frame" clip-path="url(#fig-07f280eb740a42cfb371f2e87df2ca05-clip)">
-<rect id="fig-07f280eb740a42cfb371f2e87df2ca05-bg" x="0" y="0" width="777" height="555"/>
-<text id="fig-07f280eb740a42cfb371f2e87df2ca05-caption" x="388.5" y="24">Profile results</text>
-<g id="fig-07f280eb740a42cfb371f2e87df2ca05-viewport" transform="scale(1)">
+<g id="fig-a6f6fec3c66d4b32b19bff8b7bdea709-frame" clip-path="url(#fig-a6f6fec3c66d4b32b19bff8b7bdea709-clip)">
+<rect id="fig-a6f6fec3c66d4b32b19bff8b7bdea709-bg" x="0" y="0" width="777" height="555"/>
+<text id="fig-a6f6fec3c66d4b32b19bff8b7bdea709-caption" x="388.5" y="24">Profile results</text>
+<g id="fig-a6f6fec3c66d4b32b19bff8b7bdea709-viewport" transform="scale(1)">
 <rect x="8" y="504" width="761.88" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
 <text x="8" dx="4" y="515.25"> in :-1</text>
 <rect x="8" y="489" width="761.88" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
@@ -332,10 +334,14 @@ ProfileSVG.save(&quot;./profile_poly.svg&quot;) # can work with already created 
 <text x="8" dx="4" y="140.25">run_polynomial_stable in REPL[1]:3</text>
 <rect x="8" y="114" width="761.88" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
 <text x="8" dx="4" y="125.25">polynomial_stable in REPL[1]:4</text>
-<rect x="8" y="99" width="28.75" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="110.25">+ in float.jl:326</text>
-<rect x="36.75" y="99" width="733.13" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="36.75" dx="4" y="110.25">^ in math.jl:920</text>
+<rect x="8" y="99" width="733.12" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="8" dx="4" y="110.25">^ in math.jl:920</text>
+<rect x="741.12" y="99" width="14.38" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="741.12" dx="4" y="110.25">getindex in math.jl:920</text>
+<rect x="755.5" y="99" width="14.38" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="755.5" dx="4" y="110.25">* in promotion.jl:322</text>
+<rect x="755.5" y="84" width="14.38" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="755.5" dx="4" y="95.25">* in float.jl:332</text>
 </g></g>
 <script><![CDATA[
 // Snap.svg 0.3.0
@@ -730,10 +736,10 @@ f+=g+"]",i[b]=f}return Function("val","return Snap.path.toString.call(["+i+"])")
 <script><![CDATA[
 if (typeof require === 'function' && define.amd) {
     require(['ProfileSVG'], function (ProfileSVG) {
-        ProfileSVG.initialize("fig-07f280eb740a42cfb371f2e87df2ca05");
+        ProfileSVG.initialize("fig-a6f6fec3c66d4b32b19bff8b7bdea709");
     });
 } else {
-    ProfileSVG.initialize("fig-07f280eb740a42cfb371f2e87df2ca05");
+    ProfileSVG.initialize("fig-a6f6fec3c66d4b32b19bff8b7bdea709");
 }
 ]]></script>
 </svg>
@@ -757,11 +763,11 @@ if (typeof require === 'function' && define.amd) {
                accumulator = accumulator * x + a[i]
            end
            accumulator
-       end</code><code class="nohighlight hljs ansi" style="display:block;">polynomial (generic function with 1 method)</code></pre><p>Speed up:</p><ul><li>42ns -&gt; 12ns ~ 3.5x on integer valued input </li><li>420ns -&gt; 12ns ~ 15x on real valued input</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $x)</code><code class="nohighlight hljs ansi" style="display:block;">  16.416 ns (0 allocations: 0 bytes)
--184805</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $x)</code><code class="nohighlight hljs ansi" style="display:block;">  51.470 ns (0 allocations: 0 bytes)
--184805</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  17.836 ns (0 allocations: 0 bytes)
--184805.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  544.686 ns (0 allocations: 0 bytes)
--184805.0</code></pre><p>These numbers will be different on different HW.</p><p><strong>BONUS</strong>: The profile trace does not even contain the calling of mathematical operators and is mainly dominated by the iteration utilities. In this case we had to increase the number of runs to <code>1e6</code> to get some meaningful trace.</p><pre><code class="language-julia hljs">@profview run_polynomial(a, xf, Int(1e6))</code></pre><p><img src="../profile_poly_horner.svg" alt="profile_horner"/></p></p></details><h2 id="Ecosystem-debugging"><a class="docs-heading-anchor" href="#Ecosystem-debugging">Ecosystem debugging</a><a id="Ecosystem-debugging-1"></a><a class="docs-heading-anchor-permalink" href="#Ecosystem-debugging" title="Permalink"></a></h2><p>Let&#39;s now apply what we have learned so far on the much bigger codebase of our <code>Ecosystem</code> and <code>EcosystemCore</code> packages. </p><div class="admonition is-info"><header class="admonition-header">Installation of Ecosystem pkg</header><div class="admonition-body"><p>If you do not have Ecosystem readily available you can get it from our <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/Ecosystem.jl">repository</a>.</p></div></div><pre><code class="language-julia hljs">using Profile, ProfileSVG
+       end</code><code class="nohighlight hljs ansi" style="display:block;">polynomial (generic function with 1 method)</code></pre><p>Speed up:</p><ul><li>42ns -&gt; 12ns ~ 3.5x on integer valued input </li><li>420ns -&gt; 12ns ~ 15x on real valued input</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $x)</code><code class="nohighlight hljs ansi" style="display:block;">  16.116 ns (0 allocations: 0 bytes)
+-126818</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $x)</code><code class="nohighlight hljs ansi" style="display:block;">  57.868 ns (0 allocations: 0 bytes)
+-126818</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  17.735 ns (0 allocations: 0 bytes)
+-126818.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial_stable($a, $xf)</code><code class="nohighlight hljs ansi" style="display:block;">  544.154 ns (0 allocations: 0 bytes)
+-126818.0</code></pre><p>These numbers will be different on different HW.</p><p><strong>BONUS</strong>: The profile trace does not even contain the calling of mathematical operators and is mainly dominated by the iteration utilities. In this case we had to increase the number of runs to <code>1e6</code> to get some meaningful trace.</p><pre><code class="language-julia hljs">@profview run_polynomial(a, xf, Int(1e6))</code></pre><p><img src="../profile_poly_horner.svg" alt="profile_horner"/></p></p></details><h2 id="Ecosystem-debugging"><a class="docs-heading-anchor" href="#Ecosystem-debugging">Ecosystem debugging</a><a id="Ecosystem-debugging-1"></a><a class="docs-heading-anchor-permalink" href="#Ecosystem-debugging" title="Permalink"></a></h2><p>Let&#39;s now apply what we have learned so far on the much bigger codebase of our <code>Ecosystem</code> and <code>EcosystemCore</code> packages. </p><div class="admonition is-info"><header class="admonition-header">Installation of Ecosystem pkg</header><div class="admonition-body"><p>If you do not have Ecosystem readily available you can get it from our <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/Ecosystem.jl">repository</a>.</p></div></div><pre><code class="language-julia hljs">using Profile, ProfileSVG
 
 function create_world()
     n_grass       = 500
@@ -965,39 +971,39 @@ julia&gt; analyze_malloc(expanduser(&quot;~/.julia/packages/EcosystemCore/8dzJF/
     ├── logs
     ├── packages        # packages are here
     └── registries</code></pre><p>If you are using VSCode, the paths visible in the REPL can be clicked through to he actual source code. Moreover in that environment the documentation is usually available upon hovering over code.</p><h3 id="Setting-up-benchmarks-to-our-liking"><a class="docs-heading-anchor" href="#Setting-up-benchmarks-to-our-liking">Setting up benchmarks to our liking</a><a id="Setting-up-benchmarks-to-our-liking-1"></a><a class="docs-heading-anchor-permalink" href="#Setting-up-benchmarks-to-our-liking" title="Permalink"></a></h3><p>In order to control the number of samples/evaluation and the amount of time given to a given benchmark, we can simply append these as keyword arguments to <code>@btime</code> or <code>@benchmark</code> in the following way</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sum($(rand(1000))) evals=100 samples=10 seconds=1</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10 samples with 100 evaluations.
- Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1"> 96.000 ns</span></span> … <span class="sgr35">224.000 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
+ Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1"> 96.000 ns</span></span> … <span class="sgr35">241.010 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
  Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1"> 97.000 ns               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
- Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">115.701 ns</span></span> ± <span class="sgr32"> 40.329 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
+ Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">128.602 ns</span></span> ± <span class="sgr32"> 58.476 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
 
-  <span class="sgr34">█</span>        <span class="sgr32"> </span>                                                    
-  <span class="sgr34">█</span>▁▁▁▁▁▁▁▁<span class="sgr32">▁</span>▄▁▁▁▁▁▁▁▁▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▄ ▁
-  96 ns<span class="sgr90">            Histogram: frequency by time</span>          224 ns <span class="sgr1">&lt;</span>
+  <span class="sgr34">█</span>             <span class="sgr32"> </span>                                               
+  <span class="sgr34">█</span>▁▁▁▁▁▁▁▁▁▁▁▁▁<span class="sgr32">▁</span>▁▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▄▁▁▄ ▁
+  96 ns<span class="sgr90">            Histogram: frequency by time</span>          241 ns <span class="sgr1">&lt;</span>
 
  Memory estimate<span class="sgr90">: </span><span class="sgr33">0 bytes</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">0</span>.</code></pre><p>which runs the code repeatedly for up to <code>1s</code>, where each of the <code>10</code> samples in the trial is composed of <code>10</code> evaluations. Setting up these parameters ourselves creates a more controlled environment in which performance regressions can be more easily identified.</p><p>Another axis of customization is needed when we are benchmarking mutable operations such as <code>sort!</code>, which sorts an array in-place. One way of achieving a consistent benchmark is by omitting the interpolation such as</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sort!(rand(1000))</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10000 samples with 1 evaluation.
- Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">42.101 μs</span></span> … <span class="sgr35">77.801 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
- Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">48.201 μs              </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
- Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">47.832 μs</span></span> ± <span class="sgr32"> 2.456 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
+ Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">41.700 μs</span></span> … <span class="sgr35">74.401 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
+ Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">48.301 μs              </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
+ Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">47.931 μs</span></span> ± <span class="sgr32"> 2.468 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
 
-              ▂   ▂         <span class="sgr32"> </span><span class="sgr34">▁</span>▂█▄▃▃▅                          
-  ▁▁▁▁▁▂▂▃▄▄▅▆█▇███▆▅▅▄▆▄▄▅█<span class="sgr32">█</span><span class="sgr34">█</span>███████▆▅▅▄▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▃
-  42.1 μs<span class="sgr90">         Histogram: frequency by time</span>        55.3 μs <span class="sgr1">&lt;</span>
+              ▁ ▃ ▂▁      <span class="sgr32"> </span>▄<span class="sgr34">▇</span>▄█▃▆▁▂                           
+  ▂▂▁▂▂▂▃▃▄▄▇▆██████▅▆▄▆▅█<span class="sgr32">▆</span>█<span class="sgr34">█</span>███████▅▅▃▄▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂ ▄
+  41.7 μs<span class="sgr90">         Histogram: frequency by time</span>        56.8 μs <span class="sgr1">&lt;</span>
 
  Memory estimate<span class="sgr90">: </span><span class="sgr33">7.94 KiB</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">1</span>.</code></pre><p>however now we are again measuring the data generation as well. A better way of doing such timing is using the built in <code>setup</code> keyword, into which you can put a code that has to be run before each sample and which won&#39;t be measured.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sort!(y) setup=(y=rand(1000))</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10000 samples with 6 evaluations.
- Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">11.700 μs</span></span> … <span class="sgr35"> 17.800 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
+ Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">11.684 μs</span></span> … <span class="sgr35"> 20.683 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
  Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">12.184 μs               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
- Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">12.204 μs</span></span> ± <span class="sgr32">262.510 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
+ Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">12.234 μs</span></span> ± <span class="sgr32">355.308 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
 
-             ▂ ▄▅█<span class="sgr34">▇</span><span class="sgr32">▁</span>▆▄▂                                        
-  ▂▂▂▂▂▃▃▄▃▆▇█▆███<span class="sgr34">█</span><span class="sgr32">█</span>███▅▆▅▄▃▃▂▂▂▂▂▂▂▂▂▂▂▁▁▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂ ▃
-  11.7 μs<span class="sgr90">         Histogram: frequency by time</span>         13.5 μs <span class="sgr1">&lt;</span>
+           ▄█▄<span class="sgr34">█</span><span class="sgr32">▃</span>▃                                              
+  ▂▂▂▃▃▄▅█▇███<span class="sgr34">█</span><span class="sgr32">█</span>█▆▆▄▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▂▂▂▂▂▂▂ ▃
+  11.7 μs<span class="sgr90">         Histogram: frequency by time</span>         14.2 μs <span class="sgr1">&lt;</span>
 
  Memory estimate<span class="sgr90">: </span><span class="sgr33">0 bytes</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">0</span>.</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @benchmark sort!(AA) setup=(AA=copy($A))</code><code class="nohighlight hljs ansi" style="display:block;">BenchmarkTools.Trial: 10000 samples with 6 evaluations.
- Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">8.417 μs</span></span> … <span class="sgr35"> 16.567 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
- Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">8.733 μs               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
- Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">8.768 μs</span></span> ± <span class="sgr32">243.093 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
+ Range <span class="sgr90">(</span><span class="sgr36"><span class="sgr1">min</span></span> … <span class="sgr35">max</span><span class="sgr90">):  </span><span class="sgr36"><span class="sgr1">8.650 μs</span></span> … <span class="sgr35"> 17.134 μs</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>min … max<span class="sgr90">): </span>0.00% … 0.00%
+ Time  <span class="sgr90">(</span><span class="sgr34"><span class="sgr1">median</span></span><span class="sgr90">):     </span><span class="sgr34"><span class="sgr1">8.983 μs               </span></span><span class="sgr90">┊</span> GC <span class="sgr90">(</span>median<span class="sgr90">):    </span>0.00%
+ Time  <span class="sgr90">(</span><span class="sgr32"><span class="sgr1">mean</span></span> ± <span class="sgr32">σ</span><span class="sgr90">):   </span><span class="sgr32"><span class="sgr1">9.004 μs</span></span> ± <span class="sgr32">215.463 ns</span>  <span class="sgr90">┊</span> GC <span class="sgr90">(</span>mean ± σ<span class="sgr90">):  </span>0.00% ± 0.00%
 
-         ▁▅ █▁<span class="sgr34">█</span> <span class="sgr32">▅</span> ▂                                           
-  ▂▂▂▂▂▅▄█████<span class="sgr34">█</span>█<span class="sgr32">█</span>▇██▄▄▃▃▂▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▁▁▂▁▂▁▁▂▂▂▂▂▂▂▂▂▂▂▂ ▃
-  8.42 μs<span class="sgr90">         Histogram: frequency by time</span>        9.95 μs <span class="sgr1">&lt;</span>
+          ▁  ▆ ▁█<span class="sgr34">▁</span><span class="sgr32"> </span>▅  ▁                                       
+  ▂▂▂▂▃▄▄▄█▇▇████<span class="sgr34">█</span><span class="sgr32">█</span>█▇▆█▅▄▅▃▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▂▁▁▂▂▁▂▂▂▂▂▂▂▂▂ ▃
+  8.65 μs<span class="sgr90">         Histogram: frequency by time</span>        9.97 μs <span class="sgr1">&lt;</span>
 
- Memory estimate<span class="sgr90">: </span><span class="sgr33">0 bytes</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">0</span>.</code></pre><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Explanation of the Horner schema can be found on <a href="https://en.wikipedia.org/wiki/Horner%27s_method">https://en.wikipedia.org/wiki/Horner%27s_method</a>.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Reservoir sampling <a href="https://en.wikipedia.org/wiki/Reservoir_sampling">https://en.wikipedia.org/wiki/Reservoir_sampling</a></li><li class="footnote" id="footnote-3"><a class="tag is-link" href="#citeref-3">3</a>A simple algorithm <a href="https://stackoverflow.com/q/9690009">https://stackoverflow.com/q/9690009</a></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Saturday 6 November 2021 17:03">Saturday 6 November 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ Memory estimate<span class="sgr90">: </span><span class="sgr33">0 bytes</span>, allocs estimate<span class="sgr90">: </span><span class="sgr33">0</span>.</code></pre><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Explanation of the Horner schema can be found on <a href="https://en.wikipedia.org/wiki/Horner%27s_method">https://en.wikipedia.org/wiki/Horner%27s_method</a>.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Reservoir sampling <a href="https://en.wikipedia.org/wiki/Reservoir_sampling">https://en.wikipedia.org/wiki/Reservoir_sampling</a></li><li class="footnote" id="footnote-3"><a class="tag is-link" href="#citeref-3">3</a>A simple algorithm <a href="https://stackoverflow.com/q/9690009">https://stackoverflow.com/q/9690009</a></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Monday 8 November 2021 08:20">Monday 8 November 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
