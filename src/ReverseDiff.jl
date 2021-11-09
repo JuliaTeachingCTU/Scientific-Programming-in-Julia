@@ -11,38 +11,33 @@ mutable struct TrackedArray{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
     children::Dict
 end
 
+const TrackedVector{T} = TrackedArray{T,1}
+const TrackedMatrix{T} = TrackedArray{T,2}
+
 mutable struct Tracked{T<:Real}
     data::T
     grad::Union{Nothing,T}
     children::Dict
 end
 
-const TrackedVector{T} = TrackedArray{T,1}
-const TrackedMatrix{T} = TrackedArray{T,2}
-
 track(x::Real) = Tracked(x, nothing, Dict())
+data(x::Tracked) = x.data
+
 track(x::Array) = TrackedArray(x, nothing, Dict())
-
-function reset!(x::Union{Tracked,TrackedArray})
-    x.grad = nothing
-    map(reset!, x.children |> keys |> collect)
-    nothing
-end
-
-#Base.convert(::Type{Tracked}, x::Real) = track(x)
-#Base.convert(::Type{TrackedArray}, x::Array) = track(x)
-#Base.similar(x::TrackedArray, args...) = track(similar(x.data, args...))
-#Base.BroadcastStyle(::Type{<:TrackedArray}) = Broadcast.ArrayStyle{TrackedArray}()
-#function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{TrackedArray}}, ::Type{T}) where T
-#    track(similar(Array{T}, axes(bc)))
-#end
-
+data(x::TrackedArray) = x.data
 for f in [:size, :length, :eltype]
 	eval(:(Base.$(f)(x::TrackedArray, args...) = $(f)(x.data, args...)))
 end
 Base.getindex(x::TrackedArray, args...) = track(getindex(x.data,args...))
 Base.show(io::IO, x::TrackedArray) = print(io, "Tracked $(x.data)")
 Base.print_array(io::IO, x::TrackedArray) = Base.print_array(io, x.data)
+
+track(x::Union{TrackedArray,Tracked}) = x
+function reset!(x::Union{Tracked,TrackedArray})
+    x.grad = nothing
+    x.children = Dict()
+    nothing
+end
 
 function accum!(x::Union{Tracked,TrackedArray})
     if isnothing(x.grad)
@@ -51,12 +46,12 @@ function accum!(x::Union{Tracked,TrackedArray})
     x.grad
 end
 
-function gradient(f, args...)
-    vs = track.(args)
-    y  = f(vs...)
-    (y.data isa Real) || error("Output of `f` must be a scalar.")
+function gradient(f, args::TrackedArray...)
+    y = f(args...)
+    (y isa Tracked) || error("Output of `f` must be a scalar.")
     y.grad = 1.0
-    accum!.(vs)
+    accum!.(args)
+    Tuple(a.grad for a in args)
 end
 
 
@@ -101,6 +96,24 @@ end
 function Base.abs2(x::TrackedArray)
     y = track(abs2.(x.data))
     x.children[y] = Δ -> Δ .* 2x.data
+    y
+end
+
+function Base.hcat(xs::TrackedArray...)
+    y  = track(hcat(data.(xs)...))
+    stops  = cumsum([size(x,2) for x in xs])
+    starts = vcat([1], stops[1:end-1] .+ 1)
+    for (start,stop,x) in zip(starts,stops,xs)
+        x.children[y] = function (Δ)
+            δ = if ndims(x) == 1
+                Δ[:,start]
+            else
+                ds = map(_ -> :, size(x)) |> Base.tail |> Base.tail
+                Δ[:, start:stop, ds...]
+            end
+            δ
+        end
+    end
     y
 end
 

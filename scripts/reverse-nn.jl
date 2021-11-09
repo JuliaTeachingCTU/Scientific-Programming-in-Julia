@@ -41,17 +41,17 @@ network = Chain(
     Dense(3,2)
 )
 
-function loss(network,x::TrackedArray,y::TrackedArray)
-    err = network(x) - y
-    err |> abs2 |> sum
+function loss(network,xs,ys)
+    errs = hcat([abs2(network(x)-y) for (x,y) in zip(xs,ys)]...)
+    sum(errs)
 end
 
-# TODO: can we make broadcasting work? so that we can use batches?
-x = track(rand(2))
-y = track(rand(2))
-l = loss(network,x,y)
-l.grad = 1.0
-accum!(network.layers[1].W)
+xs = [track(rand(2)) for _ in 1:10]
+ys = [track(rand(2)) for _ in 1:10]
+l  = loss(network,xs,ys)
 
-#using FiniteDifferences
-#df = grad(central_fdm(5,1), n->loss(n,x,y), network)[1]
+W = network.layers[1].W
+l.grad = 1.0
+accum!(W)
+
+display(W.grad)
