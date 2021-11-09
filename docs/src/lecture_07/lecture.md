@@ -68,7 +68,7 @@ CodeInfo(
 	end
 	julia> redefine_add(1)
 	2
-
+    
 	julia> redefine_add(1)
 	0
 	```
@@ -349,6 +349,15 @@ CodeInfo(
 ```
 
 
+### Why hygienating the function calls?
+
+functin foo()
+	cos(x) = exp()
+	@repace_sin
+end
+
+
+
 ### Can I do the hygiene by myself?
 Yes, it is by some considered to be much simpler (and safer) then to understand, how macro hygiene works.
 ```julia
@@ -443,9 +452,7 @@ inside_function()
 Exfiltrator.environment
 ```
 
-
-
-## Domain Specifis Languages (DSL)
+## Domain Specific Languages (DSL)
 Macros are convenient for writing domain specific languages, which are languages designed for specific domain. This allows them to simplify notation and / or make the notation familiar for people working in the field. For example in `Turing.jl`, the model 
 of coinflips can be specified as 
 ```
@@ -606,8 +613,6 @@ quote
     var"#27###graph#273"
 end
 ```
-
-## Symbolic differentiation of scalars
 
 ## non-standard string literals
 ```
