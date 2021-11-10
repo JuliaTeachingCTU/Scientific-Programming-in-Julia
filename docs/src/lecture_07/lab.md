@@ -223,9 +223,227 @@ p(2) == evalpoly(2, [10,2,3])
 </p></details>
 ```
 
-## Ecosystem DSL
-### World definition
+## Ecosystem macros
+There are at least two ways how we can make our life simpler when using our `Ecosystem` and `EcosystemCore` pkgs. Firstly, recall that in order to test our simulation we always had to write something like this:
+```julia
+function create_world()
+    n_grass       = 500
+    regrowth_time = 17.0
+
+    n_sheep         = 100
+    Δenergy_sheep   = 5.0
+    sheep_reproduce = 0.5
+    sheep_foodprob  = 0.4
+
+    n_wolves       = 8
+    Δenergy_wolf   = 17.0
+    wolf_reproduce = 0.03
+    wolf_foodprob  = 0.02
+
+    gs = [Grass(id, regrowth_time) for id in 1:n_grass];
+    ss = [Sheep(id, 2*Δenergy_sheep, Δenergy_sheep, sheep_reproduce, sheep_foodprob) for id in n_grass+1:n_grass+n_sheep];
+    ws = [Wolf(id, 2*Δenergy_wolf, Δenergy_wolf, wolf_reproduce, wolf_foodprob) for id in n_grass+n_sheep+1:n_grass+n_sheep+n_wolves];
+    World(vcat(gs, ss, ws))
+end
+world = create_world();
+```
+which includes the tedious process of defining the agent counts, their parameters and last but not least the unique id manipulation. As part of the [HW](@ref hw07) for this lecture you will be tasked to define a simple DSL, which can be used to define a world in a few lines.
+
+Secondly, the definition of a new `Animal` or `Plant`, that did not have any special behavior currently requires quite a bit of repetitive code. For example defining a new plant type `Broccoli` goes as follows
+```julia
+abstract type Broccoli <: PlantSpecies end
+Base.show(io::IO,::Type{Broccoli}) = print(io,"🥦")
+
+EcosystemCore.eats(::Animal{Sheep},::Plant{Broccoli}) = true
+```
+
+and definition of a new animal like a `Rabbit` looks very similar
+```julia
+abstract type Rabbit <: AnimalSpecies end
+Base.show(io::IO,::Type{Rabbit}) = print(io,"🐇")
+
+EcosystemCore.eats(::Animal{Rabbit},::Plant{Grass}) = true
+EcosystemCore.eats(::Animal{Rabbit},::Plant{Broccoli}) = true
+```
+In order to make these relation clearer we will create two macros, which can be called at one place to construct all the relations.
+
 ### New Animal/Plant definition
+Our goal is to be able to define new plants and animal species, while having a clear idea about their relations. For this we have proposed the following macros/syntax:
+```julia
+@plant begin
+    name  -> Broccoli 
+    icon  -> 🥦
+end
+
+@animal begin
+    name -> Rabbit 
+    icon -> 🐇
+    eats -> [Grass => 0.5ΔE, Broccoli => 1.0ΔE, Mushroom => -1.0ΔE]
+end
+```
+
+
+Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already contains some definitions of species such as `Sheep`, `Wolf` and `Mushroom`, which would collide with the new definition thus there exists a modified version of those pkgs. **TODO LINK IT**
+
+We can test the current definition with the following code that constructs "eating matrix"
+```julia
+using Ecosystem
+using Ecosystem.EcosystemCore
+
+function eating_matrix()
+    _init(ps::Type{<:PlantSpecies}) = ps(1, 10.0)
+    _init(as::Type{<:AnimalSpecies}) = as(1, 10.0, 1.0, 0.8, 0.7)
+    function _check(s1, s2)
+        try
+            if s1 !== s2
+                EcosystemCore.eats(_init(s1), _init(s2)) ? "✅" : "❌"
+            else
+                return "❌"
+            end
+        catch e
+            if e isa MethodError
+                return "❔"
+            else
+                throw(e)
+            end
+        end
+    end
+
+    animal_species = subtypes(AnimalSpecies)
+    plant_species = subtypes(PlantSpecies)
+    species = vcat(animal_species, plant_species)
+    em = [_check(s, ss) for (s,ss) in Iterators.product(animal_species, species)]
+    string.(hcat(["🌍", animal_species...], vcat(permutedims(species), em)))
+end
+eating_matrix()
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Define macros `@plant` and `@animal`, which define the functionality of agents based on the following sample syntax
+```julia
+@plant begin
+    name  => Broccoli 
+    icon  => 🥦
+end
+
+@animal begin
+    name => Rabbit 
+    icon => 🐇
+    eats => [Grass => 0.5ΔE, Broccoli => 1.0ΔE, Mushroom => -1.0ΔE]
+end
+```
+Syntax `Grass => 0.5ΔE` indicates defines the behavior of the `eat!` function, where the coefficient is used as a multiplier for the energy balance, in other words the `Rabbit` should get only `0.5` of energy for a piece of `Grass`.
+
+Define first helper functions `_plant` and `_animal` to inspect the respective macro's output. This is indispensable, as we are defining new types/constants and thus we would otherwise encountered errors during repeated evaluation (though only if the type signature changed).
+
+**HINTS**:
+- use `QuoteNode` in the show function
+- sdfsdf
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+
+```julia
+
+ex = :(begin
+    name  => Broccoli 
+    icon  => 🥦
+end)
+
+macro plant(ex)
+    return _plant(ex)
+end
+
+function _plant(ex)
+    cfg = Dict{Symbol, Symbol}()
+    for arg in ex.args
+        if ~(arg isa LineNumberNode) && arg.head == :call && arg.args[1] == :(=>)
+            carg = arg.args
+            key = carg[2]
+            val = carg[3]
+            cfg[key] = val
+        end
+    end
+
+    println(cfg)
+
+    quote
+        abstract type $(cfg[:name]) <: PlantSpecies end
+        Base.show(io::IO, ::Type{$(cfg[:name])}) = print(io,"$(QuoteNode($(cfg[:icon])))")
+    end
+end
+
+_plant(ex)
+
+
+ex = :(begin
+    name => Rabbit 
+    icon => 🐇
+    eats => [Grass => 0.5, Broccoli => 1.0, Mushroom => -1.0]
+end)
+
+macro animal(ex)
+    return _animal(ex)
+end
+
+_parse_eats(ex) = Dict(arg.args[2] => arg.args[3] for arg in ex.args if arg.head == :call && arg.args[1] == :(=>))
+function _generate_eat(eater::Type{<:AnimalSpecies}, food::Type{<:PlantSpecies}, multiplier)
+    quote
+        EcosystemCore.eats(::Animal{$(eater)}, ::Plant{$(food)}) = true
+        function EcosystemCore.eat!(a::Animal{$(eater)}, p::Plant{$(food)}, w::World)
+            if size(p)>0
+                incr_energy!(a, $(multiplier)*size(p)*Δenergy(a))
+                p.size = 0
+            end
+        end
+    end
+end
+
+function _generate_eat(eater::Type{<:AnimalSpecies}, food::Type{<:AnimalSpecies}, multiplier)
+    quote
+        EcosystemCore.eats(::Animal{$(eater)}, ::Animal{$(food)}) = true
+        function EcosystemCore.eat!(ae::Animal{$(eater)}, af::Animal{$(food)}, w::World)
+            incr_energy!(ae, $(multiplier)*energy(af)*Δenergy(ae))
+            kill_agent!(af, w)
+        end
+    end
+end
+
+function _animal(ex)
+    cfg = Dict{Symbol, Any}()
+    for arg in ex.args
+        if ~(arg isa LineNumberNode) && arg.head == :call && arg.args[1] == :(=>)
+            carg = arg.args
+            key = carg[2]
+            val = carg[3]
+            cfg[key] = key == :eats ? _parse_eats(val) : val
+        end
+    end
+
+    code = quote
+        abstract type $(cfg[:name]) <: AnimalSpecies end
+        Base.show(io::IO, ::Type{$(cfg[:name])}) = print(io,"$(QuoteNode($(cfg[:icon])))")
+    end
+
+    for (k,v) in cfg[:eats]
+        push!(code.args, _generate_eat(cfg[:name], k, v)) # does not work without first defining the type tree
+    end
+    code
+end
+
+_animal(ex)
+```
+
+```@raw html
+</p></details>
+```
 
 ---
 # Resources
