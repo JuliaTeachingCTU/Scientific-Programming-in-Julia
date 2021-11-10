@@ -3,7 +3,7 @@ module ReverseDiff
 using LinearAlgebra
 
 export track, accum!, σ
-export TrackedArray, TrackedMatrix, TrackedVector
+export TrackedArray, TrackedMatrix, TrackedVector, TrackedReal
 
 mutable struct TrackedArray{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
     data::A
@@ -14,14 +14,14 @@ end
 const TrackedVector{T} = TrackedArray{T,1}
 const TrackedMatrix{T} = TrackedArray{T,2}
 
-mutable struct Tracked{T<:Real}
+mutable struct TrackedReal{T<:Real}
     data::T
     grad::Union{Nothing,T}
     children::Dict
 end
 
-track(x::Real) = Tracked(x, nothing, Dict())
-data(x::Tracked) = x.data
+track(x::Real) = TrackedReal(x, nothing, Dict())
+data(x::TrackedReal) = x.data
 
 track(x::Array) = TrackedArray(x, nothing, Dict())
 data(x::TrackedArray) = x.data
@@ -32,14 +32,14 @@ Base.getindex(x::TrackedArray, args...) = track(getindex(x.data,args...))
 Base.show(io::IO, x::TrackedArray) = print(io, "Tracked $(x.data)")
 Base.print_array(io::IO, x::TrackedArray) = Base.print_array(io, x.data)
 
-track(x::Union{TrackedArray,Tracked}) = x
-function reset!(x::Union{Tracked,TrackedArray})
+track(x::Union{TrackedArray,TrackedReal}) = x
+function reset!(x::Union{TrackedReal,TrackedArray})
     x.grad = nothing
     x.children = Dict()
     nothing
 end
 
-function accum!(x::Union{Tracked,TrackedArray})
+function accum!(x::Union{TrackedReal,TrackedArray})
     if isnothing(x.grad)
         x.grad = sum(λ(accum!(Δ)) for (Δ,λ) in x.children)
     end
@@ -48,7 +48,7 @@ end
 
 function gradient(f, args::TrackedArray...)
     y = f(args...)
-    (y isa Tracked) || error("Output of `f` must be a scalar.")
+    (y isa TrackedReal) || error("Output of `f` must be a scalar.")
     y.grad = 1.0
     accum!.(args)
     Tuple(a.grad for a in args)
