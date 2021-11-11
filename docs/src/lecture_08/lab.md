@@ -98,9 +98,14 @@ and then we *register* the output `z` as a child of its inputs by using `z`
 as a key in the dictionary of children. The corresponding value holds the 
 derivatives, in the case of multiplication case we simply have
 ```math
-\frac{\partial}{\partial a}(ab)=b, \qquad
-\frac{\partial}{\partial b}(ab)=a.
+z = a \cdot b
 ```
+for which the derivatives are
+```math
+\frac{\partial z}{\partial a}=b, \qquad
+\frac{\partial z}{\partial b}=a.
+```
+Knowing the derivatives of `*` a given point we can write our reverse rule
 ```@example lab08
 function Base.:*(a::TrackedReal, b::TrackedReal)
     z = track(a.data * b.data, "*")
@@ -109,7 +114,7 @@ function Base.:*(a::TrackedReal, b::TrackedReal)
     z
 end
 ```
-We can create two tracked numbers and add them
+Creating two tracked numbers and adding them results in
 ```@repl lab08
 x = track(2.0)
 y = track(3.0)
@@ -231,3 +236,119 @@ accum!(Yv)
 ```
 
 ## Reverse AD with `TrackedArray`s
+
+To make use of the much faster BLAS methods we have to implement a custom array
+type which will offload the heavy matrix multiplications to the normal matrix
+methods.  Start with a fresh REPL and a file that only contains the definition
+of our `TrackedReal`:
+```@example diff
+mutable struct TrackedReal{T<:Real}
+    data::T
+    grad::Union{Nothing,T}
+    children::Dict
+end
+
+track(x::Real) = TrackedReal(x, nothing, Dict())
+nothing # hide
+```
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Define a new `TrackedArray` type which subtypes and `AbstractArray{T,N}` and contains
+the three fields: `data`, `grad`, and `children`. Which type should `grad` have?
+
+Additionally define `track(x::Array)`, and forward `size`, `length`, and `eltype`
+to `x.data` (maybe via metaprogrammming? ;).
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```@example diff
+mutable struct TrackedArray{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
+    data::A
+    grad::Union{Nothing,A}
+    children::Dict
+end
+
+track(x::Array) = TrackedArray(x, nothing, Dict())
+track(x::Union{TrackedArray,TrackedReal}) = x
+
+for f in [:size, :length, :eltype]
+	eval(:(Base.$(f)(x::TrackedArray, args...) = $(f)(x.data, args...)))
+end
+
+# only needed for hashing in the children dict...
+Base.getindex(x::TrackedArray, args...) = getindex(x.data,args...)
+
+# pretty print TrackedArray
+Base.show(io::IO, x::TrackedArray) = print(io, "Tracked $(x.data)")
+Base.print_array(io::IO, x::TrackedArray) = Base.print_array(io, x.data)
+```
+```@raw html
+</p></details>
+```
+Creating a `TrackedArray` should work like this:
+```@repl diff
+track(rand(2,2))
+```
+
+
+
+To implement the first rule for `*` i.e. matrix multiplication we would first
+have to derive it. In the case of general matrix multiplication (which is a function
+$(R^{N\times M}, R^{M\times L}) \rightarrow R^{N\times L}$) we are not dealing
+with simple derivatives anymore, but with a so-called *pullback* which takes a
+*wobble* in the output space $R^{N\times L}$  and returns a *wiggle* in the input space
+(either $R^{N\times M}$ or $R^{M\times L}$).
+
+Luckily
+[`ChainRules.jl`](https://juliadiff.org/ChainRulesCore.jl/dev/arrays.html) has
+a nice guide on how to derive array rules, so we will only state the solution
+for the reverse rule such that you can implement it. They read:
+```math
+\bar A = \bar\Omega B^T, \qquad \bar B = A^T\bar\Omega
+```
+Where $\bar\Omega$ is the given output *wobble*, which in the simplest case can
+be the seeded value of the final node. The crucial problem to note here is that
+the two rules rely in $\bar\Omega$ being multiplied *from different sides*.
+This information would be lost if would just store $B^T$ as the pullback for
+$A$.  Hence we will store our pullbacks as closures:
+```julia
+Ω̄ -> Ω̄  * B'
+Ω̄ -> A' * Ω̄
+```
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Define the pullback for matrix multiplication i.e. `Base.:*(A::TrackedArray,B::TrackedArray)`
+by computing the primal and storing the partials as closures.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```@example diff
+function Base.:*(X::TrackedArray, Y::TrackedArray)
+    Z = track(X.data * Y.data)
+    X.children[Z] = Δ -> Δ * Y.data'
+    Y.children[Z] = Δ -> X.data' * Δ
+    Z
+end
+```
+```@raw html
+</p></details>
+```
+```@repl diff
+X = rand(2,3) |> track
+Y = rand(3,2) |> track
+Z = X*Y
+f = X.children[Z]
+Ω̄ = ones(size(Z)...)
+f(Ω̄)
+Ω̄*Y.data'
+```
