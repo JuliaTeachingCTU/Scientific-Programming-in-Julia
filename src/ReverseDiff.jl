@@ -19,6 +19,7 @@ mutable struct TrackedReal{T<:Real}
     grad::Union{Nothing,T}
     children::Dict
 end
+Base.show(io::IO, x::TrackedReal) = print(io, "$(x.data) (tracked)")
 
 track(x::Real) = TrackedReal(x, nothing, Dict())
 data(x::TrackedReal) = x.data
@@ -53,7 +54,6 @@ function gradient(f, args::TrackedArray...)
     accum!.(args)
     Tuple(a.grad for a in args)
 end
-
 
 ##########  RULES  #############################################################
 
