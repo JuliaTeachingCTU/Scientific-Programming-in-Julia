@@ -6,7 +6,7 @@ using EcosystemCore
 include("./ecosystem_macros.jl")
 include("./ecosystem_agents.jl")
 
-export Grass, Sheep, Wolf, World, Mushroom
+export World
 export agent_step!, agent_count, world_step!, simulate!, every_nth
 
 function simulate!(world::World, iters::Int; cb=()->())

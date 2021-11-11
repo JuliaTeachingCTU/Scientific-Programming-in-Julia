@@ -9,6 +9,8 @@ abstract type Wolf <: AnimalSpecies end
 abstract type Mushroom <: PlantSpecies end
 abstract type Grass <: PlantSpecies end
 
+export Grass, Sheep, Wolf, Mushroom
+
 Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
 Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
 
