@@ -556,3 +556,5 @@ using BenchmarkTools
 
 ## TODO
 * implement AD through neural network
+
+This lab is heavily inspired by [Rufflewind](https://rufflewind.com/2016-12-30/reverse-mode-automatic-differentiation)
