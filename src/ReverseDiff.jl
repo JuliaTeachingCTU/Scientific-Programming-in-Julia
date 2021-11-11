@@ -59,7 +59,7 @@ end
 
 function Base.sum(x::TrackedArray)
     z = track(sum(x.data))
-    x.children[z] = Δ -> ones(eltype(x), size(x)...)
+    x.children[z] = Δ -> Δ*ones(eltype(x), size(x)...)
     z
 end
 
