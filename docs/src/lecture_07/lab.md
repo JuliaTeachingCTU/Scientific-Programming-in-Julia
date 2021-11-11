@@ -122,7 +122,7 @@ Ideally we would like write some macro `@poly` that takes a polynomial in a math
 
 *Example usage*:
 ```julia
-p = @poly x 3x^2 + 2x^1 + 10x^0  # the first argument being the independent variable to match
+p = @poly x 3x^2+2x^1+10x^0  # the first argument being the independent variable to match
 ```
 
 However in order to make this happen, let's first consider much simpler case of creating the same but without the need for parsing the polynomial as a whole and employ the fact that macro can have multiple arguments separated by spaces.
@@ -263,7 +263,7 @@ end
 Let's test it.
 ```@repl lab07_poly
 using InteractiveUtils #hide
-p = @poly x 3x^2 + 2x^1 + 10
+p = @poly x 3x^2+2x^1+ 10
 p(2) == evalpoly(2, [10,2,3])
 @code_lowered p(2) # can show the generated code
 ```
@@ -456,6 +456,8 @@ where `Grass => 0.5` defines the behavior of the `eat!` function. The coefficien
     end
     ```
 
+**BONUS**:
+You can try running the simulation with the newly added agents.
 
 ```@raw html
 </div></div>
