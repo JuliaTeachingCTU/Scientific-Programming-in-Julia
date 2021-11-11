@@ -270,20 +270,11 @@ In order to make these relation clearer we will create two macros, which can be 
 ### New Animal/Plant definition
 Our goal is to be able to define new plants and animal species, while having a clear idea about their relations. For this we have proposed the following macros/syntax:
 ```julia
-@plant begin
-    name  -> Broccoli 
-    icon  -> 🥦
-end
-
-@animal begin
-    name -> Rabbit 
-    icon -> 🐇
-    eats -> [Grass => 0.5ΔE, Broccoli => 1.0ΔE, Mushroom => -1.0ΔE]
-end
+@plant Broccoli 🥦
+@animal Rabbit 🐇
+@eats Rabbit [Grass => 0.5ΔE, Broccoli => 1.0ΔE, Mushroom => -1.0ΔE]
 ```
-
-
-Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already contains some definitions of species such as `Sheep`, `Wolf` and `Mushroom`, which would collide with the new definition thus there exists a modified version of those pkgs. **TODO LINK IT**
+Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already contains some definitions of species such as `Sheep`, `Wolf` and `Mushroom`, which would collide with the new definitions therefore we have created a modified version of those pkgs. **TODO LINK IT**
 
 We can test the current definition with the following code that constructs "eating matrix"
 ```julia
@@ -325,72 +316,52 @@ eating_matrix()
 ```
 Define macros `@plant` and `@animal`, which define the functionality of agents based on the following sample syntax
 ```julia
-@plant begin
-    name  => Broccoli 
-    icon  => 🥦
-end
-
-@animal begin
-    name => Rabbit 
-    icon => 🐇
-    eats => [Grass => 0.5ΔE, Broccoli => 1.0ΔE, Mushroom => -1.0ΔE]
-end
+@plant Broccoli 🥦
+@animal Rabbit 🐇
 ```
-Syntax `Grass => 0.5ΔE` indicates defines the behavior of the `eat!` function, where the coefficient is used as a multiplier for the energy balance, in other words the `Rabbit` should get only `0.5` of energy for a piece of `Grass`.
+Additionally define macro `@eats` that assigns agents their `eat!` and `eats` functions.
+```julia
+@eats Rabbit [Grass => 0.5, Broccoli => 1.0],
+```
+where `Grass => 0.5` defines the behavior of the `eat!` function, where the coefficient is used as a multiplier for the energy balance, in other words the `Rabbit` should get only `0.5` of energy for a piece of `Grass`.
 
-Define first helper functions `_plant` and `_animal` to inspect the respective macro's output. This is indispensable, as we are defining new types/constants and thus we would otherwise encountered errors during repeated evaluation (though only if the type signature changed).
+Define first helper functions `_plant`, `_animal` and `_eats` to inspect the respective macro's output. This is indispensable, as we are defining new types/constants and thus we would otherwise encountered errors during repeated evaluation (though only if the type signature changed).
 
 **HINTS**:
 - use `QuoteNode` in the show function
-- sdfsdf
 
+*This exercise is really complicated. I am considering letting them implement only the @eats macro.*
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-
+Macro `@plant` and `@animal`
 ```julia
-
-ex = :(begin
-    name  => Broccoli 
-    icon  => 🥦
-end)
-
-macro plant(ex)
-    return _plant(ex)
+macro plant(name, icon)
+    return _species(name, icon; animal=false)
 end
 
-function _plant(ex)
-    cfg = Dict{Symbol, Symbol}()
-    for arg in ex.args
-        if ~(arg isa LineNumberNode) && arg.head == :call && arg.args[1] == :(=>)
-            carg = arg.args
-            key = carg[2]
-            val = carg[3]
-            cfg[key] = val
-        end
-    end
+macro animal(name, icon)
+    return _species(name, icon; animal=true)
+end
 
-    println(cfg)
-
+function _species(name, icon; animal=false)
     quote
-        abstract type $(cfg[:name]) <: PlantSpecies end
-        Base.show(io::IO, ::Type{$(cfg[:name])}) = print(io,"$(QuoteNode($(cfg[:icon])))")
+        abstract type $name <: $(animal ? AnimalSpecies : PlantSpecies) end
+        Base.show(io::IO, ::Type{$name) = print(io,"$(QuoteNode($icon))")
+        export $name
     end
 end
 
-_plant(ex)
+_species(:Broccoli, :🥦; animal=false)
+_species(:Rabbit, :🐇; animal=true)
+```
 
-
-ex = :(begin
-    name => Rabbit 
-    icon => 🐇
-    eats => [Grass => 0.5, Broccoli => 1.0, Mushroom => -1.0]
-end)
-
-macro animal(ex)
-    return _animal(ex)
+Macro `@eats`
+```julia
+macro eats(species::Symbol, foodlist::Expr)
+    return esc(_eats(species, foodlist))
 end
 
 _parse_eats(ex) = Dict(arg.args[2] => arg.args[3] for arg in ex.args if arg.head == :call && arg.args[1] == :(=>))
@@ -416,29 +387,18 @@ function _generate_eat(eater::Type{<:AnimalSpecies}, food::Type{<:AnimalSpecies}
     end
 end
 
-function _animal(ex)
-    cfg = Dict{Symbol, Any}()
-    for arg in ex.args
-        if ~(arg isa LineNumberNode) && arg.head == :call && arg.args[1] == :(=>)
-            carg = arg.args
-            key = carg[2]
-            val = carg[3]
-            cfg[key] = key == :eats ? _parse_eats(val) : val
-        end
-    end
-
-    code = quote
-        abstract type $(cfg[:name]) <: AnimalSpecies end
-        Base.show(io::IO, ::Type{$(cfg[:name])}) = print(io,"$(QuoteNode($(cfg[:icon])))")
-    end
-
-    for (k,v) in cfg[:eats]
-        push!(code.args, _generate_eat(cfg[:name], k, v)) # does not work without first defining the type tree
+function _eats(species, foodlist)
+    cfg = _parse_eats(foodlist)
+    code = Expr(:block)
+    for (k,v) in cfg
+        push!(code.args, _generate_eat(eval(species), eval(k), v))
     end
     code
 end
 
-_animal(ex)
+species = :Rabbit 
+foodlist = :([Grass => 0.5, Broccoli => 1.0])
+_eats(species, foodlist)
 ```
 
 ```@raw html
