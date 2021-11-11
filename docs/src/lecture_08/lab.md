@@ -1,8 +1,6 @@
 # Lab 08 - Reverse Mode Differentiation
 
-## TODO
-* implement AD through neural network
-
+![anim](anim.gif)
 
 In the lecture you have seen how to implement *forward-mode* automatic
 differentiation (AD). Assume you want to find the derivative $\frac{df}{dx}$ of
@@ -554,3 +552,7 @@ end
 using BenchmarkTools
 @benchmark run()
 ```
+
+
+## TODO
+* implement AD through neural network
