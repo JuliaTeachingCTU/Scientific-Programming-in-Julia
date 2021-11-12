@@ -206,13 +206,13 @@ Macro hygiene is a term coined in 1986. The problem it addresses is following: i
 By default, all macros in Julia are hygienic which means that variables introduced in the macro have automatically generated names, where Julia ensures they will not collide with user's variable. These variables are created by `gensym` function / macro. 
 
 !!! info 
-	### gensym
-
-	`gensym([tag])` Generates a symbol which will not conflict with other variable names.
-	```julia
-	julia> gensym("hello")
-	Symbol("##hello#257")
-```
+    ### gensym
+    
+    `gensym([tag])` Generates a symbol which will not conflict with other variable names.
+    ```julia
+    julia> gensym("hello")
+    Symbol("##hello#257")
+    ```
 
 Let's demonstrate it on our own version of an macro `@elapsed` which will return the time that was needed to evaluate the block of code.
 ```julia
