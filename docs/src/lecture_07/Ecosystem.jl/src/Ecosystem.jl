@@ -3,22 +3,11 @@ module Ecosystem
 using StatsBase
 using EcosystemCore
 
-export Grass, Sheep, Wolf, World, Mushroom
+include("./ecosystem_macros.jl")
+include("./ecosystem_agents.jl")
+
+export World
 export agent_step!, agent_count, world_step!, simulate!, every_nth
-
-
-abstract type Mushroom <: PlantSpecies end
-Base.show(io::IO,::Type{Mushroom}) = print(io,"🍄")
-
-EcosystemCore.eats(::Animal{Sheep},::Plant{Mushroom}) = true
-function EcosystemCore.eat!(s::Animal{Sheep}, m::Plant{Mushroom}, w::World)
-    incr_energy!(s, -size(m)*Δenergy(s))
-    m.size = 0
-end
-
-EcosystemCore.mates(::Animal{S,Female}, ::Animal{S,Male}) where S<:Species = true
-EcosystemCore.mates(::Animal{S,Male}, ::Animal{S,Female}) where S<:Species = true
-EcosystemCore.mates(a::Agent, b::Agent) = false
 
 function simulate!(world::World, iters::Int; cb=()->())
     for i in 1:iters
