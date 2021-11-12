@@ -68,11 +68,22 @@ function descend(f::Function, x0::Real, y0::Real; niters=20, λ=0.01)
     ps[1,:], ps[2,:]
 end
 
-xs, ys = descend(g, 1.5, -2.4, λ=0.2, niters=27)
-scatter!(p1, xs, ys, markercolor=:black, label="GD Path", xlims=(-4,4), ylims=(-2,2))
-scatter!(p1, [xs[1]], [ys[1]], markercolor=:black, marker=:star, ms=7, label="Minimum")
-scatter!(p1, [-π/2], [0], markercolor=:red, marker=:star, ms=7, label="Initial Point")
+xs1, ys1 = descend(g, 1.5, -2.4, λ=0.2, niters=34)
+xs2, ys2 = descend(g, 1.8, -2.4, λ=0.2, niters=16)
 
-xs, ys = descend(g, 1.8, -2.4, λ=0.2, niters=16)
-scatter!(p1, xs, ys, markercolor=:black, label=false)
-scatter!(p1, [xs[1]], [ys[1]], markercolor=:black, marker=:star, ms=7, label=false)
+scatter!(p1, [xs1[1]], [ys1[1]], markercolor=:black, marker=:star, ms=7, label="Minimum")
+scatter!(p1, [xs2[1]], [ys2[1]], markercolor=:black, marker=:star, ms=7, label=false)
+scatter!(p1, [-π/2], [0], markercolor=:red, marker=:star, ms=7, label="Initial Point")
+scatter!(p1, xs1[1:1], ys1[1:1], markercolor=:black, label="GD Path", xlims=(-4,4), ylims=(-2,2))
+
+anim = @animate for i in 1:max(length(xs1), length(xs2))
+    if i <= length(xs1)
+        scatter!(p1, xs1[1:i], ys1[1:i], mc=:black, lw=3, xlims=(-4,4), ylims=(-2,2), label=false)
+    end
+    if i <= length(xs2)
+        scatter!(p1, xs2[1:i], ys2[1:i], mc=:black, lw=3, label=false)
+    end
+    p1
+end
+
+gif(anim, "gd-path.gif", fps=15)

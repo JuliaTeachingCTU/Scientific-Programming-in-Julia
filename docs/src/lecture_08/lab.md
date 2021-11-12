@@ -24,12 +24,40 @@ loss output.
 
 ## Reverse Mode AD
 
-As discussed in the lecture, in order to implement reverse-mode AD we
-have to trace and remember all computations during the forward pass such that we can compute
-their gradients during the backward pass. The simplest way of doing this is by
-dynamically building a computation graph which tracks how each input variable
-affects its output variables. The graph below represents the computation
-of our function `f`
+Let $f:\mathbb R^N\rightarrow\mathbb R^M$ with an input vector $\bm x$ such that
+```math
+\bm z = f(g_1(\bm x), g_2(\bm x), \dots, g_N(\bm x)).
+```
+The the multivariate chainrule for one variable $x_i$ reads
+```math
+\left.\frac{\partial f}{\partial x_i}\right|_{\bm x} =
+    \sum_{k=1}^N \left.\frac{\partial f}{\partial g_k}\right|_{\bm g(\bm x)}
+                 \left.\frac{\partial g_k}{\partial x_i}\right|_{x_i}
+```
+If you want to read about where this comes from you can check
+[here](https://math.stackexchange.com/questions/3785018/intuitive-proof-of-the-multivariable-chain-rule)
+or [here](https://people.math.harvard.edu/~shlomo/docs/Advanced_Calculus.pdf).
+It is essentially one row of the *Jacobian matrix* $J$.
+Note that in order to compute the derivative we always have to know the input
+to the derived function, because we can only compute the derivative *at a specific point*
+(denoted by the $|$ notation).  For our example
+```math
+z = f(x,y) = xy + \sin(x)
+```
+with the subfunctions $g(x,y)=xy$ and $h(x)=\sin(x)$ we get
+```math
+\left.{\frac {df}{dx}}\right|_{x,y}
+    = \left.{\frac {df}{dg}}\right|_{g(x,y)}\cdot \left.{\frac {dg}{dx}}\right|_{x,y}
+    + \left.{\frac {df}{dh}}\right|_{h(x)}\cdot \left.{\frac {dh}{dx}}\right|_{x}
+    = 1 \cdot y |_{x,y} + 1\cdot\cos(x)|_{x,y}.
+```
+
+You can see that, in order to implement reverse-mode AD we have to trace and
+remember all inputs to our intermediate functions during the forward pass such
+that we can compute their gradients during the backward pass. The simplest way
+of doing this is by dynamically building a computation graph which tracks how
+each input variable affects its output variables. The graph below represents
+the computation of our function `f`.
 ```julia
 z = x*y + sin(x)
 
@@ -38,42 +66,22 @@ a = x*y               # da/dx = y;     da/dy = x
 b = sin(x)            # db/dx = cos(x)
 z = a + b             # dz/da = 1;     dz/db = 1
 ```
-
 ```@raw html
 <p><center><img src="graph.png" alt="graph"></center></p>
 ```
 
 In the graph you can see that the variable `x` can directly affect `b` and `a`.
 Hence, `x` has two children `a` and `b`.  During the forward pass we build the
-graph, keeping track of which input affects which output.
-Additionally we include the corresponding partial derivatives, which we can already compute.
-The backward pass is nothing more than the application of the chainrule. To compute
-the derivative of a given output $s$ with respect to some input $u$ we just have
-to apply
-```math
-\frac{\partial s}{\partial u} = \sum^N_i \frac{\partial s}{\partial w_i} \frac{\partial w_i}{\partial u}
-```
-where we sum for all $N$ child nodes that $s$ is affected by. In the case of computing
-the derivative of $z$ w.r.t. $x$ we get
-```math
-\frac{\partial z}{\partial x} = \frac{\partial z}{\partial a}\frac{\partial a}{\partial x}
-                              + \frac{\partial z}{\partial b}\frac{\partial b}{\partial x}.
-```
-The terms $\frac{\partial a}{\partial x}$ and $\frac{\partial b}{\partial x}$
-are the partial derivatives that can be computed during the forward pass.  To
-compute the terms $\frac{\partial z}{\partial a}$ and $\frac{\partial
-z}{\partial b}$ we recursively apply the chainrule until we arrive at the final
-output `z`.  This final output has to be seeded (just like with forward-mode)
-with $\frac{\partial z}{\partial z}=1$.
-
+graph, keeping track of which input affects which output. Additionally we
+include the corresponding local derivatives (which we can already compute).
 To implement a dynamically built graph we can introduce a new number type
 `TrackedReal` which has three fields:
 * `data` contains the value of this node in the computation graph as obtained
   in the forward pass.
-* `grad` is initialized to `nothing` and will later hold the accumulated gradients $\frac{\partial s}{\partial w_i}$
-* `children` is a `Dict` that keeps track which output variables $w_i$ are affected
-  by the current node and also stores the corresponding partial derivatives
-  $\frac{\partial w_i}{\partial u}$.
+* `grad` is initialized to `nothing` and will later hold the accumulated gradients (the sum in the multivariate chain rule)
+* `children` is a `Dict` that keeps track which output variables are affected
+  by the current node and also stores the corresponding local derivatives
+  $\frac{\partial f}{\partial g_k}$.
 
 ```@example lab08
 mutable struct TrackedReal{T<:Real}
@@ -92,23 +100,30 @@ function Base.show(io::IO, x::TrackedReal)
 end
 ```
 
-Assuming we know how to compute the partial derivatives for simple functions
+The backward pass is nothing more than the application of the chainrule. To
+compute the derivative. Assuming we know how to compute the *local derivatives*
+$\frac{\partial f}{\partial g_k}$ for simple functions
 such as `+`, `*`, and `sin`, we can write a simple function that implements
 the gradient accumulation from above via the chainrule.
-We just have to loop over all children, collect the partial derivatives, and
+We just have to loop over all children, collect the local derivatives, and
 recurse:
 ```@example lab08
 function accum!(x::TrackedReal)
     if isnothing(x.grad)
-        x.grad = sum(accum!(v)*w for (v,w) in x.children)
+        x.grad = sum(w*accum!(v) for (v,w) in x.children)
     end
     x.grad
 end
 nothing # hide
 ```
-At this point we have already implemented the core functionality of our first
-reverse-mode AD! The only thing left to do is implement the reverse rules for
-basic functions.
+where `w` corresponds to $\frac{\partial f}{\partial g_k}$ and `accum!(v)` corresponds
+to $\frac{\partial g_k}{\partial x_i}$. At this point we have already implemented
+the core functionality of our first reverse-mode AD! The only thing left to do
+is implement the reverse rules for basic functions.  Via recursion the
+chainrule is applied until we arrive at the final output `z`.  This final
+output has to be seeded (just like with forward-mode) with $\frac{\partial
+z}{\partial z}=1$.
+
 
 ### Writing Reverse Rules
 
@@ -171,52 +186,55 @@ end
 </p></details>
 ```
 
-Our first, simple, dynamic graph-based reversdiff can now compute gradients of
-expressions like below
-```@repl lab08
-x = track(2.0);
-y = track(3.0);
-z = x*y + sin(x);
-z.grad = 1.0;  # seed the final output
-dx = accum!(x)
-isapprox(dx, y.data+cos(x.data))  # dz/dx = y+cos(x)
-dy = accum!(y)
-isapprox(dy, x.data)              # dz/dy = x
-```
-
-### Visualizing The Computation Graph
+### Forward & Backward Pass
 
 To visualize that with reverse-mode AD we really do save computation we can
 visualize the computation graph at different stages. We start with the forward
-pass
-```@example lab08
+pass and keep observing `x`
+```@setup lab08
 using AbstractTrees
 AbstractTrees.children(v::TrackedReal) = v.children |> keys |> collect
 function AbstractTrees.printnode(io::IO,v::TrackedReal)
     print(io,"$(v.name) data: $(round(v.data,digits=2)) grad: $(v.grad)")
 end
-
-x = track(2.0,"x")
-y = track(3.0,"y")
-z = x*y + sin(x)
-z.grad = 1.0
-nothing # hide
 ```
-Right after the forward pass, no gradients have been computed.
 ```@repl lab08
+x = track(2.0,"x");
+y = track(3.0,"y");
+a = x*y;
 print_tree(x)
-print_tree(y)
 ```
-If we accumulate the gradients for `x`, the gradients in the subtree connected
-to `x` will be evaluated. The part of the tree that are only connected to `y`
+We can see that we `x` now has one child `a` which has the value `2.0*3.0==6.0`. All the
+gradients are still `nothing`. Computing another value that depends on `x`
+will add another child.
+```@repl lab08
+b = sin(x)
+print_tree(x)
+```
+In the final step we compute `z` which does not mutate the children of `x`
+because it does not depend directly on it. The result `z` is added as a child
+to both `a` and `b`.
+```@repl lab08
+z = a + b
+print_tree(x)
+```
+
+For the backward pass we have to seed the initial gradient value of `z` and
+call `accum!` on the variable that we are interested in.
+```@repl lab08
+z.grad = 1.0
+dx = accum!(x)
+dx ≈ y.data + cos(x.data)
+```
+By accumulating the gradients for `x`, the gradients in the subtree connected
+to `x` will be evaluated. The parts of the tree that are only connected to `y`
 stay untouched.
 ```@repl lab08
-accum!(x);
 print_tree(x)
 print_tree(y)
 ```
 If we now accumulate the gradients over `y` we re-use the gradients that are already
-computed.
+computed. In larger computationgs this will save us *a lot* of effort!
 
 !!! info
     This also means that we have to re-build the graph for every new set of inputs!
@@ -281,15 +299,11 @@ descend(f::Function, x0::Real, y0::Real; niters=20, λ=0.2)
 <summary class = "solution-header">Solution:</summary><p>
 ```
 ```@example lab08
-function descend(f::Function, x0::Real, y0::Real; niters=20, λ=0.2)
-    x, y = x0, y0
-    ps = map(1:niters) do i
-        (Δx, Δy) = gradient(f, x, y)
-        x -= λ*Δx
-        y -= λ*Δy
-        [x,y]
-    end |> ps -> reduce(hcat, ps)
-    ps[1,:], ps[2,:]
+function descend(f::Function, x::Real, y::Real, λ=0.2)
+    (Δx, Δy) = gradient(f, x, y)
+    x -= λ*Δx
+    y -= λ*Δy
+    [x,y]
 end
 nothing # hide
 ```
@@ -297,20 +311,17 @@ nothing # hide
 </p></details>
 ```
 
-```@example lab08
-xs1, ys1 = descend(g, 1.5, -2.4, niters=27)
-xs2, ys2 = descend(g, 1.8, -2.4, niters=16)
+![gd-path](gd-path.gif)
 
-# this is just some plotting code...
-p1 = contour(-4:0.1:4, -2:0.1:2, g, fill=true, c=color_scheme, xlabel="x", ylabel="y")
+---
 
-scatter!(p1, xs1, ys1, markercolor=:black, label="GD Path", xlims=(-4,4), ylims=(-2,2))
-scatter!(p1, [xs1[1]], [ys1[1]], markercolor=:black, marker=:star, ms=7, label="Initial Point")
-scatter!(p1, [-π/2], [0], markercolor=:red, marker=:star, ms=7, label="Minimum")
+At this point you can move to the [homework]() of this lab.  If you want to
+know how to generalize this simple reverse AD to work with functions that
+operate on `Array`s, feel free to continue reading.
 
-scatter!(p1, xs2, ys2, markercolor=:black, label=false)
-scatter!(p1, [xs2[1]], [ys2[1]], markercolor=:black, marker=:star, ms=7, label=false)
-```
+---
+
+
 
 ## Naively Vectorized Reverse AD
 
@@ -353,9 +364,19 @@ function run()
     accum!(Yv)
 end
 ```
-```@repl lab08
-using BenchmarkTools
-@benchmark run()
+```julia
+julia> using BenchmarkTools
+julia> @benchmark run()
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  44.838 μs …   8.404 ms  ┊ GC (min … max): 0.00% … 98.78%
+ Time  (median):     48.680 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   53.048 μs ± 142.403 μs  ┊ GC (mean ± σ):  4.61% ±  1.71%
+
+         ▃▆█▃                                                  
+  ▂▁▁▂▂▃▆████▇▅▄▄▄▄▄▅▅▄▄▄▄▃▃▃▃▃▃▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂ ▃
+  44.8 μs         Histogram: frequency by time         66.7 μs <
+
+ Memory estimate: 26.95 KiB, allocs estimate: 392.
 ```
 
 ## Reverse AD with `TrackedArray`s
@@ -548,13 +569,21 @@ function run()
     accum!(Yv)
 end
 ```
-```@repl diff
-using BenchmarkTools
-@benchmark run()
+```julia
+julia> using BenchmarkTools
+julia> @benchmark run()
+BenchmarkTools.Trial: 10000 samples with 6 evaluations.
+ Range (min … max):  5.797 μs …  1.618 ms  ┊ GC (min … max): 0.00% … 98.97%
+ Time  (median):     6.530 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   7.163 μs ± 22.609 μs  ┊ GC (mean ± σ):  4.42% ±  1.40%
+
+   ▆█▇▇▇▆▅▄▃▃▂▂▂▁▁ ▁▁                                        ▂
+  █████████████████████▇▇▇▆▆▅▅▅▅▆▅▄▅▅▄▁▃▁▁▄▁▃▁▁▁▃▃▄▁▁▁▄▁▃▁▅▄ █
+  5.8 μs       Histogram: log(frequency) by time     15.8 μs <
+
+ Memory estimate: 3.08 KiB, allocs estimate: 31.
 ```
 
-
-## TODO
-* implement AD through neural network
+![anim](anim.gif)
 
 This lab is heavily inspired by [Rufflewind](https://rufflewind.com/2016-12-30/reverse-mode-automatic-differentiation)
