@@ -5,14 +5,19 @@ In its essence, macro is a function, which
 2. modify the expressions in argument
 3. insert the modified expression at the same place as the one that is parsed.
 
-Macros are necessary because they execute when code is parsed, therefore, macros allow the programmer to generate and include fragments of customized code before the full program is run. To illustrate the difference, consider the following example:
+Macros are necessary because they execute when code is parsed, therefore, macros allow the programmer to generate and include fragments of customized code before the full program is run. **Since they are executed during parsing, they do not have access to the values of their arguments, but only to their syntax**.
 
-One of the very conveninet ways to write macros is to write functions modifying the `Expr`ession and then call that function in macro as 
+To illustrate the difference, consider the following example:
+
+One of the very convenient and highly recommended ways to write macros is to write functions modifying the `Expr`ession and then call that function in the macro. Let's demonstrate on an example, where every occurrence of `sin` is replaced by `cos`.
+We defined the function recursively traversing the AST and performing the substitution
 ```julia
 replace_sin(x::Symbol) = x == :sin ? :cos : x
 replace_sin(e::Expr) = Expr(e.head, map(replace_sin, e.args)...)
 replace_sin(u) = u
-
+```
+and then we define the macro
+```julia
 macro replace_sin(ex)
 	replace_sin(esc(ex))
 end
@@ -24,28 +29,40 @@ notice the following
 - the definition of the macro is similar to the definition of the function with the exception that instead of the keyword `function` we use keyword `macro`
 - when calling the macro, we signal to the compiler our intention by prepending the name of the macro with `@`. 
 - the macro receives the expression(s) as the argument instead of the evaluated argument and also returns an expression that is placed on the position where the macro has been called
-- when you are invoking the macro, you should be aware that the code you are entering can be arbitrarily modified and you can receive something completely different. This meanst that `@` should also serve as a warning that you are leaving Julia's syntax. In practice, it make sense to make things akin to how they are done in Julia or to write Domain Specific Language with syntax familiar in that domain.
-
-We have mentioned above that macros are indispensible in the sense they intercept the code generation after parsing. You might object that I can achieve the above using the following combination of `Meta.parse` and `eval`
+- when you are using macro, you should be as a user aware that the code you are entering can be arbitrarily modified and you can receive something completely different. This meanst that `@` should also serve as a warning that you are leaving Julia's syntax. In practice, it make sense to make things akin to how they are done in Julia or to write Domain Specific Language with syntax familiar in that domain.
+Inspecting the lowered code
+```julia
+Meta.@lower @replace_sin(cosp1(x) = 1 + sin(x))
+```
+We obeserve that there is no trace of macro in lowered code, which demonstrates that the macro has been after code has been parsed but before it has been lowered. In this sense macros are indispensible, as you cannot replace them simply by the combination of `Meta.parse` end `eval`. You might object that in the above example it is possible, which is true, but only because the effect of the macro is in the global scope.
 ```julia
 ex = Meta.parse("cosp1(x) = 1 + sin(x)")
 ex = replace_sin(ex)
 eval(ex)
 ```
-in the following we cannot do the same trick
+The following example cannot be achieved by the same trick, as the output of the macro modifies just the body of the function
 ```julia
 function cosp2(x)
 	@replace_sin 2 + sin(x)
 end
 cosp2(1) ≈ (2 + cos(1))
 ```
-
+This is not possible
 ```julia
 function parse_eval_cosp2(x)
 	ex = Meta.parse("2 + sin(x)")
 	ex = replace_sin(ex)
 	eval(ex)
 end
+```
+as can be seen from
+```julia
+julia> @code_lowered cosp2(1)
+CodeInfo(
+1 ─ %1 = Main.cos(x)
+│   %2 = 2 + %1
+└──      return %2
+)
 
 julia> @code_lowered parse_eval_cosp2(1)
 CodeInfo(
@@ -58,29 +75,29 @@ CodeInfo(
 ```
 
 !!! info 
-	### Scope of eval
-	`eval` function is always evaluated in the global scope of the `Module` in which the macro is called (note that there is that by default you operate in the `Main` module). Moreover, `eval` takes effect **after** the function has been has been executed. This can be demonstrated as 
-	```julia
-	add1(x) = x + 1
-	function redefine_add(x)
-		eval(:(add1(x) = x - 1))
-		add1(x)
-	end
-	julia> redefine_add(1)
-	2
+    ### Scope of eval
+    `eval` function is always evaluated in the global scope of the `Module` in which the macro is called (note that there is that by default you operate in the `Main` module). Moreover, `eval` takes effect **after** the function has been has been executed. This can be demonstrated as 
+    ```julia
+    add1(x) = x + 1
+    function redefine_add(x)
+        eval(:(add1(x) = x - 1))
+        add1(x)
+    end
+    julia> redefine_add(1)
+    2
     
-	julia> redefine_add(1)
-	0
-	```
+    julia> redefine_add(1)
+    0
+    
+    ```
 
-
-`@macroexpand` can allow use to observe, how the macro will be expanded. We can use it for example 
+Macros are quite tricky to debug. Macro `@macroexpand` allows to observe the expansion of macros. Observe the effect as
 ```julia
-@macroexpand @replace_sin(sinp1(x) = 1 + sin(x))
+@macroexpand @replace_sin(cosp1(x) = 1 + sin(x))
 ```
 
-## What goes under the hood?
-Let's consider what the compiler is doing in this call
+## What goes under the hood of macro expansion?
+Let's consider that the compiler is compiling
 ```julia
 function cosp2(x)
 	@replace_sin 2 + sin(x)
@@ -103,7 +120,7 @@ ex.args[2].args[1].args[1]  # which macro to call
 ex.args[2].args[1].args[2]  # line number
 ex.args[2].args[1].args[3]	# on which expression
 ```
-let's run the `replace_sin` and insert it back
+We can manullay run `replace_sin` and insert it back on the relevant sub-part of the sub-tree
 ```julia
 ex.args[2].args[1] = replace_sin(ex.args[2].args[1].args[3])
 ex |> dump
@@ -123,14 +140,18 @@ end
 @showarg 1 + 1
 @showarg(1 + 1)
 ```
-but they use the very same multiple dispatch as functions
+Macros use the very same multiple dispatch as functions, which allows to specialize macro calls
 ```julia
 macro showarg(x1, x2::Symbol)
 	println("two argument version, second is Symbol")
+	@show x1
+	@show x2
 	x1
 end
 macro showarg(x1, x2::Expr)
-	println("two argument version, second is Symbol")
+	println("two argument version, second is Expr")
+	@show x1
+	@show x2
 	x1
 end
 @showarg(1 + 1, x)
@@ -138,16 +159,17 @@ end
 @showarg 1 + 1, 1 + 3
 @showarg 1 + 1  1 + 3
 ```
-(the `@showarg(1 + 1, :x) ` raises an error, since `:(:x)` is of Type `QuoteNode`).
+(the `@showarg(1 + 1, :x)` raises an error, since `:(:x)` is of Type `QuoteNode`). 
+
 
 Observe that macro dispatch is based on the types of AST that are handed to the macro, not the types that the AST evaluates to at runtime.
 
 ## Notes on quotation
-In the previous lecture we have seen that we can *quote a block of code*, which tells the compiler to treat the input as an data and parse it. We have talked about three ways of quoting code.
+In the previous lecture we have seen that we can *quote a block of code*, which tells the compiler to treat the input as a data and parse it. We have talked about three ways of quoting code.
 1.  `:(quoted code)`
 2. Meta.parse(input_string)
 3. `quote ... end`
-The truth is that Julia does not do full quotation, but a *quasiquotation* is it allows you to **interpolate** expressions inside the quoted code using `$` symbol similar to the string. This is handy, as sometimes, when we want to insert into the quoted code an result of some computation / preprocessing.
+The truth is that Julia does not do full quotation, but a *quasiquotation* as it allows you to **interpolate** expressions inside the quoted code using `$` symbol similar to the string. This is handy, as sometimes, when we want to insert into the quoted code an result of some computation / preprocessing.
 Observe the following difference in returned code
 ```julia
 a = 5
@@ -160,9 +182,17 @@ end
 In contrast to the behavior of `:()` (or `quote ... end`, true quotation would not perform interpolation where unary `$` occurs. Instead, we would capture the syntax that describes interpolation and produce something like the following:
 ```julia
 (
-    :(1 + x),                        # Quasiquotation
+    :(1 + x),                         # Quasiquotation
     Expr(:call, :+, 1, Expr(:$, :x)), # True quotation
 )
+```
+
+```jula
+for (v, f) in [(:sin, :foo_sin)]
+	quote
+		$(f)(x) = $(v)(x)
+	end |> dump
+end
 ```
 
 When we need true quoting, i.e. we need something to stay quoted, we can use `QuoteNode` as
@@ -177,13 +207,22 @@ let y = :x
     )
 end
 ```
-At first glance, `QuoteNode` wrapper seems to be useless. But `QuoteNode` has clear value when it's used inside a macro to indicate that something should stay quoted even after the macro finishes executing. Also notice that the expression received by macro was quoted, not quasiquoted, since in the latter case `$y` would be replaced. We can demonstate it using the `@showarg` macro introduced earlier, as
+At first glance, `QuoteNode` wrapper seems to be useless. But `QuoteNode` has clear value when it's used inside a macro to indicate that something should stay quoted even after the macro finishes its. Also notice that the expression received by macro are quoted, not quasiquoted, since in the latter case `$y` would be replaced. We can demonstate it using the `@showarg` macro introduced earlier, as
 ```julia
 @showarg(1 + $x)
 ```
 The error is raised after the macro was evaluated and the output has been inserted to parsed AST.
 
-Macros do not know about runtime values, they only know about syntax trees. When a macro receives an expression with a $x in it, it can't interpolate the value of x into the syntax tree because it reads the syntax tree before x ever has a value! So the interpolation syntax in macros is not given any actual meaning in julia.
+!!! info
+    Some macros like `@eval` (recall last example)
+    ```julia
+    for f in [:setindex!, :getindex, :size, :length]
+        @eval $(f)(A::MyMatrix, args...) = $(f)(A.x, args...)
+    end
+    ```
+    or `@benchmark` support interpolation of values. This interpolation needs to be handled by the logic of the macro and is not automatically handled by Julia language.
+
+Macros do not know about runtime values, they only know about syntax trees. When a macro receives an expression with a $x in it, it can't interpolate the value of x into the syntax tree because it reads the syntax tree before `x` ever has a value! 
 
 Instead, when a macro is given an expression with $ in it, it assumes you're going to give your own meaning to $x. In the case of BenchmarkTools.jl they return code that has to wait until runtime to receive the value of x and then splice that value into an expression which is evaluated and benchmarked. Nowhere in the actual body of the macro do they have access to the value of x though.
 
@@ -193,7 +232,7 @@ Instead, when a macro is given an expression with $ in it, it assumes you're goi
 	The `$` string for interpolation was used as it identifies the interpolation inside the string and inside the command. For example
 	```julia
 	a = 5
-	s = "a = $(5)"
+	s = "a = $(a)"
 	typoef(s)
 	println(s)
 	filename = "/tmp/test_of_interpolation"
@@ -201,7 +240,7 @@ Instead, when a macro is given an expression with $ in it, it assumes you're goi
 	```
 
 ## Macro hygiene
-Macro hygiene is a term coined in 1986. The problem it addresses is following: if you're automatically generating code, it's possible that you will introduce variable names in your generated code that will clash with existing variable names in the scope in which a macro is called. These clashes might cause your generated code to read from or write to variables that you should not interacting with. A macro is hygienic when it does not interact with existing variables, which means that when macro is evaluated, it should not have any effect on the surrounding code. 
+Macro hygiene is a term coined in 1986. The problem it addresses is following: if you're automatically generating code, it's possible that you will introduce variable names in your generated code that will clash with existing variable names in the scope in which a macro is called. These clashes might cause your generated code to read from or write to variables that you should not be interacting with. A macro is hygienic when it does not interact with existing variables, which means that when macro is evaluated, it should not have any effect on the surrounding code. 
 
 By default, all macros in Julia are hygienic which means that variables introduced in the macro have automatically generated names, where Julia ensures they will not collide with user's variable. These variables are created by `gensym` function / macro. 
 
@@ -226,8 +265,10 @@ end
 
 fib(n) = n <= 1 ? n : fib(n-1) + fib(n - 2)
 let 
+	tstart = "should not change the value and type"
 	t = @tooclean_elapsed r = fib(10)
 	println("the evaluation of fib took ", t, "s and result is ", r)
+	@show tstart
 end
 ```
 We see that variable `r` has not been assigned during the evaluation of macro. We have also used `let` block in orders not to define any variables in the global scope.
@@ -249,8 +290,7 @@ let
 	println(tstart, "  ", typeof(tstart))
 end
 ```
-But in the second case, we would actually very much like the variable `r` to retain its name, such that we can accesss the results (and also, `ex` can access and change other local variables). Julia offer a way to `escape` from the hygienic mode, which means that the variables will be used and passed as-is. Notice the effect if we escape jus the expression `ex` 
-
+But in the second case, we would actually very much like the variable `r` to retain its name, such that we can accesss the results (and also, `ex` can access and change other local variables). Julia offer a way to `escape` from the hygienic mode, which means that the variables will be used and passed as-is. Notice the effect if we escape just the expression `ex` 
 ```julia
 macro justright_elapsed(ex)
 	quote
@@ -276,8 +316,7 @@ quote
     Main.time() - var"#19#tstart"
 end
 ```
-and compare it to `Base.remove_linenums!(@macroexpand @justright_elapsed r = fib(10))`. We see that the experssion `ex` has its symbols intact.
-To use the escaping / hygience correctly, you need to have a good understanding how the macro evaluation works and what is needed. Let's now try the third version of the macro, where we escape everything as
+and compare it to `Base.remove_linenums!(@macroexpand @justright_elapsed r = fib(10))`. We see that the expression `ex` has its symbols intact. To use the escaping / hygience correctly, you need to have a good understanding how the macro evaluation works and what is needed. Let's now try the third version of the macro, where we escape everything as
 ```julia
 macro toodirty_elapsed(ex)
 	ex = quote
@@ -309,7 +348,7 @@ From the above we can also see that hygiene-pass occurs after the macro has been
 julia> esc(:x)
 :($(Expr(:escape, :x)))
 ```
-The definition in `essentials.jl:480` is pretty simple as `esc(@nospecialize(e)) = Expr(:escape, e)`.
+The definition in `essentials.jl:480` is pretty simple as `esc(@nospecialize(e)) = Expr(:escape, e)`, but it does not tell anything about the actual implementation, which is hidden probably in the macro-expanding logic.
 
 With that in mind, we can now understand our original example with `@replace_sin`. Recall that we have defined it as 
 ```julia
@@ -351,12 +390,22 @@ CodeInfo(
 
 ### Why hygienating the function calls?
 
-functin foo()
-	cos(x) = exp()
-	@repace_sin
+```julia
+function foo(x)
+	cos(x) = exp(x)
+	@replace_sin 1 + sin(x)
 end
 
+foo(1.0) ≈ 1 + exp(1.0)
 
+function foo2(x)
+	cos(x) = exp(x)
+	@hygienic_replace_sin 1 + sin(x)
+end
+
+x = 1.0
+foo2(1.0) ≈ 1 + cos(1.0)
+```
 
 ### Can I do the hygiene by myself?
 Yes, it is by some considered to be much simpler (and safer) then to understand, how macro hygiene works.
@@ -404,10 +453,10 @@ also notice that the escaping is only partial (running `@macroexpand @m2 @m1 1 +
 ## Write @exfiltrate macro
 Since Julia's debugger is a complicated story, people have been looking for tools, which would simplify the debugging. One of them is a macro `@exfiltrate`, which copies all variables in a given scope to a dafe place, from where they can be collected later on. This helps you in evaluating the function. 
 
-Let's try to implement such facility. What is our strategy
-- we can collect names and values of variables in a given scope using the macro `Base.@locals`
-- We will store variables in some global variable in a module, such that we have one place from which we can retrieve them and we are certain that this storage would not interact with existing code
-- the `@exfiltrate` macro should be as easy to use as possible.
+Let's try to implement such facility.
+- We collect names and values of variables in a given scope using the macro `Base.@locals`
+- We store variables in some global variable in some module, such that we have one place from which we can retrieve them and we are certain that this storage would not interact with any existing code.
+- If the `@exfiltrate` should be easy, ideally called without parameters, it has to be implemented as a macro to supply the relevant variables to be stored.
 
 ```julia
 module Exfiltrator
@@ -449,6 +498,23 @@ end
 
 inside_function()
 
+Exfiltrator.environment
+
+function a()
+	a = 1
+	@exfiltrate
+end
+
+function b()
+	b = 1
+	a()
+end
+function c()
+	c = 1
+	b()
+end
+
+c()
 Exfiltrator.environment
 ```
 
@@ -615,11 +681,24 @@ end
 ```
 
 ## non-standard string literals
-```
-macro r_str(p)
-    Regex(p)
+Julia allows to customize parsing of strings. For example we can define regexp matcher as 
+`r"^\s*(?:#|$)"`, i.e. using the usual string notation prepended by the string `r`.
+
+You can define these "parsers" by yourself using the macro definition with suffix `_str`
+```julia
+macro debug_str(p)
+	@show p
+    p
 end
 ```
+by invoking it
+```julia
+debug"hello"
+```
+we see that the string macro receives string as an argument. 
+
+Why are they useful? Sometimes, we want to use syntax which is not compatible with Julia's parser. For example `IntervalArithmetics.jl` allows to define an interval open only from one side, for example `[a, b)`, which is something that Julia's parser would not like much. String macro solves this problem by letting you to write the parser by your own.
+
 ## sources
 Great discussion on evaluation of macros
 https://discourse.julialang.org/t/interpolation-in-macro-calls/25530

@@ -61,9 +61,10 @@ We initialize the Jacobian by ``\frac{\partial y}{\partial y_0},`` which is agai
 
 The fact that we need to store intermediate outs has a huge impact on the memory requirements. Therefore when we have been talking few lectures ago that we should avoid excessive memory allocations, here we have an algorithm where the excessive allocation is by design. 
 
-## Let's work an example 
+## Let's workout an example 
 
-### `n` to `1` function 
+### ``f: \mathbb{R}^2 \rightarrow \mathbb{R}``
+The case, where the input dimension is large and output is one is prevalent in machine learning due to minimizing scalar loss function. Hence as explained above, the reverse-diff should be theoretically better. Let's try it. Let's consider function 
 
 ### `1` to `n` function 
 
