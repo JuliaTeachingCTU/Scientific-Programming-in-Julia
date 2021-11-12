@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lecture · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_07/lecture/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox" checked/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>Lecture</a><ul class="internal"><li><a class="tocitem" href="#What-goes-under-the-hood?"><span>What goes under the hood?</span></a></li><li><a class="tocitem" href="#Calling-macros"><span>Calling macros</span></a></li><li><a class="tocitem" href="#Notes-on-quotation"><span>Notes on quotation</span></a></li><li><a class="tocitem" href="#Macro-hygiene"><span>Macro hygiene</span></a></li><li><a class="tocitem" href="#sources"><span>sources</span></a></li></ul></li><li><a class="tocitem" href="../lab/">Lab</a></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li><li><span class="tocitem">8: Introduction to automatic differentiation</span></li><li><span class="tocitem">9: Manipulating intermediate representation</span></li><li><span class="tocitem">10: Different levels of parallel programming</span></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><span class="tocitem">12: Uncertainty propagation in ODE</span></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">7: Macros</a></li><li class="is-active"><a href>Lecture</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lecture</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_07/lecture.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="macro_lecture"><a class="docs-heading-anchor" href="#macro_lecture">Macros</a><a id="macro_lecture-1"></a><a class="docs-heading-anchor-permalink" href="#macro_lecture" title="Permalink"></a></h1><p>What is macro? In its essence, macro is a function, which </p><ol><li>takes as an input an expression (parsed input)</li><li>modify the expressions in argument</li><li>insert the modified expression at the same place as the one that is parsed.</li></ol><p>Macros are necessary because they execute when code is parsed, therefore, macros allow the programmer to generate and include fragments of customized code before the full program is run. To illustrate the difference, consider the following example:</p><p>One of the very conveninet ways to write macros is to write functions modifying the <code>Expr</code>ession and then call that function in macro as </p><pre><code class="language-julia hljs">replace_sin(x::Symbol) = x == :sin ? :cos : x
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lecture · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_07/lecture/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox" checked/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>Lecture</a><ul class="internal"><li><a class="tocitem" href="#What-goes-under-the-hood?"><span>What goes under the hood?</span></a></li><li><a class="tocitem" href="#Calling-macros"><span>Calling macros</span></a></li><li><a class="tocitem" href="#Notes-on-quotation"><span>Notes on quotation</span></a></li><li><a class="tocitem" href="#Macro-hygiene"><span>Macro hygiene</span></a></li><li><a class="tocitem" href="#How-macros-compose?"><span>How macros compose?</span></a></li><li><a class="tocitem" href="#Write-@exfiltrate-macro"><span>Write @exfiltrate macro</span></a></li><li><a class="tocitem" href="#Domain-Specific-Languages-(DSL)"><span>Domain Specific Languages (DSL)</span></a></li><li><a class="tocitem" href="#non-standard-string-literals"><span>non-standard string literals</span></a></li><li><a class="tocitem" href="#sources"><span>sources</span></a></li></ul></li><li><a class="tocitem" href="../lab/">Lab</a></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Introduction to automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li></ul></li><li><span class="tocitem">9: Manipulating intermediate representation</span></li><li><span class="tocitem">10: Different levels of parallel programming</span></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><span class="tocitem">12: Uncertainty propagation in ODE</span></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">7: Macros</a></li><li class="is-active"><a href>Lecture</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lecture</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_07/lecture.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="macro_lecture"><a class="docs-heading-anchor" href="#macro_lecture">Macros</a><a id="macro_lecture-1"></a><a class="docs-heading-anchor-permalink" href="#macro_lecture" title="Permalink"></a></h1><p>What is macro? In its essence, macro is a function, which </p><ol><li>takes as an input an expression (parsed input)</li><li>modify the expressions in argument</li><li>insert the modified expression at the same place as the one that is parsed.</li></ol><p>Macros are necessary because they execute when code is parsed, therefore, macros allow the programmer to generate and include fragments of customized code before the full program is run. To illustrate the difference, consider the following example:</p><p>One of the very conveninet ways to write macros is to write functions modifying the <code>Expr</code>ession and then call that function in macro as </p><pre><code class="language-julia hljs">replace_sin(x::Symbol) = x == :sin ? :cos : x
 replace_sin(e::Expr) = Expr(e.head, map(replace_sin, e.args)...)
 replace_sin(u) = u
 
@@ -84,67 +84,263 @@ s = &quot;a = $(5)&quot;
 typoef(s)
 println(s)
 filename = &quot;/tmp/test_of_interpolation&quot;
-run(`touch $(filename)`)</code></pre></div></div><h2 id="Macro-hygiene"><a class="docs-heading-anchor" href="#Macro-hygiene">Macro hygiene</a><a id="Macro-hygiene-1"></a><a class="docs-heading-anchor-permalink" href="#Macro-hygiene" title="Permalink"></a></h2><p>Macro hygiene is a term coined in 1986. The problem it addresses is following: if you&#39;re automatically generating code, it&#39;s possible that you will introduce variable names in your generated code that will clash with existing variable names in the scope in which a macro is called. These clashes might cause your generated code to read from or write to variables that you should not interacting with. A macro is hygienic when it does not interact with existing variables, which means that when macro is evaluated, it should not have any effect on the surrounding code. </p><p>By default, all macros in Julia are hygienic which means that variables introduced in the macro have automatically generated names, where Julia ensures they will not collide with user&#39;s variable. These variables are created by <code>gensym</code> function / macro. </p><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><h3>gensym</h3><p><code>gensym([tag])</code> Generates a symbol which will not conflict with other variable names. ```julia julia&gt; gensym(&quot;hello&quot;) Symbol(&quot;##hello#257&quot;)</p></div></div><pre><code class="nohighlight hljs">
-Let&#39;s demonstrate it on our own version of an macro `@elapsed` which will return the time that was needed to evaluate the block of code.</code></pre><p>julia macro tooclean_elapsed(ex) 	quote 		tstart = time() 		ex 		time() - tstart 	end end</p><p>fib(n) = n &lt;= 1 ? n : fib(n-1) + fib(n - 2) let  	t = @tooclean_elapsed r = fib(10) 	println(&quot;the evaluation of fib took &quot;, t, &quot;s and result is &quot;, r) end</p><pre><code class="nohighlight hljs">We see that variable `r` has not been assigned during the evaluation of macro. We have also used `let` block in orders not to define any variables in the global scope.
-Why is that?
-Let&#39;s observe how the macro was expanded</code></pre><p>julia julia&gt; Base.remove<em>linenums!(@macroexpand @tooclean</em>elapsed r = fib(10)) quote     var&quot;#12#tstart&quot; = Main.time()     var&quot;#13#r&quot; = Main.fib(10)     Main.time() - var&quot;#12#tstart&quot; end</p><pre><code class="nohighlight hljs">We see that `tstart` in the macro definition was replaced by `var&quot;#12#tstart&quot;`, which is a name generated by Julia&#39;s gensym to prevent conflict. The same happens to `r`, which was replaced by `var&quot;#13#r&quot;`. This names are the result of Julia&#39;s hygiene-enforcing pass, which is intended to prevent us from overwriting existing variables during macro expansion. This pass usually makes our macros safer, but it is also a source of confusion because it introduces a gap between the expressions we generate and the expressions that end up in the resulting source code. Notice that in the case of `tstart`, we actually wanted to replace `tstart` with a unique name, such that if we by a bad luck define `tstart` in our code, it would not be affected, as we can see in this example.</code></pre><p>julia let  	tstart = &quot;should not change the value and type &quot; 	t = @tooclean_elapsed r = fib(10) 	println(tstart, &quot;  &quot;, typeof(tstart)) end</p><pre><code class="nohighlight hljs">But in the second case, we would actually very much like the variable `r` to retain its name, such that we can accesss the results (and also, `ex` can access and change other local variables). Julia offer a way to `escape` from the hygienic mode, which means that the variables will be used and passed as-is. Notice the effect if we escape jus the expression `ex` 
-</code></pre><p>julia macro justright_elapsed(ex) 	quote 		tstart = time() 		esc(ex) 		time() - tstart 	end end</p><p>let  	tstart = &quot;should not change the value and type &quot; 	t = @justright_elapsed r = fib(10) 	println(&quot;the evaluation of fib took &quot;, t, &quot;s and result is &quot;, r) 	println(tstart, &quot;  &quot;, typeof(tstart)) end</p><pre><code class="nohighlight hljs">which now works as intended. We can inspect the output again using `@macroexpand`</code></pre><p>julia julia&gt; Base.remove<em>linenums!(@macroexpand @justright</em>elapsed r = fib(10)) quote     var&quot;#19#tstart&quot; = Main.time()     r = fib(10)     Main.time() - var&quot;#19#tstart&quot; end</p><pre><code class="nohighlight hljs">and compare it to `Base.remove_linenums!(@macroexpand @justright_elapsed r = fib(10))`. We see that the experssion `ex` has its symbols intact.
-To use the escaping / hygience correctly, you need to have a good understanding how the macro evaluation works and what is needed. Let&#39;s now try the third version of the macro, where we escape everything as</code></pre><p>julia macro toodirty_elapsed(ex) 	ex = quote 		tstart = time() 		ex 		time() - tstart 	end 	esc(ex) end</p><p>let  	tstart = &quot;should not change the value and type &quot; 	t = @toodirty_elapsed r = fib(10) 	println(&quot;the evaluation of fib took &quot;, t, &quot;s and result is &quot;, r) 	println(tstart, &quot;  &quot;, typeof(tstart)) end</p><pre><code class="nohighlight hljs">Using `@macroexpand` we observe that `@toodirty_elapsed` does not have any trace of hygiene.</code></pre><p>julia julia&gt; Base.remove<em>linenums!(@macroexpand @toodirty</em>elapsed r = fib(10)) quote     tstart = time()     r = fib(10)     time() - tstart end</p><pre><code class="nohighlight hljs">From the above we can also see that hygiene-pass occurs after the macro has been applied but before the code is lowered. `esc` is inserted to AST as a special node `Expr(:escape,...),` which can be seen from the follows.</code></pre><p>julia julia&gt; esc(:x) :(Expr(:escape, :x))</p><pre><code class="nohighlight hljs">The definition in `essentials.jl:480` is pretty simple as `esc(@nospecialize(e)) = Expr(:escape, e)`.
-
-With that in mind, we can now understand our original example with `@replace_sin`. Recall that we have defined it as </code></pre><p>julia macro replace<em>sin(ex) 	replace</em>sin(esc(ex)) end</p><pre><code class="nohighlight hljs">where the escaping `replace_sin(esc(ex))` in communicates to compiler that `ex` should be used as without hygienating the `ex`.  Indeed, if we lower it</code></pre><p>julia function cosp2(x) 	@replace_sin 2 + sin(x) end</p><p>julia&gt; @code_lowered(cosp2(1.0)) CodeInfo( 1 ─ %1 = Main.cos(x) │   %2 = 2 + %1 └──      return %2 )</p><pre><code class="nohighlight hljs">we see it works as intended. Whereas if we use hygienic version</code></pre><p>julia macro hygienic<em>replace</em>sin(ex) 	replace_sin(ex) end</p><p>function hcosp2(x) 	@hygienic<em>replace</em>sin 2 + sin(x) end</p><p>julia&gt; @code_lowered(hcosp2(1.0)) CodeInfo( 1 ─ %1 = Main.cos(Main.x) │   %2 = 2 + %1 └──      return %2 )</p><pre><code class="nohighlight hljs">
-
-### Why hygienating the function calls?
-
-functin foo()
-	cos(x) = exp()
-	@repace_sin
+run(`touch $(filename)`)</code></pre></div></div><h2 id="Macro-hygiene"><a class="docs-heading-anchor" href="#Macro-hygiene">Macro hygiene</a><a id="Macro-hygiene-1"></a><a class="docs-heading-anchor-permalink" href="#Macro-hygiene" title="Permalink"></a></h2><p>Macro hygiene is a term coined in 1986. The problem it addresses is following: if you&#39;re automatically generating code, it&#39;s possible that you will introduce variable names in your generated code that will clash with existing variable names in the scope in which a macro is called. These clashes might cause your generated code to read from or write to variables that you should not interacting with. A macro is hygienic when it does not interact with existing variables, which means that when macro is evaluated, it should not have any effect on the surrounding code. </p><p>By default, all macros in Julia are hygienic which means that variables introduced in the macro have automatically generated names, where Julia ensures they will not collide with user&#39;s variable. These variables are created by <code>gensym</code> function / macro. </p><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><h3>gensym</h3><p><code>gensym([tag])</code> Generates a symbol which will not conflict with other variable names.</p><pre><code class="language-julia hljs">julia&gt; gensym(&quot;hello&quot;)
+Symbol(&quot;##hello#257&quot;)</code></pre></div></div><p>Let&#39;s demonstrate it on our own version of an macro <code>@elapsed</code> which will return the time that was needed to evaluate the block of code.</p><pre><code class="language-julia hljs">macro tooclean_elapsed(ex)
+	quote
+		tstart = time()
+		$(ex)
+		time() - tstart
+	end
 end
 
+fib(n) = n &lt;= 1 ? n : fib(n-1) + fib(n - 2)
+let 
+	t = @tooclean_elapsed r = fib(10)
+	println(&quot;the evaluation of fib took &quot;, t, &quot;s and result is &quot;, r)
+end</code></pre><p>We see that variable <code>r</code> has not been assigned during the evaluation of macro. We have also used <code>let</code> block in orders not to define any variables in the global scope. Why is that? Let&#39;s observe how the macro was expanded</p><pre><code class="language-julia hljs">julia&gt; Base.remove_linenums!(@macroexpand @tooclean_elapsed r = fib(10))
+quote
+    var&quot;#12#tstart&quot; = Main.time()
+    var&quot;#13#r&quot; = Main.fib(10)
+    Main.time() - var&quot;#12#tstart&quot;
+end</code></pre><p>We see that <code>tstart</code> in the macro definition was replaced by <code>var&quot;#12#tstart&quot;</code>, which is a name generated by Julia&#39;s gensym to prevent conflict. The same happens to <code>r</code>, which was replaced by <code>var&quot;#13#r&quot;</code>. This names are the result of Julia&#39;s hygiene-enforcing pass, which is intended to prevent us from overwriting existing variables during macro expansion. This pass usually makes our macros safer, but it is also a source of confusion because it introduces a gap between the expressions we generate and the expressions that end up in the resulting source code. Notice that in the case of <code>tstart</code>, we actually wanted to replace <code>tstart</code> with a unique name, such that if we by a bad luck define <code>tstart</code> in our code, it would not be affected, as we can see in this example.</p><pre><code class="language-julia hljs">let 
+	tstart = &quot;should not change the value and type &quot;
+	t = @tooclean_elapsed r = fib(10)
+	println(tstart, &quot;  &quot;, typeof(tstart))
+end</code></pre><p>But in the second case, we would actually very much like the variable <code>r</code> to retain its name, such that we can accesss the results (and also, <code>ex</code> can access and change other local variables). Julia offer a way to <code>escape</code> from the hygienic mode, which means that the variables will be used and passed as-is. Notice the effect if we escape jus the expression <code>ex</code> </p><pre><code class="language-julia hljs">macro justright_elapsed(ex)
+	quote
+		tstart = time()
+		$(esc(ex))
+		time() - tstart
+	end
+end
 
+let 
+	tstart = &quot;should not change the value and type &quot;
+	t = @justright_elapsed r = fib(10)
+	println(&quot;the evaluation of fib took &quot;, t, &quot;s and result is &quot;, r)
+	println(tstart, &quot;  &quot;, typeof(tstart))
+end</code></pre><p>which now works as intended. We can inspect the output again using <code>@macroexpand</code></p><pre><code class="language-julia hljs">julia&gt; Base.remove_linenums!(@macroexpand @justright_elapsed r = fib(10))
+quote
+    var&quot;#19#tstart&quot; = Main.time()
+    r = fib(10)
+    Main.time() - var&quot;#19#tstart&quot;
+end</code></pre><p>and compare it to <code>Base.remove_linenums!(@macroexpand @justright_elapsed r = fib(10))</code>. We see that the experssion <code>ex</code> has its symbols intact. To use the escaping / hygience correctly, you need to have a good understanding how the macro evaluation works and what is needed. Let&#39;s now try the third version of the macro, where we escape everything as</p><pre><code class="language-julia hljs">macro toodirty_elapsed(ex)
+	ex = quote
+		tstart = time()
+		$(ex)
+		time() - tstart
+	end
+	esc(ex)
+end
 
-### Can I do the hygiene by myself?
-Yes, it is by some considered to be much simpler (and safer) then to understand, how macro hygiene works.</code></pre><p>julia macro manual_elapsed(ex)     x = gensym()     esc(quote     		x = time()         	ex         	time() - x         end     ) end</p><p>let  	t = @manual_elapsed r = fib(10) 	println(&quot;the evaluation of fib took &quot;, t, &quot;s and result is &quot;, r) end</p><pre><code class="nohighlight hljs">
-## How macros compose?</code></pre><p>julia macro m1(ex) 	println(&quot;m1: &quot;) 	dump(ex) 	ex end</p><p>macro m2(ex) 	println(&quot;m2: &quot;) 	dump(ex) 	esc(ex) end</p><p>@m1 @m2 1 + sin(1)</p><pre><code class="nohighlight hljs">which means that macros are expanded in the order from the outer most to inner most, which is exactly the other way around than functions.</code></pre><p>@macroexpand @m1 @m2 1 + sin(1)</p><pre><code class="nohighlight hljs">also notice that the escaping is only partial (running `@macroexpand @m2 @m1 1 + sin(1)` would not change the results).
+let 
+	tstart = &quot;should not change the value and type &quot;
+	t = @toodirty_elapsed r = fib(10)
+	println(&quot;the evaluation of fib took &quot;, t, &quot;s and result is &quot;, r)
+	println(tstart, &quot;  &quot;, typeof(tstart))
+end</code></pre><p>Using <code>@macroexpand</code> we observe that <code>@toodirty_elapsed</code> does not have any trace of hygiene.</p><pre><code class="language-julia hljs">julia&gt; Base.remove_linenums!(@macroexpand @toodirty_elapsed r = fib(10))
+quote
+    tstart = time()
+    r = fib(10)
+    time() - tstart
+end</code></pre><p>From the above we can also see that hygiene-pass occurs after the macro has been applied but before the code is lowered. <code>esc</code> is inserted to AST as a special node <code>Expr(:escape,...),</code> which can be seen from the follows.</p><pre><code class="language-julia hljs">julia&gt; esc(:x)
+:($(Expr(:escape, :x)))</code></pre><p>The definition in <code>essentials.jl:480</code> is pretty simple as <code>esc(@nospecialize(e)) = Expr(:escape, e)</code>.</p><p>With that in mind, we can now understand our original example with <code>@replace_sin</code>. Recall that we have defined it as </p><pre><code class="language-julia hljs">macro replace_sin(ex)
+	replace_sin(esc(ex))
+end</code></pre><p>where the escaping <code>replace_sin(esc(ex))</code> in communicates to compiler that <code>ex</code> should be used as without hygienating the <code>ex</code>.  Indeed, if we lower it</p><pre><code class="language-julia hljs">function cosp2(x)
+	@replace_sin 2 + sin(x)
+end
 
-&lt;!-- Why are variables on right-hand side replaced by access to global variables? --&gt;
-## Write @exfiltrate macro
-Since Julia&#39;s debugger is a complicated story, people have been looking for tools, which would simplify the debugging. One of them is a macro `@exfiltrate`, which copies all variables in a given scope to a dafe place, from where they can be collected later on. This helps you in evaluating the function. 
+julia&gt; @code_lowered(cosp2(1.0))
+CodeInfo(
+1 ─ %1 = Main.cos(x)
+│   %2 = 2 + %1
+└──      return %2
+)</code></pre><p>we see it works as intended. Whereas if we use hygienic version</p><pre><code class="language-julia hljs">macro hygienic_replace_sin(ex)
+	replace_sin(ex)
+end
 
-Let&#39;s try to implement such facility. What is our strategy
-- we can collect names and values of variables in a given scope using the macro `Base.@locals`
-- We will store variables in some global variable in a module, such that we have one place from which we can retrieve them and we are certain that this storage would not interact with existing code
-- the `@exfiltrate` macro should be as easy to use as possible.
-</code></pre><p>julia module Exfiltrator</p><p>const environment = Dict{Symbol, Any}()</p><p>function copy_variables!(d::Dict) 	foreach(k -&gt; delete!(environment, k), keys(environment)) 	for (k, v) in d 		environment[k] = v 	end end</p><p>macro exfiltrate() 	v = gensym(:vars) 	quote 		<span>$(v) = $(esc((Expr(:locals)))) 		copy_variables!($</span>(v)) 	end end</p><p>end</p><pre><code class="nohighlight hljs">
-Test it to </code></pre><p>julia using Main.Exfiltrator: @exfiltrate let  	x,y,z = 1,&quot;hello&quot;, (a = &quot;1&quot;, b = &quot;b&quot;) 	@exfiltrate end</p><p>Exfiltrator.environment</p><p>function inside_function() 	a,b,c = 1,2,3 	@exfiltrate end</p><p>inside_function()</p><p>Exfiltrator.environment</p><pre><code class="nohighlight hljs">
-## Domain Specific Languages (DSL)
-Macros are convenient for writing domain specific languages, which are languages designed for specific domain. This allows them to simplify notation and / or make the notation familiar for people working in the field. For example in `Turing.jl`, the model 
-of coinflips can be specified as </code></pre><p>@model function coinflip(y)</p><pre><code class="nohighlight hljs"># Our prior belief about the probability of heads in a coin.
-p ~ Beta(1, 1)
+function hcosp2(x)
+	@hygienic_replace_sin 2 + sin(x)
+end
 
-# The number of observations.
-N = length(y)
-for n in 1:N
-    # Heads or tails of a coin are drawn from a Bernoulli distribution.
-    y[n] ~ Bernoulli(p)
-end</code></pre><p>end;</p><pre><code class="nohighlight hljs">which resembles, but not copy Julia&#39;s syntax due to the use of `~`. A similar DSLs can be seen in `ModelingToolkit.jl` for differential equations, in `Soss.jl` again for expressing probability problems, in `Metatheory.jl` / `SymbolicUtils.jl` for defining rules on elements of algebras, or `JuMP.jl` for specific mathematical programs.
+julia&gt; @code_lowered(hcosp2(1.0))
+CodeInfo(
+1 ─ %1 = Main.cos(Main.x)
+│   %2 = 2 + %1
+└──      return %2
+)</code></pre><h3 id="Why-hygienating-the-function-calls?"><a class="docs-heading-anchor" href="#Why-hygienating-the-function-calls?">Why hygienating the function calls?</a><a id="Why-hygienating-the-function-calls?-1"></a><a class="docs-heading-anchor-permalink" href="#Why-hygienating-the-function-calls?" title="Permalink"></a></h3><p>functin foo() 	cos(x) = exp() 	@repace_sin end</p><h3 id="Can-I-do-the-hygiene-by-myself?"><a class="docs-heading-anchor" href="#Can-I-do-the-hygiene-by-myself?">Can I do the hygiene by myself?</a><a id="Can-I-do-the-hygiene-by-myself?-1"></a><a class="docs-heading-anchor-permalink" href="#Can-I-do-the-hygiene-by-myself?" title="Permalink"></a></h3><p>Yes, it is by some considered to be much simpler (and safer) then to understand, how macro hygiene works.</p><pre><code class="language-julia hljs">macro manual_elapsed(ex)
+    x = gensym()
+    esc(quote
+    		$(x) = time()
+        	$(ex)
+        	time() - $(x)
+        end
+    )
+end
 
-One of the reasons for popularity of DSLs is that macro system is very helpful in their implementation, but it also contraints the DSL, as it has to be parseable by Julia&#39;s parser. This is a tremendous helps, because one does not have to care about how to parse numbers, strings, parenthesess, functions, etc. 
+let 
+	t = @manual_elapsed r = fib(10)
+	println(&quot;the evaluation of fib took &quot;, t, &quot;s and result is &quot;, r)
+end
+</code></pre><h2 id="How-macros-compose?"><a class="docs-heading-anchor" href="#How-macros-compose?">How macros compose?</a><a id="How-macros-compose?-1"></a><a class="docs-heading-anchor-permalink" href="#How-macros-compose?" title="Permalink"></a></h2><pre><code class="language-julia hljs">macro m1(ex)
+	println(&quot;m1: &quot;)
+	dump(ex)
+	ex
+end
 
-Let&#39;s jump into the first example adapted from (John Myles White&#39;s howto)[https://github.com/johnmyleswhite/julia_tutorials/blob/master/From%20Macros%20to%20DSLs%20in%20Julia%20-%20Part%202%20-%20DSLs.ipynb].
-We would like to write a macro, which allows us to define graph in `LightGraphs.jl` just by defining edges.</code></pre><p>julia @graph begin  	1 -&gt; 2 	2 -&gt; 3 	3 -&gt; 1 end</p><pre><code class="nohighlight hljs">The above should expand to</code></pre><p>julia using LightGraphs g = DiGraph(3) add<em>edge!(g, 1,2) add</em>edge!(g, 2,3) add_edge!(g, 3,1) d</p><pre><code class="nohighlight hljs">Let&#39;s start with easy and observe, how </code></pre><p>julia ex = Meta.parse(&quot;&quot;&quot; begin  	1 -&gt; 2 	2 -&gt; 3 	3 -&gt; 1 end &quot;&quot;&quot;) ex = Base.remove_linenums!(ex)</p><pre><code class="nohighlight hljs">is parsed to </code></pre><p>julia quote     1-&gt;begin             2         end     2-&gt;begin             3         end     3-&gt;begin             1         end end</p><pre><code class="nohighlight hljs">We see that 
-- the sequence of statements is parsed to `block` (we know that from last lecture).
-- `-&gt;` is parsed to `-&gt;`, i.e. `ex.args[1].head == :-&gt;` with parameters being the first vertex `ex.args[1].args[1] == 1` and the second vertex is quoted to `ex.args[1].args[2].head == :block`. 
+macro m2(ex)
+	println(&quot;m2: &quot;)
+	dump(ex)
+	esc(ex)
+end
 
-The main job will be done in the function `parse_edge`, which will parse one edge. It will check that the node defines edge (otherwise, it will return nothing, which will be filtered out)</code></pre><p>julia function parse_edge(ex) 	#checking the syntax 	!hasproperty(ex, :head) &amp;&amp; return(nothing) 	!hasproperty(ex, :args) &amp;&amp; return(nothing) 	ex.head != :-&gt; &amp;&amp; return(nothing) 	length(ex.args) != 2 &amp;&amp; return(nothing) 	!hasproperty(ex.args[2], :head) &amp;&amp; return(nothing) 	ex.args[2].head != :block &amp;&amp; length(ex.args[2].args) == 1 &amp;&amp; return(nothing)</p><pre><code class="nohighlight hljs">#ready to go
-src = ex.args[1]
-@assert src isa Integer
-dst = ex.args[2].args[1]
-@assert dst isa Integer
-:(add_edge!(g, $(src), $(dst)))</code></pre><p>end</p><p>function parse<em>graph(ex) 	@assert ex.head == :block 	ex = Base.remove</em>linenums!(ex) 	edges = filter(!isnothing, parse_edge.(ex.args)) 	n = maximum(e -&gt; maximum(e.args[3:4]), edges) 	quote        g = LightGraphs.DiGraph(n)        edges...        g    end end</p><pre><code class="nohighlight hljs">Once we have the first version, let&#39;s make everything hygienic
-</code></pre><p>julia function parse_edge(g, ex::Expr) 	#checking the syntax 	ex.head != :-&gt; &amp;&amp; return(nothing) 	length(ex.args) != 2 &amp;&amp; return(nothing) 	!hasproperty(ex.args[2], :head) &amp;&amp; return(nothing) 	ex.args[2].head != :block &amp;&amp; length(ex.args[2].args) == 1 &amp;&amp; return(nothing)</p><pre><code class="nohighlight hljs">#ready to go
-src = ex.args[1]
-@assert src isa Integer
-dst = ex.args[2].args[1]
-@assert dst isa Integer
-:(add_edge!($(g), $(src), $(dst)))</code></pre><p>end parse_edge(g, ex) = nothing</p><p>function parse<em>graph(ex) 	@assert ex.head == :block 	g = gensym(:graph) 	ex = Base.remove</em>linenums!(ex) 	edges = filter(!isnothing, parse_edge.(g, ex.args)) 	n = maximum(e -&gt; maximum(e.args[3:4]), edges) 	quote        <span>$(g) = LightGraphs.DiGraph($</span>(n))        edges...        g    end end</p><pre><code class="nohighlight hljs">and we are ready to go</code></pre><p>julia macro graph(ex) 	parse_graph(ex) end</p><p>@graph begin 	1 -&gt; 2 	2 -&gt; 3 	3 -&gt; 1 end</p><pre><code class="nohighlight hljs">and we can check the output with `@macroexpand`.</code></pre><p>julia julia&gt; @macroexpand @graph begin                1 -&gt; 2                2 -&gt; 3                3 -&gt; 1        end quote     #= REPL[173]:8 =#     var&quot;#27###graph#273&quot; = (Main.LightGraphs).DiGraph(3)     #= REPL[173]:9 =#     Main.add<em>edge!(var&quot;#27###graph#273&quot;, 1, 2)     Main.add</em>edge!(var&quot;#27###graph#273&quot;, 2, 3)     Main.add_edge!(var&quot;#27###graph#273&quot;, 3, 1)     #= REPL[173]:10 =#     var&quot;#27###graph#273&quot; end</p><pre><code class="nohighlight hljs">
-## non-standard string literals</code></pre><p>macro r_str(p)     Regex(p) end ```</p><h2 id="sources"><a class="docs-heading-anchor" href="#sources">sources</a><a id="sources-1"></a><a class="docs-heading-anchor-permalink" href="#sources" title="Permalink"></a></h2><p>Great discussion on evaluation of macros https://discourse.julialang.org/t/interpolation-in-macro-calls/25530</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_06/hw/">« Homework</a><a class="docs-footer-nextpage" href="../lab/">Lab »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Thursday 11 November 2021 22:27">Thursday 11 November 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+@m1 @m2 1 + sin(1)</code></pre><p>which means that macros are expanded in the order from the outer most to inner most, which is exactly the other way around than functions.</p><pre><code class="nohighlight hljs">@macroexpand @m1 @m2 1 + sin(1)</code></pre><p>also notice that the escaping is only partial (running <code>@macroexpand @m2 @m1 1 + sin(1)</code> would not change the results).</p><p>&lt;!– Why are variables on right-hand side replaced by access to global variables? –&gt;</p><h2 id="Write-@exfiltrate-macro"><a class="docs-heading-anchor" href="#Write-@exfiltrate-macro">Write @exfiltrate macro</a><a id="Write-@exfiltrate-macro-1"></a><a class="docs-heading-anchor-permalink" href="#Write-@exfiltrate-macro" title="Permalink"></a></h2><p>Since Julia&#39;s debugger is a complicated story, people have been looking for tools, which would simplify the debugging. One of them is a macro <code>@exfiltrate</code>, which copies all variables in a given scope to a dafe place, from where they can be collected later on. This helps you in evaluating the function. </p><p>Let&#39;s try to implement such facility. What is our strategy</p><ul><li>we can collect names and values of variables in a given scope using the macro <code>Base.@locals</code></li><li>We will store variables in some global variable in a module, such that we have one place from which we can retrieve them and we are certain that this storage would not interact with existing code</li><li>the <code>@exfiltrate</code> macro should be as easy to use as possible.</li></ul><pre><code class="language-julia hljs">module Exfiltrator
+
+const environment = Dict{Symbol, Any}()
+
+function copy_variables!(d::Dict)
+	foreach(k -&gt; delete!(environment, k), keys(environment))
+	for (k, v) in d
+		environment[k] = v
+	end
+end
+
+macro exfiltrate()
+	v = gensym(:vars)
+	quote
+		$(v) = $(esc((Expr(:locals))))
+		copy_variables!($(v))
+	end
+end
+
+end</code></pre><p>Test it to </p><pre><code class="language-julia hljs">using Main.Exfiltrator: @exfiltrate
+let 
+	x,y,z = 1,&quot;hello&quot;, (a = &quot;1&quot;, b = &quot;b&quot;)
+	@exfiltrate
+end
+
+Exfiltrator.environment
+
+function inside_function()
+	a,b,c = 1,2,3
+	@exfiltrate
+end
+
+inside_function()
+
+Exfiltrator.environment</code></pre><h2 id="Domain-Specific-Languages-(DSL)"><a class="docs-heading-anchor" href="#Domain-Specific-Languages-(DSL)">Domain Specific Languages (DSL)</a><a id="Domain-Specific-Languages-(DSL)-1"></a><a class="docs-heading-anchor-permalink" href="#Domain-Specific-Languages-(DSL)" title="Permalink"></a></h2><p>Macros are convenient for writing domain specific languages, which are languages designed for specific domain. This allows them to simplify notation and / or make the notation familiar for people working in the field. For example in <code>Turing.jl</code>, the model  of coinflips can be specified as </p><pre><code class="nohighlight hljs">@model function coinflip(y)
+
+    # Our prior belief about the probability of heads in a coin.
+    p ~ Beta(1, 1)
+
+    # The number of observations.
+    N = length(y)
+    for n in 1:N
+        # Heads or tails of a coin are drawn from a Bernoulli distribution.
+        y[n] ~ Bernoulli(p)
+    end
+end;</code></pre><p>which resembles, but not copy Julia&#39;s syntax due to the use of <code>~</code>. A similar DSLs can be seen in <code>ModelingToolkit.jl</code> for differential equations, in <code>Soss.jl</code> again for expressing probability problems, in <code>Metatheory.jl</code> / <code>SymbolicUtils.jl</code> for defining rules on elements of algebras, or <code>JuMP.jl</code> for specific mathematical programs.</p><p>One of the reasons for popularity of DSLs is that macro system is very helpful in their implementation, but it also contraints the DSL, as it has to be parseable by Julia&#39;s parser. This is a tremendous helps, because one does not have to care about how to parse numbers, strings, parenthesess, functions, etc. </p><p>Let&#39;s jump into the first example adapted from (John Myles White&#39;s howto)[https://github.com/johnmyleswhite/julia_tutorials/blob/master/From%20Macros%20to%20DSLs%20in%20Julia%20-%20Part%202%20-%20DSLs.ipynb]. We would like to write a macro, which allows us to define graph in <code>LightGraphs.jl</code> just by defining edges.</p><pre><code class="language-julia hljs">@graph begin 
+	1 -&gt; 2
+	2 -&gt; 3
+	3 -&gt; 1
+end</code></pre><p>The above should expand to</p><pre><code class="language-julia hljs">using LightGraphs
+g = DiGraph(3)
+add_edge!(g, 1,2)
+add_edge!(g, 2,3)
+add_edge!(g, 3,1)
+d</code></pre><p>Let&#39;s start with easy and observe, how </p><pre><code class="language-julia hljs">ex = Meta.parse(&quot;&quot;&quot;
+begin 
+	1 -&gt; 2
+	2 -&gt; 3
+	3 -&gt; 1
+end
+&quot;&quot;&quot;)
+ex = Base.remove_linenums!(ex)</code></pre><p>is parsed to </p><pre><code class="language-julia hljs">quote
+    1-&gt;begin
+            2
+        end
+    2-&gt;begin
+            3
+        end
+    3-&gt;begin
+            1
+        end
+end</code></pre><p>We see that </p><ul><li>the sequence of statements is parsed to <code>block</code> (we know that from last lecture).</li><li><code>-&gt;</code> is parsed to <code>-&gt;</code>, i.e. <code>ex.args[1].head == :-&gt;</code> with parameters being the first vertex <code>ex.args[1].args[1] == 1</code> and the second vertex is quoted to <code>ex.args[1].args[2].head == :block</code>. </li></ul><p>The main job will be done in the function <code>parse_edge</code>, which will parse one edge. It will check that the node defines edge (otherwise, it will return nothing, which will be filtered out)</p><pre><code class="language-julia hljs">function parse_edge(ex)
+	#checking the syntax
+	!hasproperty(ex, :head) &amp;&amp; return(nothing)
+	!hasproperty(ex, :args) &amp;&amp; return(nothing)
+	ex.head != :-&gt; &amp;&amp; return(nothing)
+	length(ex.args) != 2 &amp;&amp; return(nothing)
+	!hasproperty(ex.args[2], :head) &amp;&amp; return(nothing)
+	ex.args[2].head != :block &amp;&amp; length(ex.args[2].args) == 1 &amp;&amp; return(nothing)
+
+	#ready to go
+	src = ex.args[1]
+	@assert src isa Integer
+	dst = ex.args[2].args[1]
+	@assert dst isa Integer
+	:(add_edge!(g, $(src), $(dst)))
+end
+
+function parse_graph(ex)
+	@assert ex.head == :block
+	ex = Base.remove_linenums!(ex)
+	edges = filter(!isnothing, parse_edge.(ex.args))
+	n = maximum(e -&gt; maximum(e.args[3:4]), edges)
+	quote
+       g = LightGraphs.DiGraph($(n))
+       $(edges...)
+       g
+   end
+end</code></pre><p>Once we have the first version, let&#39;s make everything hygienic</p><pre><code class="language-julia hljs">function parse_edge(g, ex::Expr)
+	#checking the syntax
+	ex.head != :-&gt; &amp;&amp; return(nothing)
+	length(ex.args) != 2 &amp;&amp; return(nothing)
+	!hasproperty(ex.args[2], :head) &amp;&amp; return(nothing)
+	ex.args[2].head != :block &amp;&amp; length(ex.args[2].args) == 1 &amp;&amp; return(nothing)
+
+	#ready to go
+	src = ex.args[1]
+	@assert src isa Integer
+	dst = ex.args[2].args[1]
+	@assert dst isa Integer
+	:(add_edge!($(g), $(src), $(dst)))
+end
+parse_edge(g, ex) = nothing
+
+function parse_graph(ex)
+	@assert ex.head == :block
+	g = gensym(:graph)
+	ex = Base.remove_linenums!(ex)
+	edges = filter(!isnothing, parse_edge.(g, ex.args))
+	n = maximum(e -&gt; maximum(e.args[3:4]), edges)
+	quote
+       $(g) = LightGraphs.DiGraph($(n))
+       $(edges...)
+       $(g)
+   end
+end</code></pre><p>and we are ready to go</p><pre><code class="language-julia hljs">macro graph(ex)
+	parse_graph(ex)
+end
+
+@graph begin
+	1 -&gt; 2
+	2 -&gt; 3
+	3 -&gt; 1
+end</code></pre><p>and we can check the output with <code>@macroexpand</code>.</p><pre><code class="language-julia hljs">julia&gt; @macroexpand @graph begin
+               1 -&gt; 2
+               2 -&gt; 3
+               3 -&gt; 1
+       end
+quote
+    #= REPL[173]:8 =#
+    var&quot;#27###graph#273&quot; = (Main.LightGraphs).DiGraph(3)
+    #= REPL[173]:9 =#
+    Main.add_edge!(var&quot;#27###graph#273&quot;, 1, 2)
+    Main.add_edge!(var&quot;#27###graph#273&quot;, 2, 3)
+    Main.add_edge!(var&quot;#27###graph#273&quot;, 3, 1)
+    #= REPL[173]:10 =#
+    var&quot;#27###graph#273&quot;
+end</code></pre><h2 id="non-standard-string-literals"><a class="docs-heading-anchor" href="#non-standard-string-literals">non-standard string literals</a><a id="non-standard-string-literals-1"></a><a class="docs-heading-anchor-permalink" href="#non-standard-string-literals" title="Permalink"></a></h2><pre><code class="nohighlight hljs">macro r_str(p)
+    Regex(p)
+end</code></pre><h2 id="sources"><a class="docs-heading-anchor" href="#sources">sources</a><a id="sources-1"></a><a class="docs-heading-anchor-permalink" href="#sources" title="Permalink"></a></h2><p>Great discussion on evaluation of macros https://discourse.julialang.org/t/interpolation-in-macro-calls/25530</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_06/hw/">« Homework</a><a class="docs-footer-nextpage" href="../lab/">Lab »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Friday 12 November 2021 06:33">Friday 12 November 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
