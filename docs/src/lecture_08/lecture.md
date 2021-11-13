@@ -250,6 +250,10 @@ this would be `Δ`$\,=\frac{\partial\bm y_3}{\partial\bm y_3}=1$).
 rrule(::typeof(f1), x) = f1(x), Δ -> Δ*f1'(x)
 ```
 
+## Graoh-based AD
+
+!(diff graph)[graphdiff.jl]
+
 ## Tracing-based AD
 
 Libraries like **_PyTorch_**
@@ -268,10 +272,7 @@ increased memory usage negatively impacting performance. Functions that should
 be differentiated have to be written such that they accept the `Tracked` types.
 
 
-* jacobians explaination: show figures with many-to-ont and one-to-many
 * [simplest viable implementation](https://juliadiff.org/ChainRulesCore.jl/dev/autodiff/operator_overloading.html#ReverseDiffZero)
-
-## Let's work an example 
 
 ## What are the tricks that we can use?
 - we define custom rules over large functional blocks. For example while we can auto-grad (in theory) matrix product, it is much more efficient to define make a matrix multiplication as one large function, for which we define jacobians (not to say that by doing so, we can dispatch on Blas)
