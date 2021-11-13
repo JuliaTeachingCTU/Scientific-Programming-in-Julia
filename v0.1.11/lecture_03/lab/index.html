@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_03/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox" checked/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#Part-I:-Female-and-Male-Sheep"><span>Part I: Female &amp; Male Sheep</span></a></li><li><a class="tocitem" href="#Part-II:-A-new,-parametric-type-hierarchy"><span>Part II: A new, parametric type hierarchy</span></a></li></ul></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Introduction to automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li></ul></li><li><span class="tocitem">9: Manipulating intermediate representation</span></li><li><span class="tocitem">10: Different levels of parallel programming</span></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><span class="tocitem">12: Uncertainty propagation in ODE</span></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">3: Design patterns</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_03/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="lab03"><a class="docs-heading-anchor" href="#lab03">Lab 3: Predator-Prey Agents</a><a id="lab03-1"></a><a class="docs-heading-anchor-permalink" href="#lab03" title="Permalink"></a></h1><p>In this lab we will look at two different ways of extending our agent simulation to take into account that animals can have two different sexes: <em>female</em> and <em>male</em>.</p><p>In the first part of the lab you will re-use the code from <a href="../../lecture_02/lab/#lab02">lab 2</a> and create a new type of sheep (<code>⚥Sheep</code>) which has an additional field <em>sex</em>. In the second part you will redesign the type hierarchy from scratch using parametric types to make this agent system much more flexible and <em>julian</em>.</p><h2 id="Part-I:-Female-and-Male-Sheep"><a class="docs-heading-anchor" href="#Part-I:-Female-and-Male-Sheep">Part I: Female &amp; Male Sheep</a><a id="Part-I:-Female-and-Male-Sheep-1"></a><a class="docs-heading-anchor-permalink" href="#Part-I:-Female-and-Male-Sheep" title="Permalink"></a></h2><p>The code from lab 2 that you will need in the first part of this lab can be found <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_02/Lab02Ecosystem.jl">here</a>.</p><p>The goal of the first part of the lab is to demonstrate the <em>forwarding method</em> (which is close to how things are done in OOP) by implementing a sheep that can have two different sexes and can only reproduce with another sheep of opposite sex.</p><p>This new type of sheep needs an additonal field <code>sex::Symbol</code> which can be either <code>:male</code> or <code>:female</code>. In OOP we would simply inherit from <code>Sheep</code> and create a <code>⚥Sheep</code> with an additional field. In Julia there is no inheritance - only subtyping of abstract types. As you cannot inherit from a concrete type in Julia, we will have to create a wrapper type and forward all necessary methods. This is typically a sign of unfortunate type tree design and should be avoided, but if you want to extend a code base by an unforeseen type this forwarding of methods is a nice work-around.  Our <code>⚥Sheep</code> type will simply contain a classic <code>sheep</code> and a <code>sex</code> field</p><pre><code class="language-julia hljs">struct ⚥Sheep &lt;: Animal
+    sheep::Sheep
+    sex::Symbol
+end
+⚥Sheep(id,E,ΔE,pr,pf,sex) = ⚥Sheep(Sheep(id,E,ΔE,pr,pf),sex)</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ⚥Sheep(1,1.0,1.0,1.0,1.0,:female)</code><code class="nohighlight hljs ansi" style="display:block;">Main.⚥Sheep(🐑 #1 E=1.0 ΔE=1.0 pr=1.0 pf=1.0, :female)</code></pre><p>In our case, the methods that have to be forwarded are the accessors, as well as <code>eats</code> and <code>eat!</code>.  The custom reproduction behaviour will of course be taken care of by a <code>reproduce!</code> function that does not just forward but also contains specialized behaviour for the <code>⚥Sheep</code>.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Forward the accessors <code>energy</code>, <code>energy!</code>, <code>reprprob</code>, and <code>foodprob</code>, as well as our core methods <code>eats</code> and <code>eat!</code> to <code>Sheep</code>.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">id(g::⚥Sheep) = id(g.sheep)
+energy(g::⚥Sheep) = energy(g.sheep)
+energy!(g::⚥Sheep, ΔE) = energy!(g.sheep, ΔE)
+reprprob(g::⚥Sheep) = reprprob(g.sheep)
+foodprob(g::⚥Sheep) = foodprob(g.sheep)
+
+eats(::⚥Sheep, ::Grass) = true
+eat!(s::⚥Sheep, g::Plant, world::World) = eat!(s.sheep, g, world)
+eat!(w::Wolf, s::⚥Sheep, world::World) = eat!(w, s.sheep, world)</code></pre><p>For the ones that don&#39;t like accessors: You can also overload the <code>Base</code> methods <code>getproperty</code> and <code>setproperty!</code> to make something like <code>⚥sheep.energy += 1</code> work:</p><pre><code class="language-julia hljs">function Base.getproperty(s::⚥Sheep, name::Symbol)
+    if name in fieldnames(Sheep)
+        getfield(s.sheep,name)
+    else
+        getfield(s,name)
+    end
+end
+
+function Base.setproperty!(s::⚥Sheep, name::Symbol, x)
+    if name in fieldnames(Sheep)
+        setfield!(s.sheep,name,x)
+    else
+        setfield!(s,name,x)
+    end
+end</code></pre></p></details><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement the <code>reproduce!</code> method for the <code>⚥Sheep</code>.  Note that you first have to find another sheep of opposite sex in your <code>World</code>, and only if you can find one you can reproduce.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">mates(a::Plant, ::⚥Sheep) = false
+mates(a::Animal, ::⚥Sheep) = false
+mates(g1::⚥Sheep, g2::⚥Sheep) = g1.sex != g2.sex
+function find_mate(g::⚥Sheep, w::World)
+    ms = filter(a-&gt;mates(a,g), w.agents |&gt; values |&gt; collect)
+    isempty(ms) ? nothing : sample(ms)
+end
+
+function reproduce!(s::⚥Sheep, w::World)
+    m = find_mate(s,w)
+    if !isnothing(m)
+        energy!(s, energy(s)/2)
+        vals = [getproperty(s.sheep,n) for n in fieldnames(Sheep) if n!=:id]
+        new_id = w.max_id + 1
+        ŝ = ⚥Sheep(new_id, vals..., rand(Bool) ? :female : :male)
+        w.agents[id(ŝ)] = ŝ
+        w.max_id = new_id
+    end
+end</code></pre></p></details><pre><code class="language-julia hljs">f = ⚥Sheep(1,3.0,1.0,1.0,1.0,:female)
+m = ⚥Sheep(2,4.0,1.0,1.0,1.0,:male)
+w = World([f,m])
+
+for _ in 1:4
+    @show w
+    world_step!(w)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">w = Main.World{Main.⚥Sheep}
+  Main.⚥Sheep(🐑 #2 E=4.0 ΔE=1.0 pr=1.0 pf=1.0, :male)
+  Main.⚥Sheep(🐑 #1 E=3.0 ΔE=1.0 pr=1.0 pf=1.0, :female)
+
+w = Main.World{Main.⚥Sheep}
+  Main.⚥Sheep(🐑 #4 E=1.0 ΔE=1.0 pr=1.0 pf=1.0, :female)
+  Main.⚥Sheep(🐑 #2 E=1.5 ΔE=1.0 pr=1.0 pf=1.0, :male)
+  Main.⚥Sheep(🐑 #3 E=1.5 ΔE=1.0 pr=1.0 pf=1.0, :female)
+  Main.⚥Sheep(🐑 #1 E=1.0 ΔE=1.0 pr=1.0 pf=1.0, :female)
+
+w = Main.World{Main.⚥Sheep}
+  Main.⚥Sheep(🐑 #5 E=0.25 ΔE=1.0 pr=1.0 pf=1.0, :male)
+  Main.⚥Sheep(🐑 #6 E=0.25 ΔE=1.0 pr=1.0 pf=1.0, :female)
+  Main.⚥Sheep(🐑 #2 E=0.25 ΔE=1.0 pr=1.0 pf=1.0, :male)
+  Main.⚥Sheep(🐑 #3 E=0.25 ΔE=1.0 pr=1.0 pf=1.0, :female)
+
+w = Main.World{Main.⚥Sheep}</code></pre><h2 id="Part-II:-A-new,-parametric-type-hierarchy"><a class="docs-heading-anchor" href="#Part-II:-A-new,-parametric-type-hierarchy">Part II: A new, parametric type hierarchy</a><a id="Part-II:-A-new,-parametric-type-hierarchy-1"></a><a class="docs-heading-anchor-permalink" href="#Part-II:-A-new,-parametric-type-hierarchy" title="Permalink"></a></h2><p>The extension of <code>Sheep</code> to <code>⚥Sheep</code> is a very object-oriented approach. With a little bit of rethinking, we can build a much more elegant solution that makes use of Julia&#39;s powerful parametric types.</p><p>First, let us note that there are two fundamentally different types of agents in our world: animals and plants. All species such as grass, sheep, wolves, etc.  can be categorized as one of those two. Second, animals have two different, <em>immutable</em> sexes.  Thus an animal is specified by two things: its <em>species</em> and its <em>sex</em>.  With this observation let&#39;s try to redesign the type hiearchy using parametric types to reflect this.</p><p>The goal will be an <code>Animal</code> type with two parametric types: A <code>Species</code> type and a <code>Sex</code> type. The type of a female wolf would then be <code>Animal{Wolf,Female}</code>. The new type hiearchy can then look like this:</p><pre><code class="language-julia hljs">abstract type Species end
+abstract type PlantSpecies &lt;: Species end
+abstract type Grass &lt;: PlantSpecies end
+
+abstract type AnimalSpecies &lt;: Species end
+abstract type Sheep &lt;: AnimalSpecies end
+abstract type Wolf &lt;: AnimalSpecies end
+
+abstract type Sex end
+abstract type Male &lt;: Sex end
+abstract type Female &lt;: Sex end
+
+abstract type Agent{S&lt;:Species} end</code></pre><p>Now we can create a <em>concrete</em> type <code>Animal</code> with the two parametric types and the fields that we already know from lab 2.</p><pre><code class="language-julia hljs">mutable struct Animal{A&lt;:AnimalSpecies,S&lt;:Sex} &lt;: Agent{A}
+    id::Int
+    energy::Float64
+    Δenergy::Float64
+    reprprob::Float64
+    foodprob::Float64
+end
+
+# the accessors from lab 2 stay the same
+id(a::Agent) = a.id
+energy(a::Animal) = a.energy
+Δenergy(a::Animal) = a.Δenergy
+reprprob(a::Animal) = a.reprprob
+foodprob(a::Animal) = a.foodprob
+energy!(a::Animal, e) = a.energy = e
+incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)</code></pre><p>To create an instance of <code>Animal</code> we have to specify the parametric type while constructing it</p><pre><code class="language-julia hljs">Animal{Wolf,Female}(1,5,5,1,1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Main.Animal{Main.Wolf, Main.Female}(1, 5.0, 5.0, 1.0, 1.0)</code></pre><p>Note that we now automatically have animals of any sex without additional work. Our little side project of overloading Julia&#39;s <code>show</code> method of our shiny new parametric type already looks much more elegant than before:</p><pre><code class="language-julia hljs">function Base.show(io::IO, a::Animal{A,S}) where {A,S}
+    e = energy(a)
+    d = Δenergy(a)
+    pr = reprprob(a)
+    pf = foodprob(a)
+    print(io,&quot;$A$S #$(id(a)) E=$e ΔE=$d pr=$pr pf=$pf&quot;)
+end
+
+# note that for new species/sexes we will only have to overload `show` on the
+# abstract species/sex types like below!
+Base.show(io::IO, ::Type{Sheep}) = print(io,&quot;🐑&quot;)
+Base.show(io::IO, ::Type{Wolf}) = print(io,&quot;🐺&quot;)
+Base.show(io::IO, ::Type{Male}) = print(io,&quot;♂&quot;)
+Base.show(io::IO, ::Type{Female}) = print(io,&quot;♀&quot;)
+
+
+[Animal{Sheep,Male}(2,2,2,1,1),Animal{Wolf,Female}(1,5,5,1,1)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Main.Animal}:
+ 🐑♂ #2 E=2.0 ΔE=2.0 pr=1.0 pf=1.0
+ 🐺♀ #1 E=5.0 ΔE=5.0 pr=1.0 pf=1.0</code></pre><p>Unfortunately we have lost the convenience of creating plants and animals by simply calling their species constructor. For example, <code>Sheep</code> is just an abstract type that we cannot instantiate. However, we can manually define a new constructor that will give us this convenience back. This is done in exactly the same way as defining a constructor for a concrete type:</p><pre><code class="language-julia hljs">Sheep(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male) = Animal{Sheep,S}(id,E,ΔE,pr,pf)</code></pre><p>Ok, so we have a constructor for <code>Sheep</code> now. But what about all the other billions of species that you want to define in your huge master thesis project of ecosystem simulations?  Do you have to write them all by hand? <em>Do not despair!</em> Julia has you covered:</p><pre><code class="language-julia hljs">function (A::Type{&lt;:AnimalSpecies})(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male)
+    Animal{A,S}(id,E,ΔE,pr,pf)
+end
+
+[Sheep(2,2,2,1,1),Wolf(1,5,5,1,1)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Main.Animal{A, ♀} where A&lt;:Main.AnimalSpecies}:
+ 🐑♀ #2 E=2.0 ΔE=2.0 pr=1.0 pf=1.0
+ 🐺♀ #1 E=5.0 ΔE=5.0 pr=1.0 pf=1.0</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Adapt the code from lab 2 to work with our new parametric type hierarchy. For this you will have to define a concrete <code>Plant</code> type in a similar fashion as the new <code>Animal</code> type. Additionally you need to adapt at least the methods <code>eat!</code>, <code>eats</code>, <code>mates</code>, and <code>reproduce!</code>.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>The full solution can be found on Github for the <a href="https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/world.jl"><code>World</code></a>, <a href="https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/plant.jl"><code>Plant</code>s</a>, and <a href="https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/animal.jl"><code>Animal</code>s</a>.</p></p></details></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Saturday 13 November 2021 19:49">Saturday 13 November 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
