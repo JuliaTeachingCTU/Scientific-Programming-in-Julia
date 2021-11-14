@@ -37,48 +37,48 @@ end
 
 # documentation
 lecture_01 = [
-    # "Motivation" => "./lecture_01/motivation.md",
-    # "Basics" => "./lecture_01/basics.md",
-    # "Examples" => "./lecture_01/demo.md",
-    # "Outline" => "./lecture_01/outline.md",
-    # "Lab" => "./lecture_01/lab.md",
-    # "Homework" => "./lecture_01/hw.md",
+    "Motivation" => "./lecture_01/motivation.md",
+    "Basics" => "./lecture_01/basics.md",
+    "Examples" => "./lecture_01/demo.md",
+    "Outline" => "./lecture_01/outline.md",
+    "Lab" => "./lecture_01/lab.md",
+    "Homework" => "./lecture_01/hw.md",
 ]
 
 lecture_02 = [
-    # "Lecture" => "./lecture_02/lecture.md"
-    # "Lab" => "./lecture_02/lab.md"
-    # "Homework" => "./lecture_02/hw.md"
+    "Lecture" => "./lecture_02/lecture.md"
+    "Lab" => "./lecture_02/lab.md"
+    "Homework" => "./lecture_02/hw.md"
 ]
 
 lecture_03 = [
-    # "Lecture" => "./lecture_03/lecture.md"
-    # "Lab" => "./lecture_03/lab.md"
-    # "Homework" => "./lecture_03/hw.md"
+    "Lecture" => "./lecture_03/lecture.md"
+    "Lab" => "./lecture_03/lab.md"
+    "Homework" => "./lecture_03/hw.md"
 ]
 
 lecture_04 = [
-    # "Lecture" => "./lecture_04/lecture.md"
-    # "Lab" => "./lecture_04/lab.md"
-    # "Homework" => "./lecture_04/hw.md"
+    "Lecture" => "./lecture_04/lecture.md"
+    "Lab" => "./lecture_04/lab.md"
+    "Homework" => "./lecture_04/hw.md"
 ]
 
 lecture_05 = [
-    # "Lecture" => "./lecture_05/lecture.md"
-    # "Lab" => "./lecture_05/lab.md"
-    # "Homework" => "./lecture_05/hw.md"
+    "Lecture" => "./lecture_05/lecture.md"
+    "Lab" => "./lecture_05/lab.md"
+    "Homework" => "./lecture_05/hw.md"
 ]
 
 lecture_06 = [
-    # "Lecture" => "./lecture_06/lecture.md"
-    # "Lab" => "./lecture_06/lab.md"
-    # "Homework" => "./lecture_06/hw.md"
+    "Lecture" => "./lecture_06/lecture.md"
+    "Lab" => "./lecture_06/lab.md"
+    "Homework" => "./lecture_06/hw.md"
 ]
 
 lecture_07 = [
-    # "Lecture" => "./lecture_07/lecture.md"
-    # "Lab" => "./lecture_07/lab.md"
-    # "Homework" => "./lecture_07/hw.md"
+    "Lecture" => "./lecture_07/lecture.md"
+    "Lab" => "./lecture_07/lab.md"
+    "Homework" => "./lecture_07/hw.md"
 ]
 
 lecture_08 = [

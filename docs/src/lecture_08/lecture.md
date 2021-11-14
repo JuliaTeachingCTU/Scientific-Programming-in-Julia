@@ -1,16 +1,15 @@
 ```@setup lec08
 using Plots
 ```
-<!-- I have once seen a nice tutorial / lecture on AD by Matthew Johnson, but I cannot find it anymore.  -->
 # Automatic Differentiation
 
 ## Motivation
 - It supports a lot of modern machine learning by allowing quick differentiation of complex mathematical functions. The 1st order optimization methods are ubiquituous in finding parameters of functions (not only in  deep learning).
 - AD is interesting to study from the implementation perspective. There are different takes on it with different trade-offs and Julia offers many implementations (some of them are not maintained anymore).
 - We (authors of this course) believe that it is good to understand (at least roughly), how the methods work in order to use them effectively in our work.
-- Julia is unique in the effort separating definitions of AD rules from AD engines that use those rules to perform the AD. This allows authors of generic libraries to add new rules that would be compatible with many frameworks.
+- Julia is unique in the effort separating definitions of AD rules from AD engines that use those rules to perform the AD. This allows authors of generic libraries to add new rules that would be compatible with many frameworks. See [juliadiff.org](https://juliadiff.org/) for a list.
 
-## My Theory
+## Theory
 
 The differentiation is routine process, as most of the time we break complicated functions down into small pieces that we know, how to differentiate and from that to assemble the gradient of the complex function back. Thus, the essential piece is the differentiation of the composed function ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m``
 
@@ -203,112 +202,285 @@ plot!(0.1:0.01:2, forward_dsqrt, label="Dual Forward Mode f'", lw=3, ls=:dash)
 
 ## Reverse mode
 In reverse mode, the computation of the gradient follow the oposite order. That means.
-We initialize the Jacobian by ``\frac{\partial y}{\partial y_0},`` which is again an identity matrix, and perform the computation of jacobians and multiplications in the opposite order. The problem is that to calculate jacobian ``J_i``, we need to know ``y_i``. Therefore the reverse mode diff requires two passes over the computation graph.
+We initialize the computation by ``\mathbf{J}_0 = \frac{\partial y}{\partial y_0},`` which is again an identity matrix. The we compute the computation of Jacobians and multiplications in the opposite order. The problem is that to calculate ``J_i`` we need to know the value of ``y_i^0``, which cannot be calculated in the reverse pass. The backward pass therefore needs to be preceeded by the forward pass, where  ``\{y_i^0\}_{i=1}^n`` are calculated.
 
+The complete reverse mode algorithm therefore proceeds as 
 1. Forward pass: iterate `i` from `n` down to `1` as
     - calculate the next intermediate output as ``y_{i-1} = f_i(y_i)`` 
-
 2. Backward pass: iterate `i` from `1` down to `n` as
-    - calculate Jacobian ``J_i = \frac{f_i}{\partial y_i}`` at point ``y_i``
+    - calculate Jacobian ``J_i = \left.\frac{f_i}{\partial y_i}\right|_{y_i^0} `` at point ``y_i^0``
     - *pull back* the gradient as ``\frac{\partial y_0}{\partial y_{i}} = \frac{\partial y_0}{\partial y_{i-1}} \times J_i``
     Notice that we actually cannot compute the backward pass, as we do not know ``y_i`` at the moment of computing the `J_i`. Therefore the backward pass needs to be preceeded by forward pass, where we calculate ``y_i`` as follows
 
-The fact that we need to store intermediate outs has a huge impact on the memory requirements. Therefore when we have been talking few lectures ago that we should avoid excessive memory allocations, here we have an algorithm where the excessive allocation is by design. 
 
-Explain complications of the `setindex!`
+The need to store intermediate outs has a huge impact on memory requirements, which particularly on GPU is a big deal. Recall few lectures ago we have been discussing how excessive memory allocations can be damaging for performance, here we are given an algorithm where the excessive allocation is by design.
 
+### Tricks to decrease memory consumptions
+- Define **custom rules** over large functional blocks. For example while we can auto-grad (in theory) matrix product, it is much more efficient to define make a matrix multiplication as one large function, for which we define jacobians (not to say that by doing so, we can dispatch on Blas)
+- When differentiating **Invertible functions**, calculate intermediate outputs from the output. This can lead to huge performance gain, as all data needed for computations are in caches.  
+- **Checkpointing** does not store intermediate ouputs after larger sequence of operations. When they are needed for forward pass, they are recalculated on demand.
 
-# 3. Reverse Mode (Backpropagation)
-
-Reverse Mode AD is at the core of the advances made in Machine Learning.
-Neural Networks are trained by optimizing a scalar loss function (with many
-inputs) and therefore Reverse Mode tends to be faster.
-Remember our vector valued function
-```math
-f(\bm x) = (f_1 \circ f_2 \circ f_3)(\bm x).
-\qquad\rightarrow\qquad
-\begin{matrix} \bm y_1 = f_1(\bm x) \\ \bm y_2 = f_2(\bm y_1) \\ \bm y_3 = f(\bm y_2) \end{matrix}
-```
-with the Jacobian
-```math
-\frac{\partial f(\bm x)}{\partial \bm x}
- = \frac{\partial f_1(\bm x)}{\partial \bm x}
-   \frac{\partial f_2(y_1)}{\partial \bm y_1}
-   \frac{\partial f_3(\bm y_2)}{\partial \bm y_2}
-   \frac{\partial \bm y_3}{\partial \bm y_3}.
-```
-Now we want to start computing the gradient starting from the last term for
-which we need both $f_3$ and its input $\bm y_2$ that produced $\bm y_3$.  This means
-that we have to keep track of functions and intermediate values ($\bm y_1$, $\bm
-y_2$) during the forward pass. This can be implemented by a `rrule` (*reverse rule*) which
-returns the output itself along with a function that computes the gradient of
-the input called (**_pullback_**). The argument to the pullback (`Δ`) represents the gradient of the
-previously evaluated function ("on the right side" - in case of $\frac{\partial f_3}{\partial\bm y_2}$
-this would be `Δ`$\,=\frac{\partial\bm y_3}{\partial\bm y_3}=1$).
-
-```julia
-rrule(::typeof(f1), x) = f1(x), Δ -> Δ*f1'(x)
-```
-
-## Graoh-based AD
-
-!(diff graph)[graphdiff.jl]
-
-## Tracing-based AD
-
-Libraries like **_PyTorch_**
-solve this problem by building up a *tape* or *computation graph* with
-a new type that tracks inputs, outputs, and functions of the computation.  In
-Julia this is approach realized in **_ReverseDiff.jl_**.  It is based
-on a `Tracked` type which contains a the data (i.e. value) of a number, and
-a tracker which holds information about how the value was computed (i.e.
-function + arguments) and a placeholder for the gradient.  The arguments that
-are stored in the tracker can again be a `Tracked` which results in a tree
-structure that represents the computation graph.
-
-Tracing-based AD is quite easy to implement but has some disadvantages.  For
-example, loops result in deeper and deeper computation graphs, which leads to
-increased memory usage negatively impacting performance. Functions that should
-be differentiated have to be written such that they accept the `Tracked` types.
-
-
-* [simplest viable implementation](https://juliadiff.org/ChainRulesCore.jl/dev/autodiff/operator_overloading.html#ReverseDiffZero)
-
-## What are the tricks that we can use?
-- we define custom rules over large functional blocks. For example while we can auto-grad (in theory) matrix product, it is much more efficient to define make a matrix multiplication as one large function, for which we define jacobians (not to say that by doing so, we can dispatch on Blas)
-- **Invertible functions** When we are differentiating invertible functions, we can calculate intermediate outputs from the 
-- **Checkpointing** We can store the intermediate ouputs only sometime and performed a small forward while doint backward
-- ** Implicit functions** Differentiating through solvers is possible, since they are mostly iterative. But, using the mathematical equality is easier.
+Most reverse mode AD engines does not support mutating values of arrays (`setindex!` in julia). This is related to the memory consumption, where after every `setindex!` you need in theory save the full matrix. `Enzyme` differentiating directly LLVM code supports this, since in LLVM every variable is assigned just once. ForwardDiff methods does not suffer this problem, as the gradient is computed at the time of the values.
 
 !!! info
     Reverse mode AD was first published in 1976 by Seppo Linnainmaa, a finnish computer scientist. It was popularized in the end of 80s when applied to training multi-layer perceptrons, which gave rise to the famous **backpropagation** algorithm, which is a special case of reverse mode AD.
     *Rumelhart, D. E., Hinton, G. E., and Williams, R. J. (1986), Learning representations by back-propagating errors., Nature, 323, 533--536.*
 
-### Implementation
-- TensorFlow with explicit graph vs. PyTorch with tape / Wengert list
+!!! info
+    The terminilogy in automatic differentiation is everything but fixed. The community around `ChainRules.jl` went a great length to use something reasonable. They use **pullback** for a function realizing vector-Jacobian product in the reverse-diff reminding that the gradient is pulled back to the origin of the computation. The use **pushforward** to denote the same operation in the forwarddiff, as the gradient is push forward through the computation.
 
-### How to test
-A tricky example with odd function
+## Implementation details of reverse AD
+## Graph-based AD
+In Graph-based approach, we start with a complete knowledge of the computation graph (which is known in many cases like classical neural networks) and augment it with nodes representing the computation of the computation of the gradient (backward path). We need to be careful to add all edges representing the flow of informations needed to calculate the gradient. Once the computation graph is augmented, we can find the subgraph needed to compute the desired node(s). 
 
-## Why custom rules
-- We need them for speed
-- They are needed for numerical stability
+Let's revive the above example ``f(x, y) = sin(x) + xy`` to observe, how the extension of the computational graph will look like. The computation graph of function ``f`` looks like
+![diff graph](graphdiff_6.svg)
+where arrows ``\rightarrow`` denote the flow of operations and we have denoted the output of function ``f`` as ``z`` and outputs of intermediate nodes as ``h_i`` standing for *hidden*.
 
-### How to test
-A tricky example with odd function
+We start from the top and add a node calculating ``\frac{\partial z}{\partial h_3}`` which is an identity, needed to jump-start the differentiation. 
+![diff graph](graphdiff_7.svg)
+We connect it with the output of ``h_3``, even though technically in this case it is not needed, as the ``z = h_3``.
+We then add a node calculating ``\frac{\partial h_3}{\partial h_2}`` for which we only need information about ``h_2`` and mark it in the graph (again, this edge can be theoretically dropped due to being equal to one regardless the inputs). Following the chain rule, we need to combine ``\frac{\partial h_3}{\partial h_2}`` with ``\frac{\partial z}{\partial h_3}`` to compute ``\frac{\partial z}{\partial h_2}`` which we note in the graph.
+![diff graph](graphdiff_9.svg)
+We continue with the same process with ``\frac{\partial h_3}{\partial h_1}``, which we again combine with ``\frac{\partial z}{\partial h_1}`` to obtain ``\frac{\partial z}{\partial h_1}``. Continuing the reverse diff we obtain the final graph
+![diff graph](graphdiff_14.svg) 
+containing the desired nodes ``\frac{\partial z}{\partial x}`` and ``\frac{\partial z}{\partial y}``. This computational graph can be passed to the compiler to compute desired values.
 
-### ChainRules
-- Why you want to have it
-- Syntax
+This approach to AD has been taken for example by Theano and by TensorFlow 1. When you in tensorflow you function like `tf.mul( a, b )` or `tf.add(a,b)`, you are not performing the computation in python, but you are building the computational graph shown as above. You can then compute the values using `tf.run` with a desired inputs, but you are in fact computing the values in a different interpretter / compiler then in python.
+
+Advantages:
+- Knowing the computational graph in advance is great, as you can do expensive optimization steps to simplify the graph. 
+- The computational graph have a simple semantics (limited support for loops, branches, no objects), and the compiler is therefore simpler than the compiler of full languages.
+- Since the computation of gradient augments the graph, you can run the process again to obtain higher order gradients. 
+- TensorFlow allows you to specialize on sizes of Tensors, which means that it knows precisely how much memory you will need and where, which decreases the number of allocations. This is quite important in GPU.
+
+Disadvantages:
+- You are restricted to fixed computation graph. It is generally difficult to implement `if` or `while`, and hence to change the computation according to values computed during the forward pass.
+- Development and debugging can be difficult, since you are not developing the computation graph in the host language.
+- Exploiting within computation graph paralelism might be difficult.
+
+## Tracking-based AD
+Alternative to static-graph based methods are methods, which builds the graph during invokation of functions and then use this dynamically built graph to know, how to compute the gradient. The dynamically built graph is frequently called *tape*. This approach is used by popular libraries like **_PyTorch_**, **_AutoGrad_**, and **_Chainer_** in Python ecosystem, or by **_Tracker.jl_** (`Flux.jl`'s ex AD), **_ReverseDiff.jl_**, and **_AutoGrad.jl_** (`Knet.jl`'s AD) in Julia. This type of AD systems is also called *operator overloading*, since in order to record the operations performed on the arguments.
+
+How do we build the tracing? Let's take a look what `ReverseDiff.jl` is doing. It defines `TrackedArray` (it also defines `TrackedReal`, but `TrackedArray` is more interesting) as
+```julia
+struct TrackedArray{T,N,V<:AbstractArray{T,N}} <: AbstractArray{T,N}
+    value::V
+    deriv::Union{Nothing,V}
+    tape::Vector{Any}
+end
+```
+where in
+- `value` it stores the value of the array
+- `deriv` will hold the gradient od the tracked array
+- `tape` of will log operations performed with the tracked array, such that we can calculate the gradient as a sum of operations performed over the tape.
+
+What do we need to store on the tape? Let's denote as ``a`` the current `TrackedArray`. The gradient with respect to some output ``z`` is equal to ``\frac{\partial z}{\partial a} = \sum_{g_i} \frac{\partial z}{\partial g_i} \times \frac{\partial g_i}{\partial a}`` where  ``g_i`` is the output of any function (in the computational graph) where ``a`` was a direct input. The `InstructionTape` will therefore contain a reference to ``g_i`` (which has to be of `TrackedArray` and where we know ``\frac{\partial z}{\partial g_i}`` will be stored in `deriv` field) and we also need to a method calculating ``\frac{\partial g_i}{\partial a}``, which can be stored as an anynymous function will accepting the grad as an argument.
+
+```julia
+TrackedArray(a::AbstractArray) = TrackedArray(a, similar(a) .= 0, [])
+TrackedMatrix{T,V} = TrackedArray{T,2,V} where {T,V<:AbstractMatrix{T}}
+TrackedVector{T,V} = TrackedArray{T,1,V} where {T,V<:AbstractVector{T}}
+Base.show(io::IO, ::MIME"text/plain", a::TrackedArray) = show(io, a)
+Base.show(io::IO, a::TrackedArray) = print(io, "TrackedArray($(size(a.value)))")
+value(A::TrackedArray) = A.value
+value(A) = A
+track(A) = TrackedArray(A)
+
+import Base: +, *
+function *(A::TrackedMatrix, B::AbstractMatrix)
+   C = TrackedArray(value(A) * B)
+   push!(A.tape, (C, Δ -> Δ * B'))
+   C
+end
+
+function +(A::TrackedMatrix, B::AbstractMatrix)
+   C = TrackedArray(value(A) + B)
+   push!(A.tape, (C, Δ -> Δ))
+   C
+end
+```
+
+Let's observe that the operations are recorded on the tape as they should
+```julia
+A = track(rand(4,4))
+B = rand(4,1)
+C = rand(4,1)
+R = A * B + C
+A.tape
+```
+
+Let's now implement a function that will recursively calculate the gradient of a term of interest. It goes over its childs, if they not have calculated the gradients, calculate it, otherwise it adds it to its own after  if not, ask them to calculate the gradient and otherwise 
+```julia
+function accum!(A::TrackedArray)
+    isempty(A.tape) && return(A.deriv)
+    A.deriv .= sum(g(accum!(r)) for (r, g) in A.tape)
+end
+```
+We can calculate the gradient by initalizing the gradient of the result to vector of ones simulating the `sum` function
+```julia
+R.deriv .= 1
+accum!(A)
+```
+The api function for computing the grad might look like
+```julia
+function grad(f, args...)
+    args = track.(args)
+    o = f(args...)
+    fill!(o.deriv, 1)
+    map(accum!, args)
+end
+```
+where we should assert that the output dimension is 1. In our implementation  we dirtilly expect the output of f to be summed to a scalar.
+
+Let's compare the results to those computed by Zygote
+```julia
+using Zygote
+A = rand(4,4)
+B = rand(4,1)
+C = rand(4,1)
+grad(A -> A * B + C, A)[1]
+gradient(A -> sum(A * B + C), A)[1]
+```
+
+To make the above AD system really useful, we would need to 
+1. Add support for `TrackedReal`, which is straightforward (we might skip the anonymous function, as the derivative of a scalar function is always a number).
+2. We would need to add a lot of rules, how to work with basic values. This is why the the approach is called **operator overloading** since you need to overload a lot of functions (or methods or operators).
+
+For example to add all combinations for `+` and `*`, we would need to add following rules.
+```julia
+function Base.*(A::TrackedMatrix, B::TrackedMatrix)
+   C = TrackedArray(value(A) * value(B))
+   push!(A.tape, (C, Δ -> Δ * B'))
+   push!(B.tape, (C, Δ -> A' * Δ))
+   C
+end
+
+function Base.*(A::AbstractMatrix, B::TrackedMatrix)
+   C = TrackedArray(value(A) * value(B))
+   push!(B.tape, (C, Δ -> A' * Δ))
+   C
+end
+
+function Base.+(A::TrackedMatrix, B::TrackedMatrix)
+   C = TrackedArray(value(A) + value(B))
+   push!(A.tape, (C, Δ -> Δ ))
+   push!(B.tape, (C, Δ -> Δ))
+   C
+end
+
+function Base.+(A::AbstractMatrix, B::TrackedMatrix)
+   C = TrackedArray(value(A) * value(B))
+   push!(B.tape, (C, Δ -> Δ))
+   C
+end
+```
+
+Advantages:
+- Debugging and development is nicer, as AD is implemented in the same language.
+- The computation graph, tape, is dynamic, which makes it simpler to take the gradient in the presence of `if` and `while`.
+
+Disadvantages:
+- The computation graph is created and differentiated during every computation, which might be costly. In most deep learning applications, this overhead is negligible in comparison to time of needed to perform the operations itself (`ReverseDiff.jl` allows to compile the tape).
+- Since computation graph is dynamic, it cannot be optimized as the static graph, the same holds for the memory allocations. 
+
+!!! info
+    The difference between tracking and graph-based AD systems is conceptually similar to interpreted and compiled programming languages. Tracking AD systems interpret the time while computing the gradient, while graph-based AD systems compile the computation of the gradient.
+
+## Wenger list AD
+
+* [simplest viable implementation](https://juliadiff.org/ChainRulesCore.jl/dev/autodiff/operator_overloading.html#ReverseDiffZero)
+
+## ChainRules
+From our discussions about AD systems so far we see that while the basic, *engine*, part is relatively straightforward, it devil is in writing the rules prescribing the computation of gradients. These rules are needed for every system whether it is graph based, tracking, or wengert list based. ForwardDiff also needs a rule system, but rules are a bit different (as they are pushing the gradient forward rather than pulling it back). It is obviously a waste of effort for each AD system to have its own set of rules. Hence the community (initiated by Lyndon White and hence probably funded mainly by Invenia) have started to work on a unified system to express differentiation rules, such that they can be shared between systems. So far, they are supported by `Zygote.jl`, `Nabla.jl`, `ReverseDiff.jl` and `Diffractor.jl`, hence the approach seems to work.
+
+The definition of reverse diff rules follows the idea we have nailed above (we refer readers interested in forward diff rules [to official documentation](https://juliadiff.org/ChainRulesCore.jl)).
+
+`ChainRules` defines the reverse rules for function `foo` in a function `rrule` with the following signature
+```julia
+function rrule(::typeof(foo), args...; kwargs...)
+    ...
+    return y, pullback
+end
+```
+where
+- the first argument `::typeof(foo)` allows to dispatch on the function for which the rules is written
+- the output of function `foo(args...)` is returned as the first argument
+- `pullback(Δy)` takes the gradient of upstream functions with respect to the output of `foo(args)` and returns it multiplied by the jacobian of the output of `foo(args)` with respect to parameters of the function itself (recall the function can have paramters, as it can be a closure or a functor), and with respect to the arguments.
+```julia
+function pullback(Δy)
+    ...
+    return ∂self, ∂args...
+end
+```
+Notice that key-word arguments are not differentiated. This is a design decision with the explanation that parametrize the function, but most of the time, they are not differentiable.
+
+`ChainRules.jl` provides support for lazy (delayed) computation using `Thunk`. Its argument is a function, which is not evaluated until `unthunk` is called. There is also a support to signal that gradient is zero using `ZeroTangent` (which can save valuable memory) or to signal that the gradient does not exist using `NoTangent`. 
+
+How can we use ChainRules to define rules for our AD system?
+Let's first observe the output
+```julia
+using ChainRulesCore, ChainRules
+r, g = rrule(*, rand(2,2), rand(2,2))
+g(r)
+```
+
+With that, we can extend our AD system as follows
+```julia
+import Base: *, +, -
+for f in [:*, :+, :-]
+    @eval function $(f)(A::TrackedMatrix, B::AbstractMatrix)
+       C, pullback = rrule($(f), value(A), B)
+       C = track(C)
+       push!(A.tape, (C, Δ -> pullback(Δ)[2]))
+       C
+    end
+
+    @eval function $(f)(A::AbstractMatrix, B::TrackedMatrix)
+       C, pullback = rrule($(f), A, value(B))
+       C = track(C)
+       push!(B.tape, (C, Δ -> pullback(Δ)[3]))
+       C
+    end
+
+    @eval function $(f)(A::TrackedMatrix, B::TrackedMatrix)
+       C, pullback = rrule($(f), value(A), value(B))
+       C = track(C)
+       push!(A.tape, (C, Δ -> pullback(Δ)[2]))
+       push!(B.tape, (C, Δ -> pullback(Δ)[3]))
+       C
+    end
+end
+```
+and we need to modify our `accum!` code to `unthunk` if needed
+```julia
+function accum!(A::TrackedArray)
+    isempty(A.tape) && return(A.deriv)
+    A.deriv .= sum(unthunk(g(accum!(r))) for (r, g) in A.tape)
+end
+```
+
+```
+A = track(rand(4,4))
+B = rand(4,1)
+C = rand(4,1)
+R = A * B + C
+R.deriv .= 1
+accum!(A)
+```
+
 - Structural vs Natural gradient
 
-## Chain Rules & Jacobians
 
-# Sources
+### How to test
+A tricky example with odd function
 
+
+### Sources for this lecture
 * Mike Innes' [diff-zoo](https://github.com/MikeInnes/diff-zoo)
 * [Write Your Own StS in One Day](https://blog.rogerluo.me/2019/07/27/yassad/)
 * [Zygote.jl Paper](https://arxiv.org/pdf/1810.07951.pdf)
   and [Zygote.jl Internals](https://fluxml.ai/Zygote.jl/dev/internals/)
 * Keno's [Talk](https://www.youtube.com/watch?v=mQnSRfseu0c&feature=youtu.be)
 * Chris' [Lecture](https://mitmath.github.io/18337/lecture11/adjoints)
+* [Automatic-Differentiation-Based-on-Computation-Graph](https://liebing.org.cn/2019/07/22/Automatic-Differentiation-Based-on-Computation-Graph/)
