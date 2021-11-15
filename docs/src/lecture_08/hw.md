@@ -1,4 +1,4 @@
-# Homework 08
+# [Homework 08](@id hw08)
 
 In this homework you will write an additional rule to compute the derivative
 of the Babylonian square root

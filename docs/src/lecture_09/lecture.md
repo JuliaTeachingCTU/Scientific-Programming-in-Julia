@@ -1,4 +1,7 @@
 ## Source Code Transformation
+```@setup lec09
+using Plots
+```
 
 The most recent approach to Reverse Mode AD is **_Source-to-Source_**
 transformation adopted by packages like **_JAX_** and **_Zygote.jl_**.
@@ -10,7 +13,7 @@ LLVM.
 
 Source-to-source AD uses meta-programming to produce `rrule`s for any function
 that is a composition of available `rrule`s. The code for `foo`
-```@example lec08
+```@example lec09
 foo(x) = h(g(f(x)))
 
 f(x) = x^2
@@ -36,7 +39,7 @@ function rrule(::typeof(foo), x)
 end
 ```
 For this simple example we can define the three `rrule`s by hand:
-```@example lec08
+```@example lec09
 rrule(::typeof(f), x) = f(x), Δ -> 2x*Δ
 rrule(::typeof(g), x) = g(x), Δ -> cos(x)*Δ
 rrule(::typeof(h), x) = h(x), Δ -> 5*Δ
@@ -48,11 +51,11 @@ overload functions like `+`, `*`, etc, such that you don't have to define a
 In order to transform our functions safely we will make use of `IRTools.jl`
 (*Intermediate Representation Tools*) which provide some convenience functions
 for inspecting and manipulating code snippets. The IR for `foo` looks like this:
-```@example lec08
+```@example lec09
 using IRTools: @code_ir, evalir
 ir = @code_ir foo(2.)
 ```
-```@setup lec08
+```@setup lec09
 msg = """
 ir = 1: (%1, %2)                 ## rrule(foo, x)
        %3 = Main.f(%2)           ##   a = f(x)
@@ -63,7 +66,7 @@ ir = 1: (%1, %2)                 ## rrule(foo, x)
 ```
 Variable names are replaced by `%N` and each function gets is own line.
 We can evalulate the IR (to actually run it) like this
-```@example lec08
+```@example lec09
 evalir(ir, nothing, 2.)
 ```
 As a first step, lets transform the function calls to `rrule` calls.  For
@@ -76,7 +79,7 @@ replacing the statements would alter our forward pass. Instead we can insert
 each statement *before* the one we want to change. Then we can replace the the
 original statement with `v = rr[1]` to use only `v` and not `J` in the
 subsequent computation.
-```@example lec08
+```@example lec09
 using IRTools
 using IRTools: xcall, stmt
 
@@ -107,13 +110,13 @@ ir = IRTools.finish(pr)
 #println(msg)
 ```
 Evaluation of this transformed IR should still give us the same value
-```@example lec08
+```@example lec09
 evalir(ir, nothing, 2.)
 ```
 
 The only thing that is left to do now is collect the `Js` and return
 a tuple of our forward value and the `Js`.
-```@example lec08
+```@example lec09
 using IRTools: insertafter!, substitute, xcall, stmt
 
 xtuple(xs...) = xcall(Core, :tuple, xs...)
@@ -157,16 +160,16 @@ ir
 #println(msg)
 ```
 The resulting IR can be evaluated to the forward pass value and the Jacobians:
-```@repl lec08
+```@repl lec09
 (y, Js) = evalir(ir, foo, 2.)
 ```
 To compute the derivative given the tuple of `Js` we just need to compose them
 and set the initial gradient to one:
-```@repl lec08
+```@repl lec09
 reduce(|>, Js, init=1)  # Ja(Jb(Jy(1)))
 ```
 The code for transforming the IR as described above looks like this.
-```@example lec08
+```@example lec09
 function transform(ir, x)
     pr = IRTools.Pipe(ir)
     Js = IRTools.Variable[]
@@ -200,7 +203,7 @@ nothing # hide
 ```
 Now we can write a general `rrule` that can differentiate any function
 composed of our defined `rrule`s
-```@example lec08
+```@example lec09
 function rrule(f, x)
     ir = @code_ir f(x)
     ir_derived = transform(ir,x)
@@ -214,7 +217,7 @@ reverse(f,x) = rrule(f,x)[2](one(x))
 nothing # hide
 ```
 Finally, we just have to use `reverse` to compute the gradient
-```@example lec08
+```@example lec09
 plot(-2:0.1:2, foo, label="f(x) = 5sin(x^2)", lw=3)
 plot!(-2:0.1:2, x->10x*cos(x^2), label="Analytic f'", ls=:dot, lw=3)
 plot!(-2:0.1:2, x->reverse(foo,x), label="Dual Forward Mode f'", lw=3, ls=:dash)
@@ -240,7 +243,7 @@ differences between the backends.
 f(\bm x) = (\bm W \bm x + \bm b)^2
 ```
 
-```@setup lec08
+```@setup lec09
 using DataFrames
 using DrWatson
 using Glob
@@ -282,7 +285,7 @@ df = DataFrame([[names(df)]; collect.(eachrow(df))], [:column; Symbol.(axes(df, 
 ns = df[1,:] |> values |> collect
 rename!(df, ns)
 ```
-```@example lec08
+```@example lec09
 df[2:end,:] # hide
 ```
 

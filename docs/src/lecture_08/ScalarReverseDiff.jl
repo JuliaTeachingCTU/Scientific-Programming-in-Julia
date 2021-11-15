@@ -57,19 +57,25 @@ cscheme = cgrad(:RdYlBu_5, rev=true)
 p1 = contour(-4:0.1:4, -2:0.1:2, g, fill=true, c=cscheme, xlabel="x", ylabel="y")
 display(p1)
 
-function descend(f::Function, x0::Real, y0::Real; niters=20, λ=0.01)
+function descend(f::Function, x::Real, y::Real, λ=0.2)
+    (Δx, Δy) = gradient(f, x, y)
+    x -= λ*Δx
+    y -= λ*Δy
+    (x,y)
+end
+
+function minimize(f::Function, x0::Real, y0::Real; niters=20, λ=0.01)
     x, y = x0, y0
     ps = map(1:niters) do i
-        (Δx, Δy) = gradient(f, x, y)
-        x -= λ*Δx
-        y -= λ*Δy
+        (x,y) = descend(f, x, y, λ)
+        @info f(x,y)
         [x,y]
     end |> ps -> reduce(hcat, ps)
     ps[1,:], ps[2,:]
 end
 
-xs1, ys1 = descend(g, 1.5, -2.4, λ=0.2, niters=34)
-xs2, ys2 = descend(g, 1.8, -2.4, λ=0.2, niters=16)
+xs1, ys1 = minimize(g, 1.5, -2.4, λ=0.2, niters=34)
+xs2, ys2 = minimize(g, 1.8, -2.4, λ=0.2, niters=16)
 
 scatter!(p1, [xs1[1]], [ys1[1]], markercolor=:black, marker=:star, ms=7, label="Minimum")
 scatter!(p1, [xs2[1]], [ys2[1]], markercolor=:black, marker=:star, ms=7, label=false)
