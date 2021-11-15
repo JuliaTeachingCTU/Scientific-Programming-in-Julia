@@ -635,7 +635,7 @@ BenchmarkTools.Trial: 10000 samples with 6 evaluations.
 
  Memory estimate: 3.08 KiB, allocs estimate: 31.
 ```
-Even for this tiny example we are already 5 times faster than with the naively
+Even for this tiny example we are already 10 times faster than with the naively
 vectorized approach!
 
 In order to implement a full neural network we need two more rules. One for
