@@ -234,16 +234,24 @@ Most reverse mode AD engines does not support mutating values of arrays (`setind
 In Graph-based approach, we start with a complete knowledge of the computation graph (which is known in many cases like classical neural networks) and augment it with nodes representing the computation of the computation of the gradient (backward path). We need to be careful to add all edges representing the flow of informations needed to calculate the gradient. Once the computation graph is augmented, we can find the subgraph needed to compute the desired node(s). 
 
 Let's revive the above example ``f(x, y) = sin(x) + xy`` to observe, how the extension of the computational graph will look like. The computation graph of function ``f`` looks like
+
 ![diff graph](graphdiff_6.svg)
+
 where arrows ``\rightarrow`` denote the flow of operations and we have denoted the output of function ``f`` as ``z`` and outputs of intermediate nodes as ``h_i`` standing for *hidden*.
 
 We start from the top and add a node calculating ``\frac{\partial z}{\partial h_3}`` which is an identity, needed to jump-start the differentiation. 
+
 ![diff graph](graphdiff_7.svg)
+
 We connect it with the output of ``h_3``, even though technically in this case it is not needed, as the ``z = h_3``.
 We then add a node calculating ``\frac{\partial h_3}{\partial h_2}`` for which we only need information about ``h_2`` and mark it in the graph (again, this edge can be theoretically dropped due to being equal to one regardless the inputs). Following the chain rule, we need to combine ``\frac{\partial h_3}{\partial h_2}`` with ``\frac{\partial z}{\partial h_3}`` to compute ``\frac{\partial z}{\partial h_2}`` which we note in the graph.
+
 ![diff graph](graphdiff_9.svg)
+
 We continue with the same process with ``\frac{\partial h_3}{\partial h_1}``, which we again combine with ``\frac{\partial z}{\partial h_1}`` to obtain ``\frac{\partial z}{\partial h_1}``. Continuing the reverse diff we obtain the final graph
+
 ![diff graph](graphdiff_14.svg) 
+
 containing the desired nodes ``\frac{\partial z}{\partial x}`` and ``\frac{\partial z}{\partial y}``. This computational graph can be passed to the compiler to compute desired values.
 
 This approach to AD has been taken for example by Theano and by TensorFlow 1. When you in tensorflow you function like `tf.mul( a, b )` or `tf.add(a,b)`, you are not performing the computation in python, but you are building the computational graph shown as above. You can then compute the values using `tf.run` with a desired inputs, but you are in fact computing the values in a different interpretter / compiler then in python.
