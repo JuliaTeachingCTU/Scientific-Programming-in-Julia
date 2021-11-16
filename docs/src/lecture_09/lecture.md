@@ -1,3 +1,99 @@
+# Generated functions
+
+```julia
+@generated function gentest(x)
+    return :(x + x)
+end
+```
+
+```julia
+julia> @macroexpand @generated function gentest(x)
+           return :(x + x)
+       end
+
+:(function gentest(x)
+      if $(Expr(:generated))
+          return $(Expr(:copyast, :($(QuoteNode(:(x + x))))))
+      else
+          $(Expr(:meta, :generated_only))
+          return
+      end
+  end)
+```
+- The body of the function contains a check, if compiler wants generated function `Expr(:generated)` 
+- the output of the function `gentest` is wrappend in `QuoteNode` (recall this means a full quotation meaning that `$(.)` is not interpolated in) and inserted into the AST.
+- 
+
+Questions to discourse:
+- What the if `Expr(:generated)` means? Who decides which branch will be taken?
+- At which stage of compilation the generation function takes place? It is probably when the compiler is performing type inference and it is looking for a specialization of a function for a given set of arguments.
+
+
+#### Notable differences to Macros
+- Generated functions return expressions, similarly as macros. 
+- In macros, the argument was an expression. In generated functions, the argument is syntactically variables, but you do not have access to their values. You can use their name in the expressions produced by the generated functions. Importantly, the generated functions have access to the type information about the variables (note they are called during inferring )
+- Generated functions has to be pure in the sense that they are not allowed to have side effects (for example modifying some global variables, including things like printing). The reason for this is that this can lead to unexpected errors, as you do not know, at which moment the functions will be called
+
+
+```julia
+@generated function unrolled_map(f, x::NamedTuple{KS}) where {KS}
+    vals = [:(f(Core.getfield(x, $(QuoteNode(k))))) for k in KS]
+    :(vcat($(vals...)))
+end
+
+x = (a = 1, b = 2 , c = 3)
+```
+
+## Zygote internals
+
+```julia
+function pullback(f, args...)
+  y, back = _pullback(f, args...)
+  y, Δ -> tailmemaybe(back(Δ))
+end
+
+function gradient(f, args...)
+  y, back = pullback(f, args...)
+  grad = back(sensitivity(y))
+  isnothing(grad) ? nothing : map(_project, args, grad)
+end
+
+_pullback(f, args...) = _pullback(Context(), f, args...)
+
+@generated function _pullback(ctx::AContext, f, args...)
+  # Try using ChainRulesCore
+  if is_kwfunc(f, args...)
+    # if it is_kw then `args[1]` are the keyword args, `args[2]` is actual function
+    cr_T = Tuple{ZygoteRuleConfig{ctx}, args[2:end]...}
+    chain_rrule_f = :chain_rrule_kw
+  else
+    cr_T = Tuple{ZygoteRuleConfig{ctx}, f, args...}
+    chain_rrule_f = :chain_rrule
+  end
+
+  hascr, cr_edge = has_chain_rrule(cr_T)
+  hascr && return :($chain_rrule_f(ZygoteRuleConfig(ctx), f, args...))
+
+  # No ChainRule, going to have to work it out.
+  T = Tuple{f,args...}
+  ignore_sig(T) && return :(f(args...), Pullback{$T}(()))
+
+  g = try
+    _generate_pullback_via_decomposition(T)
+  catch e
+    rethrow(CompileError(T,e))
+  end
+  g === nothing && return :(f(args...), Pullback{$T}((f,)))
+  meta, forw, _ = g
+  argnames!(meta, Symbol("#self#"), :ctx, :f, :args)
+  forw = varargs!(meta, forw, 3)
+  # IRTools.verify(forw)
+  forw = slots!(pis!(inlineable!(forw)))
+  # be ready to swap to using chainrule if one is declared
+  cr_edge != nothing && edge!(meta, cr_edge)
+  return update!(meta.code, forw)
+end
+```
 ## Source Code Transformation
 
 The most recent approach to Reverse Mode AD is **_Source-to-Source_**
