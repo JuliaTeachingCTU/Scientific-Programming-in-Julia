@@ -276,6 +276,7 @@ struct TrackedArray{T,N,V<:AbstractArray{T,N}} <: AbstractArray{T,N}
     value::V
     deriv::Union{Nothing,V}
     tape::Vector{Any}
+    string_tape::String
 end
 ```
 where in
@@ -286,36 +287,55 @@ where in
 What do we need to store on the tape? Let's denote as ``a`` the current `TrackedArray`. The gradient with respect to some output ``z`` is equal to ``\frac{\partial z}{\partial a} = \sum_{g_i} \frac{\partial z}{\partial g_i} \times \frac{\partial g_i}{\partial a}`` where  ``g_i`` is the output of any function (in the computational graph) where ``a`` was a direct input. The `InstructionTape` will therefore contain a reference to ``g_i`` (which has to be of `TrackedArray` and where we know ``\frac{\partial z}{\partial g_i}`` will be stored in `deriv` field) and we also need to a method calculating ``\frac{\partial g_i}{\partial a}``, which can be stored as an anynymous function will accepting the grad as an argument.
 
 ```julia
-TrackedArray(a::AbstractArray) = TrackedArray(a, similar(a) .= 0, [])
+TrackedArray(a::AbstractArray, string_tape::String = "") = TrackedArray(a, similar(a) .= 0, [], string_tape)
 TrackedMatrix{T,V} = TrackedArray{T,2,V} where {T,V<:AbstractMatrix{T}}
 TrackedVector{T,V} = TrackedArray{T,1,V} where {T,V<:AbstractVector{T}}
 Base.show(io::IO, ::MIME"text/plain", a::TrackedArray) = show(io, a)
 Base.show(io::IO, a::TrackedArray) = print(io, "TrackedArray($(size(a.value)))")
 value(A::TrackedArray) = A.value
 value(A) = A
-track(A) = TrackedArray(A)
+track(A, string_tape = "") = TrackedArray(A, string_tape)
+track(a::Number, string_tape) = TrackedArray(reshape([a], 1, 1), string_tape)
 
 import Base: +, *
-function *(A::TrackedMatrix, B::AbstractMatrix)
-   C = TrackedArray(value(A) * B)
-   push!(A.tape, (C, Δ -> Δ * B'))
+function *(A::TrackedMatrix, B::TrackedMatrix)
+   a, b = value.((A, B))
+   C = TrackedArray(a * b, "($(A.string_tape) * $(B.string_tape))")
+   push!(A.tape, (C, Δ -> Δ * b'))
+   push!(B.tape, (C, Δ -> a' * Δ))
    C
 end
 
-function +(A::TrackedMatrix, B::AbstractMatrix)
-   C = TrackedArray(value(A) + B)
+function +(A::TrackedMatrix, B::TrackedMatrix)
+   C = TrackedArray(value(A) + value(B), "($(A.string_tape) + B)")
    push!(A.tape, (C, Δ -> Δ))
+   push!(B.tape, (C, Δ -> Δ))
+   C
+end
+
+function msin(A::TrackedMatrix)
+   a = value(A)
+   C = TrackedArray(sin.(a), "sin($(A.string_tape))")
+   push!(A.tape, (C, Δ -> cos.(a) .* Δ))
    C
 end
 ```
 
 Let's observe that the operations are recorded on the tape as they should
 ```julia
-A = track(rand(4,4))
-B = rand(4,1)
-C = rand(4,1)
-R = A * B + C
+a = rand()
+b = rand()
+A = track(a, "A")
+B = track(b, "B")
+# R = A * B + msin(A)
+C = A * B 
 A.tape
+B.tape
+C.string_tape
+R = C + msin(A)
+A.tape
+B.tape
+R.string_tape
 ```
 
 Let's now implement a function that will recursively calculate the gradient of a term of interest. It goes over its childs, if they not have calculated the gradients, calculate it, otherwise it adds it to its own after  if not, ask them to calculate the gradient and otherwise 
@@ -323,12 +343,17 @@ Let's now implement a function that will recursively calculate the gradient of a
 function accum!(A::TrackedArray)
     isempty(A.tape) && return(A.deriv)
     A.deriv .= sum(g(accum!(r)) for (r, g) in A.tape)
+    empty!(A.tape)
+    A.deriv
 end
 ```
 We can calculate the gradient by initalizing the gradient of the result to vector of ones simulating the `sum` function
 ```julia
 R.deriv .= 1
-accum!(A)
+accum!(A)[1]
+gradient(a -> a*b + sin(a), a)[1]
+accum!(B)[1]
+gradient(b -> a*b + sin(a), b)[1]
 ```
 The api function for computing the grad might look like
 ```julia
@@ -345,10 +370,9 @@ Let's compare the results to those computed by Zygote
 ```julia
 using Zygote
 A = rand(4,4)
-B = rand(4,1)
-C = rand(4,1)
-grad(A -> A * B + C, A)[1]
-gradient(A -> sum(A * B + C), A)[1]
+B = rand(4,4)
+grad(A -> A * B + sin(A), A)[1]
+gradient(A -> sum(A * B + sin.(A)), A)[1]
 ```
 
 To make the above AD system really useful, we would need to 
@@ -357,10 +381,9 @@ To make the above AD system really useful, we would need to
 
 For example to add all combinations for `+` and `*`, we would need to add following rules.
 ```julia
-function Base.*(A::TrackedMatrix, B::TrackedMatrix)
-   C = TrackedArray(value(A) * value(B))
+function Base.*(A::TrackedMatrix, B::AbstractMatrix)
+   C = TrackedArray(value(A) * B, "($(A.name) * B)")
    push!(A.tape, (C, Δ -> Δ * B'))
-   push!(B.tape, (C, Δ -> A' * Δ))
    C
 end
 
