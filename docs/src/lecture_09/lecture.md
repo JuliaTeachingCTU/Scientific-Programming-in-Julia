@@ -35,14 +35,59 @@ Questions to discourse:
 - Generated functions has to be pure in the sense that they are not allowed to have side effects (for example modifying some global variables, including things like printing). The reason for this is that this can lead to unexpected errors, as you do not know, at which moment the functions will be called
 
 
+Let's write a version of `map` that would apply the function `f` on arguments with corresponding names.
 ```julia
-@generated function unrolled_map(f, x::NamedTuple{KS}) where {KS}
-    vals = [:(f(Core.getfield(x, $(QuoteNode(k))))) for k in KS]
+x = (a = 1, b = 2, c = 3)
+y = (a = 4, b = 5, c = 6)
+map(+, x, y)
+```
+but it does not work with permuted names
+```julia
+x = (a = 1, b = 2, c = 3)
+y = (c = 6, b = 5, a = 4)
+map(+, x, y)
+```
+
+How can we fix that?
+Approach 1:
+```julia
+function permuted_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY}
+    @assert issubset(KX,KY)
+    NamedTuple{KX}(map(k -> f(x[k], y[k]), KX))
+end
+```
+
+Let's start with simple single-argument unrolled map
+```julia
+@generated function unrolled_map(f, x::NamedTuple{KX}) where {KX} 
+    vals = [:(f(getfield(x, $(QuoteNode(k))))) for k in KX]
     :(vcat($(vals...)))
 end
-
-x = (a = 1, b = 2 , c = 3)
 ```
+
+We can see that obtaining the name of a varible is a little bit difficult, so let's write a syntactic sugar
+```julia
+_get(name, k) = :(getfield($(name), $(QuoteNode(k))))
+```
+and with that, the code will look nicer
+```julia
+@generated function unrolled_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY} 
+    @assert issubset(KX,KY)
+    _get(name, k) = :(getfield($(name), $(QuoteNode(k))))
+    vals = [:(f($(_get(:x, k)), $(_get(:y, k)))) for k in KX]
+    :(NamedTuple{$(KX)}(($(vals...),)))
+end
+```
+
+```julia
+@generated function unrolled_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY} 
+    @assert issubset(KX,KY)
+    _get(name, k, KS) = :(getfield($(name), $(findfirst(k .== KS))))
+    vals = [:(f($(_get(:x, k, KX)), $(_get(:y, k, KY)))) for k in KX]
+    :(NamedTuple{$(KX)}(($(vals...),)))
+end
+```
+
 
 ## Zygote internals
 
