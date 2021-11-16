@@ -61,7 +61,8 @@ Let's start with simple single-argument unrolled map
 ```julia
 @generated function unrolled_map(f, x::NamedTuple{KX}) where {KX} 
     vals = [:(f(getfield(x, $(QuoteNode(k))))) for k in KX]
-    :(vcat($(vals...)))
+    # vals = [:(f(getfield(x, $(k)))) for k in KX]
+    :(($(vals...),))
 end
 ```
 
