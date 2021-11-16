@@ -5,7 +5,6 @@
 \usepackage{verbatim}
 \usetikzlibrary{arrows,shapes}
 
-
 \begin{document}
 \input{style.tex}
 
@@ -15,9 +14,18 @@
       {(1,5)/z/$z$},
       {(1,0)/x/$x$},
       {(0,1)/y/$y$},
-      {(1,2)/h1/$h_1=\sin$},
-      {(0,3)/h2/$h_2$},
-      {(1,4)/h3/$h_3$}} \node[forward] (\label) at \pos {\name};
+      {(1,2)/h1/$h_1 = \sin$},
+      {(0,3)/h2/$h_2 = \cdot$},
+      {(1,4)/h3/$h_3 = +$}} \node[forward] (\label) at \pos {\name};
+
+    % \foreach \pos/\label/\name/ in {
+    %   {(1,2)/h1/$h_1 = \sin$},
+    %   {(0,3)/h2/$h_2 = \cdot$},
+    %   {(1,4)/h3/$h_3 = +$}} \node[forward]  (\label) at \pos {\name};
+    % \foreach \pos/\label/\name/\decor in {
+    %   {(1,2)/h1/$\sin$/$h_1$},
+    %   {(0,3)/h2/$\cdot$/$h_2$},
+    %   {(1,4)/h3/$+$/$h_3$}} \node[forward,label=above:{\decor}]  (\label) at \pos {\name};
 
     \foreach \pos/\label/\name in {
       {(2.5,2)/dh3dh1/$\frac{\partial h_3}{\partial h_1}$},
@@ -34,7 +42,6 @@
       %{h3/dh3dh1},
       %{h3/dh3dh2},
       {dzdh2/dzdx},
-      {dzdh2/dh2dy},
       {y/dh2dy},
       {x/dxdx},
       {dxdx/dzdx},
