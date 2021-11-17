@@ -1,7 +1,9 @@
 # [Homework 08](@id hw08)
 
 In this homework you will write an additional rule for our scalar reverse AD
-from the lab. The solution to the lab is
+from the lab. For this homework, please write all your code in one file `hw.jl`
+which you have to zip and upload to BRUTE as usual. The solution to the lab is
+below.
 ```@example hw08
 mutable struct TrackedReal{T<:Real}
     data::T
