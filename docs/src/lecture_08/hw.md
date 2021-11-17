@@ -1,17 +1,7 @@
 # [Homework 08](@id hw08)
 
 In this homework you will write an additional rule for our scalar reverse AD
-from the lab. We will use it to compute the derivative of the Babylonian square
-root.
-```@example hw08
-babysqrt(x, t=(1+x)/2, n=10) = n==0 ? t : babysqrt(x, (t+x/t)/2, n-1)
-nothing # hide
-```
-In order to differentiate through `babysqrt` you will need a reverse rule for `/`
-for `Base.:/(TrackedReal,TrackedReal)` as well as the cases where you divide with
-constants in volved (e.g. `Base.:/(TrackedReal,Real)`).
-
-The solution to the lab is
+from the lab. The solution to the lab is
 ```@example hw08
 mutable struct TrackedReal{T<:Real}
     data::T
@@ -62,6 +52,15 @@ function gradient(f, args::Real...)
     accum!.(ts)
 end
 ```
+
+We will use it to compute the derivative of the Babylonian square root.
+```@example hw08
+babysqrt(x, t=(1+x)/2, n=10) = n==0 ? t : babysqrt(x, (t+x/t)/2, n-1)
+nothing # hide
+```
+In order to differentiate through `babysqrt` you will need a reverse rule for `/`
+for `Base.:/(TrackedReal,TrackedReal)` as well as the cases where you divide with
+constants in volved (e.g. `Base.:/(TrackedReal,Real)`).
 
 ```@raw html
 <div class="admonition is-category-homework">

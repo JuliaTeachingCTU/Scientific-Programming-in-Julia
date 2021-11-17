@@ -18,29 +18,31 @@ arguments which means that forward differentiation scales as $O(N)$ where $N$ is
 the number of inputs to `f`.
 
 *Reverse-mode* AD can compute gradients of functions with many inputs and one
-output in one go. This great because very often we want to optimize loss
+output in one go. This is great because very often we want to optimize loss
 functions which are exactly that: Functions with many input variables and one
 loss output.
 
 ## Reverse Mode AD
 
-Let $f:\mathbb R^N\rightarrow\mathbb R^M$ with an input vector $\bm x$ such that
+With functions $f:\mathbb R^N\rightarrow\mathbb R^M$ and $g:\mathbb
+R^L\rightarrow \mathbb R^N$ with an input vector $\bm x$ we can define the
+composition of $f$ and $g$ as
 ```math
-\bm z = f(g_1(\bm x), g_2(\bm x), \dots, g_N(\bm x)).
+\bm z = (f \circ g)(\bm x), \qquad \text{where} \qquad \bm y=g(\bm x), \qquad \bm z = f(\bm y).
 ```
-The multivariate chainrule for one variable $x_i$ reads
+The multivariate chainrule reads
 ```math
-\left.\frac{\partial f}{\partial x_i}\right|_{\bm x} =
-    \sum_{k=1}^N \left.\frac{\partial f}{\partial g_k}\right|_{\bm g(\bm x)}
-                 \left.\frac{\partial g_k}{\partial x_i}\right|_{x_i}
+\left.\frac{\partial z_i}{\partial x_j}\right|_{\bm x} =
+    \sum_{k=1}^N \left.\frac{\partial z_i}{\partial y_k}\right|_{\bm y}
+                 \left.\frac{\partial y_k}{\partial x_i}\right|_{\bm x}
 ```
 If you want to read about where this comes from you can check
 [here](https://math.stackexchange.com/questions/3785018/intuitive-proof-of-the-multivariable-chain-rule)
 or [here](https://people.math.harvard.edu/~shlomo/docs/Advanced_Calculus.pdf).
 It is essentially one row of the *Jacobian matrix* $J$.
 Note that in order to compute the derivative we always have to know the input
-to the derived function, because we can only compute the derivative *at a specific point*
-(denoted by the $|$ notation).  For our example
+to the respective function, because we can only compute the derivative *at a specific point*
+(denoted by the $|_x$ $_{}$ notation).  For our example
 ```math
 z = f(x,y) = xy + \sin(x)
 ```
@@ -305,11 +307,12 @@ where $\lambda$ is the learning rate that has to be tuned manually.
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Implement a function `descend` performs one step of Gradient Descent (GD) on a function `f`
-with two inputs. For GD you also have to specify the number of gradient steps
-and the learning rate $\lambda$ so the function signature should look like this
+Implement a function `descend` performs one step of Gradient Descent (GD) on a
+function `f` with an arbitrary number of inputs. For GD you also have to
+specify the learning rate $\lambda$ so the function signature should look like
+this
 ```julia
-descend(f::Function, x0::Real, y0::Real, λ=0.2)
+descend(f::Function, λ::Real, args::Real)
 ```
 ```@raw html
 </div></div>
@@ -317,22 +320,20 @@ descend(f::Function, x0::Real, y0::Real, λ=0.2)
 <summary class = "solution-header">Solution:</summary><p>
 ```
 ```@example lab08
-function descend(f::Function, x::Real, y::Real, λ=0.2)
-    (Δx, Δy) = gradient(f, x, y)
-    x -= λ*Δx
-    y -= λ*Δy
-    (x,y)
+function descend(f::Function, λ::Real, args::Real...)
+    Δargs = gradient(f, args...)
+    args .- λ .* Δargs
 end
 nothing # hide
 ```
 ```@raw html
 </p></details>
 ```
-Running one `descend` step should result two new inputs with a smaller output
+Running one `descend` step should result in two new inputs with a smaller output
 for `g`
 ```@repl lab08
 g(1.0, 1.0)
-(x,y) = descend(g, 1.0, 1.0)
+(x,y) = descend(g, 0.2, 1.0, 1.0)
 g(x,y)
 ```
 
@@ -340,14 +341,16 @@ You can `minimize` a `g` starting from an initial value. Below is a code
 snippet that performs a number of `descend` steps on two different initial
 points and creates an animation of each step of the GD algorithm.
 ```julia
-function minimize(f::Function, x0::Real, y0::Real; niters=20, λ=0.01)
-    x, y = x0, y0
-    ps = map(1:niters) do i
-        (x,y) = descend(f, x, y, λ)
-        @info f(x,y)
-        [x,y]
-    end |> ps -> reduce(hcat, ps)
-    ps[1,:], ps[2,:]
+function minimize(f::Function, args::T...; niters=20, λ=0.01) where T<:Real
+    paths = ntuple(_->Vector{T}(undef,niters), length(args))
+    for i in 1:niters
+        args = descend(f, λ, args...)
+        @info f(args...)
+        for j in 1:length(args)
+            paths[j][i] = args[j]
+        end
+    end
+    paths
 end
 
 xs1, ys1 = minimize(g, 1.5, -2.4, λ=0.2, niters=34)

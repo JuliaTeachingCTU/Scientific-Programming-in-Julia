@@ -57,21 +57,21 @@ cscheme = cgrad(:RdYlBu_5, rev=true)
 p1 = contour(-4:0.1:4, -2:0.1:2, g, fill=true, c=cscheme, xlabel="x", ylabel="y")
 display(p1)
 
-function descend(f::Function, x::Real, y::Real, λ=0.2)
-    (Δx, Δy) = gradient(f, x, y)
-    x -= λ*Δx
-    y -= λ*Δy
-    (x,y)
+function descend(f::Function, λ::Real, args::Real...)
+    Δargs = gradient(f, args...)
+    args .- λ .* Δargs
 end
 
-function minimize(f::Function, x0::Real, y0::Real; niters=20, λ=0.01)
-    x, y = x0, y0
-    ps = map(1:niters) do i
-        (x,y) = descend(f, x, y, λ)
-        @info f(x,y)
-        [x,y]
-    end |> ps -> reduce(hcat, ps)
-    ps[1,:], ps[2,:]
+function minimize(f::Function, args::T...; niters=20, λ=0.01) where T<:Real
+    paths = ntuple(_->Vector{T}(undef,niters), length(args))
+    for i in 1:niters
+        args = descend(f, λ, args...)
+        @info f(args...)
+        for j in 1:length(args)
+            paths[j][i] = args[j]
+        end
+    end
+    paths
 end
 
 xs1, ys1 = minimize(g, 1.5, -2.4, λ=0.2, niters=34)
