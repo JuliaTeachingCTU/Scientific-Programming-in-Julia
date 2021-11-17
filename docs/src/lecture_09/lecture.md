@@ -147,15 +147,18 @@ end
 
 
 ```julia
+foo(x) = 5x + 3
 foo(x,y) = x * y + sin(x)
 foo(1.0,1.0)
+sigtypes = (typeof(foo), Float64, Float64)
 sigtypes = (typeof(foo), Float64, Float64)
 ```
 
 ```julia
-lowered_foo = retrieve_code_info((typeof(foo), Float64, Float64))
-lowered_foo.code        # contains expression of individual lines of code
-lowered_foo.slotnames   # contains names of corresponding variables
+lowered_code = retrieve_code_info((typeof(foo), Float64))
+lowered_code = retrieve_code_info((typeof(foo), Float64, Float64))
+lowered_code.code        # contains expression of individual lines of code
+lowered_code.slotnames   # contains names of corresponding variables
 ```
 
 Let's list for which expressions we have rrules in ChainRules
@@ -181,74 +184,83 @@ end
 
 rename_args(a::Core.ReturnNode, primal_names, lowered_fun) = Core.ReturnNode(rename_args(a.val, primal_names, lowered_fun))
 
+function generate_grad(lowered_code)
+  primal_names = Dict{Int,Symbol}()
+  primals = []
+  pullbacks = []
+  pullback_names = Dict{Int,Any}()
+  rename_args(ex) = rename_args(ex, primal_names, lowered_code)
+  output_id = -1
 
-primal_names = Dict{Int,Symbol}()
-primals = []
-pullback_names = Dict{Int,Any}()
-rename_args(ex) = rename_args(ex, primal_names, lowered_foo)
-output_id = -1
+  for(exno, ex) in enumerate(lowered_code.code)
+    if ex isa Core.ReturnNode
+      output_id = ex.val.id
+      continue
+    end
 
-for(exno, ex) in enumerate(lowered_foo.code)
-  if ex isa lowered_foo.code[end]
-    output_id = ex.val.id
-    continue
+    if !hasproperty(ex, :head) || ex.head != :call
+      push!(primals, rename_args(ex))
+      continue
+    end
+
+    ex.head != :call && return(rename_args(ex))
+    fun_T = :(typeof($(ex.args[1]))) |> eval
+    args_T = map(i -> Number, ex.args[2:end])
+    _methods = Base._methods_by_ftype(Tuple{typeof(rrule), fun_T, args_T...}, -1, world)
+    isempty(_methods) && return(rename_args(ex)) # If the method does not exist, I need to dive_in
+    renamed_args = rename_args(ex.args)
+
+    primal   = Symbol("r", exno)
+    pullback = Symbol("∂", exno)
+    rr = Symbol("rr",exno)
+    primal_names[exno] = primal
+    pullback_names[exno] = (pullback, renamed_args...)
+
+    # let's work out the pullback
+    push!(primals, :($(rr) = rrule($(renamed_args...))))
+    push!(primals, :($(primal) = $(rr)[1]))
+    push!(primals, :($(pullback) = $(rr)[2]))
   end
 
-  if !hasproperty(ex, :head) || ex.head != :call
-    push!(primals, rename_args(ex))
-    continue
-  end
-  
-  ex.head != :call && return(rename_args(ex))
-  fun_T = :(typeof($(ex.args[1]))) |> eval
-  args_T = map(i -> Number, ex.args[2:end])
-  _methods = Base._methods_by_ftype(Tuple{typeof(rrule), fun_T, args_T...}, -1, world)
-  isempty(_methods) && return(rename_args(ex)) # If the method does not exist, I need to dive_in
-  renamed_args = rename_args(ex.args)
-
-  primal   = Symbol("r", exno)
-  pullback = Symbol("∂", exno)
-  rr = Symbol("rr",exno)
-  primal_names[exno] = primal
-  pullback_names[exno] = (pullback, renamed_args...)
-
-  # let's work out the pullback
-  push!(primals, :($(rr) = rrule($(renamed_args...))))
-  push!(primals, :($(primal) = $(rr)[1]))
-  push!(primals, :($(pullback) = $(rr)[2])])
-end
-
-#Let's get the name of the output variable and iniate the pullback
-primal_out = Symbol(:r, output_id) 
-pullback_arg = Symbol(:∂r, output_id) 
-created_grads = Indices{Symbol}()
-for line_no in sort(collect(keys(pullback_names)), rev = true)
-  pullfun  = pullback_names[line_no][1]
-  pullout = Symbol(:Δ, line_no)
-  p = Symbol(:∂r, line_no) 
-  push!(pullbacks, :($(pullout) = $(pullfun)($(p))))
-  for (i, x) in (enumerate(pullback_names[line_no][3:end]))
-    o = Symbol(:∂, x) 
-    if o ∈ created_grads
-      push!(pullbacks, :($(o) += $(pullout)[$(i)]))
-    else
-      push!(pullbacks, :($(o) = $(pullout)[$(i)]))
-      insert!(created_grads, o)
+  #Let's get the name of the output variable and iniate the pullback
+  primal_out = Symbol(:r, output_id) 
+  pullback_arg = Symbol(:∂r, output_id) 
+  created_grads = Indices{Symbol}()
+  for line_no in sort(collect(keys(pullback_names)), rev = true)
+    pullfun  = pullback_names[line_no][1]
+    pullout = Symbol(:Δ, line_no)
+    p = Symbol(:∂r, line_no) 
+    push!(pullbacks, :($(pullout) = $(pullfun)($(p))))
+    for (i, x) in (enumerate(pullback_names[line_no][3:end]))
+      o = Symbol(:∂, x) 
+      if o ∈ created_grads
+        push!(pullbacks, :($(o) += $(pullout)[$(i+1)]))
+      else
+        push!(pullbacks, :($(o) = $(pullout)[$(i+1)]))
+        insert!(created_grads, o)
+      end
     end
   end
+
+  #add gradients with respect to arguments
+  argnames = lowered_code.slotnames[2:end]
+  ∂args = map(s -> Symbol(:∂, s), argnames)
+
+  quote
+    function ∂foo($(argnames...))
+      $(primals...)
+      function pullback($(pullback_arg))
+        $(pullbacks...)
+        return(NoTangent(), $(∂args...))
+      end
+      return($(primal_out), pullback)
+    end
+  end |> Base.remove_linenums!
 end
 
-quote
-  function ∂foo(x, y)
-    $(primals...)
-    function pullback($(Δ))
-      $(pullbacks...)
-    end
-    return(())
-  end
-end |> Base.remove_linenums!
-
-∂foo(1, 1)[1] ≈ foo(1,1)
+p, back = ∂foo(1, 1)
+p ≈ foo(1,1)
+back(1)
 ```
 
 ### some thoughts
