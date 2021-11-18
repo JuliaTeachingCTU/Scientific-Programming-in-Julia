@@ -16,6 +16,10 @@ to run `f` again, this time seeding the second argument with `Dual(y,one(y))`.
 Hence, we have to evaluate `f` *twice* if we want derivatives w.r.t to both its
 arguments which means that forward differentiation scales as $O(N)$ where $N$ is
 the number of inputs to `f`.
+```julia
+dfdx = f(Dual(x,one(x)), Dual(y,zero(y)))
+dfdy = f(Dual(x,zero(x)), Dual(y,one(y)))
+```
 
 *Reverse-mode* AD can compute gradients of functions with many inputs and one
 output in one go. This is great because very often we want to optimize loss
@@ -110,7 +114,7 @@ the gradient accumulation from above via the chainrule
 ```math
 \left.\frac{\partial f}{\partial x_i}\right|_{\bm x} =
     \sum_{k=1}^N \left.\frac{\partial f}{\partial g_k}\right|_{\bm g(\bm x)}
-                 \left.\frac{\partial g_k}{\partial x_i}\right|_{x_i}.
+                 \left.\frac{\partial g_k}{\partial x_i}\right|_{\bm x}.
 ```
 We just have to loop over all children, collect the local derivatives, and
 recurse:
@@ -312,7 +316,7 @@ function `f` with an arbitrary number of inputs. For GD you also have to
 specify the learning rate $\lambda$ so the function signature should look like
 this
 ```julia
-descend(f::Function, λ::Real, args::Real)
+descend(f::Function, λ::Real, args::Real...)
 ```
 ```@raw html
 </div></div>

@@ -63,7 +63,7 @@ The corresponding jacobians are
 ```math
 \begin{alignat*}{4}
 f_1(y_1) & = y_{1,1} + y_{1,2}             \quad & \mathbf{J}_1& = \begin{bmatrix} 1 \\ 1 \end{bmatrix}  \\
-f_2(y_2) & = (y_{2,1}y_{1,2}, y_{2,3})     \quad & \mathbf{J}_2& = \begin{bmatrix} y_{2, 2} & 0 \\ y_{2,1} & 0 0 1 \end{bmatrix}\\
+f_2(y_2) & = (y_{2,1}y_{1,2}, y_{2,3})     \quad & \mathbf{J}_2& = \begin{bmatrix} y_{2, 2} & 0 \\ y_{2,1} & 0 \\ 0 & 1 \end{bmatrix}\\
 f_3(y_3) & = (y_{3,1}, y_{3,2}, \sin(y_{3,1}))     \quad & \mathbf{J}_3 & = \begin{bmatrix} 1 & 0 & \cos(y_{3,1}) \\ 0 & 1 & 0 \end{bmatrix} \\
 \end{alignat*}
 ```
