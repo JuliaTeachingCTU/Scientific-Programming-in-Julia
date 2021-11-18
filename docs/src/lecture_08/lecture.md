@@ -4,7 +4,7 @@ using Plots
 # Automatic Differentiation
 
 ## Motivation
-- It supports a lot of modern machine learning by allowing quick differentiation of complex mathematical functions. The 1st order optimization methods are ubiquituous in finding parameters of functions (not only in  deep learning).
+- It supports a lot of modern machine learning by allowing quick differentiation of complex mathematical functions. The 1st order optimization methods are ubiquitous in finding parameters of functions (not only in  deep learning).
 - AD is interesting to study from the implementation perspective. There are different takes on it with different trade-offs and Julia offers many implementations (some of them are not maintained anymore).
 - We (authors of this course) believe that it is good to understand (at least roughly), how the methods work in order to use them effectively in our work.
 - Julia is unique in the effort separating definitions of AD rules from AD engines that use those rules to perform the AD. This allows authors of generic libraries to add new rules that would be compatible with many frameworks. See [juliadiff.org](https://juliadiff.org/) for a list.
@@ -15,7 +15,7 @@ The differentiation is routine process, as most of the time we break complicated
 
 ``f(x) = f_1(f_2(f_3(\ldots f_n(x)))) = (f_1 \circ f_2 \circ \ldots \circ f_n)(x)`` 
 
-which is computed by chainrule. Before we dive into the details, let's define the notation, which for the sake of clarity needs to be precise. The gradient of function `f(x)` with respect to `x` at point `x₀` will be denoted as 
+which is computed by chainrule. Before we dive into the details, let's define the notation, which for the sake of clarity needs to be precise. The gradient of function ``f(x)`` with respect to ``x`` at point ``x_0`` will be denoted as 
 ``\left.\frac{\partial f}{\partial x}\right|_{x^0}``
 
 For a composed function ``f(x)`` the gradient with respect to ``x`` at point ``x_0`` is equal to
@@ -39,9 +39,10 @@ How ``\left.\frac{f_i}{\partial y_i}\right|_{y_i^0}`` looks like?
 
 The complexity of the computation (at least one part of it) is therefore therefore determined by the  Matrix multiplication, which is generally expensive, as theoretically it has complexity at least ``O(n^{2.3728596}),`` but in practice a little bit more as the lower bound hides the devil in the ``O`` notation. The order in which the Jacobians are multiplied has therefore a profound effect on the complexity of the AD engine. While determining the optimal order of multiplication of sequence of matrices is costly, in practice, we recognize two important cases.
 
-1. Jacobians are multiplied from right to left as  ``J_1 \times (J_2 \times ( \ldots \times (J_{n-1}) \times J_n))))`` which has the advantage when the input dimension of ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m`` is smaller than the output dimension, ``n < m``.
-2. Jacobians are multiplied from left to right as ``((((J_1 \times J_2) \times J_3) \times \ldots ) \times J_n`` which has the advantage when the input dimension of ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m`` is larger than the output dimension, ``n < m``.
-The ubiquituous in machine learning to minimization of a scalar (loss) function of a large number of parameters. Also notice that for `f` of certain structures, it pays-off to do a mixed-mode AD, where some partse are done using forward diff and some parts using reverse diff. 
+1. Jacobians are multiplied from right to left as  ``J_1 \times (J_2 \times ( \ldots \times (J_{n-1}) \times J_n))))`` which has the advantage when the input dimension of ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m`` is smaller than the output dimension, ``n < m``. - referred to as the **FORWARD MODE**
+2. Jacobians are multiplied from left to right as ``((((J_1 \times J_2) \times J_3) \times \ldots ) \times J_n`` which has the advantage when the input dimension of ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m`` is larger than the output dimension, ``n > m``. - referred to as the **BACKWARD MODE**
+
+The ubiquitous in machine learning to minimization of a scalar (loss) function of a large number of parameters. Also notice that for `f` of certain structures, it pays-off to do a mixed-mode AD, where some parts are done using forward diff and some parts using reverse diff. 
 
 ### Example
 Let's workout an example
@@ -68,49 +69,56 @@ and for the gradient it holds that
 ```math
 \begin{bmatrix} \frac{\partial f(x, y)}{\partial{x}} \\ \frac{\partial f(x,y)}{\partial{y}} \end{bmatrix} = \mathbf{J}_3 \times \mathbf{J}_2 \times \mathbf{J}_1 =  \begin{bmatrix} 1 & 0 & \cos(x) \\ 0 & 1 & 0 \end{bmatrix} \\  \times \begin{bmatrix} y & 0 \\ x & 0 \\ 0 & 1 \end{bmatrix} \times \begin{bmatrix} 1 \\ 1 \end{bmatrix} = \begin{bmatrix} y & \cos(x) \\ x & 0 \end{bmatrix} \times \begin{bmatrix} 1 \\ 1 \end{bmatrix} = \begin{bmatrix} y + \cos(x) \\ x \end{bmatrix}
 ```
+Note that from theoretical point of view this decomposition of a function is not unique, however as we will see later it usually given by the computational graph in a particular language/environment.
 
 ## Calculation of the Forward mode
 In theory, we can calculate the gradient using forward mode as follows
-Initialize the jacobian of ``y_n`` with respect to ``x`` to an identity matrix, because as we have stated above ``y_n = x``, i.e. ``\frac{\partial y_n}{\partial x} = \mathbb{I}``.
+Initialize the Jacobian of ``y_n`` with respect to ``x`` to an identity matrix, because as we have stated above ``y_n = x``, i.e. ``\frac{\partial y_n}{\partial x} = \mathbb{I}``.
 Iterate `i` from `n` down to `1` as
-- calculate the next intermediate ourput as ``y_{i-1} = f_i{y_i}`` 
+- calculate the next intermediate output as ``y_{i-1} = f_i({y_i})`` 
 - calculate Jacobian ``J_i = \frac{f_i}{\partial y_i}`` at point ``y_i``
 - *push forward* the gradient as ``\frac{\partial y_{i-1}}{\partial x} = J_i \times \frac{\partial y_n}{\partial x}``
 
 Notice that 
-- on the very end, we are left with `y = y_0` and with ``\frac{\partial y_0}{\partial x}``, which is the gradient we wanted to calculate;
+- on the very end, we are left with ``y = y_0`` and with ``\frac{\partial y_0}{\partial x}``, which is the gradient we wanted to calculate;
 - if `y` is a scalar, then ``\frac{\partial y_0}{\partial x}`` is a matrix with single row
-- the jacobian and the output of the function is calculated in one sweep.
+- the Jacobian and the output of the function is calculated in one sweep.
 
 The above is an idealized computation. The real implementation is a bit different, as we will see later.
 
 ### Implementation of the forward mode using Dual numbers
-Forward modes need to keep track of the output of the function and of the derivative at each computation step in the computation of the complicated function $f$. This can be elegantly realized with a (**dual number**)[https://en.wikipedia.org/wiki/Dual_number], which are conceptually similar to complex numbers, but instead of the imaginary number ``i`` dual numbers use ``\epsilon`` in its second component:
+Forward modes need to keep track of the output of the function and of the derivative at each computation step in the computation of the complicated function ``f``. This can be elegantly realized with a [**dual number**](https://en.wikipedia.org/wiki/Dual_number), which are conceptually similar to complex numbers, but instead of the imaginary number ``i`` dual numbers use ``\epsilon`` in its second component:
 ```math
 x = v + \dot v \epsilon,
 ```
 where ``(v,\dot v) \in \mathbb R`` and by definition ``\epsilon^2=0`` (instead
 of ``i^2=-1`` in complex numbers). What are the properties of these Dual numbers?
 ```math
-(v + \dot v \epsilon) + (u + \dot u \epsilon) = (v + u) + (\dot v + \dot u)\epsilon  \\
-(v + \dot v \epsilon)(u + \dot u \epsilon) = vu + (u\dot v + \dot u v)\epsilon + \dot v \dot u \epsilon^2 = vu + (u\dot v + \dot u v)\epsilon \\
-\frac{v + \dot v \epsilon}{u + \dot u \epsilon} = \frac{v + \dot v \epsilon}{u + \dot u \epsilon} \frac{u - \dot u \epsilon}{u - \dot u \epsilon} = \frac{v}{u} - \frac{(\dot u v - u \dot v)\epsilon}{u^2}
+\begin{align}
+(v + \dot v \epsilon) + (u + \dot u \epsilon) &= (v + u) + (\dot v + \dot u)\epsilon  \\
+(v + \dot v \epsilon)(u + \dot u \epsilon) &= vu + (u\dot v + \dot u v)\epsilon + \dot v \dot u \epsilon^2 = vu + (u\dot v + \dot u v)\epsilon \\
+\frac{v + \dot v \epsilon}{u + \dot u \epsilon} &= \frac{v + \dot v \epsilon}{u + \dot u \epsilon} \frac{u - \dot u \epsilon}{u - \dot u \epsilon} = \frac{v}{u} - \frac{(\dot u v - u \dot v)\epsilon}{u^2}
+\end{align}
 ```
 
 #### How are dual numbers related to differentiation?
 Let's evaluate the above equations at ``(v, \dot v) = (v, 1)`` and ``(u, \dot u) = (u, 0)``
 we obtain 
 ```math
-(v + \dot v \epsilon) + (u + \dot u \epsilon) = (v + u) + 1\epsilon  \\
-(v + \dot v \epsilon)(u + \dot u \epsilon) = vu + u\epsilon\\
-\frac{v + \dot v \epsilon}{u + \dot u \epsilon} = \frac{v}{u}  + \frac{1}{u} \epsilon
+\begin{align}
+(v + \dot v \epsilon) + (u + \dot u \epsilon) &= (v + u) + 1\epsilon  \\
+(v + \dot v \epsilon)(u + \dot u \epsilon) &= vu + u\epsilon\\
+\frac{v + \dot v \epsilon}{u + \dot u \epsilon} &= \frac{v}{u}  + \frac{1}{u} \epsilon
+\end{align}
 ```
-and notice that terms ``(1, u, \frac{1}{u})`` corresponds to gradient of functions ``(u+v, uv, \frac{u}{v})`` with respect to ``v``. We can repeat it with echanged values of ``\epsilon`` as ``(v, \dot v) = (v, 0)`` and ``(u, \dot u) = (u, 1)``
+and notice that terms ``(1, u, \frac{1}{u})`` corresponds to gradient of functions ``(u+v, uv, \frac{u}{v})`` with respect to ``v``. We can repeat it with changed values of ``\epsilon`` as ``(v, \dot v) = (v, 0)`` and ``(u, \dot u) = (u, 1)``
 and we obtain
 ```math
-(v + \dot v \epsilon) + (u + \dot u \epsilon) = (v + u) + 1\epsilon  \\
-(v + \dot v \epsilon)(u + \dot u \epsilon) = vu + v\epsilon\\
-\frac{v + \dot v \epsilon}{u + \dot u \epsilon} = \frac{v}{u}  - \frac{v}{u^2} \epsilon
+\begin{align}
+(v + \dot v \epsilon) + (u + \dot u \epsilon) &= (v + u) + 1\epsilon  \\
+(v + \dot v \epsilon)(u + \dot u \epsilon) &= vu + v\epsilon\\
+\frac{v + \dot v \epsilon}{u + \dot u \epsilon} &= \frac{v}{u}  - \frac{v}{u^2} \epsilon
+\end{align}
 ```
 meaning that at this moment we have obtained gradients with respect to ``u``.
 
@@ -127,11 +135,18 @@ p(v) = \sum_{i=1}^n p_iv^i
 ```
 and compute its value at ``v + \dot v \epsilon`` (note that we know how to do addition and multiplication)
 ```math
-p(v) = \sum_{i=0}^n p_i(v + v \epsilon )^i = \sum_{i=0}^n \left[p_i \sum_{j=0}^{n}\binom{i}{j}v^{i-j}(\dot v \epsilon)^{i}\right] = p_0 + \sum_{i=1}^n \left[p_i \sum_{j=0}^{1}\binom{i}{j}v^{i-j}(\dot v \epsilon)^{j}\right] = p_0 + \sum_{i=1}^n p_i(v^i + i v^{i-1} \dot v \epsilon ) = p(v) + \left(\sum_{i=1}^n ip_i v^{i-1}\right) \dot v \epsilon
+\begin{split}
+p(v) &= 
+    \sum_{i=0}^n p_i(v + v \epsilon )^i = 
+    \sum_{i=0}^n \left[p_i \sum_{j=0}^{n}\binom{i}{j}v^{i-j}(\dot v \epsilon)^{i}\right] = 
+    p_0 + \sum_{i=1}^n \left[p_i \sum_{j=0}^{1}\binom{i}{j}v^{i-j}(\dot v \epsilon)^{j}\right] = \\
+    &= p_0 + \sum_{i=1}^n p_i(v^i + i v^{i-1} \dot v \epsilon ) 
+    = p(v) + \left(\sum_{i=1}^n ip_i v^{i-1}\right) \dot v \epsilon
+\end{split}
 ```
-where in the multiplier of ``\dot v \epsilon``, ``\sum_{i=1}^n ip_i v^{i - 1}\right``, we recognize the derivative of `p(v)` with respect to `v`. This proves that Dual numbers can be used to calculate the gradient of polynomials.
+where in the multiplier of ``\dot{v} \epsilon``: ``\sum_{i=1}^n ip_i v^{i - 1}``, we recognize the derivative of ``p(v)`` with respect to ``v``. This proves that Dual numbers can be used to calculate the gradient of polynomials.
 
-Let's now consider a general function ``f:\mathbb{R} \rightarrow \mathbb{R}``. Its value at point ``v + \dot v \epsilon`` can be approximated using Taylor expansion at function at point `v` as
+Let's now consider a general function ``f:\mathbb{R} \rightarrow \mathbb{R}``. Its value at point ``v + \dot v \epsilon`` can be approximated using Taylor expansion at function at point ``v`` as
 ```math
 f(v+\dot v \epsilon) = \sum_{i=0}^\infty \frac{f^i(v)\dot v^i\epsilon^n}{i!}
   = f(v) + f'(v)\dot v\epsilon,
@@ -139,7 +154,7 @@ f(v+\dot v \epsilon) = \sum_{i=0}^\infty \frac{f^i(v)\dot v^i\epsilon^n}{i!}
 where all higher order terms can be dropped because ``\epsilon^i=0`` for ``i>1``. This shows that we can calculate the gradient of ``f`` at point `v` by calculating its value at `f(v + \epsilon)` and taking the multiplier of `\epsilon`.
 
 #### Implementing Dual number with Julia
-To demonstrate the simplicity of Dual numbers, consider following definition of Dual numbers, where we define a new number type and overlad functions `+`, `-`, `*`, and `/`.  In Julia, this reads:
+To demonstrate the simplicity of Dual numbers, consider following definition of Dual numbers, where we define a new number type and overload functions `+`, `-`, `*`, and `/`.  In Julia, this reads:
 ```@example lec08
 struct Dual{T<:Number} <: Number
     x::T
@@ -192,17 +207,17 @@ plot!(0.1:0.01:2, forward_dsqrt, label="Dual Forward Mode f'", lw=3, ls=:dash)
 ---
 ### Takeaways
 1. Forward mode $f'$ is obtained simply by pushing a `Dual` through `babysqrt`
-2. To make the forward diff work in julia, we only need to **_overload_** a few **_operators_** for forward mode AD to
+2. To make the forward diff work in Julia, we only need to **_overload_** a few **_operators_** for forward mode AD to
    work on **_any function_**
-3. For vector valued function we can use **_Hyperduals_**
+3. For vector valued function we can use [**_Hyperduals_**](http://adl.stanford.edu/hyperdual/)
 5. Forward diff can differentiation through the `setindex!` (more on this later on)
 6. ForwardDiff is implemented in `ForwardDiff.jl`, which might appear to be neglected, but the truth is that it is very stable and general implementation.
 7. ForwardDiff does not have to be implemented through Dual numbers. It can be implemented similarly to ReverseDiff through multiplication of Jacobians, which is what is the community work on now (in `Diffractor`, `Zygote` with rules defined in `ChainRules`).
 ---
 
 ## Reverse mode
-In reverse mode, the computation of the gradient follow the oposite order. That means.
-We initialize the computation by ``\mathbf{J}_0 = \frac{\partial y}{\partial y_0},`` which is again an identity matrix. The we compute the computation of Jacobians and multiplications in the opposite order. The problem is that to calculate ``J_i`` we need to know the value of ``y_i^0``, which cannot be calculated in the reverse pass. The backward pass therefore needs to be preceeded by the forward pass, where  ``\{y_i^0\}_{i=1}^n`` are calculated.
+In reverse mode, the computation of the gradient follow the opposite order. That means.
+We initialize the computation by ``\mathbf{J}_0 = \frac{\partial y}{\partial y_0},`` which is again an identity matrix. Then we compute Jacobians and multiplications in the opposite order. The problem is that to calculate ``J_i`` we need to know the value of ``y_i^0``, which cannot be calculated in the reverse pass. The backward pass therefore needs to be preceded by the forward pass, where  ``\{y_i^0\}_{i=1}^n`` are calculated.
 
 The complete reverse mode algorithm therefore proceeds as 
 1. Forward pass: iterate `i` from `n` down to `1` as
@@ -210,30 +225,31 @@ The complete reverse mode algorithm therefore proceeds as
 2. Backward pass: iterate `i` from `1` down to `n` as
     - calculate Jacobian ``J_i = \left.\frac{f_i}{\partial y_i}\right|_{y_i^0} `` at point ``y_i^0``
     - *pull back* the gradient as ``\frac{\partial y_0}{\partial y_{i}} = \frac{\partial y_0}{\partial y_{i-1}} \times J_i``
-    Notice that we actually cannot compute the backward pass, as we do not know ``y_i`` at the moment of computing the `J_i`. Therefore the backward pass needs to be preceeded by forward pass, where we calculate ``y_i`` as follows
 
 
 The need to store intermediate outs has a huge impact on memory requirements, which particularly on GPU is a big deal. Recall few lectures ago we have been discussing how excessive memory allocations can be damaging for performance, here we are given an algorithm where the excessive allocation is by design.
 
 ### Tricks to decrease memory consumptions
-- Define **custom rules** over large functional blocks. For example while we can auto-grad (in theory) matrix product, it is much more efficient to define make a matrix multiplication as one large function, for which we define jacobians (not to say that by doing so, we can dispatch on Blas)
+- Define **custom rules** over large functional blocks. For example while we can auto-grad (in theory) matrix product, it is much more efficient to define make a matrix multiplication as one large function, for which we define Jacobians (note that by doing so, we can dispatch on Blas)
 - When differentiating **Invertible functions**, calculate intermediate outputs from the output. This can lead to huge performance gain, as all data needed for computations are in caches.  
 - **Checkpointing** does not store intermediate ouputs after larger sequence of operations. When they are needed for forward pass, they are recalculated on demand.
 
 Most reverse mode AD engines does not support mutating values of arrays (`setindex!` in julia). This is related to the memory consumption, where after every `setindex!` you need in theory save the full matrix. `Enzyme` differentiating directly LLVM code supports this, since in LLVM every variable is assigned just once. ForwardDiff methods does not suffer this problem, as the gradient is computed at the time of the values.
 
 !!! info
-    Reverse mode AD was first published in 1976 by Seppo Linnainmaa, a finnish computer scientist. It was popularized in the end of 80s when applied to training multi-layer perceptrons, which gave rise to the famous **backpropagation** algorithm, which is a special case of reverse mode AD.
-    *Rumelhart, D. E., Hinton, G. E., and Williams, R. J. (1986), Learning representations by back-propagating errors., Nature, 323, 533--536.*
+    Reverse mode AD was first published in 1976 by Seppo Linnainmaa[^1], a finnish computer scientist. It was popularized in the end of 80s when applied to training multi-layer perceptrons, which gave rise to the famous **backpropagation** algorithm[^2], which is a special case of reverse mode AD.
+    
+    [^1]: Linnainmaa, S. (1976). Taylor expansion of the accumulated rounding error. *BIT Numerical Mathematics*, 16(2), 146-160.
+    [^2]: Rumelhart, D. E., Hinton, G. E., and Williams, R. J. (1986). Learning representations by back-propagating errors. *Nature*, 323, 533--536.
 
 !!! info
-    The terminilogy in automatic differentiation is everything but fixed. The community around `ChainRules.jl` went a great length to use something reasonable. They use **pullback** for a function realizing vector-Jacobian product in the reverse-diff reminding that the gradient is pulled back to the origin of the computation. The use **pushforward** to denote the same operation in the forwarddiff, as the gradient is push forward through the computation.
+    The terminology in automatic differentiation is everything but fixed. The community around `ChainRules.jl` went a great length to use something reasonable. They use **pullback** for a function realizing vector-Jacobian product in the reverse-diff reminding that the gradient is pulled back to the origin of the computation. The use **pushforward** to denote the same operation in the ForwardDiff, as the gradient is push forward through the computation.
 
 ## Implementation details of reverse AD
 ## Graph-based AD
-In Graph-based approach, we start with a complete knowledge of the computation graph (which is known in many cases like classical neural networks) and augment it with nodes representing the computation of the computation of the gradient (backward path). We need to be careful to add all edges representing the flow of informations needed to calculate the gradient. Once the computation graph is augmented, we can find the subgraph needed to compute the desired node(s). 
+In Graph-based approach, we start with a complete knowledge of the computation graph (which is known in many cases like classical neural networks) and augment it with nodes representing the computation of the computation of the gradient (backward path). We need to be careful to add all edges representing the flow of information needed to calculate the gradient. Once the computation graph is augmented, we can find the subgraph needed to compute the desired node(s). 
 
-Let's revive the above example ``f(x, y) = sin(x) + xy`` to observe, how the extension of the computational graph will look like. The computation graph of function ``f`` looks like
+Recall the example from the beginning of the lecture ``f(x, y) = sin(x) + xy``, let's observe, how the extension of the computational graph will look like. The computation graph of function ``f`` looks like
 
 ![diff graph](graphdiff_6.svg)
 
@@ -254,7 +270,7 @@ We continue with the same process with ``\frac{\partial h_3}{\partial h_1}``, wh
 
 containing the desired nodes ``\frac{\partial z}{\partial x}`` and ``\frac{\partial z}{\partial y}``. This computational graph can be passed to the compiler to compute desired values.
 
-This approach to AD has been taken for example by Theano and by TensorFlow 1. When you in tensorflow you function like `tf.mul( a, b )` or `tf.add(a,b)`, you are not performing the computation in python, but you are building the computational graph shown as above. You can then compute the values using `tf.run` with a desired inputs, but you are in fact computing the values in a different interpretter / compiler then in python.
+This approach to AD has been taken for example by [Theano](https://github.com/Theano/Theano) and by [TensorFlow 1](https://www.tensorflow.org/). In Tensorflow when you use functions like `tf.mul( a, b )` or `tf.add(a,b)`, you are not performing the computation in Python, but you are building the computational graph shown as above. You can then compute the values using `tf.run` with a desired inputs, but you are in fact computing the values in a different interpreter / compiler then in python.
 
 Advantages:
 - Knowing the computational graph in advance is great, as you can do expensive optimization steps to simplify the graph. 
@@ -265,10 +281,10 @@ Advantages:
 Disadvantages:
 - You are restricted to fixed computation graph. It is generally difficult to implement `if` or `while`, and hence to change the computation according to values computed during the forward pass.
 - Development and debugging can be difficult, since you are not developing the computation graph in the host language.
-- Exploiting within computation graph paralelism might be difficult.
+- Exploiting within computation graph parallelism might be difficult.
 
 ## Tracking-based AD
-Alternative to static-graph based methods are methods, which builds the graph during invokation of functions and then use this dynamically built graph to know, how to compute the gradient. The dynamically built graph is frequently called *tape*. This approach is used by popular libraries like **_PyTorch_**, **_AutoGrad_**, and **_Chainer_** in Python ecosystem, or by **_Tracker.jl_** (`Flux.jl`'s ex AD), **_ReverseDiff.jl_**, and **_AutoGrad.jl_** (`Knet.jl`'s AD) in Julia. This type of AD systems is also called *operator overloading*, since in order to record the operations performed on the arguments.
+Alternative to static-graph based methods are methods, which builds the graph during invocation of functions and then use this dynamically built graph to know, how to compute the gradient. The dynamically built graph is frequently called *tape*. This approach is used by popular libraries like [**_PyTorch_**](https://pytorch.org/), [**_AutoGrad_**](https://github.com/HIPS/autograd), and [**_Chainer_**](https://chainer.org/) in Python ecosystem, or by [**_Tracker.jl_**](https://github.com/FluxML/Tracker.jl) (`Flux.jl`'s former AD backend), [**_ReverseDiff.jl_**](https://github.com/JuliaDiff/ReverseDiff.jl), and [**_AutoGrad.jl_**](https://github.com/denizyuret/AutoGrad.jl) (`Knet.jl`'s AD backend) in Julia. This type of AD systems is also called *operator overloading*, since in order to record the operations performed on the arguments we need to replace/wrap the original implementation.
 
 How do we build the tracing? Let's take a look what `ReverseDiff.jl` is doing. It defines `TrackedArray` (it also defines `TrackedReal`, but `TrackedArray` is more interesting) as
 ```julia
@@ -281,10 +297,10 @@ end
 ```
 where in
 - `value` it stores the value of the array
-- `deriv` will hold the gradient od the tracked array
+- `deriv` will hold the gradient of the tracked array
 - `tape` of will log operations performed with the tracked array, such that we can calculate the gradient as a sum of operations performed over the tape.
 
-What do we need to store on the tape? Let's denote as ``a`` the current `TrackedArray`. The gradient with respect to some output ``z`` is equal to ``\frac{\partial z}{\partial a} = \sum_{g_i} \frac{\partial z}{\partial g_i} \times \frac{\partial g_i}{\partial a}`` where  ``g_i`` is the output of any function (in the computational graph) where ``a`` was a direct input. The `InstructionTape` will therefore contain a reference to ``g_i`` (which has to be of `TrackedArray` and where we know ``\frac{\partial z}{\partial g_i}`` will be stored in `deriv` field) and we also need to a method calculating ``\frac{\partial g_i}{\partial a}``, which can be stored as an anynymous function will accepting the grad as an argument.
+What do we need to store on the tape? Let's denote as ``a`` the current `TrackedArray`. The gradient with respect to some output ``z`` is equal to ``\frac{\partial z}{\partial a} = \sum_{g_i} \frac{\partial z}{\partial g_i} \times \frac{\partial g_i}{\partial a}`` where  ``g_i`` is the output of any function (in the computational graph) where ``a`` was a direct input. The `InstructionTape` will therefore contain a reference to ``g_i`` (which has to be of `TrackedArray` and where we know ``\frac{\partial z}{\partial g_i}`` will be stored in `deriv` field) and we also need to a method calculating ``\frac{\partial g_i}{\partial a}``, which can be stored as an anonymous function will accepting the grad as an argument.
 
 ```julia
 TrackedArray(a::AbstractArray, string_tape::String = "") = TrackedArray(a, similar(a) .= 0, [], string_tape)
@@ -347,7 +363,7 @@ function accum!(A::TrackedArray)
     A.deriv
 end
 ```
-We can calculate the gradient by initalizing the gradient of the result to vector of ones simulating the `sum` function
+We can calculate the gradient by initializing the gradient of the result to vector of ones simulating the `sum` function
 ```julia
 R.deriv .= 1
 accum!(A)[1]
@@ -364,7 +380,7 @@ function grad(f, args...)
     map(accum!, args)
 end
 ```
-where we should assert that the output dimension is 1. In our implementation  we dirtilly expect the output of f to be summed to a scalar.
+where we should assert that the output dimension is 1. In our implementation we dirtily expect the output of f to be summed to a scalar.
 
 Let's compare the results to those computed by Zygote
 ```julia
@@ -423,7 +439,7 @@ Disadvantages:
 * [simplest viable implementation](https://juliadiff.org/ChainRulesCore.jl/dev/autodiff/operator_overloading.html#ReverseDiffZero)
 
 ## ChainRules
-From our discussions about AD systems so far we see that while the basic, *engine*, part is relatively straightforward, it devil is in writing the rules prescribing the computation of gradients. These rules are needed for every system whether it is graph based, tracking, or wengert list based. ForwardDiff also needs a rule system, but rules are a bit different (as they are pushing the gradient forward rather than pulling it back). It is obviously a waste of effort for each AD system to have its own set of rules. Hence the community (initiated by Lyndon White and hence probably funded mainly by Invenia) have started to work on a unified system to express differentiation rules, such that they can be shared between systems. So far, they are supported by `Zygote.jl`, `Nabla.jl`, `ReverseDiff.jl` and `Diffractor.jl`, hence the approach seems to work.
+From our discussions about AD systems so far we see that while the basic, *engine*, part is relatively straightforward, it devil is in writing the rules prescribing the computation of gradients. These rules are needed for every system whether it is graph based, tracking, or Wengert list based. ForwardDiff also needs a rule system, but rules are a bit different (as they are pushing the gradient forward rather than pulling it back). It is obviously a waste of effort for each AD system to have its own set of rules. Therefore the community (initiated by Lyndon White backed by [Invenia](https://github.com/invenia)) have started to work on a unified system to express differentiation rules, such that they can be shared between systems. So far, they are supported by `Zygote.jl`, `Nabla.jl`, `ReverseDiff.jl` and `Diffractor.jl`, suggesting that the unification approach is working.
 
 The definition of reverse diff rules follows the idea we have nailed above (we refer readers interested in forward diff rules [to official documentation](https://juliadiff.org/ChainRulesCore.jl)).
 
