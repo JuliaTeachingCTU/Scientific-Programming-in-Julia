@@ -13,7 +13,9 @@ using Plots
 
 The differentiation is routine process, as most of the time we break complicated functions down into small pieces that we know, how to differentiate and from that to assemble the gradient of the complex function back. Thus, the essential piece is the differentiation of the composed function ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m``
 
-``f(x) = f_1(f_2(f_3(\ldots f_n(x)))) = (f_1 \circ f_2 \circ \ldots \circ f_n)(x)`` 
+```math
+f(x) = f_1(f_2(f_3(\ldots f_n(x)))) = (f_1 \circ f_2 \circ \ldots \circ f_n)(x)
+``` 
 
 which is computed by chainrule. Before we dive into the details, let's define the notation, which for the sake of clarity needs to be precise. The gradient of function ``f(x)`` with respect to ``x`` at point ``x_0`` will be denoted as 
 ``\left.\frac{\partial f}{\partial x}\right|_{x^0}``
