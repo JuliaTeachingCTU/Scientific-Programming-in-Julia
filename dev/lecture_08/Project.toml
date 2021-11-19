@@ -1,5 +1,6 @@
 [deps]
 ChainRules = "082447d4-558c-5d27-93f4-14fc19e9eca2"
+FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 GraphRecipes = "bd48cda9-67a9-57be-86fa-5b3c104eda73"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
