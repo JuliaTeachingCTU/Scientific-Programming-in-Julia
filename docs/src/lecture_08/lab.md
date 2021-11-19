@@ -72,9 +72,7 @@ a = x*y               # da/dx = y;     da/dy = x
 b = sin(x)            # db/dx = cos(x)
 z = a + b             # dz/da = 1;     dz/db = 1
 ```
-```@raw html
-<p><center><img src="graph.png" alt="graph"></center></p>
-```
+![graph](graph.png)
 
 In the graph you can see that the variable `x` can directly affect `b` and `a`.
 Hence, `x` has two children `a` and `b`.  During the forward pass we build the
