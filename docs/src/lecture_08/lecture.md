@@ -43,8 +43,8 @@ The computation of gradient ``\frac{\partial f}{\partial x}`` *theoretically* bo
 
 The complexity of the computation (at least one part of it) is therefore therefore determined by the  Matrix multiplication, which is generally expensive, as theoretically it has complexity at least ``O(n^{2.3728596}),`` but in practice a little bit more as the lower bound hides the devil in the ``O`` notation. The order in which the Jacobians are multiplied has therefore a profound effect on the complexity of the AD engine. While determining the optimal order of multiplication of sequence of matrices is costly, in practice, we recognize two important cases.
 
-1. Jacobians are multiplied from right to left as  ``J_1 \times (J_2 \times ( \ldots \times (J_{n-1}) \times J_n))))`` which has the advantage when the input dimension of ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m`` is smaller than the output dimension, ``n < m``. - referred to as the **FORWARD MODE**
-2. Jacobians are multiplied from left to right as ``((((J_1 \times J_2) \times J_3) \times \ldots ) \times J_n`` which has the advantage when the input dimension of ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m`` is larger than the output dimension, ``n > m``. - referred to as the **BACKWARD MODE**
+1. Jacobians are multiplied from right to left as  ``J_1 \times (J_2 \times ( \ldots \times (J_{n-1} \times J_n) \ldots))`` which has the advantage when the input dimension of ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m`` is smaller than the output dimension, ``n < m``. - referred to as the **FORWARD MODE**
+2. Jacobians are multiplied from left to right as ``( \ldots ((J_1 \times J_2) \times J_3) \times \ldots ) \times J_n`` which has the advantage when the input dimension of ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m`` is larger than the output dimension, ``n > m``. - referred to as the **BACKWARD MODE**
 
 The ubiquitous in machine learning to minimization of a scalar (loss) function of a large number of parameters. Also notice that for `f` of certain structures, it pays-off to do a mixed-mode AD, where some parts are done using forward diff and some parts using reverse diff. 
 
@@ -141,7 +141,7 @@ and compute its value at ``v + \dot v \epsilon`` (note that we know how to do ad
 ```math
 \begin{split}
 p(v) &= 
-    \sum_{i=0}^n p_i(v + v \epsilon )^i = 
+    \sum_{i=0}^n p_i(v + \dot{v} \epsilon )^i = 
     \sum_{i=0}^n \left[p_i \sum_{j=0}^{n}\binom{i}{j}v^{i-j}(\dot v \epsilon)^{i}\right] = 
     p_0 + \sum_{i=1}^n \left[p_i \sum_{j=0}^{1}\binom{i}{j}v^{i-j}(\dot v \epsilon)^{j}\right] = \\
     &= p_0 + \sum_{i=1}^n p_i(v^i + i v^{i-1} \dot v \epsilon ) 
@@ -155,7 +155,7 @@ Let's now consider a general function ``f:\mathbb{R} \rightarrow \mathbb{R}``. I
 f(v+\dot v \epsilon) = \sum_{i=0}^\infty \frac{f^i(v)\dot v^i\epsilon^n}{i!}
   = f(v) + f'(v)\dot v\epsilon,
 ```
-where all higher order terms can be dropped because ``\epsilon^i=0`` for ``i>1``. This shows that we can calculate the gradient of ``f`` at point `v` by calculating its value at `f(v + \epsilon)` and taking the multiplier of `\epsilon`.
+where all higher order terms can be dropped because ``\epsilon^i=0`` for ``i>1``. This shows that we can calculate the gradient of ``f`` at point ``v`` by calculating its value at ``f(v + \epsilon)`` and taking the multiplier of ``\epsilon``.
 
 #### Implementing Dual number with Julia
 To demonstrate the simplicity of Dual numbers, consider following definition of Dual numbers, where we define a new number type and overload functions `+`, `-`, `*`, and `/`.  In Julia, this reads:
@@ -178,7 +178,7 @@ Base.promote_rule(::Type{Dual{T}}, ::Type{S}) where {T<:Number,S<:Number} = Dual
 Base.promote_rule(::Type{Dual{T}}, ::Type{Dual{S}}) where {T<:Number,S<:Number} = Dual{promote_type(T,S)}
 
 # and define api for forward differentionation
-forward_diff(f::Function, x::Number) = _dual(f(Dual(x,1.0)))
+forward_diff(f::Function, x::Real) = _dual(f(Dual(x,1.0)))
 _dual(x::Dual) = x.d
 _dual(x::Vector) = _dual.(x)
 ```
@@ -216,9 +216,9 @@ plot!(0.1:0.01:2, forward_dsqrt, label="Dual Forward Mode f'", lw=3, ls=:dash)
 2. To make the forward diff work in Julia, we only need to **_overload_** a few **_operators_** for forward mode AD to
    work on **_any function_**
 3. For vector valued function we can use [**_Hyperduals_**](http://adl.stanford.edu/hyperdual/)
-5. Forward diff can differentiation through the `setindex!` (more on this later on)
-6. ForwardDiff is implemented in `ForwardDiff.jl`, which might appear to be neglected, but the truth is that it is very stable and general implementation.
-7. ForwardDiff does not have to be implemented through Dual numbers. It can be implemented similarly to ReverseDiff through multiplication of Jacobians, which is what is the community work on now (in `Diffractor`, `Zygote` with rules defined in `ChainRules`).
+5. Forward diff can differentiation through the `setindex!` (called each time an element is assigned to a place in array, e.g. `x = [1,2,3]; x[2] = 1`)
+6. ForwardDiff is implemented in [`ForwardDiff.jl`](https://github.com/JuliaDiff/ForwardDiff.jl), which might appear to be neglected, but the truth is that it is very stable and general implementation.
+7. ForwardDiff does not have to be implemented through Dual numbers. It can be implemented similarly to ReverseDiff through multiplication of Jacobians, which is what is the community work on now (in [`Diffractor`](https://github.com/JuliaDiff/Diffractor.jl), [`Zygote`](https://github.com/FluxML/Zygote.jl) with rules defined in [`ChainRules`](https://github.com/JuliaDiff/ChainRules.jl)).
 ---
 
 ## Reverse mode
@@ -247,7 +247,7 @@ The need to store intermediate outs has a huge impact on memory requirements, wh
 - When differentiating **Invertible functions**, calculate intermediate outputs from the output. This can lead to huge performance gain, as all data needed for computations are in caches.  
 - **Checkpointing** does not store intermediate ouputs after larger sequence of operations. When they are needed for forward pass, they are recalculated on demand.
 
-Most reverse mode AD engines does not support mutating values of arrays (`setindex!` in julia). This is related to the memory consumption, where after every `setindex!` you need in theory save the full matrix. `Enzyme` differentiating directly LLVM code supports this, since in LLVM every variable is assigned just once. ForwardDiff methods does not suffer this problem, as the gradient is computed at the time of the values.
+Most reverse mode AD engines does not support mutating values of arrays (`setindex!` in julia). This is related to the memory consumption, where after every `setindex!` you need in theory save the full matrix. [`Enzyme`](https://github.com/wsmoses/Enzyme.jl) differentiating directly LLVM code supports this, since in LLVM every variable is assigned just once. ForwardDiff methods does not suffer this problem, as the gradient is computed at the time of the values.
 
 !!! info
     Reverse mode AD was first published in 1976 by Seppo Linnainmaa[^1], a finnish computer scientist. It was popularized in the end of 80s when applied to training multi-layer perceptrons, which gave rise to the famous **backpropagation** algorithm[^2], which is a special case of reverse mode AD.
@@ -328,25 +328,25 @@ track(a::Number, string_tape) = TrackedArray(reshape([a], 1, 1), string_tape)
 
 import Base: +, *
 function *(A::TrackedMatrix, B::TrackedMatrix)
-   a, b = value.((A, B))
-   C = TrackedArray(a * b, "($(A.string_tape) * $(B.string_tape))")
-   push!(A.tape, (C, Δ -> Δ * b'))
-   push!(B.tape, (C, Δ -> a' * Δ))
-   C
+    a, b = value.((A, B))
+    C = TrackedArray(a * b, "($(A.string_tape) * $(B.string_tape))")
+    push!(A.tape, (C, Δ -> Δ * b'))
+    push!(B.tape, (C, Δ -> a' * Δ))
+    C
 end
 
 function +(A::TrackedMatrix, B::TrackedMatrix)
-   C = TrackedArray(value(A) + value(B), "($(A.string_tape) + B)")
-   push!(A.tape, (C, Δ -> Δ))
-   push!(B.tape, (C, Δ -> Δ))
-   C
+    C = TrackedArray(value(A) + value(B), "($(A.string_tape) + $(B.string_tape))")
+    push!(A.tape, (C, Δ -> Δ))
+    push!(B.tape, (C, Δ -> Δ))
+    C
 end
 
 function msin(A::TrackedMatrix)
-   a = value(A)
-   C = TrackedArray(sin.(a), "sin($(A.string_tape))")
-   push!(A.tape, (C, Δ -> cos.(a) .* Δ))
-   C
+    a = value(A)
+    C = TrackedArray(sin.(a), "sin($(A.string_tape))")
+    push!(A.tape, (C, Δ -> cos.(a) .* Δ))
+    C
 end
 ```
 
