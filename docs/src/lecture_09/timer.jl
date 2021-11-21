@@ -38,9 +38,6 @@ end
 
 reset!(calls::Calls) = calls.i[] = 0
 
-global to = Calls(100)
-
-
 struct Context{T<:Union{Nothing, Vector{Symbol}}}
     functions::T
 end
@@ -90,19 +87,19 @@ overdub(ctx::Context, f::Core.IntrinsicFunction, args...) = f(args...)
     ci = retrieve_code_info((F, args...))
     slot_vars = Dict(enumerate(ci.slotnames))
     # ssa_vars = Dict(i => gensym(:left) for i in 1:length(ci.code))
-    ssa_vars = Dict(i => Symbol(:L,i) for i in 1:length(ci.code))
+    ssa_vars = Dict(i => Symbol(:L, i) for i in 1:length(ci.code))
     used = assigned_vars(ci.code) |> distinct
     exprs = []
     for i in 1:length(args)
         push!(exprs, Expr(:(=), ci.slotnames[i+1], :(args[$(i)])))
     end
     for (i, ex) in enumerate(ci.code)
+        ex = rename_args(ex, slot_vars, ssa_vars)
         @show ex
         if ex isa Core.ReturnNode 
-            push!(exprs, Expr(:return, rename_args(ex.val, slot_vars, ssa_vars)))
+            push!(exprs, Expr(:return, ex.val))
             continue
         end
-        ex = rename_args(ex, slot_vars, ssa_vars)
         if timable(ex)
             fname = exportname(ex)
             fname = :(Symbol($(fname)))
@@ -112,6 +109,7 @@ overdub(ctx::Context, f::Core.IntrinsicFunction, args...) = f(args...)
             push!(exprs, ex)
             push!(exprs, Expr(:call, :push!, :to, :(:stop), fname))
         else
+            ex = i ∈ used ? Expr(:(=) , ssa_vars[i], ex) : ex
             push!(exprs, ex)
         end
     end
@@ -121,8 +119,10 @@ overdub(ctx::Context, f::Core.IntrinsicFunction, args...) = f(args...)
     r
 end
 
+
+global const to = Calls(100)
 reset!(to)
+ctx = Context()
 overdub(ctx, foo, 1.0, 1.0)
 
 
-ctx = Context()
