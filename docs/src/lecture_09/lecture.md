@@ -129,6 +129,177 @@ In theory, we can do all the above by directly modifying the code or introducing
 
 The technique we desire is called contextual dispatch, which means that under some context, we invoke a different function. The library `Casette.jl` provides a high-level api for overdubbing, but it is by no means interesting to see, how it works, as it shows, how we can "interact" with the lowered code before the code is typed.
 
+## insertion of the code
+
+Imagine that julia has compiled some function. For example 
+```julia
+foo(x,y) = x * y + sin(x)
+```
+Can I get access to lowered form?
+```julia
+julia> @code_lowered foo(1.0, 1.0)
+CodeInfo(
+1 ─ %1 = x * y
+│   %2 = Main.sin(x)
+│   %3 = %1 + %2
+└──      return %3
+)
+```
+The lowered form is very nice, because on the left hand, there is **always** one parameter. Such form would be very nice for example for computation of automatic gradients, because it is very close to a computation graph. It is built for you by the compiler. Swell.
+
+The answer is affirmative. with a little bit of effort (copied from `Cassette.jl`), you can have it
+```julia
+function retrieve_code_info(sigtypes, world = Base.get_world_counter())
+  S = Tuple{map(s -> Core.Compiler.has_free_typevars(s) ? typeof(s.parameters[1]) : s, sigtypes)...}
+  _methods = Base._methods_by_ftype(S, -1, world)
+  isempty(_methods) && @error("method $(sigtypes) does not exist, may-be run it once")
+  type_signature, raw_static_params, method = _methods[1] # method is the same as we would get by invoking methods(+, (Int, Int)).ms[1]  
+
+  # this provides us with the CodeInfo
+  method_instance = Core.Compiler.specialize_method(method, type_signature, raw_static_params, false)
+  code_info = Core.Compiler.retrieve_code_info(method_instance)
+end
+```
+
+And look at the result
+```julia
+ci = retrieve_code_info((typeof(foo), Float64, Float64))
+ci.code
+```
+https://docs.julialang.org/en/v1/devdocs/ast/#Lowered-form
+
+Scheme of overdubbing
+1. Let's define context `struct Context ... end`
+2. Let's define a generated function with signature
+```julia
+@generated function overdub(ctx::Context, ::typeof(f), args...)
+    # find an IR representation of `f(args)` using retrieve_code_info
+    ci = retrieve_code_info(f, args...)
+    # modify the code of `f(args)` by replacing the calls with 
+    overdub(ctx, ...
+    # perform user actions
+    return the modified expressions
+end
+```
+
+```julia
+struct Context{T<:Union{Nothing, Vector{Symbol}}}
+    functions::T
+end
+Context() = Context(nothing)
+
+ctx = Context()
+
+overdubbable(ctx::Context, ex::Expr) = ex.head == :call
+overdubbable(ctx::Context, ex) = false
+timable(ctx::Context{Nothing}, ex) = true
+
+exprs = []
+for (i, ex) in enumerate(ci.code)
+    if !overdubbable(ctx, ex)
+        push!(exprs, ex)
+        continue
+    end
+    if timable(ctx, ex)
+        push!(exprs, Expr(:call, :push!, :to, :start, ex.args[1]))
+        push!(exprs, Expr(ex.head, :overdub, :ctx, ex.args...))
+        push!(exprs, Expr(:call, :push!, :to, :stop, ex.args[1]))
+    else
+        push!(exprs, ex)
+    end
+end
+```
+
+A further complication is that we need to change variables back and also gives them names. if names have existed before. Recall that lowered form introduces additional variables while converting the code to SSA. The variables defined in the source code (argument names and user-defined variables) can be found in `ci.slotnames`,
+whereas the variables introduces during lowering to SSA are named by the line number.
+Observe a difference between
+```julia
+julia> foo(x,y) = x * y + sin(x)
+foo (generic function with 1 method)
+
+julia> retrieve_code_info((typeof(foo), Float64, Float64)).slotnames
+3-element Vector{Symbol}:
+ Symbol("#self#")
+ :x
+ :y
+```
+and
+```julia
+julia> function foo(x, y)
+       z = x * y
+       z + sin(y)
+       end
+foo (generic function with 1 method)
+
+julia> retrieve_code_info((typeof(foo), Float64, Float64)).slotnames
+4-element Vector{Symbol}:
+ Symbol("#self#")
+ :x
+ :y
+ :z
+```
+This allows to convert the names back to the original. Let's create a dictionary of assignments
+as
+```julia 
+fun_vars = Dict(enumerate(ci.slotnames))
+lower_vars = Dict(i => gensym(:left) for i in 1:length(ci.code))
+
+rename_args(ex::Expr, fun_vars, lower_vars) = Expr(ex.head, rename_args(ex.args, fun_vars, lower_vars))
+rename_args(args::AbstractArray, fun_vars, lower_vars) = map(a -> rename_args(a, fun_vars, lower_vars), args)
+rename_args(a::Core.SlotNumber, fun_vars, lower_vars) = lower_vars[a.id]
+rename_args(a::Core.SSAValue, fun_vars, lower_vars) = fun_vars[a.id]
+```
+and let's redo the rewriting once more while replacing the variables and inserting the left-hand equalities
+exprs = []
+for (i, ex) in enumerate(ci.code)
+    ex = rename_args(ex, fun_vars, lower_vars)
+    if !overdubbable(ctx, ex)
+        push!(exprs, ex)
+        continue
+    end
+    if timable(ctx, ex)
+        push!(exprs, Expr(:call, :push!, :to, :start, ex.args[1]))
+        #ex = Expr(ex.head, :overdub, :ctx, ex.args...)
+        #push!(exprs, :($(lower_vars[i]) = $(ex))
+        push!(exprs, Expr(ex.head, :overdub, :ctx, ex.args...))
+        push!(exprs, Expr(:call, :push!, :to, :stop, ex.args[1]))
+    else
+        push!(exprs, ex)
+    end
+end
+
+```julia 
+macro timeit(ex::Expr)
+    ex.head != :call && error("timeit is implemented only for function calls") 
+    quote
+        ctx = Context()
+        
+    end
+end
+macro timeit(ex)
+    error("timeit is implemented only for function calls") 
+end
+```
+
+
+```julia
+struct Calls
+    stamps::Vector{Float64} # contains the time stamps
+    event::Vector{Symbol}  # name of the function that is being recorded
+    startstop::Vector{Symbol} # if the time stamp corresponds to start or to stop
+    i::Ref{Int}
+end
+
+function Calls(n::Int)
+    Calls(Vector{Float64}(undef, n+1), Vector{Symbol}(undef, n+1), Vector{Symbol}(undef, n+1), Ref{Int}(0))
+end
+
+global to = Calls(100)
+```
+
+
+
+## Petite zygote
 ```julia
 world = Base.get_world_counter()
 sigtypes = (typeof(+), Int, Int)
