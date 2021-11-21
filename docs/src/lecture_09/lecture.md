@@ -241,18 +241,25 @@ julia> retrieve_code_info((typeof(foo), Float64, Float64)).slotnames
 This allows to convert the names back to the original. Let's create a dictionary of assignments
 as
 ```julia 
-fun_vars = Dict(enumerate(ci.slotnames))
-lower_vars = Dict(i => gensym(:left) for i in 1:length(ci.code))
+slot_vars = Dict(enumerate(ci.slotnames))
+# ssa_vars = Dict(i => gensym(:left) for i in 1:length(ci.code))
+ssa_vars = Dict(i => Symbol(:L,i) for i in 1:length(ci.code))
 
-rename_args(ex::Expr, fun_vars, lower_vars) = Expr(ex.head, rename_args(ex.args, fun_vars, lower_vars))
-rename_args(args::AbstractArray, fun_vars, lower_vars) = map(a -> rename_args(a, fun_vars, lower_vars), args)
-rename_args(a::Core.SlotNumber, fun_vars, lower_vars) = lower_vars[a.id]
-rename_args(a::Core.SSAValue, fun_vars, lower_vars) = fun_vars[a.id]
+rename_args(ex, slot_vars, ssa_vars) = ex
+rename_args(ex::Expr, slot_vars, ssa_vars) = Expr(ex.head, rename_args(ex.args, slot_vars, ssa_vars)...)
+rename_args(args::AbstractArray, slot_vars, ssa_vars) = map(a -> rename_args(a, slot_vars, ssa_vars), args)
+rename_args(r::Core.ReturnNode, slot_vars, ssa_vars) = Core.ReturnNode(rename_args(r.val, slot_vars, ssa_vars))
+rename_args(a::Core.SlotNumber, slot_vars, ssa_vars) = slot_vars[a.id]
+rename_args(a::Core.SSAValue, slot_vars, ssa_vars) = ssa_vars[a.id]
 ```
 and let's redo the rewriting once more while replacing the variables and inserting the left-hand equalities
+```julia
+slot_vars = Dict(enumerate(ci.slotnames))
+# ssa_vars = Dict(i => gensym(:left) for i in 1:length(ci.code))
+ssa_vars = Dict(i => Symbol(:L,i) for i in 1:length(ci.code))
 exprs = []
 for (i, ex) in enumerate(ci.code)
-    ex = rename_args(ex, fun_vars, lower_vars)
+    ex = rename_args(ex, slot_vars, ssa_vars)
     if !overdubbable(ctx, ex)
         push!(exprs, ex)
         continue
@@ -260,13 +267,91 @@ for (i, ex) in enumerate(ci.code)
     if timable(ctx, ex)
         push!(exprs, Expr(:call, :push!, :to, :start, ex.args[1]))
         #ex = Expr(ex.head, :overdub, :ctx, ex.args...)
-        #push!(exprs, :($(lower_vars[i]) = $(ex))
+        #push!(exprs, :($(ssa_vars[i]) = $(ex))
         push!(exprs, Expr(ex.head, :overdub, :ctx, ex.args...))
         push!(exprs, Expr(:call, :push!, :to, :stop, ex.args[1]))
     else
         push!(exprs, ex)
     end
 end
+Expr(:block, exprs...)
+```
+The last trouble we are facing is that there are not assigning the lefthandside variables. This is certainly troublesome and needs to be fixed. We can either blindly assign all variables including those, which are never used or collect those, which will be used and assign only those. We will choose the latter one, as it is indeed "nicer". We first define bunch of variables that traverses expressions and assigns them
+```julia
+assigned_vars(ex) = []
+assigned_vars(ex::Expr) = assigned_vars(ex.args)
+assigned_vars(args::AbstractArray) = mapreduce(assigned_vars, vcat, args)
+assigned_vars(r::Core.ReturnNode) = assigned_vars(r.val)
+assigned_vars(a::Core.SlotNumber) = []
+assigned_vars(a::Core.SSAValue) = [a.id]
+```
+and then add the assignement to our code where needed
+```julia
+using Dictionaries
+slot_vars = Dict(enumerate(ci.slotnames))
+# ssa_vars = Dict(i => gensym(:left) for i in 1:length(ci.code))
+ssa_vars = Dict(i => Symbol(:L,i) for i in 1:length(ci.code))
+used = assigned_vars(ci.code) |> distinct
+exprs = []
+for (i, ex) in enumerate(ci.code)
+    ex = rename_args(ex, slot_vars, ssa_vars)
+    if !overdubbable(ctx, ex)
+        ex = i ∈ used ? Expr(:(=) , ssa_vars[i], ex) : ex
+        push!(exprs, ex)
+        continue
+    end
+    if timable(ctx, ex)
+        push!(exprs, Expr(:call, :push!, :to, :start, ex.args[1]))
+        ex = Expr(ex.head, :overdub, :ctx, ex.args...)
+        ex = i ∈ used ? Expr(:(=) , ssa_vars[i], ex) : ex
+        push!(exprs, ex)
+        push!(exprs, Expr(:call, :push!, :to, :stop, ex.args[1]))
+    else
+        push!(exprs, ex)
+    end
+end
+Expr(:block, exprs...)
+```
+
+
+```julia
+@generated function overdub(ctx::Context, f::F, args...) where {F}
+    @show (F, args...)
+    ci = retrieve_code_info((F, args...))
+    slot_vars = Dict(enumerate(ci.slotnames))
+    # ssa_vars = Dict(i => gensym(:left) for i in 1:length(ci.code))
+    ssa_vars = Dict(i => Symbol(:L,i) for i in 1:length(ci.code))
+    used = assigned_vars(ci.code) |> distinct
+    exprs = []
+    for (i, ex) in enumerate(ci.code)
+        ex = rename_args(ex, slot_vars, ssa_vars)
+        if !overdubbable(ex)
+            ex = i ∈ used ? Expr(:(=) , ssa_vars[i], ex) : ex
+            push!(exprs, ex)
+            continue
+        end
+        if timable(ex)
+            push!(exprs, Expr(:call, :push!, :to, :start, ex.args[1]))
+            ex = Expr(ex.head, :overdub, :ctx, ex.args...)
+            ex = i ∈ used ? Expr(:(=) , ssa_vars[i], ex) : ex
+            push!(exprs, ex)
+            push!(exprs, Expr(:call, :push!, :to, :stop, ex.args[1]))
+        else
+            push!(exprs, ex)
+        end
+    end
+    Expr(:block, exprs...)
+end
+```
+
+```
+macro meta(ex)
+  isexpr(ex, :call) || error("@meta f(args...)")
+  f, args = ex.args[1], ex.args[2:end]
+  :(meta(typesof($(esc.((f, args...))...))))
+end
+```
+
 
 ```julia 
 macro timeit(ex::Expr)
