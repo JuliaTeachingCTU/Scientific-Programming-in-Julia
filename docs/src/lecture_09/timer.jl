@@ -124,5 +124,6 @@ global const to = Calls(100)
 reset!(to)
 ctx = Context()
 overdub(ctx, foo, 1.0, 1.0)
-
+reset!(to)
+overdub(ctx, Base.Math.sin_kernel, 1.0)
 
