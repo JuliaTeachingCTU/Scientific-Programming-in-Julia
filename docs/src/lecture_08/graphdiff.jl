@@ -1,3 +1,5 @@
+using TikzGraphs
+using TikzPictures
 using GraphRecipes
 using LightGraphs
 using Plots
@@ -31,19 +33,20 @@ add_edge!(g, 2, 4)	# y ->  *
 add_edge!(g, 3, 5)	# sin(x) -> sin(x) + x*y
 add_edge!(g, 4, 5)  # x*y -> sin(x) + x*y
 add_edge!(g, 5, 6)  # sin(x) + x*y -> z
-add_edge!(g, 5, 7,)	# ∂z/∂h₃ -> z
-add_edge!(g, 4, 8,)	# ∂h₃/∂h₂ -> h₂ = *
-add_edge!(g, 8, 9,)	# ∂z/∂h₂ -> ∂h₃/∂h₂
-add_edge!(g, 7, 9,)	# ∂z/∂h₂ -> ∂h₃/∂h₂
-add_edge!(g, 3, 10,)	# ∂h₃/∂h₁ -> h₁
-add_edge!(g, 10, 11,)# ∂z/∂h₁  -> ∂h₃/∂h₁
-add_edge!(g, 7, 11,) # ∂z/∂h₁  -> ∂z/∂h₃
-add_edge!(g, 2, 12,) # ∂h₂/∂y  -> y
-add_edge!(g, 9, 12,) # ∂h₂/∂y  -> y
-add_edge!(g, 1, 13,) # ∂h₂/∂x + ∂h₁/∂x  -> y
-add_edge!(g, 9, 14,) # "∂z/∂x"  -> ∂z/∂h₂
-add_edge!(g, 11, 14,) # "∂z/∂x"  -> ∂z/∂h₁
-add_edge!(g, 13, 14,) # "∂z/∂x"  -> ∂h₂/∂x + ∂h₁/∂x
+
+#add_edge!(g, 5, 7,)	# ∂z/∂h₃ -> z
+#add_edge!(g, 4, 8,)	# ∂h₃/∂h₂ -> h₂ = *
+#add_edge!(g, 8, 9,)	# ∂z/∂h₂ -> ∂h₃/∂h₂
+#add_edge!(g, 7, 9,)	# ∂z/∂h₂ -> ∂h₃/∂h₂
+#add_edge!(g, 3, 10,)	# ∂h₃/∂h₁ -> h₁
+#add_edge!(g, 10, 11,)# ∂z/∂h₁  -> ∂h₃/∂h₁
+#add_edge!(g, 7, 11,) # ∂z/∂h₁  -> ∂z/∂h₃
+#add_edge!(g, 2, 12,) # ∂h₂/∂y  -> y
+#add_edge!(g, 9, 12,) # ∂h₂/∂y  -> y
+#add_edge!(g, 1, 13,) # ∂h₂/∂x + ∂h₁/∂x  -> y
+#add_edge!(g, 9, 14,) # "∂z/∂x"  -> ∂z/∂h₂
+#add_edge!(g, 11, 14,) # "∂z/∂x"  -> ∂z/∂h₁
+#add_edge!(g, 13, 14,) # "∂z/∂x"  -> ∂h₂/∂x + ∂h₁/∂x
 # graphplot(adjacency_matrix(g),
 # 	names = [vertices[i].name for i in 1:n],
 # 	x = 0.25 .* [vertices[i].x for i in 1:n],
@@ -53,12 +56,14 @@ add_edge!(g, 13, 14,) # "∂z/∂x"  -> ∂h₂/∂x + ∂h₁/∂x
 # )
 
 for n in [6, 7, 9, 11, 13, 14]
-	graphplot(adjacency_matrix(g)[1:n, 1:n],
-		names = [vertices[i].name for i in 1:n],
-		x = 0.25 .* [vertices[i].x for i in 1:n],
-		y = 0.25 .* [vertices[i].y for i in 1:n],
-		curves=false,
-		markercolor = [vertices[i].color for i in 1:n],
-	)
-	savefig("graphdiff_$(n).svg")
+    #graphplot(adjacency_matrix(g)[1:n, 1:n],
+	#	names = [vertices[i].name for i in 1:n],
+	#	x = 0.25 .* [vertices[i].x for i in 1:n],
+	#	y = 0.25 .* [vertices[i].y for i in 1:n],
+	#	curves=false,
+	#	markercolor = [vertices[i].color for i in 1:n],
+	#)
+	names = [vertices[i].name for i in 1:length(vertices)]
+    t = TikzGraphs.plot(g, names)
+    TikzPictures.save(SVG("graphdiff_$(n).svg"),t)
 end
