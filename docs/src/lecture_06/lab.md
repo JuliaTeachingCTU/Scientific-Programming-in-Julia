@@ -364,8 +364,12 @@ The naive solution
 sreplace_i(s) = replace(s, 'i' => 'k')
 @test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
 ```
-does not work in this simple case, because it will replace "i" inside the `sin(z)` expression. Avoiding these corner cases would require some more involved logic (like complicated regular expressions in `replace`), therefore using the parsed AST is preferable when manipulating the code.
-
+does not work in this simple case, because it will replace "i" inside the `sin(z)` expression. We can play with regular expressions to obtain something, that is more robust
+```@repl lab06_meta
+sreplace_i(s) = replace(s, r"([^\w]|\b)i(?=[^\w]|\z)" => s"\1k")
+@test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
+```
+however the code may now be harder to read. Thus it is preferable to use the parsed AST when manipulating Julia's code.
 ```@raw html
 </p></details>
 ```
