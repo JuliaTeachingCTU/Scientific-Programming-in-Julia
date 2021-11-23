@@ -22,6 +22,8 @@ function Calls(n::Int)
     Calls(Vector{Float64}(undef, n+1), Vector{Symbol}(undef, n+1), Vector{Symbol}(undef, n+1), Ref{Int}(0))
 end
 
+global const to = Calls(100)
+
 function Base.show(io::IO, calls::Calls)
     for i in 1:calls.i[]
         println(io, calls.stamps[i] - calls.stamps[1],"  ", calls.startstop[i],"  ",calls.event[i])
@@ -43,26 +45,10 @@ struct Context{T<:Union{Nothing, Vector{Symbol}}}
 end
 Context() = Context(nothing)
 
-ctx = Context()
-
-function overdubbable(ex::Expr) 
-    ex.head != :call && return(false)
-    length(ex.args) < 2 && return(false)
-    (ex.args[1] isa Core.IntrinsicFunction) && return(false)
-    return(true)
-end
 overdubbable(ex::Expr) = false
 overdubbable(ex) = false
-# overdubbable(ctx::Context, ex::Expr) = ex.head == :call
-# overdubbable(ctx::Context, ex) = false
-# timable(ctx::Context{Nothing}, ex) = true
 timable(ex::Expr) = ex.head == :call
 timable(ex) = false
-
-function foo(x, y)
-   z = x * y
-   z + sin(y)
-end
 
 rename_args(ex, slot_vars, ssa_vars) = ex
 rename_args(ex::Expr, slot_vars, ssa_vars) = Expr(ex.head, rename_args(ex.args, slot_vars, ssa_vars)...)
@@ -95,7 +81,6 @@ overdub(ctx::Context, f::Core.IntrinsicFunction, args...) = f(args...)
     end
     for (i, ex) in enumerate(ci.code)
         ex = rename_args(ex, slot_vars, ssa_vars)
-        @show ex
         if ex isa Core.ReturnNode 
             push!(exprs, Expr(:return, ex.val))
             continue
@@ -120,10 +105,14 @@ overdub(ctx::Context, f::Core.IntrinsicFunction, args...) = f(args...)
 end
 
 
-global const to = Calls(100)
+function foo(x, y)
+   z = x * y
+   z + sin(y)
+end
 reset!(to)
-ctx = Context()
-overdub(ctx, foo, 1.0, 1.0)
+overdub(Context(), foo, 1.0, 1.0)
+to 
+
 reset!(to)
 overdub(ctx, Base.Math.sin_kernel, 1.0)
 

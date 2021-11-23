@@ -313,14 +313,13 @@ end
 Expr(:block, exprs...)
 ```
 
-
+Wrapping the code generation to the generated function `overdub`, 
 ```julia
 @generated function overdub(ctx::Context, f::F, args...) where {F}
     @show (F, args...)
     ci = retrieve_code_info((F, args...))
     slot_vars = Dict(enumerate(ci.slotnames))
-    # ssa_vars = Dict(i => gensym(:left) for i in 1:length(ci.code))
-    ssa_vars = Dict(i => Symbol(:L,i) for i in 1:length(ci.code))
+    ssa_vars = Dict(i => gensym(:left) for i in 1:length(ci.code))
     used = assigned_vars(ci.code) |> distinct
     exprs = []
     for (i, ex) in enumerate(ci.code)
@@ -342,6 +341,8 @@ Expr(:block, exprs...)
     end
     Expr(:block, exprs...)
 end
+```
+we can try to call it as `overdub(ctx, foo, 1.0, 1.0)`, but the code fails due to unknown variable `x`. Why is that? The original function `foo(x, y)` had arguments `x` and `y`, whereas our generated function does not know them. Instead, it knows `args...`. Therefore we will put assigning statems to the beggining of the generated function call
 ```
 
 ```
