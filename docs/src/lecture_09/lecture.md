@@ -526,8 +526,6 @@ back(1)
 ri is the variable
 ∂i is a function to which I need to pass the ∂ri to get the gradinets 
 
-
-
 # TODO
 
 * show constant gradient of linear function in LLVM

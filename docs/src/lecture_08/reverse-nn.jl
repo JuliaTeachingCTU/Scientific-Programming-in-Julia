@@ -3,6 +3,7 @@ using Base: tail
 
 import Scientific_Programming_in_Julia.ReverseDiff
 
+using Base: tail
 struct Dense{M<:TrackedMatrix, V<:TrackedVector, F}
     W::M
     b::V

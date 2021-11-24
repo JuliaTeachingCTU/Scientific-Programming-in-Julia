@@ -1,11 +1,11 @@
 # [Lab 07: Macros](@id macro_lab)
-A little reminder from the lecture, a macro in its essence is a function, which 
+A little reminder from the [lecture](@ref macro_lecture), a macro in its essence is a function, which 
 1. takes as an input an expression (parsed input)
 2. modifies the expressions in arguments
 3. inserts the modified expression at the same place as the one that is parsed.
 
 In this lab we are going to use what we have learned about manipulation of expressions and explore avenues of where macros can be useful
-- convenience (`@repeat n code`, `@show`)
+- convenience (`@repeat`, `@show`)
 - performance critical code generation (`@poly`)
 - alleviate tedious code generation (`@species`, `@eats`)
 - just as a syntactic sugar (`@ecosystem`)
@@ -43,10 +43,10 @@ Testing it gives us the expected behavior
 @myshow xx = 1 + 1
 xx                  # should be defined
 ```
-In this "simple" example, we had to use the following concepts mentioned already in the lecture:
-- `QuoteNode(ex)` is used to wrap the expression inside another layer of quoting, such that when it is interpolated into `:()` it stays being a piece of code instead of the value it represents - **TRUE QUOTING**
-- `esc(ex)` is used in case that the expression contains an assignment, that has to be evaluated in the top level module `Main` (we are `esc`aping the local context) - **ESCAPING**
-- `$(QuoteNode(ex))` and `$(esc(ex))` is used to evaluate an expression into another expression. **INTERPOLATION**
+In this "simple" example, we had to use the following concepts mentioned already in the [lecture](@ref macro_lecture):
+- `QuoteNode(ex)` is used to wrap the expression inside another layer of quoting, such that when it is interpolated into `:()` it stays being a piece of code instead of the value it represents - [**TRUE QUOTING**](@ref lec7_quotation)
+- `esc(ex)` is used in case that the expression contains an assignment, that has to be evaluated in the top level module `Main` (we are `esc`aping the local context) - [**ESCAPING**](@ref lec7_hygiene)
+- `$(QuoteNode(ex))` and `$(esc(ex))` is used to evaluate an expression into another expression. [**INTERPOLATION**](@ref lec7_quotation)
 - `local value = ` is used in order to return back the result after evaluation
 
 Lastly, let's mention that we can use `@macroexpand` to see how the code is manipulated in the `@myshow` macro
@@ -83,7 +83,9 @@ _repeat(3, :(println("Hello!"))) # testing "macro" without defining it
 ```
 
 **HINTS**:
-- use `$` interpolation into a for loop expression
+- use `$` interpolation into a for loop expression; for example given `ex = :(1+x)` we can interpolate it into another expression `:($ex + y)` -> `:(1 + x + y)`
+- if unsure what gets interpolated use round brackets `:($(ex) + y)`
+- macro is a function that *creates* code that does what we want
 
 **BONUS**:
 What happens if we call `@repeat 3 x = 2`? Is `x` defined?
@@ -123,12 +125,14 @@ Ideally we would like write some macro `@poly` that takes a polynomial in a math
 *Example usage*:
 ```julia
 p = @poly x 3x^2+2x^1+10x^0  # the first argument being the independent variable to match
+p(2) # return the value
 ```
 
 However in order to make this happen, let's first consider much simpler case of creating the same but without the need for parsing the polynomial as a whole and employ the fact that macro can have multiple arguments separated by spaces.
 
 ```julia
 p = @poly 3 2 10
+p(2)
 ```
 
 ```@raw html
@@ -138,10 +142,29 @@ p = @poly 3 2 10
 ```
 Create macro `@poly` that takes multiple arguments and creates an anonymous function that constructs the unrolled code. Instead of directly defining the macro inside the macro body, create helper function `_poly` with the same signature that can be reused outside of it.
 
+Recall Horner's method polynomial evaluation from previous [labs](@ref horner):
+```julia
+function polynomial(a, x)
+    accumulator = a[end] * one(x)
+    for i in length(a)-1:-1:1
+        accumulator = accumulator * x + a[i]
+        #= accumulator = muladd(x, accumulator, a[i]) =# # equivalent
+    end
+    accumulator  
+end
+```
+
 **HINTS**:
 - you can use `muladd` function as replacement for `ac * x + a[i]`
-- the expression should be built incrementally by nesting (try to write out the Horner's method[^1] to see it)
-- the order of coefficients has different order than in previous labs
+- think of the `accumulator` variable as the mathematical expression that is incrementally built (try to write out the Horner's method[^1] to see it)
+- you can nest expression arbitrarily
+- the order of coefficients has different order than in previous labs (going from )
+- use `evalpoly` to check the correctness
+```julia
+using Test
+p = @poly 3 2 10
+@test p(2) == evalpoly(2, [10,2,3]) # reversed coefficients
+```
 
 [^1]: Explanation of the Horner schema can be found on [https://en.wikipedia.org/wiki/Horner%27s\_method](https://en.wikipedia.org/wiki/Horner%27s_method).
 ```@raw html
@@ -151,6 +174,7 @@ Create macro `@poly` that takes multiple arguments and creates an anonymous func
 ```
 
 ```@repl lab07_poly
+using InteractiveUtils #hide
 macro poly(a...)
     return _poly(a...)
 end
@@ -182,7 +206,7 @@ Moving on to the first/harder case, where we need to parse the mathematical expr
 ```
 Create macro `@poly` that takes two arguments first one being the independent variable and second one being the polynomial written in mathematical notation. As in the previous case this macro should define an anonymous function that constructs the unrolled code. 
 ```julia
-julia> p = @poly x 3x^2 + 2x^1 + 10x^0  # the first argument being the independent variable to match
+julia> p = @poly x 3x^2+2x^1+10x^0  # the first argument being the independent variable to match
 ```
 
 **HINTS**:
@@ -262,7 +286,6 @@ end
 ```
 Let's test it.
 ```@repl lab07_poly
-using InteractiveUtils #hide
 p = @poly x 3x^2+2x^1+ 10
 p(2) == evalpoly(2, [10,2,3])
 @code_lowered p(2) # can show the generated code
@@ -357,6 +380,9 @@ Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already co
         string.(hcat(["🌍", animal_species...], vcat(permutedims(species), em)))
     end
     eating_matrix()
+     🌍  🐑  🐺  🌿  🍄
+     🐑  ❌  ❌  ✅  ✅
+     🐺  ✅  ❌  ❌  ❌
     ```
 
 ```@raw html
@@ -369,14 +395,24 @@ Based on the following example syntax,
 @species Plant Broccoli 🥦
 @species Animal Rabbit 🐇
 ```
-write macro `@species` inside `Ecosystem` pkg, which defines the abstract type, its show function and exports the type.
-
-Define first helper function `_species` to inspect the macro's output. This is indispensable, as we are defining new types/constants and thus we would otherwise encountered errors during repeated evaluation (though only if the type signature changed).
+write macro `@species` inside `Ecosystem` pkg, which defines the abstract type, its show function and exports the type. For example `@species Plant Broccoli 🥦` should generate code:
+```julia
+abstract type Broccoli <: PlantSpecies end
+Base.show(io::IO,::Type{Broccoli}) = print(io,"🥦")
+export Broccoli
+```
+Define first helper function `_species` to inspect the macro's output. This is indispensable, as we are defining new types/constants and thus we may otherwise encounter errors during repeated evaluation (though only if the type signature changed).
+```julia
+_species(:Plant, :Broccoli, :🥦)
+_species(:Animal, :Rabbit, :🐇)
+```
 
 **HINTS**:
 - use `QuoteNode` in the show function just like in the `@myshow` example
-- ideally these changes should be made inside the modified `Ecosystem` pkg provided in the lab (though not everything can be refreshed with `Revise`)
+- escaping `esc` is needed for the returned in order to evaluate in the top most module (`Ecosystem`/`Main`)
+- ideally these changes should be made inside the modified `Ecosystem` pkg provided in the lab (though not everything can be refreshed with `Revise`) - there is a file `ecosystem_macros.jl` just for this purpose
 - multiple function definitions can be included into a `quote end` block
+- interpolation works with any expression, e.g. `$(typ == :Animal ? AnimalSpecies : PlantSpecies)`
 
 **BONUS**:
 Based on `@species` define also macros `@animal` and `@plant` with two arguments instead of three, where the species type is implicitly carried in the macro's name.
@@ -432,8 +468,9 @@ Define macro `@eats` inside `Ecosystem` pkg that assigns particular species thei
 where `Grass => 0.5` defines the behavior of the `eat!` function. The coefficient is used here as a multiplier for the energy balance, in other words the `Rabbit` should get only `0.5` of energy for a piece of `Grass`.
 
 **HINTS**:
-- ideally these changes should be made inside the modified `Ecosystem` pkg provided in the lab (though not everything can be refreshed with `Revise`)
-- you can create an empty `quote end` block with `code = Expr(:block)` and push new expressions incrementally
+- ideally these changes should be made inside the modified `Ecosystem` pkg provided in the lab (though not everything can be refreshed with `Revise`) - there is a file `ecosystem_macros.jl` just for this purpose
+- escaping `esc` is needed for the returned in order to evaluate in the top most module (`Ecosystem`/`Main`)
+- you can create an empty `quote end` block with `code = Expr(:block)` and push new expressions into its `args` incrementally
 - use dispatch to create specific code for the different combinations of agents eating other agents (there may be catch in that we have to first `eval` the symbols before calling in order to know if they are animals or plants)
 
 !!! note "Reminder of `EcosystemCore` `eat!` and `eats` functionality"
@@ -512,10 +549,10 @@ _eats(species, foodlist)
 ```
 
 ---
-# Resources
+## Resources
 - macros in Julia [documentation](https://docs.julialang.org/en/v1/manual/metaprogramming/#man-macros)
 
-## `Type{T}` type selectors
+### `Type{T}` type selectors
 We have used `::Type{T}` signature[^2] at few places in the `Ecosystem` family of packages (and it will be helpful in the HW as well), such as in the `show` methods
 ```julia
 Base.show(io::IO,::Type{World}) = print(io,"🌍")

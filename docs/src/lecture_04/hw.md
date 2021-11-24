@@ -1,4 +1,4 @@
-# Homework 4: More Unit Tests
+# [Homework 4: More Unit Tests](@id hw4)
 
 
 In this homework you will finish writing your unit tests for your `Ecosystem.jl`.
