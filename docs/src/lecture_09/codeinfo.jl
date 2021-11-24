@@ -10,9 +10,35 @@ function retrieve_code_info(sigtypes, world = Base.get_world_counter())
         return(nothing)
     end
     type_signature, raw_static_params, method = _methods[1]
-    method_instance = Core.Compiler.specialize_method(method, type_signature, raw_static_params, false)
-    code_info = Core.Compiler.retrieve_code_info(method_instance)
+    mi = Core.Compiler.specialize_method(method, type_signature, raw_static_params, false)
+    ci = Base.isgenerated(mi) ? Core.Compiler.get_staged(mi) : Base.uncompressed_ast(method)
+    Base.Meta.partially_inline!(ci.code, [], method.sig, Any[raw_static_params...], 0, 0, :propagate)
+    ci
 end
+
+# # We migth consider this from IRTools. Importantly, it has partially_inline to get 
+# # rid of static parameters
+# function meta(T; types = T, world = worldcounter())
+#   F = T.parameters[1]
+#   F == typeof(invoke) && return invoke_meta(T; world = world)
+#   F isa DataType && (F.name.module === Core.Compiler ||
+#                      F <: Core.Builtin ||
+#                      F <: Core.Builtin) && return nothing
+#   _methods = Base._methods_by_ftype(T, -1, world)
+#   length(_methods) == 0 && return nothing
+#   type_signature, sps, method = last(_methods)
+#   sps = svec(map(untvar, sps)...)
+#   @static if VERSION >= v"1.2-"
+#     mi = Core.Compiler.specialize_method(method, types, sps)
+#     ci = Base.isgenerated(mi) ? Core.Compiler.get_staged(mi) : Base.uncompressed_ast(method)
+#   else
+#     mi = Core.Compiler.code_for_method(method, types, sps, world, false)
+#     ci = Base.isgenerated(mi) ? Core.Compiler.get_staged(mi) : Base.uncompressed_ast(mi)
+#   end
+#   Base.Meta.partially_inline!(ci.code, [], method.sig, Any[sps...], 0, 0, :propagate)
+#   Meta(method, mi, ci, method.nargs, sps)
+# end
+
 
 function overdubbable(ex::Expr) 
     ex.head != :call && return(false)
@@ -22,13 +48,8 @@ function overdubbable(ex::Expr)
     return(false)
 end
 
-# overdubbable(ex::Expr) = false
 overdubbable(ex) = false
-# overdubbable(ctx::Context, ex::Expr) = ex.head == :call
-# overdubbable(ctx::Context, ex) = false
-# timable(ctx::Context{Nothing}, ex) = true
-timable(ex::Expr) = overdubbable(ex)
-timable(ex) = false
+timable(ex) = overdubbable(ex)
 
 #
 remap(ex::Expr, maps) = Expr(ex.head, remap(ex.args, maps)...)
@@ -43,23 +64,21 @@ remap(a::GlobalRef, maps) = a
 remap(a::QuoteNode, maps) = a
 remap(ex, maps) = ex
 
-# remove static parameters (see https://discourse.julialang.org/t/does-overdubbing-in-generated-function-inserts-inlined-code/71868)
-remove_static(ex)  = ex
-function remove_static(ex::Expr)
-    ex.head != :call && return(ex)
-    length(ex.args) != 2 && return(ex)
-    !(ex.args[1] isa Expr) && return(ex)
-    (ex.args[1].head == :static_parameter) && return(ex.args[2])
-    return(ex)
-end
-
 exportname(ex::GlobalRef) = QuoteNode(ex.name)
 exportname(ex::Symbol) = QuoteNode(ex)
 exportname(ex::Expr) = exportname(ex.args[1])
 exportname(i::Int) = QuoteNode(Symbol("Int(",i,")"))
 
-using Base: invokelatest
 dummy() = return
+function empty_codeinfo()
+    new_ci = code_lowered(dummy, Tuple{})[1]
+    empty!(new_ci.code)
+    empty!(new_ci.slotnames)
+    empty!(new_ci.linetable)
+    empty!(new_ci.codelocs)
+    new_ci
+end
+
 
 overdub(f::Core.IntrinsicFunction, args...) = f(args...)
 
@@ -67,17 +86,10 @@ overdub(f::Core.IntrinsicFunction, args...) = f(args...)
     @show (F, args...)
     ci = retrieve_code_info((F, args...))
     if ci === nothing 
-        @show Expr(:call, :f, [:(args[$(i)]) for i in 1:length(args)]...)
         return(Expr(:call, :f, [:(args[$(i)]) for i in 1:length(args)]...))
     end
-    # this is to initialize a new CodeInfo and fill it with values from the 
-    # overdubbed function
-    new_ci = code_lowered(dummy, Tuple{})[1]
-    empty!(new_ci.code)
-    empty!(new_ci.slotnames)
-    empty!(new_ci.linetable)
-    empty!(new_ci.codelocs)
 
+    new_ci = empty_codeinfo()
     new_ci.slotnames = vcat([Symbol("#self#"), :f, :args], ci.slotnames[2:end])
     new_ci.slotflags = vcat([0x00, 0x00, 0x00], ci.slotflags[2:end])
     foreach(s -> push!(new_ci.linetable, s), ci.linetable)
@@ -97,44 +109,44 @@ overdub(f::Core.IntrinsicFunction, args...) = f(args...)
     #if somewhere the original parameters of the functions will be used 
     #they needs to be remapped to an SSAValue from here, since the overdubbed
     # function has signatures overdub(f, args...) instead of f(x,y,z...)
-    ssa_no = 0
+    newci_no = 0
     for i in 1:length(args)
-        ssa_no +=1
+        newci_no +=1
         push!(new_ci.code, Expr(:call, Base.getindex, Core.SlotNumber(3), i))
-        maps.slots[i+1] = Core.SSAValue(ssa_no)
+        maps.slots[i+1] = Core.SSAValue(newci_no)
         push!(new_ci.codelocs, ci.codelocs[1])
     end
 
-    for (ci_line, ex) in enumerate(ci.code)
+    for (ci_no, ex) in enumerate(ci.code)
         if timable(ex)
             fname = exportname(ex)
             push!(new_ci.code, Expr(:call, GlobalRef(Main, :record_start), fname))
-            push!(new_ci.codelocs, ci.codelocs[ci_line])
-            ssa_no += 1
-            maps.goto[ci_line] = ssa_no
-            ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex
+            push!(new_ci.codelocs, ci.codelocs[ci_no])
+            newci_no += 1
+            maps.goto[ci_no] = newci_no
+            # @show ex
+            # @show Expr(:call, GlobalRef(Main, :overdub), ex.args...)
+            # ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex
+            # ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex
             push!(new_ci.code, ex)
-            push!(new_ci.codelocs, ci.codelocs[ci_line])
-            ssa_no += 1
-            maps.ssa[ci_line] = ssa_no
+            push!(new_ci.codelocs, ci.codelocs[ci_no])
+            newci_no += 1
+            maps.ssa[ci_no] = newci_no
             push!(new_ci.code, Expr(:call, GlobalRef(Main, :record_end), fname))
-            push!(new_ci.codelocs, ci.codelocs[ci_line])
-            ssa_no += 1
+            push!(new_ci.codelocs, ci.codelocs[ci_no])
+            newci_no += 1
         else
             push!(new_ci.code, ex)
-            push!(new_ci.codelocs, ci.codelocs[ci_line])
-            ssa_no += 1
-            maps.ssa[ci_line] = ssa_no
+            push!(new_ci.codelocs, ci.codelocs[ci_no])
+            newci_no += 1
+            maps.ssa[ci_no] = newci_no
         end
     end
 
     for i in length(args)+1:length(new_ci.code)
-        ex = remove_static(new_ci.code[i])
-        new_ci.code[i] = remap(ex, maps)
+        new_ci.code[i] = remap(new_ci.code[i], maps)
     end
     new_ci
-
-    # Core.Compiler.replace_code_newstyle!(ci, ir, length(ir.argtypes)-1)
     new_ci.inferred = false
     new_ci.ssavaluetypes = length(new_ci.code)
     # new_ci
@@ -149,38 +161,7 @@ end
 
 reset!(to)
 overdub(foo, 1.0, 1.0)
+to
+reset!(to)
 new_ci = overdub(sin, 1.0)
 to
-
-# Seems like now, I am crashing here
-# typeof(Base._promote), Irrational{:π}, Int64)
-
-
-function overdub2(::typeof(foo), args...)
-    x = args[1]
-    y = args[2]
-    push!(to, :start, :fun)
-    z = x * y
-    push!(to, :stop, :fun)
-    push!(to, :start, :fun)
-    r = z + sin(y)
-    push!(to, :stop, :fun)
-    r
-end
-ci = retrieve_code_info((typeof(overdub2), typeof(foo), Float64, Float64))
-
-
-function test(x::T) where T<:Union{Float64, Float32}
-    x < T(pi)
-end
-ci = retrieve_code_info((typeof(test), Float64))
-
-
-function overdub_test(::typeof(test), args...)
-    x = args[1]
-    T = eltype(x)
-    x < T(pi)
-end
-
-ci = retrieve_code_info((typeof(overdub_test), typeof(test), Float64))
-
