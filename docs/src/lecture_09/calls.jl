@@ -12,7 +12,10 @@ end
 
 function Base.show(io::IO, calls::Calls)
     offset = 0
-    for i in 1:calls.i[]
+    if calls.i[] >= length(calls.stamps)
+        @warn "The recording buffer was too small, consider increasing it"
+    end
+    for i in 1:min(calls.i[], length(calls.stamps))
         offset -= calls.startstop[i] == :stop
         foreach(_ -> print(io, " "), 1:max(offset, 0))
         rel_time = calls.stamps[i] - calls.stamps[1]

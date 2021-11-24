@@ -43,11 +43,10 @@ end
 function overdubbable(ex::Expr) 
     ex.head != :call && return(false)
     length(ex.args) < 2 && return(false)
-    ex.args[1] isa Core.GlobalRef && return(true)
-    ex.args[1] isa Symbol && return(true)
-    return(false)
+    return(overdubbable(ex.args[1]))
 end
-
+overdubbable(gr::Core.GlobalRef) = gr.name ∉ [:overdub, :record_start, :record_end, :promote, :convert, :tuple]
+overdubbable(gr::Symbol) = 
 overdubbable(ex) = false
 timable(ex) = overdubbable(ex)
 
@@ -83,7 +82,6 @@ end
 overdub(f::Core.IntrinsicFunction, args...) = f(args...)
 
 @generated function overdub(f::F, args...) where {F}
-    @show (F, args...)
     ci = retrieve_code_info((F, args...))
     if ci === nothing 
         return(Expr(:call, :f, [:(args[$(i)]) for i in 1:length(args)]...))
@@ -104,7 +102,6 @@ overdub(f::Core.IntrinsicFunction, args...) = f(args...)
     # except the first one, we just remap them
     maps.slots[1] = Core.SlotNumber(1)
     foreach(i -> maps.slots[i] = Core.SlotNumber(i + 2), 2:length(ci.slotnames)) # they are shifted by 2 accomondating inserted `f` and `args`
-    @assert all(ci.slotnames[i] == new_ci.slotnames[maps.slots[i].id] for i in 1:length(ci.slotnames))  #test that the remapping is right
 
     #if somewhere the original parameters of the functions will be used 
     #they needs to be remapped to an SSAValue from here, since the overdubbed
@@ -124,10 +121,9 @@ overdub(f::Core.IntrinsicFunction, args...) = f(args...)
             push!(new_ci.codelocs, ci.codelocs[ci_no])
             newci_no += 1
             maps.goto[ci_no] = newci_no
-            # @show ex
-            # @show Expr(:call, GlobalRef(Main, :overdub), ex.args...)
-            # ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex
-            # ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex
+            if overdubbable(ex)
+                ex = Expr(:call, GlobalRef(Main, :overdub), ex.args...)
+            end
             push!(new_ci.code, ex)
             push!(new_ci.codelocs, ci.codelocs[ci_no])
             newci_no += 1
@@ -153,6 +149,10 @@ overdub(f::Core.IntrinsicFunction, args...) = f(args...)
     return(new_ci)
 end
 
+reset!(to)
+new_ci = overdub(sin, 1.0)
+to
+
 function foo(x, y)
    z =  x * y
    z + sin(y)
@@ -161,7 +161,4 @@ end
 
 reset!(to)
 overdub(foo, 1.0, 1.0)
-to
-reset!(to)
-new_ci = overdub(sin, 1.0)
 to
