@@ -426,7 +426,9 @@ remap(ex, maps) = ex
 ```
 
 !!! warn 
-    ### Retrieving the code is a bit tricky. Consider a following function:
+    ### Retrieving the code properly
+
+    Consider a following function:
     ```julia
     function test(x::T) where T<:Union{Float64, Float32}
        x < T(pi)
