@@ -4,6 +4,7 @@ using Plots
 # Automatic Differentiation
 
 ## Motivation
+
 - It supports a lot of modern machine learning by allowing quick differentiation of complex mathematical functions. The 1st order optimization methods are ubiquitous in finding parameters of functions (not only in  deep learning).
 - AD is interesting to study from the implementation perspective. There are different takes on it with different trade-offs and Julia offers many implementations (some of them are not maintained anymore).
 - We (authors of this course) believe that it is good to understand (at least roughly), how the methods work in order to use them effectively in our work.
@@ -12,6 +13,7 @@ using Plots
 ## Theory
 
 The differentiation is routine process, as most of the time we break complicated functions down into small pieces that we know, how to differentiate and from that to assemble the gradient of the complex function back. Thus, the essential piece is the differentiation of the composed function ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m``
+
 
 ```math
 f(x) = f_1(f_2(f_3(\ldots f_n(x)))) = (f_1 \circ f_2 \circ \ldots \circ f_n)(x)
@@ -91,6 +93,7 @@ Notice that
 The above is an idealized computation. The real implementation is a bit different, as we will see later.
 
 ### Implementation of the forward mode using Dual numbers
+
 Forward modes need to keep track of the output of the function and of the derivative at each computation step in the computation of the complicated function ``f``. This can be elegantly realized with a [**dual number**](https://en.wikipedia.org/wiki/Dual_number), which are conceptually similar to complex numbers, but instead of the imaginary number ``i`` dual numbers use ``\epsilon`` in its second component:
 ```math
 x = v + \dot v \epsilon,
@@ -279,6 +282,7 @@ We then add a node calculating ``\frac{\partial h_3}{\partial h_2}`` for which w
 
 We continue with the same process with ``\frac{\partial h_3}{\partial h_1}``, which we again combine with ``\frac{\partial z}{\partial h_1}`` to obtain ``\frac{\partial z}{\partial h_1}``. Continuing the reverse diff we obtain the final graph
 
+
 ![diff graph](graphdiff_14.svg) 
 
 containing the desired nodes ``\frac{\partial z}{\partial x}`` and ``\frac{\partial z}{\partial y}``. This computational graph can be passed to the compiler to compute desired values.
@@ -449,6 +453,7 @@ Disadvantages:
 !!! info
     The difference between tracking and graph-based AD systems is conceptually similar to interpreted and compiled programming languages. Tracking AD systems interpret the time while computing the gradient, while graph-based AD systems compile the computation of the gradient.
 
+
 ## ChainRules
 From our discussions about AD systems so far we see that while the basic, *engine*, part is relatively straightforward, it devil is in writing the rules prescribing the computation of gradients. These rules are needed for every system whether it is graph based, tracking, or Wengert list based. ForwardDiff also needs a rule system, but rules are a bit different (as they are pushing the gradient forward rather than pulling it back). It is obviously a waste of effort for each AD system to have its own set of rules. Therefore the community (initiated by Lyndon White backed by [Invenia](https://github.com/invenia)) have started to work on a unified system to express differentiation rules, such that they can be shared between systems. So far, they are supported by `Zygote.jl`, `Nabla.jl`, `ReverseDiff.jl` and `Diffractor.jl`, suggesting that the unification approach is working.
 
@@ -548,10 +553,83 @@ What if we somehow be able to talk to the compiler and get this form from him?
 
 * [simplest viable implementation](https://juliadiff.org/ChainRulesCore.jl/dev/autodiff/operator_overloading.html#ReverseDiffZero)
 
+## ChainRules
+From our discussions about AD systems so far we see that while the basic, *engine*, part is relatively straightforward, it devil is in writing the rules prescribing the computation of gradients. These rules are needed for every system whether it is graph based, tracking, or wengert list based. ForwardDiff also needs a rule system, but rules are a bit different (as they are pushing the gradient forward rather than pulling it back). It is obviously a waste of effort for each AD system to have its own set of rules. Hence the community (initiated by Lyndon White and hence probably funded mainly by Invenia) have started to work on a unified system to express differentiation rules, such that they can be shared between systems. So far, they are supported by `Zygote.jl`, `Nabla.jl`, `ReverseDiff.jl` and `Diffractor.jl`, hence the approach seems to work.
 
-### How to test
-A tricky example with odd function
+The definition of reverse diff rules follows the idea we have nailed above (we refer readers interested in forward diff rules [to official documentation](https://juliadiff.org/ChainRulesCore.jl)).
 
+`ChainRules` defines the reverse rules for function `foo` in a function `rrule` with the following signature
+```julia
+function rrule(::typeof(foo), args...; kwargs...)
+    ...
+    return y, pullback
+end
+```
+where
+- the first argument `::typeof(foo)` allows to dispatch on the function for which the rules is written
+- the output of function `foo(args...)` is returned as the first argument
+- `pullback(Δy)` takes the gradient of upstream functions with respect to the output of `foo(args)` and returns it multiplied by the jacobian of the output of `foo(args)` with respect to parameters of the function itself (recall the function can have paramters, as it can be a closure or a functor), and with respect to the arguments.
+```julia
+function pullback(Δy)
+    ...
+    return ∂self, ∂args...
+end
+```
+Notice that key-word arguments are not differentiated. This is a design decision with the explanation that parametrize the function, but most of the time, they are not differentiable.
+
+`ChainRules.jl` provides support for lazy (delayed) computation using `Thunk`. Its argument is a function, which is not evaluated until `unthunk` is called. There is also a support to signal that gradient is zero using `ZeroTangent` (which can save valuable memory) or to signal that the gradient does not exist using `NoTangent`. 
+
+How can we use ChainRules to define rules for our AD system?
+Let's first observe the output
+```julia
+using ChainRulesCore, ChainRules
+r, g = rrule(*, rand(2,2), rand(2,2))
+g(r)
+```
+
+With that, we can extend our AD system as follows
+```julia
+import Base: *, +, -
+for f in [:*, :+, :-]
+    @eval function $(f)(A::TrackedMatrix, B::AbstractMatrix)
+       C, pullback = rrule($(f), value(A), B)
+       C = track(C)
+       push!(A.tape, (C, Δ -> pullback(Δ)[2]))
+       C
+    end
+
+    @eval function $(f)(A::AbstractMatrix, B::TrackedMatrix)
+       C, pullback = rrule($(f), A, value(B))
+       C = track(C)
+       push!(B.tape, (C, Δ -> pullback(Δ)[3]))
+       C
+    end
+
+    @eval function $(f)(A::TrackedMatrix, B::TrackedMatrix)
+       C, pullback = rrule($(f), value(A), value(B))
+       C = track(C)
+       push!(A.tape, (C, Δ -> pullback(Δ)[2]))
+       push!(B.tape, (C, Δ -> pullback(Δ)[3]))
+       C
+    end
+end
+```
+and we need to modify our `accum!` code to `unthunk` if needed
+```julia
+function accum!(A::TrackedArray)
+    isempty(A.tape) && return(A.deriv)
+    A.deriv .= sum(unthunk(g(accum!(r))) for (r, g) in A.tape)
+end
+```
+
+```
+A = track(rand(4,4))
+B = rand(4,1)
+C = rand(4,1)
+R = A * B + C
+R.deriv .= 1
+accum!(A)
+```
 
 ### Sources for this lecture
 * Mike Innes' [diff-zoo](https://github.com/MikeInnes/diff-zoo)

@@ -16,6 +16,7 @@ to run `f` again, this time seeding the second argument with `Dual(y,one(y))`.
 Hence, we have to evaluate `f` *twice* if we want derivatives w.r.t to both its
 arguments which means that forward differentiation scales as $O(N)$ where $N$ is
 the number of inputs to `f`.
+
 ```julia
 dfdx = f(Dual(x,one(x)), Dual(y,zero(y)))
 dfdy = f(Dual(x,zero(x)), Dual(y,one(y)))
@@ -72,6 +73,7 @@ a = x*y               # da/dx = y;     da/dy = x
 b = sin(x)            # db/dx = cos(x)
 z = a + b             # dz/da = 1;     dz/db = 1
 ```
+
 ![graph](graph.png)
 
 In the graph you can see that the variable `x` can directly affect `b` and `a`.
@@ -171,6 +173,7 @@ y.children
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
+
 Implement the two remaining rules for `+` and `sin` by overloading the
 appropriate methods like we did for `*`. First you have to compute the tracked
 forward pass, and then register the local derivatives in the children of your
@@ -239,6 +242,7 @@ z.grad = 1.0
 dx = accum!(x)
 dx ≈ y.data + cos(x.data)
 ```
+
 By accumulating the gradients for `x`, the gradients in the sub-tree connected
 to `x` will be evaluated. The parts of the tree that are only connected to `y`
 stay untouched.
@@ -309,6 +313,7 @@ where $\lambda$ is the learning rate that has to be tuned manually.
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
+
 Implement a function `descend` performs one step of Gradient Descent (GD) on a
 function `f` with an arbitrary number of inputs. For GD you also have to
 specify the learning rate $\lambda$ so the function signature should look like
@@ -331,6 +336,7 @@ nothing # hide
 ```@raw html
 </p></details>
 ```
+
 Running one `descend` step should result in two new inputs with a smaller output
 for `g`
 ```@repl lab08
@@ -640,6 +646,7 @@ BenchmarkTools.Trial: 10000 samples with 6 evaluations.
 
  Memory estimate: 3.08 KiB, allocs estimate: 31.
 ```
+
 Even for this tiny example we are already 10 times faster than with the naively
 vectorized approach!
 

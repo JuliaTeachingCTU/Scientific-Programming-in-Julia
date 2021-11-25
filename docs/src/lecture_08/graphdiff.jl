@@ -33,6 +33,7 @@ add_edge!(g, 2, 4)	# y ->  *
 add_edge!(g, 3, 5)	# sin(x) -> sin(x) + x*y
 add_edge!(g, 4, 5)  # x*y -> sin(x) + x*y
 add_edge!(g, 5, 6)  # sin(x) + x*y -> z
+
 #add_edge!(g, 5, 7,)	# ∂z/∂h₃ -> z
 #add_edge!(g, 4, 8,)	# ∂h₃/∂h₂ -> h₂ = *
 #add_edge!(g, 8, 9,)	# ∂z/∂h₂ -> ∂h₃/∂h₂
@@ -53,7 +54,6 @@ add_edge!(g, 5, 6)  # sin(x) + x*y -> z
 # 	curves=false,
 # 	markercolor = [vertices[i].color for i in 1:n],
 # )
-
 
 for n in [6, 7, 9, 11, 13, 14]
     #graphplot(adjacency_matrix(g)[1:n, 1:n],

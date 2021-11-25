@@ -57,6 +57,7 @@ cscheme = cgrad(:RdYlBu_5, rev=true)
 p1 = contour(-4:0.1:4, -2:0.1:2, g, fill=true, c=cscheme, xlabel="x", ylabel="y")
 display(p1)
 
+
 function descend(f::Function, λ::Real, args::Real...)
     Δargs = gradient(f, args...)
     args .- λ .* Δargs
