@@ -355,7 +355,7 @@ for i in 1:length(args)
     push!(new_ci.codelocs, ci.codelocs[1])
 end
 ```
-Now we come to the pinnacle of rewriting the body of the `foo(x,y)` as 
+Now we come to the pinnacle of rewriting the body of `foo(x,y)`:
 ```julia
 for (ci_no, ex) in enumerate(ci.code)
     if timable(ex)
@@ -380,20 +380,20 @@ for (ci_no, ex) in enumerate(ci.code)
     end
 end
 ```
-where the important parts are 
-- depending on the type of expressions (controlled by `timable`) we decide, if function's execution time should be recorded;
-- `fname = exportname(ex)` obtains the name of the profiled function call
-- `push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_start), fname))` records the start of the exection
-- `maps.goto[ci_ssa_no] = ssa_no` updates the map from the code line number in `ci` to that in rewritten `new_ci`
-- `maps.ssa[ci_ssa_no] = ssa_no` updates the map from the ssa line number in `ci` to that in rewritten `new_ci`
-- `ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex` modifies the function call (expression in general) to recurse the overdubbing
-Finally, we need to change the names of slot variables (`Core.SlotNumber`) and variables indexed by ssa (`Core.SSAValue`).
+The important parts are:
+- Depending on the type of expressions (controlled by `timable`) we decide, if a function's execution time should be recorded.
+- `fname = exportname(ex)` obtains the name of the profiled function call.
+- `push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_start), fname))` records the start of the exection.
+- `maps.goto[ci_ssa_no] = ssa_no` updates the map from the code line number in `ci` to the one in `new_ci`.
+- `maps.ssa[ci_ssa_no] = ssa_no` updates the map from the SSA line number in `ci` to `new_ci`.
+- `ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex` modifies the function call (expression in general) to recurse the overdubbing.
+Finally, we need to change the names of slot variables (`Core.SlotNumber`) and variables indexed by the SSA (`Core.SSAValue`).
 ```julia
 for i in length(args)+1:length(new_ci.code)
     new_ci.code[i] = remap(new_ci.code[i], maps)
 end
 ```
-where `remap` is a following block of code
+where `remap` is defined by the following block of code
 ```julia
 remap(ex::Expr, maps) = Expr(ex.head, remap(ex.args, maps)...)
 remap(args::AbstractArray, maps) = map(a -> remap(a, maps), args)
@@ -411,7 +411,7 @@ remap(ex, maps) = ex
 !!! warn 
     ### Retrieving the code properly
 
-    Consider a following function:
+    Consider the following function:
     ```julia
     function test(x::T) where T<:Union{Float64, Float32}
        x < T(pi)
@@ -424,8 +424,8 @@ remap(ex, maps) = ex
     └──      return %2
     )
     ```
-    the `Expr(:static_parameter, 1)` in the first line of code obtains the type parameter `T` of the function `test`. Since this information is not accessible in the `CodeInfo`, it might render our tooling useless. The need hook is `Base.Meta.partially_inline!` which partially inlines this into the `CodeInfo` object.
-    The code to retrieve the `CodeInfo` adapted from `IRTools` is little convolved as 
+    the `Expr(:static_parameter, 1)` in the first line of code obtains the type parameter `T` of the function `test`. Since this information is not accessible in the `CodeInfo`, it might render our tooling useless. The needed hook is `Base.Meta.partially_inline!` which partially inlines this into the `CodeInfo` object.
+    The code to retrieve the `CodeInfo` adapted from `IRTools` is a little involved:
 
     ```julia
     function retrieve_code_info(sigtypes, world = Base.get_world_counter())
@@ -452,25 +452,27 @@ remap(ex, maps) = ex
     └──      return %2
     )
     ```
-    it performs the needed inlining of Float64
+    it performs the needed inlining of `Float64`.
 
 ## Implementing the profiler with IRTools
-The above implementation of the profiler has shown, that rewriting the IR code manually is doable, but requires a lot of careful bookkeeping. `IRTools.jl` makes our life much simpler, as they take away all the needed book-keeping and let us focus on what is needed.
+The above implementation of the profiler has shown, that rewriting IR manually is doable, but requires a lot of careful book-keeping. `IRTools.jl` makes our life much simpler, as they take away all the needed book-keeping and let us focus on what is important.
 
-```julia
+```@repl lec09
 function foo(x, y)
    z =  x * y
    z + sin(y)
-end
+end;
 ir = @code_ir foo(1.0, 1.0)
 ```
 We can see that at first sight, the representation of the lowered code in IRTools is similar to that of `CodeInfo`. Some notable differences:
 - `SlotNumber` are converted to `SSAValues`
 - SSA form is divided into blocks by `GotoNode` and `GotoIfNot` in the parsed `CodeInfo`
-- SSAValues do not need to be ordered. The reordering is deffered to the moment when one converts `IRTools.Inner.IR`  back to the `CodeInfo`.
+- SSAValues do not need to be ordered. The reordering is deffered to the moment when one converts `IRTools.Inner.IR` back to the `CodeInfo`.
 
-Let's now use the IRTools to insert the timing statements into the code for `foo` as 
+Let's now use the IRTools to insert the timing statements into the code for `foo`:
 ```julia
+using IRTools: xcall, insert!, insertafter!
+
 ir = @code_ir foo(1.0, 1.0)
 for b in IRTools.blocks(ir)
     for (v, ex) in b
@@ -495,17 +497,17 @@ julia> ir
   %12 = Main.record_end(:+)
   return %6
 ```
+
 Observe that the statements are on the right places but they are not ordered.
-We can turn the `ir` object into and anonymous function as
+We can turn the `ir` object into an anonymous function
 ```julia
-f = func(ir)
+f = IRTools.func(ir)
 reset!(to)
 f(nothing, 1.0, 1.0)
 to
 ```
-where we can observe that our profiler was working as it should. But this is not yet our final goal. Originally, our goal was the profiler to recursivelly dive into the nested functions. IRTools offers macro `@dynamo`, which is similar to `@generated` but simplifies our job by allowing to return the `IRTools.Inner.IR` object and it also takes care of properly renaming the arguments. With that we write
-```
-
+where we can observe that our profiler is working as it should. But this is not yet our final goal. Originally, our goal was to recursivelly dive into the nested functions. IRTools offers a macro `@dynamo`, which is similar to `@generated` but simplifies our job by allowing to return the `IRTools.Inner.IR` object and it also taking care of properly renaming the arguments. With that we write
+```julia
 profile_fun(f::Core.IntrinsicFunction, args...) = f(args...)
 profile_fun(f::Core.Builtin, args...) = f(args...)
 
@@ -533,8 +535,8 @@ recursable(gr::GlobalRef) = gr.name ∉ [:profile_fun, :record_start, :record_en
 recursable(ex::Expr) = ex.head == :call && recursable(ex.args[1])
 recursable(ex) = false
 ```
-Also, the first two definitions of `profile_fun` for `Core.IntrinsicFunction` and for `Core.Builtin` prevent trying to dive into functions which does not have an ir representation. And that's all. The full code is 
-```julia
+Additionally, the first two definitions of `profile_fun` for `Core.IntrinsicFunction` and for `Core.Builtin` prevent trying to dive into functions which do not have a Julia IR. And that's all. The full code is 
+```example lec09
 using IRTools
 using IRTools: var, xcall, insert!, insertafter!, func, recurse!, @dynamo
 include("calls.jl")
@@ -585,16 +587,16 @@ to
 ```
 where you should notice the long time the first execution of `profile_fun(foo, 1.0, 1.0)` takes. This is caused by the compiler specializing for every function into which we dive into. The second execution of `profile_fun(foo, 1.0, 1.0)` is fast. It is also interesting to observe how the time of the compilation is logged by the profiler. The output of the profiler `to` is not shown here due to the length of the output.
 
-## Petite zygote
-`IRTools.jl` were created for `Zygote.jl` --- Julia's source-to-source AD system currently powering `Flux.jl`. An interesting aspect of `Zygote` was to recognize that TensorFlow is in its nutshell a compiler, PyTorch is an interpreter. So the idea was to let Julia's compiler to compile the gradient and perform optimizations that are normally performed with normal code. Recall that a lot of research went into how to generate an efficient code and it is reasonable to use this research. `Zygote.jl` provides mainly reversediff, but there was an experimental support for forwarddiff.
+## Petite Zygote
+`IRTools.jl` were created for `Zygote.jl` --- Julia's source-to-source AD system currently powering `Flux.jl`. An interesting aspect of `Zygote` was to recognize that TensorFlow is in its nutshell a compiler, PyTorch is an interpreter. So the idea was to let Julia's compiler compile the gradient and perform optimizations that are normally performed with normal code. Recall that a lot of research went into how to generate efficient code and it is reasonable to use this research. `Zygote.jl` provides mainly reversediff, but there was an experimental support for forwarddiff.
 
 ### Strategy
-We assume that we are provided with the set of AD rules (e.g. ChainRules), which for a given function returns its evaluation and pullback. When `Zygote.jl` is tasked with computing gradient.
-1. if a rule exist for this function, return directly the rule
-2. if not, deconstruct the function into a sequence of functions using `CodeInfo` / IR representation
-3. replace statements by calls to obtain the evaluation of the statements and the pullback
-4. chain appropriately pullbacks in reverse order
-5. return the function evaluation and chained pullback
+We assume that we are provided with the set of AD rules (e.g. ChainRules), which for a given function returns its evaluation and pullback. Then `Zygote.jl` is tasked with computing the gradient.
+1. If a rule exists for this function, directly return the rule.
+2. If not, deconstruct the function into a sequence of functions using `CodeInfo` / IR representation
+3. Replace statements by calls to obtain the evaluation of the statements and the pullback.
+4. Chain pullbacks in reverse order.
+5. Return the function evaluation and the chained pullback.
 
 ### Simplified implementation
 The following code is adapted from [this example](https://github.com/FluxML/IRTools.jl/blob/master/examples/reverse.jl)
@@ -638,7 +640,7 @@ end
 
 ```
 where 
-- the generated function `forward` calls `primal` to perform AD  manual chainrule
+- the generated function `forward` calls `primal` to perform AD manual chainrule
 - actual chainrule is performed in the for loop
 - every function call is replaced  `xcall(Main, :forward, ex.args...)`, which is the recursion we have observed above. `stmt` allows to insert information about lines in the source code).
 - the output of the forward is the value of the function, and *pullback*, the function calculating gradient with respect to its inputs.
