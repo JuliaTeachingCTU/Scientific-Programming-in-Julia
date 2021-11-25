@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lecture · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_06/lecture/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox" checked/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>Lecture</a><ul class="internal"><li><a class="tocitem" href="#Stages-of-compilation"><span>Stages of compilation</span></a></li><li><a class="tocitem" href="#Looking-around-the-language"><span>Looking around the language</span></a></li><li><a class="tocitem" href="#General-notes-on-metaprogramming"><span>General notes on metaprogramming</span></a></li><li><a class="tocitem" href="#What-is-Quotation?"><span>What is Quotation?</span></a></li><li><a class="tocitem" href="#Expressions"><span>Expressions</span></a></li><li><a class="tocitem" href="#Construct-code-from-scratch"><span>Construct code from scratch</span></a></li><li><a class="tocitem" href="#Code-generation"><span>Code generation</span></a></li><li class="toplevel"><a class="tocitem" href="#Resources"><span>Resources</span></a></li></ul></li><li><a class="tocitem" href="../lab/">Lab</a></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Introduction to automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-12" type="checkbox"/><label class="tocitem" for="menuitem-12"><span class="docs-label">9: Manipulating intermediate representation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_09/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_09/lab/">Lab</a></li></ul></li><li><span class="tocitem">10: Different levels of parallel programming</span></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><span class="tocitem">12: Uncertainty propagation in ODE</span></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">6: Language introspection</a></li><li class="is-active"><a href>Lecture</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lecture</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_06/lecture.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="introspection"><a class="docs-heading-anchor" href="#introspection">Language introspection</a><a id="introspection-1"></a><a class="docs-heading-anchor-permalink" href="#introspection" title="Permalink"></a></h1><p><strong>What is metaprogramming?</strong> <em>A high-level code that writes high-level code</em> by Stever Johnson.</p><p><strong>Why do we need metaprogramming?</strong> </p><ul><li>In general, we do not need it, as we can do whatever we need without it, but it can help us to remove a boilerplate code. <ul><li>As an example, consider a <code>@show</code> macro, which just prints the name of the variable (or the expression) and its evaluation. This means that instead of writing <code>println(&quot;2+exp(4) = &quot;,  2+exp(4))</code> we can just write <code>@show 2+exp(4)</code>.</li><li>Another example is <code>@time</code> or <code>elapsed</code> The above is difficult to implement using normal function, since when you pass <code>2+exp(4)</code> as a function argument, it will be automatically evaluated. Therefore you need to pass it as an expression, that can be evaluated within the function.</li><li>It can help when implementing <strong>encapsulation</strong>.</li></ul></li><li><strong>Domain Specific Languages</strong></li></ul><h2 id="Stages-of-compilation"><a class="docs-heading-anchor" href="#Stages-of-compilation">Stages of compilation</a><a id="Stages-of-compilation-1"></a><a class="docs-heading-anchor-permalink" href="#Stages-of-compilation" title="Permalink"></a></h2><p>Julia (as any modern compiler) uses several stages to convert source code to native code. Let&#39;s recap them</p><ul><li>parsing the source code to <strong>abstract syntax tree</strong> (AST)</li><li>lowering the abstract syntax tree <strong>static single assignment</strong> form (SSA) <a href="https://en.wikipedia.org/wiki/Static_single_assignment_form">see wiki</a></li><li>assigning types to variables and performing type inference on called functions</li><li>lowering the typed code to LLVM intermediate representation (LLVM Ir)</li><li>using LLVM compiler to produce a native code.</li></ul><h3 id="Example:-Fibonacci-numbers"><a class="docs-heading-anchor" href="#Example:-Fibonacci-numbers">Example: Fibonacci numbers</a><a id="Example:-Fibonacci-numbers-1"></a><a class="docs-heading-anchor-permalink" href="#Example:-Fibonacci-numbers" title="Permalink"></a></h3><p>Consider for example a function computing the Fibonacci numbers<sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup></p><pre><code class="language-julia hljs">function nextfib(n)
+	a, b = one(n), one(n)
+	while b &lt; n
+		a, b = b, a + b
+	end
+	return b
+end</code></pre><h4 id="Parsing"><a class="docs-heading-anchor" href="#Parsing">Parsing</a><a id="Parsing-1"></a><a class="docs-heading-anchor-permalink" href="#Parsing" title="Permalink"></a></h4><p>The first thing the compiler does is that it will parse the source code (represented as a string) to the abstract syntax tree (AST). We can inspect the results of this stage as </p><pre><code class="language-julia hljs">julia&gt; parsed_fib = Meta.parse(
+&quot;&quot;&quot;
+	function nextfib(n)
+		a, b = one(n), one(n)
+		while b &lt; n
+			a, b = b, a + b
+		end
+		return b
+	end&quot;&quot;&quot;)
+:(function nextfib(n)
+      #= none:1 =#
+      #= none:2 =#
+      (a, b) = (one(n), one(n))
+      #= none:3 =#
+      while b &lt; n
+          #= none:4 =#
+          (a, b) = (b, a + b)
+      end
+      #= none:6 =#
+      return b
+  end)</code></pre><p>AST is a tree representation of the source code, where the parser has already identified individual code elements function call, argument blocks, etc. The parsed code is represented by Julia objects, therefore it can be read and modified by Julia from Julia at your wish (this is what is called homo-iconicity of a language the itself being derived from Greek words <em>homo</em>- meaning &quot;the same&quot; and <em>icon</em> meaning &quot;representation&quot;). Using <code>TreeView</code></p><pre><code class="language-julia hljs">using TreeView, TikzPictures
+g = tikz_representation(walk_tree(parsed_fib))
+TikzPictures.save(SVG(&quot;parsed_fib.svg&quot;), g)</code></pre><p><img src="../parsed_fib.svg" alt="parsed_fib.svg"/></p><p>We can see that the AST is indeed a tree, with <code>function</code> being the root node (caused by us parsing a function). Each inner node represents a function call with children of the inner node being its arguments. An interesting inner node is the <code>Block</code> representing a sequence of statements, where we can also see information about lines in the source code inserted as comments. Lisp-like S-Expression can be printed using <code>Meta.show_sexpr(parsed_fib)</code>.</p><pre><code class="language-julia hljs">(:function, (:call, :nextfib, :n), (:block,
+    :(#= none:1 =#),
+    :(#= none:2 =#),
+    (:(=), (:tuple, :a, :b), (:tuple, (:call, :one, :n), (:call, :one, :n))),
+    :(#= none:3 =#),
+    (:while, (:call, :&lt;, :b, :n), (:block,
+        :(#= none:4 =#),
+        (:(=), (:tuple, :a, :b), (:tuple, :b, (:call, :+, :a, :b)))
+      )),
+    :(#= none:6 =#),
+    (:return, :b)
+  ))</code></pre><h4 id="Lowering"><a class="docs-heading-anchor" href="#Lowering">Lowering</a><a id="Lowering-1"></a><a class="docs-heading-anchor-permalink" href="#Lowering" title="Permalink"></a></h4><p>The next stage is <strong>lowering</strong>, where AST is converted to Static Single Assignment Form (SSA), in which &quot;each variable is assigned exactly once, and every variable is defined before it is used&quot;. Loops and conditionals are transformed into gotos and labels using a single unless/goto construct (this is not exposed in user-level Julia).</p><pre><code class="language-julia hljs">julia&gt; @code_lowered nextfib(3)
+CodeInfo(
+1 ─ %1 = Main.one(n)
+│   %2 = Main.one(n)
+│        a = %1
+└──      b = %2
+2 ┄ %5 = b &lt; n
+└──      goto #4 if not %5
+3 ─ %7 = b
+│   %8 = a + b
+│        a = %7
+│        b = %8
+└──      goto #2
+4 ─      return b
+)</code></pre><p>or alternatively <code>lowered_fib = Meta.lower(@__MODULE__, parsed_fib)</code>. </p><p>We can see that </p><ul><li>compiler has introduced a lot of variables </li><li><code>while</code> (and <code>for</code>) loops has been replaced by a <code>goto</code> prepended by conditional statements</li></ul><p>For inserted debugging information, there is an option to pass keyword argument <code>debuginfo=:source</code>.  </p><pre><code class="language-julia hljs">julia&gt; @code_lowered debuginfo=:source nextfib(3)
+CodeInfo(
+    @ none:2 within `nextfib&#39;
+1 ─ %1 = Main.one(n)
+│   %2 = Main.one(n)
+│        a = %1
+└──      b = %2
+    @ none:3 within `nextfib&#39;
+2 ┄ %5 = b &lt; n
+└──      goto #4 if not %5
+    @ none:4 within `nextfib&#39;
+3 ─ %7 = b
+│   %8 = a + b
+│        a = %7
+│        b = %8
+└──      goto #2
+    @ none:6 within `nextfib&#39;
+4 ─      return b
+)</code></pre><h4 id="Code-Typing"><a class="docs-heading-anchor" href="#Code-Typing">Code Typing</a><a id="Code-Typing-1"></a><a class="docs-heading-anchor-permalink" href="#Code-Typing" title="Permalink"></a></h4><p><strong>Code typing</strong> is the process in which the compiler attaches types to variables and tries to infer types of objects returned from called functions. If the compiler fails to infer the returned type, it will give the variable type <code>Any</code>, in which case a dynamic dispatch will be used in subsequent operations with the variable. Inspecting typed code is therefore important for detecting type instabilities (the process can be difficult and error prone, fortunately, new tools like <code>Jet.jl</code> may simplify this task). The output of typing can be inspected using <code>@code_typed</code> macro. If you know the types of function arguments, aka function signature, you can call directly function <code>InteractiveUtils.code_typed(nextfib, (typeof(3),))</code>.</p><pre><code class="language-julia hljs">julia&gt; @code_typed nextfib(3)
+CodeInfo(
+1 ─      nothing::Nothing
+2 ┄ %2 = φ (#1 =&gt; 1, #3 =&gt; %6)::Int64
+│   %3 = φ (#1 =&gt; 1, #3 =&gt; %2)::Int64
+│   %4 = Base.slt_int(%2, n)::Bool
+└──      goto #4 if not %4
+3 ─ %6 = Base.add_int(%3, %2)::Int64
+└──      goto #2
+4 ─      return %2
+) =&gt; Int64</code></pre><p>We can see that </p><ul><li>some calls have been inlined, e.g. <code>one(n)</code> was replaced by <code>1</code> and the type was inferred as <code>Int</code>. </li><li>The expression <code>b &lt; n</code> has been replaced with its implementation in terms of the <code>slt_int</code> intrinsic (&quot;signed integer less than&quot;) and the result of this has been annotated with return type <code>Bool</code>. </li><li>The expression <code>a + b</code> has been also replaced with its implementation in terms of the <code>add_int</code> intrinsic and its result type annotated as Int64. </li><li>And the return type of the entire function body has been annotated as <code>Int64</code>.</li><li>The phi-instruction <code>%2 = φ (#1 =&gt; 1, #3 =&gt; %6)</code> is a <strong>selector function</strong>, which returns the value depending on from which branch do you come from. In this case, variable <code>%2</code> will have value 1, if the control was transfered from block <code>#1</code> and it will have value copied from variable <code>%6</code> if the control was transferreed from block <code>3</code> <a href="https://llvm.org/docs/LangRef.html#phi-instruction">see also</a>. The <code>φ</code> stands from <em>phony</em> variable.</li></ul><p>When we have called <code>@code_lower</code>, the role of types of arguments was in selecting - via multiple dispatch - the appropriate function body among different methods. Contrary in <code>@code_typed</code>, the types of parameters determine the choice of inner methods that need to be called (again with multiple dispatch). This process can trigger other optimization, such as inlining, as seen in the case of <code>one(n)</code> being replaced with <code>1</code> directly, though here this replacement is hidden in the <code>φ</code> function. </p><p>Note that the same view of the code is offered by the <code>@code_warntype</code> macro, which we have seen in the previous <a href="../../lecture_05/lecture/#perf_lecture">lecture</a>. The main difference from <code>@code_typed</code> is that it highlights type instabilities with red color and shows only unoptimized view of the code. You can view the unoptimized code with a keyword argument <code>optimize=false</code>:</p><pre><code class="language-julia hljs">julia&gt; @code_typed optimize=false nextfib(3)
+CodeInfo(
+1 ─ %1 = Main.one(n)::Core.Const(1)
+│   %2 = Main.one(n)::Core.Const(1)
+│        (a = %1)::Core.Const(1)
+└──      (b = %2)::Core.Const(1)
+2 ┄ %5 = (b &lt; n)::Bool
+└──      goto #4 if not %5
+3 ─ %7 = b::Int64
+│   %8 = (a + b)::Int64
+│        (a = %7)::Int64
+│        (b = %8)::Int64
+└──      goto #2
+4 ─      return b
+) =&gt; Int64</code></pre><h4 id="Lowering-to-LLVM-IR"><a class="docs-heading-anchor" href="#Lowering-to-LLVM-IR">Lowering to LLVM IR</a><a id="Lowering-to-LLVM-IR-1"></a><a class="docs-heading-anchor-permalink" href="#Lowering-to-LLVM-IR" title="Permalink"></a></h4><p>Julia uses the LLVM compiler framework to generate machine code. LLVM stands for low-level virtual machine and it is basis of many modern compilers (see <a href="https://en.wikipedia.org/wiki/LLVM">wiki</a>). We can see the textual form of code lowered to LLVM IR by invoking </p><pre><code class="language-julia hljs">julia&gt; @code_llvm debuginfo=:source nextfib(3)
+;  @ REPL[10]:1 within `nextfib&#39;
+define i64 @julia_nextfib_890(i64 signext %0) {
+top:
+  br label %L2
+
+L2:                                               ; preds = %L2, %top
+  %value_phi  = phi i64 [ 1, %top ], [ %1, %L2 ]
+  %value_phi1 = phi i64 [ 1, %top ], [ %value_phi, %L2 ]
+;  @ REPL[10]:3 within `nextfib&#39;
+; ┌ @ int.jl:83 within `&lt;&#39;
+   %.not = icmp slt i64 %value_phi, %0
+; └
+;  @ REPL[10]:4 within `nextfib&#39;
+; ┌ @ int.jl:87 within `+&#39;
+   %1 = add i64 %value_phi1, %value_phi
+; └
+;  @ REPL[10]:3 within `nextfib&#39;
+  br i1 %.not, label %L2, label %L8
+
+L8:                                               ; preds = %L2
+;  @ REPL[10]:6 within `nextfib&#39;
+  ret i64 %value_phi
+}</code></pre><p>LLVM code can be tricky to understand first, but one gets used to it. Notice references to the source code, which help with orientation. From the code above, we may infer</p><ul><li>code starts by jumping to label L2, from where it reads values of two variables to two &quot;registers&quot; <code>value_phi</code> and <code>value_phi1</code> (variables in LLVM starts with <code>%</code>). </li><li>Both registers are treated as <code>int64</code> and initialized by <code>1</code>. </li><li><code>[ 1, %top ], [ %value_phi, %L2 ]</code> means that values are initialized as <code>1</code> if you come from the label <code>top</code> and as value <code>value_phi</code> if you come from <code>%2</code>. This is the LLVM&#39;s selector (phony <code>φ</code>).</li><li><code>icmp slt i64 %value_phi, %0</code> compares the variable <code>%value_phi</code> to the content of variable <code>%0</code>. Notice the anotation that we are comparing <code>Int64</code>.</li><li><code>%1 = add i64 %value_phi1, %value_phi</code> adds two variables <code>%value_phi1</code> and <code>%value_phi</code>. Note again than we are using <code>Int64</code> addition. </li><li><code>br i1 %.not, label %L2, label %L8</code> implements a conditional jump depending on the content of <code>%.not</code> variable. </li><li><code>ret i64 %value_phi</code> returns the value indicating it to be an <code>Int64</code>.</li></ul><p>It is not expected you will be directly operating on the LLVM code, though there are libraries which does that. For example <code>Enzyme.jl</code> performs automatic differentiation of LLVM code, which has the benefit of being able to take a gradeint through <code>setdiff</code>.</p><h4 id="Producing-the-native-vode"><a class="docs-heading-anchor" href="#Producing-the-native-vode">Producing the native vode</a><a id="Producing-the-native-vode-1"></a><a class="docs-heading-anchor-permalink" href="#Producing-the-native-vode" title="Permalink"></a></h4><p><strong>Native code</strong> The last stage is generation of the native code, which Julia executes. The native code depends on the target architecture (e.g. x86, ARM). As in previous cases there is a macro for viewing the compiled code <code>@code_native</code></p><pre><code class="language-julia hljs">julia&gt; @code_native debuginfo=:source nextfib(3)
+	.section	__TEXT,__text,regular,pure_instructions
+; ┌ @ REPL[10]:1 within `nextfib&#39;
+	movl	$1, %ecx
+	movl	$1, %eax
+	nopw	(%rax,%rax)
+L16:
+	movq	%rax, %rdx
+	movq	%rcx, %rax
+; │ @ REPL[10]:4 within `nextfib&#39;
+; │┌ @ int.jl:87 within `+&#39;
+	addq	%rcx, %rdx
+	movq	%rdx, %rcx
+; │└
+; │ @ REPL[10]:3 within `nextfib&#39;
+; │┌ @ int.jl:83 within `&lt;&#39;
+	cmpq	%rdi, %rax
+; │└
+	jl	L16
+; │ @ REPL[10]:6 within `nextfib&#39;
+	retq
+	nopw	%cs:(%rax,%rax)
+; └</code></pre><p>and the output is used mainly for debugging / inspection. </p><h2 id="Looking-around-the-language"><a class="docs-heading-anchor" href="#Looking-around-the-language">Looking around the language</a><a id="Looking-around-the-language-1"></a><a class="docs-heading-anchor-permalink" href="#Looking-around-the-language" title="Permalink"></a></h2><p>Language introspection is very convenient for investigating, how things are implemented and how they are optimized / compiled to the native code.</p><div class="admonition is-info"><header class="admonition-header">Reminder `@which`</header><div class="admonition-body"><p>Though we have already used it quite a few times, recall the very useful macro <code>@which</code>, which identifies the concrete function called in a function call. For example <code>@which mapreduce(sin, +, [1,2,3,4])</code>. Note again that the macro here is a convenience macro to obtain types of arguments from the expression. Under the hood, it calls <code>InteractiveUtils.which(function_name, (Base.typesof)(args...))</code>. Funnily enough, you can call <code>@which InteractiveUtils.which(+, (Base.typesof)(1,1))</code> to inspect, where <code>which</code> is defined.</p></div></div><h3 id="Broadcasting"><a class="docs-heading-anchor" href="#Broadcasting">Broadcasting</a><a id="Broadcasting-1"></a><a class="docs-heading-anchor-permalink" href="#Broadcasting" title="Permalink"></a></h3><p>Broadcasting is not a unique concept in programming languages (Python/Numpy, MATLAB), however its implementation in Julia allows to easily fuse operations. For example </p><pre><code class="language-julia hljs">x = randn(100)
+sin.(x) .+ 2 .* cos.(x) .+ x</code></pre><p>is all computed in a single loop. We can inspect, how this is achieved in the lowered code:</p><pre><code class="language-julia hljs">julia&gt; Meta.@lower sin.(x) .+ 2 .* cos.(x) .+ x
+:($(Expr(:thunk, CodeInfo(
+    @ none within `top-level scope&#39;
+1 ─ %1 = Base.broadcasted(sin, x)
+│   %2 = Base.broadcasted(cos, x)
+│   %3 = Base.broadcasted(*, 2, %2)
+│   %4 = Base.broadcasted(+, %1, %3)
+│   %5 = Base.broadcasted(+, %4, x)
+│   %6 = Base.materialize(%5)
+└──      return %6
+))))</code></pre><p>Notice that we have not used the usual <code>@code_lowered</code> macro, because the statement to be lowered is not a function call. In these cases, we have to use <code>@code_lowered</code>, which can handle more general program statements. On these cases, we cannot use <code>@which</code> either, as that applies to function calls only as well.</p><h3 id="Generators"><a class="docs-heading-anchor" href="#Generators">Generators</a><a id="Generators-1"></a><a class="docs-heading-anchor-permalink" href="#Generators" title="Permalink"></a></h3><pre><code class="language-julia hljs">Meta.@lower [x for x in 1:4]
+:($(Expr(:thunk, CodeInfo(
+    @ none within `top-level scope&#39;
+1 ─ %1 = 1:4
+│   %2 = Base.Generator(Base.identity, %1)
+│   %3 = Base.collect(%2)
+└──      return %3
+))))</code></pre><p>from which we see that the <code>Generator</code> is implemented using the combination of a <code>Base.collect</code>, which is a function collecting items of a sequence and <code>Base.Generator(f,x)</code>, which implements an iterator, which applies function <code>f</code> on elements of <code>x</code> over which is being iterated. So an almost magical generators have instantly lost their magic.</p><h3 id="Closures"><a class="docs-heading-anchor" href="#Closures">Closures</a><a id="Closures-1"></a><a class="docs-heading-anchor-permalink" href="#Closures" title="Permalink"></a></h3><pre><code class="language-julia hljs">adder(x) = y -&gt; y + x
+
+julia&gt; @code_lowered adder(5)
+CodeInfo(
+1 ─ %1 = Main.:(var&quot;#8#9&quot;)
+│   %2 = Core.typeof(x)
+│   %3 = Core.apply_type(%1, %2)
+│        #8 = %new(%3, x)
+└──      return #8
+)</code></pre><h3 id="The-effect-of-type-instability"><a class="docs-heading-anchor" href="#The-effect-of-type-instability">The effect of type-instability</a><a id="The-effect-of-type-instability-1"></a><a class="docs-heading-anchor-permalink" href="#The-effect-of-type-instability" title="Permalink"></a></h3><pre><code class="language-julia hljs">struct Wolf
+	name::String
+	energy::Int
+end
+
+struct Sheep
+	name::String
+	energy::Int
+end
+
+sound(wolf::Wolf) = println(wolf.name, &quot; has howled.&quot;)
+sound(sheep::Sheep) = println(sheep.name, &quot; has baaed.&quot;)
+stable_pack   = (Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Sheep(&quot;3&quot;, 3))
+unstable_pack = [Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Sheep(&quot;3&quot;, 3)]
+@code_typed map(sound, stable_pack)
+@code_typed map(sound, unstable_pack)</code></pre><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><h2>Cthulhu.jl</h2><p><code>Cthulhu.jl</code> is a library (tool) which simplifies the above, where we want to iteratively dive into functions called in some piece of code (typically some function). <code>Cthulhu</code> is different from te normal debugger, since the debugger is executing the code, while <code>Cthulhu</code> is just lower_typing the code and presenting functions (with type of arguments inferred).</p></div></div><pre><code class="language-julia hljs">using Cthulhu
+@descend map(sound, unstable_pack)</code></pre><h2 id="General-notes-on-metaprogramming"><a class="docs-heading-anchor" href="#General-notes-on-metaprogramming">General notes on metaprogramming</a><a id="General-notes-on-metaprogramming-1"></a><a class="docs-heading-anchor-permalink" href="#General-notes-on-metaprogramming" title="Permalink"></a></h2><p>According to an excellent <a href="https://www.youtube.com/watch?v=mSgXWpvQEHE">talk</a> by Steven Johnson, you should use metaprogramming sparingly, because on one hand it&#39;s very powerful, but  on the other it is generally difficult to read and it can lead to unexpected errors. Julia allows you to interact with the compiler at two different levels.</p><ol><li>After the code is parsed to AST, you can modify it directly or through <strong>macros</strong>.</li><li>When SSA form is being typed, you can create custom functions using the concept of <strong>generated functions</strong>.</li></ol><p>More functionalities are coming through the <a href="https://github.com/JuliaCompilerPlugins">JuliaCompilerPlugins</a> project, but we will not talk about them (yet). </p><h2 id="What-is-Quotation?"><a class="docs-heading-anchor" href="#What-is-Quotation?">What is Quotation?</a><a id="What-is-Quotation?-1"></a><a class="docs-heading-anchor-permalink" href="#What-is-Quotation?" title="Permalink"></a></h2><p>When we are doing metaprogramming, we need to somehow tell the compiler that the next block of code is not a normal block of code to be executed, but that it should be interpreted as data and in any sense it should not be evaluated. <strong>Quotation</strong> refers to exactly this syntactic sugar. In Julia, quotation is achieved either through <code>:(...)</code> or <code>quote ... end</code>.</p><p>Notice the difference between</p><pre><code class="language-julia hljs">1 + 1 </code></pre><p>and </p><pre><code class="language-julia hljs">:(1 + 1)</code></pre><p>The type returned by the quotation depends on what is quoted. Observe the returned type of the following quoted code</p><pre><code class="language-julia hljs">:(1)			|&gt; typeof
+:(:x)		 	|&gt; typeof
+:(1 + x) 		|&gt; typeof
+quote
+    1 + x
+    x + 1
+end 			|&gt; typeof</code></pre><p>All of these snippets are examples of the quoted code, but only <code>:(1 + x)</code> and the quote block produce objects of type <code>Expr</code>. An interesting return type is the <code>QuoteNode</code>, which allows to insert piece of code which should contain elements that should not be interpolated. Most of the time, quoting returns <code>Expr</code>essions.</p><h2 id="Expressions"><a class="docs-heading-anchor" href="#Expressions">Expressions</a><a id="Expressions-1"></a><a class="docs-heading-anchor-permalink" href="#Expressions" title="Permalink"></a></h2><p>Abstract Syntax Tree, the output of Julia&#39;s parser, is expressed using Julia&#39;s own datastructures, which means that you can freely manipulate it (and constructed) from the language itself. This property is called <strong>homoiconicity</strong>. Julia&#39;s compiler allows you to intercept compilation just after it has parsed the source code. Before we will take advantage of this power, we should get familiar with the strucute of the AST.</p><p>The best way to inspect the AST is through the combination </p><ul><li><code>Meta.parse,</code>  which parses the source code to AST, </li><li><code>dump</code> which print AST to terminal, </li><li><code>eval</code> which evaluates the AST within the current module.</li></ul><p>Let&#39;s start by investigating a very simple statement <code>1 + 1</code>, whose AST can be constructed either by <code>Meta.parse(&quot;1 + 1&quot;)</code> or <code>:(1 + 1)</code> or <code>quote 1+1 end</code> (the last one includes also the line information metadata).</p><pre><code class="language-julia hljs">julia&gt; p = :(1+1)
+:(1 + 1)
+
+julia&gt; typeof(p)
+Expr
+
+julia&gt; dump(p)
+Expr
+  head: Symbol call
+  args: Array{Any}((3,))
+    1: Symbol +
+    2: Int64 1
+    3: Int64 1</code></pre><p>The parsed code <code>p</code> is of type <code>Expr</code>, which according to Julia&#39;s help<sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup> is <em>a type representing compound expressions in parsed julia code (ASTs). Each expression consists: of a head Symbol identifying which kind of expression it is (e.g. a call, for loop, conditional statement, etc.), and subexpressions (e.g. the arguments of a call). The subexpressions are stored in a Vector{Any} field called args.</em> If you recall the figure above, where AST was represented as a tree, <code>head</code> gives each node the name name <code>args</code> are either some parameters of the node, or they point to childs of that node. The interpretation of the node depends on the its type stored in head (note that the word type used here is not in the Julia sense).</p><div class="admonition is-info"><header class="admonition-header">`Symbol` type</header><div class="admonition-body"><p>When manipulations of expressions, we encounter the term <code>Symbol</code>. <code>Symbol</code> is the smallest atom from which the program (in AST representation) is built. It is used to identify an element in the language, for example variable, keyword or function name. Symbol is not a string, since string represents itself, whereas <code>Symbol</code> can represent something else (a variable). An illustrative example<sup class="footnote-reference"><a id="citeref-3" href="#footnote-3">[3]</a></sup> goes as follows.</p><pre><code class="language-julia hljs">julia&gt; eval(:foo)
+ERROR: foo not defined
+
+julia&gt; foo = &quot;hello&quot;
+&quot;hello&quot;
+
+julia&gt; eval(:foo)
+&quot;hello&quot;
+
+julia&gt; eval(&quot;foo&quot;)
+&quot;foo&quot;</code></pre><p>which shows that what the symbol <code>:foo</code> evaluates to depends on what – if anything – the variable <code>foo</code> is bound to, whereas &quot;foo&quot; always just evaluates to &quot;foo&quot;.</p><p>Symbols can be constructed either by prepending any string with <code>:</code> or by calling <code>Symbol(...)</code>, which concatenates the arguments and create the symbol out of it. All of the following are symbols</p><pre><code class="language-julia hljs">julia&gt; :+
+:+
+
+julia&gt; :function
+:function
+
+julia&gt; :call
+:call
+
+julia&gt; :x
+:x
+
+julia&gt; Symbol(:Very,&quot;_twisted_&quot;,:symbol,&quot;_definition&quot;)
+:Very_twisted_symbol_definition
+
+julia&gt; Symbol(&quot;Symbol with blanks&quot;)
+Symbol(&quot;Symbol with blanks&quot;)</code></pre><p>Symbols therefore allows us to operate with a piece of code without evaluating it.</p><p>In Julia, symbols are &quot;interned strings&quot;, which means that compiler attaches each string a unique identifier (integer), such that it can quickly compare them. Compiler uses Symbols exclusively and the important feature is that they can be quickly compared. This is why people like to use them as keys in <code>Dict</code>.</p></div></div><div class="admonition is-info"><header class="admonition-header">`Expr`essions</header><div class="admonition-body"><p>From Julia&#39;s help<sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup>:</p><p><code>Expr(head::Symbol, args...)</code></p><p>A type representing compound expressions in parsed julia code (ASTs). Each expression consists of a head <code>Symbol</code> identifying which kind of expression it is (e.g. a call, for loop, conditional statement, etc.), and subexpressions (e.g. the arguments of a call). The subexpressions are stored in a <code>Vector{Any}</code> field called args. </p><p>The expression is simple yet very flexible. The head <code>Symbol</code> tells how the expression should be treated and arguments provide all needed parameters. Notice that the structure is also type-unstable. This is not a big deal, since the expression is used to generate code, hence it is not executed repeatedly.</p></div></div><h2 id="Construct-code-from-scratch"><a class="docs-heading-anchor" href="#Construct-code-from-scratch">Construct code from scratch</a><a id="Construct-code-from-scratch-1"></a><a class="docs-heading-anchor-permalink" href="#Construct-code-from-scratch" title="Permalink"></a></h2><p>Since <code>Expr</code> is a Julia structure, we can construct it manually as we can construct any other structure</p><pre><code class="language-julia hljs">julia&gt; Expr(:call, :+, 1 , 1) |&gt; dump
+Expr
+  head: Symbol call
+  args: Array{Any}((3,))
+    1: Symbol +
+    2: Int64 1
+    3: Int64 1</code></pre><p>yielding to the same structure as we have created above.  Expressions can be evaluated using <code>eval</code>, as has been said. to programmatically evaluate our expression, let&#39;s do </p><pre><code class="language-julia hljs">e = Expr(:call, :+, 1, 1)
+eval(e)</code></pre><p>We are free to use variables (identified by symbols) inside the expression </p><pre><code class="language-julia hljs">e = Expr(:call, :+, :x, 5)
+eval(e)</code></pre><p>but unless they are not defined within the scope, the expression cannot produce a meaningful result</p><pre><code class="language-julia hljs">x = 3
+eval(e)</code></pre><pre><code class="language-julia hljs">:(1 + sin(x)) == Expr(:call, :+, 1, Expr(:call, :sin, :x))</code></pre><p>Since the expression is a Julia structure, we are free to manipulate it. Let&#39;s for example substitutue <code>x</code> in  <code>e = :(x + 5)</code> with <code>2x</code>.</p><pre><code class="language-julia hljs">e = :(x + 5)
+e.args = map(e.args) do a 
+	a == :x ?  Expr(:call, :*, 2, :x) : a 
+end</code></pre><p>or </p><pre><code class="language-julia hljs">e = :(x + 5)
+e.args = map(e.args) do a 
+	a == :x ? :(2*x) : a 
+end</code></pre><p>and verify that the results are correct.</p><pre><code class="language-julia hljs">julia&gt; dump(e)
+Expr
+  head: Symbol call
+  args: Array{Any}((3,))
+    1: Symbol +
+    2: Expr
+      head: Symbol call
+      args: Array{Any}((3,))
+        1: Symbol *
+        2: Int64 2
+        3: Symbol x
+    3: Int64 5
+
+julia&gt; eval(e)
+11</code></pre><p>As already mentioned, the manipulation of Expression can be arbitrary. In the above example, we have been operating directly on the arguments. But what if <code>x</code> would be deeper in the expression, as for example in <code>2(3 + x) + 2(2 - x)</code>? We can implement the substitution using multiple dispatch as we would do when implementing any other function in Julia.</p><pre><code class="language-julia hljs">replace_x(x::Symbol) = x == :x ? :(2*x) : x
+replace_x(e::Expr) = Expr(e.head, map(replace_x, e.args)...)
+replace_x(u) = u</code></pre><p>which works as promised.</p><pre><code class="language-julia hljs">julia&gt; e = :(2(3 + 2x) + 2(2 - x))
+:(2 * (3 + x) + 2 * (2 - x))
+julia&gt; f = replace_x(e)
+:(2 * (3 + 2x) + 2 * (2 - 2x))</code></pre><p>or we can replace the <code>sin</code> function</p><pre><code class="language-julia hljs">replace_sin(x::Symbol) = x == :sin ? :cos : x
+replace_sin(e::Expr) = Expr(e.head, map(replace_sin, e.args)...)
+replace_sin(u) = u</code></pre><pre><code class="language-julia hljs">replace_sin(:(1 + sin(x)))</code></pre><p>Sometimes, we want to operate on a block of code as opposed to single line expressions. Recall that a block of code is defined-quoted with <code>quote ... end</code>. Let us see how <code>replace_x</code> can handle the following example:</p><pre><code class="language-julia hljs">e = quote 
+	a = x + 3
+	b = 2 - x
+	2a + 2b
+end</code></pre><pre><code class="language-julia hljs">julia&gt; replace_x(e) |&gt; Base.remove_linenums!
+quote
+    a = 2x + 3
+    b = 2 - 2x
+    2a + 2b
+end
+
+julia&gt; replace_x(e) |&gt; eval
+10</code></pre><h3 id="Brittleness-of-code-manipulation"><a class="docs-heading-anchor" href="#Brittleness-of-code-manipulation">Brittleness of code manipulation</a><a id="Brittleness-of-code-manipulation-1"></a><a class="docs-heading-anchor-permalink" href="#Brittleness-of-code-manipulation" title="Permalink"></a></h3><p>When we are manipulating the AST or creating new expressions from scratch, there is no <strong>syntactic</strong> validation performed by the parser. It is therefore very easy to create AST which does not make any sense and cannot be compiled. We have already seen that we can refer to variables that were not defined yet (this makes perfect sense). The same goes with functions (which also makes a lot of sense).</p><pre><code class="language-julia hljs">e = :(g() + 5)
+eval(e)
+g() = 5
+eval(e)</code></pre><p>But we can also introduce keywords which the language does not know. For example </p><pre><code class="language-julia hljs">e = Expr(:my_keyword, 1, 2, 3)
+:($(Expr(:my_keyword, 1, 2, 3)))
+
+julia&gt; e.head
+:my_keyword
+
+julia&gt; e.args
+3-element Vector{Any}:
+ 1
+ 2
+ 3
+
+julia&gt; eval(e)
+ERROR: syntax: invalid syntax (my_keyword 1 2 3)
+Stacktrace:
+ [1] top-level scope
+   @ none:1
+ [2] eval
+   @ ./boot.jl:360 [inlined]
+ [3] eval(x::Expr)
+   @ Base.MainInclude ./client.jl:446
+ [4] top-level scope
+   @ REPL[8]:1</code></pre><p>notice that error is not related to undefined variable / function, but the invalid syntax. This also demonstrates the role of <code>head</code> in <code>Expr</code>. More on Julia AST can be found in the developer <a href="https://docs.julialang.org/en/v1/devdocs/ast/#Julia-ASTs">documentation</a>.</p><h3 id="Alternative-way-to-look-at-code"><a class="docs-heading-anchor" href="#Alternative-way-to-look-at-code">Alternative way to look at code</a><a id="Alternative-way-to-look-at-code-1"></a><a class="docs-heading-anchor-permalink" href="#Alternative-way-to-look-at-code" title="Permalink"></a></h3><pre><code class="language-julia hljs">Meta.parse(&quot;x[3]&quot;) |&gt; dump</code></pre><p>We can see a new Symbol <code>ref</code> as a head and the position <code>3</code> of variable <code>x</code>.</p><pre><code class="language-julia hljs">Meta.parse(&quot;(1,2,3)&quot;) |&gt; dump</code></pre><pre><code class="language-julia hljs">Meta.parse(&quot;1/2/3&quot;) |&gt; dump</code></pre><p>&lt;!– ### Algebraic expansion with macro</p><pre><code class="language-julia hljs">function match_sin_xy(ex::Expr) 
+	ex.head != :call &amp;&amp; return(false)
+	length(ex.args) != 2 &amp;&amp; return(false)
+	ex.args[1] != :sin &amp;&amp; return(false)
+	!(ex.args[2] isa Expr) &amp;&amp; return(false)
+	ix = ex[2]
+	ix.head != :call &amp;&amp; return(false)
+	length(ix.args) != 3 &amp;&amp; return(false)
+	ix.args[1] != :+ &amp;&amp; return(false)
+end
+
+function rewrite_sin_xy(ex::Expr) 
+	ex.head != :call &amp;&amp; return(false)
+	length(ex.args) != 2 &amp;&amp; return(false)
+	ex.args[1] != :sin &amp;&amp; return(false)
+	!(ex.args[2] isa Expr) &amp;&amp; return(false)
+	ix = ex[2]
+	ix.head != :call &amp;&amp; return(false)
+	length(ix.args) != 3 &amp;&amp; return(false)
+	ix.args[1] != :+ &amp;&amp; return(false)
+end
+
+expand_sin_xy(:(sin(x + 2*(z + y))))</code></pre><p>–&gt;</p><h2 id="Code-generation"><a class="docs-heading-anchor" href="#Code-generation">Code generation</a><a id="Code-generation-1"></a><a class="docs-heading-anchor-permalink" href="#Code-generation" title="Permalink"></a></h2><h3 id="Using-metaprogramming-in-inheritance-by-encapsulation"><a class="docs-heading-anchor" href="#Using-metaprogramming-in-inheritance-by-encapsulation">Using metaprogramming in inheritance by encapsulation</a><a id="Using-metaprogramming-in-inheritance-by-encapsulation-1"></a><a class="docs-heading-anchor-permalink" href="#Using-metaprogramming-in-inheritance-by-encapsulation" title="Permalink"></a></h3><p>Recall that Julia (at the moment) does not support inheritance, therefore the only way to adopt functionality of some object and extend it is through <em>encapsulation</em>. Assuming we have some object <code>T</code>, we wrap that object into a new structure. Let&#39;s work out a concrete example, where we define the our own matrix. </p><pre><code class="language-julia hljs">struct MyMatrix{T} &lt;: AbstractMatrix{T}
+	x::Matrix{T}
+end</code></pre><p>Now, to make it useful, we should define all the usual methods, like <code>size</code>, <code>length</code>, <code>getindex</code>, <code>setindex!</code>, etc. We can list methods defined with <code>Matrix</code> as an argument <code>methodswith(Matrix)</code> (recall this will load methods that are defined with currently loaded libraries). Now, we would like to overload them. To minimize the written code, we can write</p><pre><code class="language-julia hljs">import Base: setindex!, getindex, size, length
+for f in [:setindex!, :getindex, :size, :length]
+	eval(:($(f)(A::MyMatrix, args...) = $(f)(A.x, args...)))
+end</code></pre><p>which we can verify now that it works as expected </p><pre><code class="language-julia hljs">julia&gt; a = MyMatrix([1 2 ; 3 4])
+2×2 MyMatrix{Int64}:
+ 1  2
+ 3  4
+
+julia&gt; a[4]
+4
+
+julia&gt; a[3] = 0
+0
+
+julia&gt; a
+2×2 MyMatrix{Int64}:
+ 1  0
+ 3  4</code></pre><p>In this way, Julia acts as its own preprocessor. The above look can be equally written as </p><pre><code class="language-julia hljs">for f in [:setindex!, :getindex, :size, :length]
+	s = &quot;Base.$(f)(A::MyMatrix, args...) = $(f)(A.x, args...)&quot;
+	println(s)
+	eval(Meta.parse(s))
+end</code></pre><p>for f in [:setindex!, :getindex, :size, :length] 	@eval f(A::MyMatrix, args...) = f(A.x, args...) end</p><p>Notice that we have just hand-implemented parts of <code>@forward</code> macro from <a href="https://github.com/FluxML/MacroTools.jl/blob/master/src/examples/forward.jl">MacroTools</a>, which does exactly this.</p><p>&lt;!– Should I mention the world clock age and the effect of eval in global scope –&gt;</p><hr/><h1 id="Resources"><a class="docs-heading-anchor" href="#Resources">Resources</a><a id="Resources-1"></a><a class="docs-heading-anchor-permalink" href="#Resources" title="Permalink"></a></h1><ul><li>Julia&#39;s manual on <a href="https://docs.julialang.org/en/v1/manual/metaprogramming/">metaprogramming</a></li><li>David P. Sanders&#39; <a href="https://www.youtube.com/watch?v=2QLhw6LVaq0">workshop @ JuliaCon 2021</a> </li><li>Steven Johnson&#39;s <a href="https://www.youtube.com/watch?v=mSgXWpvQEHE">keynote talk @ JuliaCon 2019</a></li><li>Andy Ferris&#39;s <a href="https://www.youtube.com/watch?v=SeqAQHKLNj4">workshop @ JuliaCon 2018</a></li><li><a href="https://github.com/johnmyleswhite/julia_tutorials">From Macros to DSL</a> by John Myles White </li><li>Notes on <a href="https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project">JuliaCompilerPlugin</a></li></ul><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>From StackOverflow <a href="https://stackoverflow.com/questions/43453944/what-is-the-difference-between-code-native-code-typed-and-code-llvm-in-julia">https://stackoverflow.com/questions/43453944/what-is-the-difference-between-code-native-code-typed-and-code-llvm-in-julia</a></li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a><a href="https://docs.julialang.org/en/v1/base/base/#Core.Expr">https://docs.julialang.org/en/v1/base/base/#Core.Expr</a></li><li class="footnote" id="footnote-3"><a class="tag is-link" href="#citeref-3">3</a>An example provided by Stefan Karpinski <a href="https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia">https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia</a></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_05/hw/">« Homework</a><a class="docs-footer-nextpage" href="../lab/">Lab »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Thursday 25 November 2021 21:31">Thursday 25 November 2021</span>. Using Julia version 1.6.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

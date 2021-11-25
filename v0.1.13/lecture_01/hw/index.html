@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Homework · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_01/hw/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox" checked/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../motivation/">Motivation</a></li><li><a class="tocitem" href="../basics/">Basics</a></li><li><a class="tocitem" href="../demo/">Examples</a></li><li><a class="tocitem" href="../outline/">Outline</a></li><li><a class="tocitem" href="../lab/">Lab</a></li><li class="is-active"><a class="tocitem" href>Homework</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#How-to-submit?"><span>How to submit?</span></a></li></ul></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Introduction to automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-12" type="checkbox"/><label class="tocitem" for="menuitem-12"><span class="docs-label">9: Manipulating intermediate representation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_09/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_09/lab/">Lab</a></li></ul></li><li><span class="tocitem">10: Different levels of parallel programming</span></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><span class="tocitem">12: Uncertainty propagation in ODE</span></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">1: Introduction</a></li><li class="is-active"><a href>Homework</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Homework</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_01/hw.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Homework-1:-Extending-polynomial-the-other-way"><a class="docs-heading-anchor" href="#Homework-1:-Extending-polynomial-the-other-way">Homework 1: Extending <code>polynomial</code> the other way</a><a id="Homework-1:-Extending-polynomial-the-other-way-1"></a><a class="docs-heading-anchor-permalink" href="#Homework-1:-Extending-polynomial-the-other-way" title="Permalink"></a></h1><div class="admonition is-category-homework">
+<header class="admonition-header">Homework (2 points)</header>
+<div class="admonition-body"><p>Extend the original polynomial function to the case where <code>x</code> is a square matrix. Create a function called <code>circlemat</code>, that returns <code>nxn</code> matrix <span>$A(n)$</span> with the following elements</p><p class="math-container">\[\left[A(n)\right]_{ij} = 
+\begin{cases}
+   1 &amp;\text{if } (i = j-1 \land j &gt; 1) \lor (i = n \land j=1) \\
+   1 &amp;\text{if } (i = j+1 \land j &lt; n) \lor (i = 1 \land j=n) \\
+   0 &amp; \text{  otherwise}
+\end{cases}\]</p><p>and evaluate the polynomial</p><p class="math-container">\[f(A) = I + A + A^2 + A^3.\]</p><p>, at point <span>$A = A(10)$</span>.</p><p><strong>HINTS</strong> for matrix definition: You can try one of these options:</p><ul><li>create matrix with all zeros with <code>zeros(n,n)</code>, use two nested for loops going in ranges <code>1:n</code> and if condition with logical or <code>||</code>, and <code>&amp;&amp;</code> </li><li>employ array comprehension with nested loops <code>[expression for i in 1:n, j in 1:n]</code> and ternary operator <code>condition ? true branch : false</code></li></ul><p><strong>HINTS</strong> for <code>polynomial</code> extension:</p><ul><li>extend the original example (one with for-loop) to initialize the <code>accumulator</code> variable with matrix of proper size (use <code>size</code> function to get the dimension), using argument typing for <code>x</code> is preferred to distinguish individual implementations <code>&lt;: AbstractMatrix</code></li></ul><p>or</p><ul><li>test later defined <code>polynomial</code> methods, that may work out of the box</li></ul></div></div>
+<details class = "solution-body" hidden>
+<summary class = "solution-header">Solution:</summary><p><p>Nothing to see here.</p></p></details><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise (voluntary)</header>
+<div class="admonition-body"><p>Install <code>GraphRecipes</code> and <code>Plots</code> packages into the environment defined during the lecture and figure out, how to plot the graph defined by adjacency matrix <code>A</code> from the homework.</p><p><strong>HINTS</strong>:</p><ul><li>There is help command inside the the pkg mod of the REPL. Type <code>? add</code> to find out how to install a package. Note that both pkgs are registered.</li><li>Follow a guide in the <code>Plots</code> pkg&#39;s documentation, which is accessible through <code>docs</code> icon on top of the README in the GitHub <a href="https://github.com/JuliaPlots/Plots.jl">repository</a>. Direct <a href="http://docs.juliaplots.org/latest/graphrecipes/introduction/#GraphRecipes">link</a>.</li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>Activate the environment in pkg mode, if it is not currently active.</p><pre><code class="language-julia hljs">pkg&gt; activate .</code></pre><p>Installing pkgs is achieved using the <code>add</code> command. Running <code>] ? add</code> returns a short piece of documentation for this command:</p><pre><code class="language-julia hljs">pkg&gt; ? add
+[...]
+  Examples
+
+  pkg&gt; add Example                                          # most commonly used for registered pkgs (installs usually the latest release)
+  pkg&gt; add Example@0.5                                      # install with some specific version (realized through git tags)
+  pkg&gt; add Example#master                                   # install from master branch directly
+  pkg&gt; add Example#c37b675                                  # install from specific git commit
+  pkg&gt; add https://github.com/JuliaLang/Example.jl#master   # install from specific remote repository (when pkg is not registered)
+  pkg&gt; add git@github.com:JuliaLang/Example.jl.git          # same as above but using the ssh protocol
+  pkg&gt; add Example=7876af07-990d-54b4-ab0e-23690620f79a     # when there are multiple pkgs with the same name</code></pre><p>As the both <code>Plots</code> and <code>GraphRecipes</code> are registered and we don&#39;t have any version requirements, we will use the first option.</p><pre><code class="language-julia hljs">pkg&gt; add Plots
+pkg&gt; add GraphRecipes</code></pre><p>This process downloads the pkgs and triggers some build steps, if for example some binary dependencies are needed. The process duration depends on the &quot;freshness&quot; of Julia installation and the size of each pkg. With <code>Plots</code> being quite dependency heavy, expect few minutes. After the installation is complete we can check the updated environment with the <code>status</code> command.</p><pre><code class="language-julia hljs">pkg&gt; status</code></pre><p>The plotting itself as easy as calling the <code>graphplot</code> function on our adjacency matrix.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using GraphRecipes, Plots</code><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; graphplot(A)</code><code class="nohighlight hljs ansi" style="display:block;">Plot{Plots.GRBackend() n=21}</code></pre><?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="400" viewBox="0 0 2400 1600">
+<defs>
+  <clipPath id="clip720">
+    <rect x="0" y="0" width="2400" height="1600"/>
+  </clipPath>
+</defs>
+<path clip-path="url(#clip720)" d="
+M0 1600 L2400 1600 L2400 0 L0 0  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip721">
+    <rect x="480" y="0" width="1681" height="1600"/>
+  </clipPath>
+</defs>
+<path clip-path="url(#clip720)" d="
+M447.244 1552.76 L1952.76 1552.76 L1952.76 47.2441 L447.244 47.2441  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip722">
+    <rect x="447" y="47" width="1507" height="1507"/>
+  </clipPath>
+</defs>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1470.4,1270.87 1477.49,1268.08 1484.56,1265.28 1491.62,1262.46 1498.66,1259.62 1505.67,1256.75 1512.63,1253.84 1519.55,1250.89 1526.41,1247.89 1533.2,1244.82 
+  1539.93,1241.69 1546.57,1238.48 1553.12,1235.2 1559.58,1231.82 1565.93,1228.34 1572.18,1224.77 1578.3,1221.07 1584.29,1217.26 1590.14,1213.33 1595.85,1209.26 
+  1601.41,1205.04 1606.81,1200.68 1612.04,1196.16 1617.09,1191.48 1621.95,1186.62 1626.63,1181.59 1631.11,1176.37 1635.41,1170.99 1639.53,1165.44 1643.48,1159.74 
+  1647.27,1153.88 1650.9,1147.88 1654.4,1141.75 1657.75,1135.5 1660.98,1129.12 1664.09,1122.63 1667.08,1116.04 1669.97,1109.35 1672.76,1102.57 1675.47,1095.7 
+  1678.09,1088.77 1680.65,1081.76 1683.13,1074.7 1685.56,1067.58 1687.95,1060.42 1690.29,1053.23 1692.6,1046 1694.89,1038.75 1697.16,1031.48 1699.42,1024.21 
+  
+  "/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1470.4,1270.87 1464.27,1275.46 1458.13,1280.04 1451.99,1284.6 1445.85,1289.12 1439.69,1293.6 1433.53,1298.03 1427.35,1302.4 1421.15,1306.68 1414.94,1310.89 
+  1408.71,1314.99 1402.46,1318.99 1396.18,1322.87 1389.88,1326.62 1383.55,1330.23 1377.19,1333.69 1370.8,1336.99 1364.37,1340.11 1357.91,1343.06 1351.4,1345.81 
+  1344.86,1348.35 1338.27,1350.68 1331.64,1352.79 1324.96,1354.66 1318.23,1356.28 1311.45,1357.64 1304.62,1358.75 1297.73,1359.61 1290.8,1360.23 1283.82,1360.62 
+  1276.81,1360.8 1269.74,1360.78 1262.65,1360.56 1255.51,1360.16 1248.34,1359.59 1241.13,1358.86 1233.9,1357.98 1226.64,1356.95 1219.35,1355.8 1212.04,1354.53 
+  1204.71,1353.15 1197.36,1351.68 1189.99,1350.12 1182.6,1348.48 1175.2,1346.78 1167.79,1345.02 1160.38,1343.23 1152.95,1341.4 1145.53,1339.54 1138.1,1337.68 
+  
+  "/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1699.42,1024.21 1703.47,1017.8 1707.51,1011.4 1711.53,1004.99 1715.51,998.576 1719.45,992.158 1723.34,985.733 1727.16,979.302 1730.9,972.861 1734.56,966.41 
+  1738.12,959.949 1741.57,953.474 1744.9,946.986 1748.1,940.483 1751.16,933.963 1754.06,927.426 1756.8,920.87 1759.37,914.294 1761.75,907.697 1763.94,901.077 
+  1765.92,894.433 1767.68,887.764 1769.21,881.069 1770.5,874.346 1771.54,867.594 1772.33,860.813 1772.85,854.001 1773.11,847.16 1773.14,840.292 1772.94,833.397 
+  1772.53,826.478 1771.9,819.534 1771.08,812.568 1770.08,805.58 1768.9,798.573 1767.55,791.547 1766.06,784.503 1764.42,777.443 1762.65,770.367 1760.76,763.278 
+  1758.76,756.177 1756.67,749.064 1754.49,741.941 1752.23,734.809 1749.9,727.67 1747.52,720.524 1745.1,713.374 1742.65,706.219 1740.17,699.063 1737.68,691.905 
+  
+  "/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1737.68,691.905 1731.42,687.604 1725.16,683.298 1718.93,678.981 1712.72,674.647 1706.55,670.292 1700.43,665.909 1694.37,661.494 1688.37,657.04 1682.45,652.543 
+  1676.62,647.996 1670.87,643.395 1665.24,638.734 1659.72,634.007 1654.32,629.209 1649.05,624.335 1643.93,619.379 1638.96,614.335 1634.15,609.199 1629.52,603.964 
+  1625.06,598.626 1620.79,593.178 1616.73,587.615 1612.87,581.933 1609.23,576.124 1605.82,570.185 1602.64,564.115 1599.67,557.92 1596.92,551.604 1594.37,545.173 
+  1592,538.634 1589.82,531.99 1587.8,525.248 1585.95,518.414 1584.25,511.491 1582.7,504.487 1581.27,497.407 1579.98,490.255 1578.79,483.038 1577.71,475.761 
+  1576.72,468.429 1575.82,461.049 1575,453.624 1574.24,446.161 1573.54,438.666 1572.89,431.143 1572.28,423.598 1571.69,416.037 1571.12,408.465 1570.57,400.887 
+  
+  "/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1570.57,400.887 1562.92,401.061 1555.28,401.224 1547.64,401.368 1540.02,401.481 1532.42,401.555 1524.84,401.578 1517.29,401.542 1509.77,401.435 1502.29,401.248 
+  1494.84,400.972 1487.44,400.595 1480.09,400.108 1472.79,399.501 1465.56,398.764 1458.38,397.887 1451.27,396.86 1444.24,395.672 1437.28,394.315 1430.4,392.777 
+  1423.61,391.05 1416.9,389.122 1410.29,386.984 1403.78,384.626 1397.38,382.038 1391.08,379.21 1384.89,376.142 1378.8,372.844 1372.81,369.326 1366.91,365.598 
+  1361.11,361.67 1355.39,357.551 1349.75,353.253 1344.19,348.784 1338.7,344.156 1333.27,339.377 1327.91,334.458 1322.61,329.409 1317.36,324.24 1312.16,318.961 
+  1307.01,313.582 1301.9,308.112 1296.82,302.563 1291.77,296.944 1286.75,291.264 1281.76,285.535 1276.78,279.766 1271.81,273.966 1266.86,268.147 1261.9,262.317 
+  
+  "/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1261.9,262.317 1255.77,266.906 1249.64,271.484 1243.5,276.041 1237.35,280.566 1231.2,285.047 1225.03,289.475 1218.85,293.838 1212.66,298.126 1206.45,302.328 
+  1200.22,306.433 1193.96,310.43 1187.69,314.31 1181.39,318.06 1175.06,321.67 1168.69,325.13 1162.3,328.429 1155.87,331.555 1149.41,334.499 1142.91,337.249 
+  1136.36,339.795 1129.78,342.126 1123.14,344.231 1116.46,346.099 1109.73,347.72 1102.95,349.084 1096.12,350.189 1089.23,351.048 1082.3,351.67 1075.33,352.066 
+  1068.31,352.247 1061.25,352.224 1054.15,352.007 1047.01,351.607 1039.84,351.035 1032.64,350.302 1025.4,349.419 1018.14,348.395 1010.86,347.243 1003.54,345.972 
+  996.211,344.594 988.859,343.119 981.489,341.558 974.104,339.922 966.706,338.221 959.298,336.466 951.88,334.668 944.457,332.839 937.029,330.987 929.598,329.125 
+  
+  "/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  929.598,329.125 927.336,336.398 925.065,343.663 922.778,350.913 920.467,358.141 918.124,365.339 915.74,372.5 913.309,379.615 910.821,386.679 908.269,393.683 
+  905.644,400.62 902.939,407.482 900.146,414.262 897.256,420.952 894.262,427.546 891.155,434.035 887.927,440.412 884.571,446.669 881.079,452.8 877.442,458.797 
+  873.651,464.651 869.701,470.357 865.581,475.905 861.285,481.29 856.803,486.502 852.129,491.536 847.263,496.392 842.212,501.075 836.983,505.594 831.586,509.957 
+  826.029,514.17 820.318,518.242 814.463,522.179 808.471,525.99 802.351,529.68 796.11,533.259 789.756,536.734 783.298,540.111 776.744,543.399 770.101,546.605 
+  763.377,549.736 756.582,552.8 749.722,555.805 742.806,558.757 735.841,561.664 728.837,564.534 721.8,567.374 714.739,570.192 707.662,572.995 700.577,575.79 
+  
+  "/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  700.577,575.79 703.065,582.948 705.542,590.105 707.997,597.259 710.419,604.41 712.798,611.555 715.122,618.695 717.381,625.826 719.563,632.949 721.659,640.062 
+  723.656,647.164 725.545,654.253 727.313,661.328 728.951,668.388 730.447,675.432 731.791,682.458 732.971,689.466 733.976,696.453 734.797,703.419 735.421,710.363 
+  735.839,717.283 736.038,724.177 736.009,731.046 735.74,737.886 735.22,744.698 734.439,751.48 733.397,758.231 732.105,764.954 730.572,771.649 728.811,778.318 
+  726.832,784.962 724.646,791.582 722.264,798.179 719.697,804.755 716.955,811.311 714.05,817.849 710.992,824.368 707.793,830.871 704.463,837.36 701.013,843.834 
+  697.454,850.296 693.797,856.747 690.052,863.187 686.232,869.619 682.346,876.043 678.406,882.461 674.422,888.874 670.405,895.283 666.367,901.69 662.317,908.095 
+  
+  "/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  662.317,908.095 662.875,915.673 663.442,923.245 664.027,930.806 664.642,938.351 665.294,945.874 665.995,953.369 666.752,960.832 667.575,968.257 668.475,975.638 
+  669.461,982.97 670.541,990.247 671.726,997.464 673.026,1004.62 674.449,1011.7 676.005,1018.7 677.704,1025.62 679.555,1032.46 681.567,1039.2 683.751,1045.84 
+  686.116,1052.38 688.671,1058.81 691.425,1065.13 694.389,1071.32 697.572,1077.39 700.983,1083.33 704.621,1089.14 708.478,1094.82 712.545,1100.39 716.811,1105.83 
+  721.267,1111.17 725.904,1116.41 730.713,1121.54 735.683,1126.59 740.805,1131.54 746.07,1136.42 751.468,1141.22 756.99,1145.94 762.626,1150.6 768.366,1155.2 
+  774.202,1159.75 780.123,1164.25 786.121,1168.7 792.185,1173.12 798.306,1177.5 804.474,1181.86 810.681,1186.19 816.916,1190.51 823.17,1194.81 829.434,1199.11 
+  
+  "/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  829.434,1199.11 834.386,1204.94 839.342,1210.76 844.307,1216.56 849.286,1222.33 854.282,1228.06 859.301,1233.74 864.347,1239.36 869.425,1244.91 874.538,1250.38 
+  879.692,1255.76 884.891,1261.04 890.139,1266.2 895.441,1271.25 900.802,1276.17 906.225,1280.95 911.716,1285.58 917.279,1290.05 922.918,1294.35 928.638,1298.47 
+  934.443,1302.39 940.338,1306.12 946.327,1309.64 952.416,1312.94 958.607,1316.01 964.907,1318.83 971.313,1321.42 977.824,1323.78 984.433,1325.92 991.136,1327.85 
+  997.929,1329.57 1004.81,1331.11 1011.77,1332.47 1018.8,1333.66 1025.91,1334.68 1033.09,1335.56 1040.32,1336.3 1047.62,1336.9 1054.97,1337.39 1062.37,1337.77 
+  1069.81,1338.04 1077.3,1338.23 1084.82,1338.34 1092.37,1338.37 1099.95,1338.35 1107.55,1338.28 1115.17,1338.16 1122.81,1338.02 1130.45,1337.86 1138.1,1337.68 
+  
+  "/>
+<path clip-path="url(#clip722)" d="
+M1491.91 1270.87 L1481.16 1252.25 L1459.65 1252.25 L1448.89 1270.87 L1459.65 1289.5 L1481.16 1289.5 L1491.91 1270.87 L1491.91 1270.87  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1491.91,1270.87 1481.16,1252.25 1459.65,1252.25 1448.89,1270.87 1459.65,1289.5 1481.16,1289.5 1491.91,1270.87 
+  "/>
+<path clip-path="url(#clip722)" d="
+M1720.93 1024.21 L1710.18 1005.58 L1688.67 1005.58 L1677.92 1024.21 L1688.67 1042.84 L1710.18 1042.84 L1720.93 1024.21 L1720.93 1024.21  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1720.93,1024.21 1710.18,1005.58 1688.67,1005.58 1677.92,1024.21 1688.67,1042.84 1710.18,1042.84 1720.93,1024.21 
+  "/>
+<path clip-path="url(#clip722)" d="
+M1759.19 691.905 L1748.44 673.279 L1726.93 673.279 L1716.18 691.905 L1726.93 710.531 L1748.44 710.531 L1759.19 691.905 L1759.19 691.905  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1759.19,691.905 1748.44,673.279 1726.93,673.279 1716.18,691.905 1726.93,710.531 1748.44,710.531 1759.19,691.905 
+  "/>
+<path clip-path="url(#clip722)" d="
+M1592.07 400.887 L1581.32 382.261 L1559.81 382.261 L1549.06 400.887 L1559.81 419.513 L1581.32 419.513 L1592.07 400.887 L1592.07 400.887  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1592.07,400.887 1581.32,382.261 1559.81,382.261 1549.06,400.887 1559.81,419.513 1581.32,419.513 1592.07,400.887 
+  "/>
+<path clip-path="url(#clip722)" d="
+M1283.41 262.317 L1272.66 243.691 L1251.15 243.691 L1240.4 262.317 L1251.15 280.943 L1272.66 280.943 L1283.41 262.317 L1283.41 262.317  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1283.41,262.317 1272.66,243.691 1251.15,243.691 1240.4,262.317 1251.15,280.943 1272.66,280.943 1283.41,262.317 
+  "/>
+<path clip-path="url(#clip722)" d="
+M951.106 329.125 L940.352 310.499 L918.845 310.499 L908.091 329.125 L918.845 347.751 L940.352 347.751 L951.106 329.125 L951.106 329.125  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  951.106,329.125 940.352,310.499 918.845,310.499 908.091,329.125 918.845,347.751 940.352,347.751 951.106,329.125 
+  "/>
+<path clip-path="url(#clip722)" d="
+M722.084 575.79 L711.331 557.164 L689.823 557.164 L679.07 575.79 L689.823 594.416 L711.331 594.416 L722.084 575.79 L722.084 575.79  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  722.084,575.79 711.331,557.164 689.823,557.164 679.07,575.79 689.823,594.416 711.331,594.416 722.084,575.79 
+  "/>
+<path clip-path="url(#clip722)" d="
+M683.825 908.095 L673.071 889.469 L651.564 889.469 L640.81 908.095 L651.564 926.721 L673.071 926.721 L683.825 908.095 L683.825 908.095  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  683.825,908.095 673.071,889.469 651.564,889.469 640.81,908.095 651.564,926.721 673.071,926.721 683.825,908.095 
+  "/>
+<path clip-path="url(#clip722)" d="
+M850.941 1199.11 L840.187 1180.49 L818.68 1180.49 L807.926 1199.11 L818.68 1217.74 L840.187 1217.74 L850.941 1199.11 L850.941 1199.11  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  850.941,1199.11 840.187,1180.49 818.68,1180.49 807.926,1199.11 818.68,1217.74 840.187,1217.74 850.941,1199.11 
+  "/>
+<path clip-path="url(#clip722)" d="
+M1159.6 1337.68 L1148.85 1319.06 L1127.34 1319.06 L1116.59 1337.68 L1127.34 1356.31 L1148.85 1356.31 L1159.6 1337.68 L1159.6 1337.68  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip722)" style="stroke:#000000; stroke-linecap:butt; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1159.6,1337.68 1148.85,1319.06 1127.34,1319.06 1116.59,1337.68 1127.34,1356.31 1148.85,1356.31 1159.6,1337.68 
+  "/>
+<circle clip-path="url(#clip722)" style="fill:#009af9; stroke:none; fill-opacity:1" cx="1470.4" cy="1270.87" r="2"/>
+<circle clip-path="url(#clip722)" style="fill:#009af9; stroke:none; fill-opacity:1" cx="1699.42" cy="1024.21" r="2"/>
+<circle clip-path="url(#clip722)" style="fill:#009af9; stroke:none; fill-opacity:1" cx="1737.68" cy="691.905" r="2"/>
+<circle clip-path="url(#clip722)" style="fill:#009af9; stroke:none; fill-opacity:1" cx="1570.57" cy="400.887" r="2"/>
+<circle clip-path="url(#clip722)" style="fill:#009af9; stroke:none; fill-opacity:1" cx="1261.9" cy="262.317" r="2"/>
+<circle clip-path="url(#clip722)" style="fill:#009af9; stroke:none; fill-opacity:1" cx="929.598" cy="329.125" r="2"/>
+<circle clip-path="url(#clip722)" style="fill:#009af9; stroke:none; fill-opacity:1" cx="700.577" cy="575.79" r="2"/>
+<circle clip-path="url(#clip722)" style="fill:#009af9; stroke:none; fill-opacity:1" cx="662.317" cy="908.095" r="2"/>
+<circle clip-path="url(#clip722)" style="fill:#009af9; stroke:none; fill-opacity:1" cx="829.434" cy="1199.11" r="2"/>
+<circle clip-path="url(#clip722)" style="fill:#009af9; stroke:none; fill-opacity:1" cx="1138.1" cy="1337.68" r="2"/>
+</svg>
+</p></details><h1 id="How-to-submit?"><a class="docs-heading-anchor" href="#How-to-submit?">How to submit?</a><a id="How-to-submit?-1"></a><a class="docs-heading-anchor-permalink" href="#How-to-submit?" title="Permalink"></a></h1><p>Isolate the code of the compulsory task into a script named <code>hw.jl</code> alongside with the <code>Project.toml</code> and <code>Manifest.toml</code> of the environment. Create a zipfile of the folder and send it to the lab instructor, who has assigned the task, via email (contact emails are located on the <a href="../../#emails">homepage</a> of the course).</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lab/">« Lab</a><a class="docs-footer-nextpage" href="../../lecture_02/lecture/">Lecture »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Thursday 25 November 2021 21:31">Thursday 25 November 2021</span>. Using Julia version 1.6.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
