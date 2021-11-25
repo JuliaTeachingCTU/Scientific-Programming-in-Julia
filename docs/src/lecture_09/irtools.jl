@@ -48,7 +48,7 @@ function foo(x, y)
 end
 
 reset!(to)
-profile_fun(foo, 1.0, 1.0)
+@elapsed profile_fun(foo, 1.0, 1.0)
 to
 
 @record foo(1.0, 1.0) => profile_fun(foo, 1.0, 1.0)
