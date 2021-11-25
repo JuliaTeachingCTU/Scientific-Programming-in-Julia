@@ -470,195 +470,139 @@ remap(ex, maps) = ex
     )
     ```
     it performs the needed inlining of Float64
-A further complication is that we need to change variables back and also gives them names. if names have existed before. Recall that lowered form introduces additional variables while converting the code to SSA. The variables defined in the source code (argument names and user-defined variables) can be found in `ci.slotnames`,
-whereas the variables introduces during lowering to SSA are named by the line number.
-Observe a difference between
+
+## Implementing the profiler with IRTools
+The above implementation of the profiler has shown, that rewriting the IR code manually is doable, but requires a lot of careful bookkeeping. `IRTools.jl` makes our life much simpler, as they take away all the needed book-keeping and let us focus on what is needed.
+
 ```julia
-julia> foo(x,y) = x * y + sin(x)
-foo (generic function with 1 method)
-
-julia> retrieve_code_info((typeof(foo), Float64, Float64)).slotnames
-3-element Vector{Symbol}:
- Symbol("#self#")
- :x
- :y
-```
-and
-```julia
-julia> function foo(x, y)
-       z = x * y
-       z + sin(y)
-       end
-foo (generic function with 1 method)
-
-julia> retrieve_code_info((typeof(foo), Float64, Float64)).slotnames
-4-element Vector{Symbol}:
- Symbol("#self#")
- :x
- :y
- :z
-```
-
-
-```
-macro meta(ex)
-  isexpr(ex, :call) || error("@meta f(args...)")
-  f, args = ex.args[1], ex.args[2:end]
-  :(meta(typesof($(esc.((f, args...))...))))
+function foo(x, y)
+   z =  x * y
+   z + sin(y)
 end
+ir = @code_ir foo(1.0, 1.0)
 ```
+We can see that at first sight, the representation of the lowered code in IRTools is similar to that of `CodeInfo`. Some notable differences:
+- `SlotNumber` are converted to `SSAValues`
+- SSA form is divided into blocks by `GotoNode` and `GotoIfNot` in the parsed `CodeInfo`
+- SSAValues do not need to be ordered. The reordering is deffered to the moment when one converts `IRTools.Inner.IR`  back to the `CodeInfo`.
 
-
-```julia 
-macro timeit(ex::Expr)
-    ex.head != :call && error("timeit is implemented only for function calls") 
-    quote
-        ctx = Context()
-        
+Let's now use the IRTools to insert the timing statements into the code for `foo` as 
+```julia
+ir = @code_ir foo(1.0, 1.0)
+for b in IRTools.blocks(ir)
+    for (v, ex) in b
+        if timable(ex.expr)
+            fname = exportname(ex.expr)
+            insert!(b, v, xcall(Main, :record_start, fname))
+            insertafter!(b, v, xcall(Main, :record_end, fname))
+        end
     end
 end
-macro timeit(ex)
-    error("timeit is implemented only for function calls") 
-end
+
+julia> ir
+1: (%1, %2, %3)
+  %7 = Main.record_start(:*)
+  %4 = %2 * %3
+  %8 = Main.record_end(:*)
+  %9 = Main.record_start(:sin)
+  %5 = Main.sin(%3)
+  %10 = Main.record_end(:sin)
+  %11 = Main.record_start(:+)
+  %6 = %4 + %5
+  %12 = Main.record_end(:+)
+  return %6
+```
+Observe that the statements are on the right places but they are not ordered.
+We can turn the `ir` object into and anonymous function as
+```julia
+f = func(ir)
+reset!(to)
+f(nothing, 1.0, 1.0)
+to
+```
+where we can observe that our profiler was working as it should. But this is not yet our final goal. Originally, our goal was the profiler to recursivelly dive into the nested functions. IRTools offers macro `@dynamo`, which is similar to `@generated` but simplifies our job by allowing to return the `IRTools.Inner.IR` object and it also takes care of properly renaming the arguments. With that we write
 ```
 
+profile_fun(f::Core.IntrinsicFunction, args...) = f(args...)
+profile_fun(f::Core.Builtin, args...) = f(args...)
+
+@dynamo function profile_fun(f, args...)
+    ir = IRTools.Inner.IR(f, args...)
+    for b in IRTools.blocks(ir)
+        for (v, ex) in b
+            if timable(ex.expr)
+                fname = exportname(ex.expr)
+                insert!(b, v, xcall(Main, :record_start, fname))
+                insertafter!(b, v, xcall(Main, :record_end, fname))
+            end
+        end
+    end
+    for (x, st) in ir
+        recursable(st.expr) || continue
+        ir[x] = xcall(profile_fun, st.expr.args...)
+    end
+    return ir
+end
+```
+where the first pass is as it was above and the `ir[x] = xcall(profile_fun, st.expr.args...)` ensures that the profiler will recursively call itself. `recursable` is a filter defined as below, which is used to prevent profiling itself (and possibly other things).
+```julia
+recursable(gr::GlobalRef) = gr.name ∉ [:profile_fun, :record_start, :record_end]
+recursable(ex::Expr) = ex.head == :call && recursable(ex.args[1])
+recursable(ex) = false
+```
+Also, the first two definitions of `profile_fun` for `Core.IntrinsicFunction` and for `Core.Builtin` prevent trying to dive into functions which does not have an ir representation. And that's all. The full code is 
+```julia
+using IRTools
+using IRTools: var, xcall, insert!, insertafter!, func, recurse!, @dynamo
+include("calls.jl")
+resize!(to, 10000)
+
+function timable(ex::Expr) 
+    ex.head != :call && return(false)
+    length(ex.args) < 2 && return(false)
+    ex.args[1] isa Core.GlobalRef && return(true)
+    ex.args[1] isa Symbol && return(true)
+    return(false)
+end
+timable(ex) = false
+
+recursable(gr::GlobalRef) = gr.name ∉ [:profile_fun, :record_start, :record_end]
+recursable(ex::Expr) = ex.head == :call && recursable(ex.args[1])
+recursable(ex) = false
+
+exportname(ex::GlobalRef) = QuoteNode(ex.name)
+exportname(ex::Symbol) = QuoteNode(ex)
+exportname(ex::Expr) = exportname(ex.args[1])
+exportname(i::Int) = QuoteNode(Symbol("Int(",i,")"))
+
+profile_fun(f::Core.IntrinsicFunction, args...) = f(args...)
+profile_fun(f::Core.Builtin, args...) = f(args...)
+
+@dynamo function profile_fun(f, args...)
+    ir = IRTools.Inner.IR(f, args...)
+    for b in IRTools.blocks(ir)
+        for (v, ex) in b
+            if timable(ex.expr)
+                fname = exportname(ex.expr)
+                insert!(b, v, xcall(Main, :record_start, fname))
+                insertafter!(b, v, xcall(Main, :record_end, fname))
+            end
+        end
+    end
+    for (x, st) in ir
+        recursable(st.expr) || continue
+        ir[x] = xcall(profile_fun, st.expr.args...)
+    end
+    # recurse!(ir)
+    return ir
+end
+reset!(to)
+profile_fun(foo, 1.0, 1.0)
+to
+```
+where you should notice the long time the first execution of `profile_fun(foo, 1.0, 1.0)` takes. This is caused by the compiler specializing for every function into which we dive into. The second execution of `profile_fun(foo, 1.0, 1.0)` is fast. It is also interesting to observe how the time of the compilation is logged by the profiler. The output of the profiler `to` is not shown here due to the length of the output.
 
 ## Petite zygote
-```julia
-world = Base.get_world_counter()
-sigtypes = (typeof(+), Int, Int)
-sigtypes = (typeof(sin), Int)
-
-function retrieve_code_info(sigtypes, world = Base.get_world_counter())
-  S = Tuple{map(s -> Core.Compiler.has_free_typevars(s) ? typeof(s.parameters[1]) : s, sigtypes)...}
-  _methods = Base._methods_by_ftype(S, -1, world)
-  isempty(_methods) && @error("method $(sigtypes) does not exist, may-be run it once")
-  type_signature, raw_static_params, method = _methods[1] # method is the same as we would get by invoking methods(+, (Int, Int)).ms[1]  
-
-  # this provides us with withe CodeInfo
-  method_instance = Core.Compiler.specialize_method(method, type_signature, raw_static_params, false)
-  code_info = Core.Compiler.retrieve_code_info(method_instance)
-end
-```
-[details of code info](https://docs.julialang.org/en/v1/devdocs/ast/#CodeInfo)
-
-
-```julia
-foo(x) = 5x + 3
-foo(x,y) = x * y + sin(x)
-foo(1.0,1.0)
-sigtypes = (typeof(foo), Float64, Float64)
-sigtypes = (typeof(foo), Float64, Float64)
-```
-
-```julia
-lowered_code = retrieve_code_info((typeof(foo), Float64))
-lowered_code = retrieve_code_info((typeof(foo), Float64, Float64))
-lowered_code.code        # contains expression of individual lines of code
-lowered_code.slotnames   # contains names of corresponding variables
-```
-
-Let's list for which expressions we have rrules in ChainRules
-```julia
-using ChainRules, ChainRulesCore
-rename_args(ex::Expr, primal_names, lowered_fun) = Expr(ex.head, rename_args(ex.args, primal_names, lowered_fun))
-
-function rename_args(args::Vector, primal_names, lowered_fun)
-   map(args) do a 
-    rename_args(a, primal_names, lowered_fun)
-  end
-end
-
-function rename_args(a, primal_names, lowered_fun)
-  if a isa Core.SlotNumber
-    return(lowered_fun.slotnames[a.id])
-  elseif a isa Core.SSAValue
-    return(primal_names[a.id])
-  else
-    return(a)
-  end
-end
-
-rename_args(a::Core.ReturnNode, primal_names, lowered_fun) = Core.ReturnNode(rename_args(a.val, primal_names, lowered_fun))
-
-function generate_grad(lowered_code)
-  primal_names = Dict{Int,Symbol}()
-  primals = []
-  pullbacks = []
-  pullback_names = Dict{Int,Any}()
-  rename_args(ex) = rename_args(ex, primal_names, lowered_code)
-  output_id = -1
-
-  for(exno, ex) in enumerate(lowered_code.code)
-    if ex isa Core.ReturnNode
-      output_id = ex.val.id
-      continue
-    end
-
-    if !hasproperty(ex, :head) || ex.head != :call
-      push!(primals, rename_args(ex))
-      continue
-    end
-
-    ex.head != :call && return(rename_args(ex))
-    fun_T = :(typeof($(ex.args[1]))) |> eval
-    args_T = map(i -> Number, ex.args[2:end])
-    _methods = Base._methods_by_ftype(Tuple{typeof(rrule), fun_T, args_T...}, -1, world)
-    isempty(_methods) && return(rename_args(ex)) # If the method does not exist, I need to dive_in
-    renamed_args = rename_args(ex.args)
-
-    primal   = Symbol("r", exno)
-    pullback = Symbol("∂", exno)
-    rr = Symbol("rr",exno)
-    primal_names[exno] = primal
-    pullback_names[exno] = (pullback, renamed_args...)
-
-    # let's work out the pullback
-    push!(primals, :($(rr) = rrule($(renamed_args...))))
-    push!(primals, :($(primal) = $(rr)[1]))
-    push!(primals, :($(pullback) = $(rr)[2]))
-  end
-
-  #Let's get the name of the output variable and iniate the pullback
-  primal_out = Symbol(:r, output_id) 
-  pullback_arg = Symbol(:∂r, output_id) 
-  created_grads = Indices{Symbol}()
-  for line_no in sort(collect(keys(pullback_names)), rev = true)
-    pullfun  = pullback_names[line_no][1]
-    pullout = Symbol(:Δ, line_no)
-    p = Symbol(:∂r, line_no) 
-    push!(pullbacks, :($(pullout) = $(pullfun)($(p))))
-    for (i, x) in (enumerate(pullback_names[line_no][3:end]))
-      o = Symbol(:∂, x) 
-      if o ∈ created_grads
-        push!(pullbacks, :($(o) += $(pullout)[$(i+1)]))
-      else
-        push!(pullbacks, :($(o) = $(pullout)[$(i+1)]))
-        insert!(created_grads, o)
-      end
-    end
-  end
-
-  #add gradients with respect to arguments
-  argnames = lowered_code.slotnames[2:end]
-  ∂args = map(s -> Symbol(:∂, s), argnames)
-
-  quote
-    function ∂foo($(argnames...))
-      $(primals...)
-      function pullback($(pullback_arg))
-        $(pullbacks...)
-        return(NoTangent(), $(∂args...))
-      end
-      return($(primal_out), pullback)
-    end
-  end |> Base.remove_linenums!
-end
-
-p, back = ∂foo(1, 1)
-p ≈ foo(1,1)
-back(1)
-```
 
 ### some thoughts
 ri is the variable

@@ -1,4 +1,3 @@
-
 struct Calls
     stamps::Vector{Float64} # contains the time stamps
     event::Vector{Symbol}  # name of the function that is being recorded
@@ -58,4 +57,11 @@ function record_end(ev::Symbol)
 end
 
 reset!(calls::Calls) = calls.i[] = 0
+
+function Base.resize!(calls::Calls, n::Integer)
+  resize!(calls.stamps, n)
+  resize!(calls.event, n)
+  resize!(calls.startstop, n)
+end
+
 

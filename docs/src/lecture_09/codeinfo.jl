@@ -16,37 +16,13 @@ function retrieve_code_info(sigtypes, world = Base.get_world_counter())
     ci
 end
 
-# # We migth consider this from IRTools. Importantly, it has partially_inline to get 
-# # rid of static parameters
-# function meta(T; types = T, world = worldcounter())
-#   F = T.parameters[1]
-#   F == typeof(invoke) && return invoke_meta(T; world = world)
-#   F isa DataType && (F.name.module === Core.Compiler ||
-#                      F <: Core.Builtin ||
-#                      F <: Core.Builtin) && return nothing
-#   _methods = Base._methods_by_ftype(T, -1, world)
-#   length(_methods) == 0 && return nothing
-#   type_signature, sps, method = last(_methods)
-#   sps = svec(map(untvar, sps)...)
-#   @static if VERSION >= v"1.2-"
-#     mi = Core.Compiler.specialize_method(method, types, sps)
-#     ci = Base.isgenerated(mi) ? Core.Compiler.get_staged(mi) : Base.uncompressed_ast(method)
-#   else
-#     mi = Core.Compiler.code_for_method(method, types, sps, world, false)
-#     ci = Base.isgenerated(mi) ? Core.Compiler.get_staged(mi) : Base.uncompressed_ast(mi)
-#   end
-#   Base.Meta.partially_inline!(ci.code, [], method.sig, Any[sps...], 0, 0, :propagate)
-#   Meta(method, mi, ci, method.nargs, sps)
-# end
-
-
 function overdubbable(ex::Expr) 
     ex.head != :call && return(false)
     length(ex.args) < 2 && return(false)
     return(overdubbable(ex.args[1]))
 end
 overdubbable(gr::Core.GlobalRef) = gr.name ∉ [:overdub, :record_start, :record_end, :promote, :convert, :tuple]
-overdubbable(gr::Symbol) = 
+# overdubbable(gr::Symbol) = 
 overdubbable(ex) = false
 timable(ex) = overdubbable(ex)
 
@@ -80,6 +56,7 @@ end
 
 
 overdub(f::Core.IntrinsicFunction, args...) = f(args...)
+overdub(f::Core.Builtin, args...) = f(args...)
 
 @generated function overdub(f::F, args...) where {F}
     ci = retrieve_code_info((F, args...))
@@ -121,9 +98,9 @@ overdub(f::Core.IntrinsicFunction, args...) = f(args...)
             push!(new_ci.codelocs, ci.codelocs[ci_no])
             newci_no += 1
             maps.goto[ci_no] = newci_no
-            if overdubbable(ex)
-                ex = Expr(:call, GlobalRef(Main, :overdub), ex.args...)
-            end
+            # if overdubbable(ex)
+            #     ex = Expr(:call, GlobalRef(Main, :overdub), ex.args...)
+            # end
             push!(new_ci.code, ex)
             push!(new_ci.codelocs, ci.codelocs[ci_no])
             newci_no += 1
