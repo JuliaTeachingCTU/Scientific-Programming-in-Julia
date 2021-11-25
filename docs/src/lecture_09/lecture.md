@@ -1,6 +1,10 @@
-# Generated functions
+# Manipulating Intermediate Represenation (IR)
 
-## Motivation 
+```@setup lec09
+using InteractiveUtils: @code_typed, @code_lowered, code_lowered
+```
+
+## Generated functions
 Sometimes, especially as we will see later, it is handy to generate function once the types with which the function is called are known. For example if we have function `foo(args...)`, we can generate different body for different length of `Tuple` and types in `args`. Wait, do we need generated functions for this? Not really, as 
 - we can deal with variability of `args` using normal control-flow logic `if length(args) == 1 elseif ...`
 - we can (automatically) generate (a possibly infinite) set of functions `foo` specialized for each length of args (or combination of types of args) and let multiple dispatch to deal with this
@@ -8,8 +12,8 @@ Sometimes, especially as we will see later, it is handy to generate function onc
 
 Generated functions elegantly deals with that situation, as we can specialize the code for a given type of argumnets. Generated functions, like macros, therefore **return expressions** and not **results**. But unlike macros, they do not have access to values of arguments, but to their types (the arguments are of type `Type`). They are also called when compiler needs (which means at least once for each combination of arguments, but possibly more times due to code invalidation).
 
-Let's look at example
-```julia
+Let's look at an example
+```@example lec09
 @generated function genplus(x, y)
   println("generating genplus(x, y)")
   @show (x, y, typeof(x), typeof(y))
@@ -19,8 +23,9 @@ Let's look at example
     x + y
   end
 end
+nothing # hide
 ```
-now observe the output
+and observe the output
 ```julia
 julia> genplus(1.0, 1.0) == 1.0 + 1.0
 generating genplus(x, y)
@@ -41,12 +46,12 @@ executing generated genplus(x, y)
 (x, y, typeof(x), typeof(y)) = (1, 1, Int64, Int64)
 true
 ```
-which shows that the body of `genplus` is called for each combination of types of parameters, but the generated code is called whenever `genplu` is called.
+which shows that the body of `genplus` is called for each combination of types of parameters, but the generated code is called whenever `genplus` is called.
 
 Generated functions has to be pure in the sense that they are not allowed to have side effects, for example modifying some global variables. Note that printing is not allowed in pure functions, as it modifies the global buffer. This rule is not strict, including things, but not obeying it can lead to unexpected errors, as you do not know, at which moment the functions will be called.
 
 Finally, generated functions cannot call functions that has been defined after their definition.
-```julia
+```@repl lec09
 @generated function genplus(x, y)
   foo()
   :(x + y)
@@ -55,70 +60,66 @@ end
 foo() = println("foo")
 genplus(1,1)
 ```
-throws an error saying *The applicable method may be too new: running in world age 29640, while current world is 29641*, where the *applicable method* is the `foo`.
+Here, the *applicable method* is `foo`.
 
-### An example that explains everything
-Consider a version of `map` applicable on `NamedTuple`s with permuted names. Recall the behavior of normal map, which works if names are the same
-```julia
+### An example that explains everything.
+Consider a version of `map` applicable to `NamedTuple`s with permuted names.
+Recall the behavior of normal map, which works if the names are in the same order.
+```@repl lec09
 x = (a = 1, b = 2, c = 3)
 y = (a = 4, b = 5, c = 6)
 map(+, x, y)
 ```
-but it does not work with permuted names
-```julia
+The same does not work with permuted names:
+```@repl lec09
 x = (a = 1, b = 2, c = 3)
 y = (c = 6, b = 5, a = 4)
 map(+, x, y)
 ```
-How to fix this? The usual approach would be to iterate over the keys in named tuples as 
-```julia
+How to fix this? The usual approach would be to iterate over the keys in named tuples:
+```@example lec09
 function permuted_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY}
     @assert issubset(KX,KY)
     NamedTuple{KX}(map(k -> f(x[k], y[k]), KX))
 end
+nothing # hide
 ```
 But, can we do better? Recall that in `NamedTuple`s, we exactly know the position of the arguments, hence we should be able to directly match the corresponding arguments without using `get`. 
 
-Since creation (and debugging) of generated functions is difficult, we start with a single single-argument unrolled map
-```julia
+Since creation (and debugging) of generated functions is difficult, we start with a single-argument unrolled map.
+```@repl
 @generated function unrolled_map(f, x::NamedTuple{KX}) where {KX} 
     vals = [:(f(getfield(x, $(QuoteNode(k))))) for k in KX]
     :(($(vals...),))
 end
+unrolled_map(e->e+1, x)
 ```
-We see inserting `Symbol` specifying the field in the NamedTuple is a bit tricky. It needs to be quoted, since `$()` which is needed to substitute `k` for its value "peels" one layer of the quoting. Compare it to `vals = [:(f(getfield(x, $(k)))) for k in KX]`
+We see that inserting a `Symbol` specifying the field in the `NamedTuple` is a
+bit tricky. It needs to be quoted, since `$()` which is needed to substitute
+`k` for its value "peels" one layer of the quoting. Compare this to
+```@repl
+vals = [:(f(getfield(x, $(k)))) for k in KX]
+```
 
 Since getting the field is awkward, we write syntactic sugar for that
 ```julia
 _get(name, k) = :(getfield($(name), $(QuoteNode(k))))
 ```
-with that, we proceed to a nicer two argument function which we have desired
-```julia
+with that, we proceed to a nicer two argument function which we have desired:
+```@repl lec09
 @generated function unrolled_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY} 
     @assert issubset(KX,KY)
     _get(name, k) = :(getfield($(name), $(QuoteNode(k))))
     vals = [:(f($(_get(:x, k)), $(_get(:y, k)))) for k in KX]
     :(NamedTuple{$(KX)}(($(vals...),)))
 end
+nothing # hide
 ```
 We can check that the `unrolled_map` unrolls the map and generates just needed operations
-```julia
-julia> @code_typed unrolled_map(+, x, y)
-CodeInfo(
-1 ─ %1  = Main.getfield(x, :a)::Int64
-│   %2  = Main.getfield(y, :a)::Int64
-│   %3  = Base.add_int(%1, %2)::Int64
-│   %4  = Main.getfield(x, :b)::Int64
-│   %5  = Main.getfield(y, :b)::Int64
-│   %6  = Base.add_int(%4, %5)::Int64
-│   %7  = Main.getfield(x, :c)::Int64
-│   %8  = Main.getfield(y, :c)::Int64
-│   %9  = Base.add_int(%7, %8)::Int64
-│   %10 = %new(NamedTuple{(:a, :b, :c), Tuple{Int64, Int64, Int64}}, %3, %6, %9)::NamedTuple{(:a, :b, :c), Tuple{Int64, Int64, Int64}}
-└──       return %10
-) => NamedTuple{(:a, :b, :c), Tuple{Int64, Int64, Int64}}
+```@repl lec09
+@code_typed unrolled_map(+, x, y)
 ```
-and compare this to the same of 
+and compare this to the code generated by the non-generated version `permuted_map`:
 ```julia
 @code_typed permuted_map(+, x, y)
 ```
@@ -133,8 +134,6 @@ For fun, we can create a version which replaces the `Symbol` arguments directly 
     :(NamedTuple{$(KX)}(($(vals...),)))
 end
 ```
-## Example with getindex from docs
-
 
 ## Optionally generated functions
 Let's now observe, how the macro `@generated` is expanded. 
@@ -152,17 +151,20 @@ julia> @macroexpand @generated function gentest(x)
       end
   end)
 ```
-It is expanded into the function with else, where first branch `$(Expr(:generated))` generates the expression `:(x + x)` and copy it the return and the other spits the error saying that the function is has only generated version. This suggest the possibility (and reality) to implement two versions of the same function, one generated and one normal and leave it up to the compiler to decide which to take. It is entirely up to the author to ensure that both versions are the same. Which version the compiler will take? The last comment on [23168](https://github.com/JuliaLang/julia/pull/23168) (as of time of writing) states
+It is expanded into a function with an if-condition, where the first branch `$(Expr(:generated))` generates the expression `:(x + x)` and returns it. The other spits out an error saying that the function has only a generated version. This suggests the possibility (and reality) to implement two versions of the same function; A generated and a *normal* version. It is left up to the compiler to decide which one to use. It is entirely up to the author to ensure that both versions are the same. Which version will the compiler take? The last comment on [23168](https://github.com/JuliaLang/julia/pull/23168) (as of time of writing) states:
 
-*Currently the @generated branch is always used. In the future, which branch is used will mostly depend on whether the JIT compiler is enabled and available, and if it's not available, then it will depend on how much we were able to compile before the compiler was taken away. So I think it will mostly be a concern for those that might need static compilation and JIT-less deployment.* )
+"*Currently the `@generated` branch is always used. In the future, which branch is used will mostly depend on whether the JIT compiler is enabled and available, and if it's not available, then it will depend on how much we were able to compile before the compiler was taken away. So I think it will mostly be a concern for those that might need static compilation and JIT-less deployment.*"
 
 ## Contextual dispatch / overdubbing
-Imagine that under some circumstances (context), you would like to use alternative implementations of some  functions. One of the most cited motivations for this is automatic differentiation, where you would like to take the code **as-is** and calculate gradients with respect to some variables. Other motivations mentioned by `Cassette.jl` implementing this technique *includes dynamic code analysis (e.g. profiling, rr-style debugging, etc.), JIT compilation to new hardware/software backends, automatic differentiation, interval constraint programming, automatic parallelization/rescheduling, automatic memoization, lightweight multistage programming, execution graph extraction, and more.*
+Imagine that under some circumstances (context), you would like to use alternative implementations of some functions. One of the most cited motivations for this is automatic differentiation, where you would like to take the code **as-is** and calculate gradients with respect to some variables. Other use cases of this approach are mentioned in `Cassette.jl`:
+
+"*Downstream applications for Cassette include dynamic code analysis (e.g. profiling, rr-style debugging, etc.), JIT compilation to new hardware/software backends, automatic differentiation, interval constraint programming, automatic parallelization/rescheduling, automatic memoization, lightweight multistage programming, graph extraction, and more.*"
+
 In theory, we can do all the above by directly modifying the code or introducing new types, but that may require a lot of coding and changing of foreign libraries.
 
-The technique we desire is called contextual dispatch, which means that under some context, we invoke a different function. The library `Casette.jl` provides a high-level api for overdubbing, but it is by no means interesting to see, how it works, as it shows, how we can "interact" with the lowered code before the code is typed.
+The technique we desire is called contextual dispatch, which means that under some context, we invoke a different function. The library `Casette.jl` provides a high-level API for overdubbing, but it is interesting to see, how it works, as it shows, how we can "interact" with the lowered code before the code is typed.
 
-## insertion of the code
+### Insertion of code
 
 Imagine that julia has compiled some function. For example 
 ```julia
@@ -178,69 +180,48 @@ CodeInfo(
 └──      return %3
 )
 ```
-The lowered form is very nice, because on the left hand, there is **always** one variable and right-hand side is simplified to have (mostly) single call / expression. Moreover, in the lowered form, all control flow operations like `if`, `for`, `while` and exceptions are converted to `Goto` and `GotoIfNot`, which simplifies their handling. 
+The lowered form is very nice, because on the left hand, there is **always** one variable and the right-hand side is simplified to have (mostly) a single call / expression. Moreover, in the lowered form, all control flow operations like `if`, `for`, `while` and exceptions are converted to `Goto` and `GotoIfNot`, which simplifies their handling. 
 
 ### Codeinfo
-We can access lowered form by
+We can access the lowered form by
 ```julia
 ci = @code_lowered foo(1.0, 1.0)
 ```
-which returns an object of type `CodeInfo` containing many fields [docs](https://docs.julialang.org/en/v1/devdocs/ast/#Lowered-form). To make the investigation slightly more interesting, we modify the function a bit to have local variables as 
-```julia
-julia> function foo(x,y) 
+which returns an object of type `CodeInfo` containing many fields [docs](https://docs.julialang.org/en/v1/devdocs/ast/#Lowered-form). To make the investigation slightly more interesting, we modify the function a bit to have local variables:
+```@repl lec09
+function foo(x,y) 
   z = x * y 
   z + sin(x)
 end
 
-julia> ci = @code_lowered foo(1.0, 1.0)
-CodeInfo(
-1 ─      z = x * y
-│   %2 = z
-│   %3 = Main.sin(x)
-│   %4 = %2 + %3
-└──      return %4
-)
+ci = @code_lowered foo(1.0, 1.0)
 ```
-The most important (and interesting) is `code`
-```julia
-julia> ci.code
-4-element Vector{Any}:
- :(_4 = _2 * _3)
- :(_4)
- :(Main.sin(_2))
- :(%2 + %3)
- :(return %4)
+The most important (and interesting) field is `code`:
+```@repl lec09
+ci.code
 ```
-containing expressions corresponding to each line of the lowered form. You are free to access them (and modify them with care). Variables identified underscore `Int`, for example `_2`, are slotted variables which are variables which has name in the code, that come through arguments or through an explicit assignment `:(=)`. Namsed of slotted variables are stored in `ci.slotnames` and they are of type 
-```julia
-julia> typeof(ci.code[1].args[2].args[2])
-Core.SlotNumber
-
-julia> ci.slotnames[ci.code[1].args[2].args[2].id]
-:x
-
-julia> ci.slotnames[ci.code[1].args[2].args[3].id]
-:y
-
-julia> ci.slotnames[ci.code[1].args[1].id]
-:z
+It contains expressions corresponding to each line of the lowered form. You are free to access them (and modify them with care). Variables identified with underscore `Int`, for example `_2`, are slotted variables which are variables which have a name in the code, defined via input arguments or through an explicit assignment `:(=)`. The names of slotted variables are stored in `ci.slotnames` and they are of type 
+```@repl lec09
+typeof(ci.code[1].args[2].args[2])
+ci.slotnames[ci.code[1].args[2].args[2].id]
+ci.slotnames[ci.code[1].args[2].args[3].id]
+ci.slotnames[ci.code[1].args[1].id]
 ```
-Remaining variables are identified by and integer with prefix `%`, where the number corresponds to the line (index in `ci.code`), where the variable was created. For example the fourth line `:(%2 + %3)` adds the results of the second line `:(_4)` containing variable `z` and the third line `:(Main.sin(_2))`. Each slot variable as type stored in `slottypes`, which provides some information about how the variable is used ([see docs](https://docs.julialang.org/en/v1/devdocs/ast/#CodeInfo)). Note that if you modify / introduce slot variables, the length of `slotnames` and `slottypes` has to match and it has to be equal to the maximum number of slotted variable.
+The remaining variables are identified by an integer with prefix `%`, where the number corresponds to the line (index in `ci.code`), in which the variable was created. For example the fourth line `:(%2 + %3)` adds the results of the second line `:(_4)` containing variable `z` and the third line `:(Main.sin(_2))`. The type of each slot variable is stored in `slottypes`, which provides some information about how the variable is used ([see docs](https://docs.julialang.org/en/v1/devdocs/ast/#CodeInfo)). Note that if you modify / introduce slot variables, the length of `slotnames` and `slottypes` has to match and it has to be equal to the maximum number of slotted variables.
 
-`CodeInfo` also contains information about the source code. Each item of `ci.code` has an identifier in `ci.codelocs` which is an index into `ci.linetable` containing `Core.LineInfoNode` identifying lines in source code (or inserted through REPL). Notice that `ci.linetable` is generally shorter then `ci.codelocs`, as one line of source code can be translated to multiple lines in lowered code. 
+`CodeInfo` also contains information about the source code. Each item of `ci.code` has an identifier in `ci.codelocs` which is an index into `ci.linetable` containing `Core.LineInfoNode` identifying lines in the source code (or in the REPL). Notice that `ci.linetable` is generally shorter then `ci.codelocs`, as one line of source code can be translated to multiple lines in lowered code. 
 
-The important feature of lowered form is that we can freely edit (create new) `CodeInfo` and that generated function can return `CodeInfo` object instead of the AST but you need to **explicitly** write the `return` statement ([see issue 25678](https://github.com/JuliaLang/julia/issues/25678)).
+The important feature of the lowered form is that we can freely edit (create new) `CodeInfo` and that generated functions can return a `CodeInfo` object instead of the AST. However, you need to **explicitly** write a `return` statement ([see issue 25678](https://github.com/JuliaLang/julia/issues/25678)).
 
 ### Strategy for overdubbing
-In overdubbing, our intention is to recursively dive into called function definitions and modify / change their code. In our working example below, on which we will demonstrate the manual implementation (for educational purposes), our goal would be to enclose each function call by statements that would log the exection time. This means we would like to implement a simplified recording Profiler. This functionality cannot be implemented by a macros, since macro will not allow is to dive into the function. For example in our example of function `foo`, we would would not be able to dive into the definition of `sin` function (not that this is terribly good idea, but the point should be clear).
+In overdubbing, our intention is to recursively dive into called function definitions and modify / change their code. In our example below, with which we will demonstrate the manual implementation (for educational purposes), our goal is to enclose each function call with statements that log the exection time. This means we would like to implement a simplified recording profiler. This functionality cannot be implemented by a macros, since macros do not allow us to dive into function definitions. For example, in our function `foo`, we would would not be able to dive into the definition of `sin` (not that this is a terribly good idea, but the point should be clear).
 
 The overdubbing pattern works as follows.
-1. We define a `@generated function overdub(f, args...)` which takes as a first argument function `f` and then its arguments.
-2. In the function `overdub` we retrieve the `CodeInfo` for `f(args...)`, which is possible as we know at this moments type of arguments.
-3. We modify the the `CodeInfo` of `f(args...)` according to our liking. Importantly, we replace all function calls `some_fun(some_args...)` with `overdub(some_fun, some_args...)` which establishes the recursive pattern
-4. Modify the arguments of the `CodeInfo` of `f(args...)` to match `overdub(f, args..)`
-5. Return the modified codeinfo.
-
+1. We define a `@generated function overdub(f, args...)` which takes as a first argument a function `f` and then its arguments.
+2. In the function `overdub` we retrieve the `CodeInfo` for `f(args...)`, which is possible as we know types of the arguments at this time.
+3. We modify the the `CodeInfo` of `f(args...)` according to our liking. Importantly, we replace all function calls `some_fun(some_args...)` with `overdub(some_fun, some_args...)` which establishes the recursive pattern.
+4. Modify the arguments of the `CodeInfo` of `f(args...)` to match `overdub(f, args..)`.
+5. Return the modified `CodeInfo`.
 
 #### The profiler
 The implementation of the simplified logging profiler is straightforward and looks as follows.
@@ -313,16 +294,16 @@ end
 end
 ```
 
-The important functions are `report_start` and `report_end` which marks the beggining and end of the executed function. They differ mainly when time is recorded (on the end or on the start of the function call). The profiler has fixed capacity to prevent garbage collection, which might be increased.
+The important functions are `report_start` and `report_end` which mark the beggining and end of the executed function. They differ mainly when time is recorded (on the end or on the start of the function call). The profiler has a fixed capacity to prevent garbage collection, which might be increased.
 
 
-Let's now describe the individual parts of `overdub` function and then we will present it in its entirety.
-At first, we retrieve the codeinfo `ci` of overdubbed function. For now, we will just assume we obtain it for example by
+Let's now describe the individual parts of `overdub` before presenting it in its entirety.
+At first, we retrieve the codeinfo `ci` of the overdubbed function. For now, we will just assume we obtain it for example by
 ```julia
 ci = @code_lowered foo(1.0, 1.0)
 ```
 we initialize the new `CodeInfo` object by emptying some dummy function as 
-```julia
+```@example lec09
 dummy() = return
 new_ci = code_lowered(dummy, Tuple{})[1]
 empty!(new_ci.code)
@@ -332,29 +313,30 @@ empty!(new_ci.codelocs)
 new_ci
 ```
 
-Then, we need to copy the slot variables from the `ci` codeinfo of `foo` functions to the new codeinfo but we also needs to add arguments of function `overdub(f, args...)` since the compiler sees `overdub(f, args...)` and not `foo(x,y)`. We do this by 
-```julia
+Then, we need to copy the slot variables from the `ci` codeinfo of `foo` to the new codeinfo. Additionally, we have to add the arguments of `overdub(f, args...)` since the compiler sees `overdub(f, args...)` and not `foo(x,y)`:
+```@repl lec09
 new_ci.slotnames = vcat([Symbol("#self#"), :f, :args], ci.slotnames[2:end])
 new_ci.slotflags = vcat([0x00, 0x00, 0x00], ci.slotflags[2:end])
 ```
-where we also filled the `slotflags`. Authors admit that names `:f` and `:args` in the above should be replaced by `gensym`ed name, but they do not anticipate this code to be used for some bigger problems where name-clashes might occur.
-We also copy information about lines from the source code as 
-```julia
+Above, we also filled the `slotflags`. Authors admit that names `:f` and `:args` in the above should be replaced by a `gensym`ed name, but they do not anticipate this code to be used for some bigger problems where name-clashes might occur.
+We also copy information about the lines from the source code:
+```@repl lec09
 foreach(s -> push!(new_ci.linetable, s), ci.linetable)
 ```
-The most difficult part when rewriting the `CodeInfo` objects is working with indexes, as the line numbers and left hand side variables are strictly ordered one by one and we need to properly change the indexes to reflect changes we made. We will therefore keep three lists
-```julia
+The most difficult part when rewriting `CodeInfo` objects is working with indexes, as the line numbers and left hand side variables are strictly ordered one by one and we need to properly change the indexes to reflect changes we made. We will therefore keep three lists
+```@example lec09
 maps = (
     ssa = Dict{Int, Int}(),
     slots = Dict{Int, Any}(),
     goto = Dict{Int,Int}(),
-    )
+)
+nothing # hide
 ```
 where 
-- `slots` maps slot variables in `ci` to that in `new_ci`
-- `ssa` maps indexes of left-hand side assignments in `ci` to that in `new_ci`
-- `goto` maps lines to which `GotoNode` and `GotoIfNot` points to variables in `ci` to that in `new_ci` (in our profiler example, we need to ensure to jump on the beggining of logging of executions)
-mapping of slots can be initialized in advance, as it is a static shift by `2` 
+- `slots` maps slot variables in `ci` to those in `new_ci`
+- `ssa` maps indexes of left-hand side assignments in `ci` to `new_ci`
+- `goto` maps lines to which `GotoNode` and `GotoIfNot` point to variables in `ci` to `new_ci` (in our profiler example, we need to ensure to jump on the beggining of logging of executions)
+Mapping of slots can be initialized in advance, as it is a static shift by `2` :
 ```julia
 maps.slots[1] = Core.SlotNumber(1)
 foreach(i -> maps.slots[i] = Core.SlotNumber(i + 2), 2:length(ci.slotnames)) 
@@ -363,7 +345,7 @@ and we can check the correctness by
 ```julia
 @assert all(ci.slotnames[i] == new_ci.slotnames[maps.slots[i].id] for i in 1:length(ci.slotnames))  #test that 
 ```
-Equipped with that, we start rewriting the code of `foo(x, y)`. We start by a small preample, where we assign values of `args...` to `x`, and `y.` For the same of further simplicity, we map the slotnames to either `Core.SlotNumber` or to `Core.SSAValues` which simplifies the rewriting logic a bit.
+Equipped with that, we start rewriting the code of `foo(x, y)`. We start by a small preample, where we assign values of `args...` to `x`, and `y`. For the sake of simplicity, we map the slotnames to either `Core.SlotNumber` or to `Core.SSAValues` which simplifies the rewriting logic a bit.
 ```julia
 newci_no = 0
 for i in 1:length(args)
@@ -373,7 +355,7 @@ for i in 1:length(args)
     push!(new_ci.codelocs, ci.codelocs[1])
 end
 ```
-Now we come to the pinnacle of rewriting the body of the `foo(x,y)` as 
+Now we come to the pinnacle of rewriting the body of `foo(x,y)`:
 ```julia
 for (ci_no, ex) in enumerate(ci.code)
     if timable(ex)
@@ -398,20 +380,20 @@ for (ci_no, ex) in enumerate(ci.code)
     end
 end
 ```
-where the important parts are 
-- depending on the type of expressions (controlled by `timable`) we decide, if function's execution time should be recorded;
-- `fname = exportname(ex)` obtains the name of the profiled function call
-- `push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_start), fname))` records the start of the exection
-- `maps.goto[ci_ssa_no] = ssa_no` updates the map from the code line number in `ci` to that in rewritten `new_ci`
-- `maps.ssa[ci_ssa_no] = ssa_no` updates the map from the ssa line number in `ci` to that in rewritten `new_ci`
-- `ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex` modifies the function call (expression in general) to recurse the overdubbing
-Finally, we need to change the names of slot variables (`Core.SlotNumber`) and variables indexed by ssa (`Core.SSAValue`).
+The important parts are:
+- Depending on the type of expressions (controlled by `timable`) we decide, if a function's execution time should be recorded.
+- `fname = exportname(ex)` obtains the name of the profiled function call.
+- `push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_start), fname))` records the start of the exection.
+- `maps.goto[ci_ssa_no] = ssa_no` updates the map from the code line number in `ci` to the one in `new_ci`.
+- `maps.ssa[ci_ssa_no] = ssa_no` updates the map from the SSA line number in `ci` to `new_ci`.
+- `ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex` modifies the function call (expression in general) to recurse the overdubbing.
+Finally, we need to change the names of slot variables (`Core.SlotNumber`) and variables indexed by the SSA (`Core.SSAValue`).
 ```julia
 for i in length(args)+1:length(new_ci.code)
     new_ci.code[i] = remap(new_ci.code[i], maps)
 end
 ```
-where `remap` is a following block of code
+where `remap` is defined by the following block of code
 ```julia
 remap(ex::Expr, maps) = Expr(ex.head, remap(ex.args, maps)...)
 remap(args::AbstractArray, maps) = map(a -> remap(a, maps), args)
@@ -429,7 +411,7 @@ remap(ex, maps) = ex
 !!! warn 
     ### Retrieving the code properly
 
-    Consider a following function:
+    Consider the following function:
     ```julia
     function test(x::T) where T<:Union{Float64, Float32}
        x < T(pi)
@@ -442,8 +424,8 @@ remap(ex, maps) = ex
     └──      return %2
     )
     ```
-    the `Expr(:static_parameter, 1)` in the first line of code obtains the type parameter `T` of the function `test`. Since this information is not accessible in the `CodeInfo`, it might render our tooling useless. The need hook is `Base.Meta.partially_inline!` which partially inlines this into the `CodeInfo` object.
-    The code to retrieve the `CodeInfo` adapted from `IRTools` is little convolved as 
+    the `Expr(:static_parameter, 1)` in the first line of code obtains the type parameter `T` of the function `test`. Since this information is not accessible in the `CodeInfo`, it might render our tooling useless. The needed hook is `Base.Meta.partially_inline!` which partially inlines this into the `CodeInfo` object.
+    The code to retrieve the `CodeInfo` adapted from `IRTools` is a little involved:
 
     ```julia
     function retrieve_code_info(sigtypes, world = Base.get_world_counter())
@@ -470,25 +452,27 @@ remap(ex, maps) = ex
     └──      return %2
     )
     ```
-    it performs the needed inlining of Float64
+    it performs the needed inlining of `Float64`.
 
 ## Implementing the profiler with IRTools
-The above implementation of the profiler has shown, that rewriting the IR code manually is doable, but requires a lot of careful bookkeeping. `IRTools.jl` makes our life much simpler, as they take away all the needed book-keeping and let us focus on what is needed.
+The above implementation of the profiler has shown, that rewriting IR manually is doable, but requires a lot of careful book-keeping. `IRTools.jl` makes our life much simpler, as they take away all the needed book-keeping and let us focus on what is important.
 
-```julia
+```@repl lec09
 function foo(x, y)
    z =  x * y
    z + sin(y)
-end
+end;
 ir = @code_ir foo(1.0, 1.0)
 ```
 We can see that at first sight, the representation of the lowered code in IRTools is similar to that of `CodeInfo`. Some notable differences:
 - `SlotNumber` are converted to `SSAValues`
 - SSA form is divided into blocks by `GotoNode` and `GotoIfNot` in the parsed `CodeInfo`
-- SSAValues do not need to be ordered. The reordering is deffered to the moment when one converts `IRTools.Inner.IR`  back to the `CodeInfo`.
+- SSAValues do not need to be ordered. The reordering is deffered to the moment when one converts `IRTools.Inner.IR` back to the `CodeInfo`.
 
-Let's now use the IRTools to insert the timing statements into the code for `foo` as 
+Let's now use the IRTools to insert the timing statements into the code for `foo`:
 ```julia
+using IRTools: xcall, insert!, insertafter!
+
 ir = @code_ir foo(1.0, 1.0)
 for b in IRTools.blocks(ir)
     for (v, ex) in b
@@ -513,17 +497,17 @@ julia> ir
   %12 = Main.record_end(:+)
   return %6
 ```
+
 Observe that the statements are on the right places but they are not ordered.
-We can turn the `ir` object into and anonymous function as
+We can turn the `ir` object into an anonymous function
 ```julia
-f = func(ir)
+f = IRTools.func(ir)
 reset!(to)
 f(nothing, 1.0, 1.0)
 to
 ```
-where we can observe that our profiler was working as it should. But this is not yet our final goal. Originally, our goal was the profiler to recursivelly dive into the nested functions. IRTools offers macro `@dynamo`, which is similar to `@generated` but simplifies our job by allowing to return the `IRTools.Inner.IR` object and it also takes care of properly renaming the arguments. With that we write
-```
-
+where we can observe that our profiler is working as it should. But this is not yet our final goal. Originally, our goal was to recursivelly dive into the nested functions. IRTools offers a macro `@dynamo`, which is similar to `@generated` but simplifies our job by allowing to return the `IRTools.Inner.IR` object and it also taking care of properly renaming the arguments. With that we write
+```julia
 profile_fun(f::Core.IntrinsicFunction, args...) = f(args...)
 profile_fun(f::Core.Builtin, args...) = f(args...)
 
@@ -551,8 +535,8 @@ recursable(gr::GlobalRef) = gr.name ∉ [:profile_fun, :record_start, :record_en
 recursable(ex::Expr) = ex.head == :call && recursable(ex.args[1])
 recursable(ex) = false
 ```
-Also, the first two definitions of `profile_fun` for `Core.IntrinsicFunction` and for `Core.Builtin` prevent trying to dive into functions which does not have an ir representation. And that's all. The full code is 
-```julia
+Additionally, the first two definitions of `profile_fun` for `Core.IntrinsicFunction` and for `Core.Builtin` prevent trying to dive into functions which do not have a Julia IR. And that's all. The full code is 
+```example lec09
 using IRTools
 using IRTools: var, xcall, insert!, insertafter!, func, recurse!, @dynamo
 include("calls.jl")
@@ -603,16 +587,16 @@ to
 ```
 where you should notice the long time the first execution of `profile_fun(foo, 1.0, 1.0)` takes. This is caused by the compiler specializing for every function into which we dive into. The second execution of `profile_fun(foo, 1.0, 1.0)` is fast. It is also interesting to observe how the time of the compilation is logged by the profiler. The output of the profiler `to` is not shown here due to the length of the output.
 
-## Petite zygote
-`IRTools.jl` were created for `Zygote.jl` --- Julia's source-to-source AD system currently powering `Flux.jl`. An interesting aspect of `Zygote` was to recognize that TensorFlow is in its nutshell a compiler, PyTorch is an interpreter. So the idea was to let Julia's compiler to compile the gradient and perform optimizations that are normally performed with normal code. Recall that a lot of research went into how to generate an efficient code and it is reasonable to use this research. `Zygote.jl` provides mainly reversediff, but there was an experimental support for forwarddiff.
+## Petite Zygote
+`IRTools.jl` were created for `Zygote.jl` --- Julia's source-to-source AD system currently powering `Flux.jl`. An interesting aspect of `Zygote` was to recognize that TensorFlow is in its nutshell a compiler, PyTorch is an interpreter. So the idea was to let Julia's compiler compile the gradient and perform optimizations that are normally performed with normal code. Recall that a lot of research went into how to generate efficient code and it is reasonable to use this research. `Zygote.jl` provides mainly reversediff, but there was an experimental support for forwarddiff.
 
 ### Strategy
-We assume that we are provided with the set of AD rules (e.g. ChainRules), which for a given function returns its evaluation and pullback. When `Zygote.jl` is tasked with computing gradient.
-1. if a rule exist for this function, return directly the rule
-2. if not, deconstruct the function into a sequence of functions using `CodeInfo` / IR representation
-3. replace statements by calls to obtain the evaluation of the statements and the pullback
-4. chain appropriately pullbacks in reverse order
-5. return the function evaluation and chained pullback
+We assume that we are provided with the set of AD rules (e.g. ChainRules), which for a given function returns its evaluation and pullback. Then `Zygote.jl` is tasked with computing the gradient.
+1. If a rule exists for this function, directly return the rule.
+2. If not, deconstruct the function into a sequence of functions using `CodeInfo` / IR representation
+3. Replace statements by calls to obtain the evaluation of the statements and the pullback.
+4. Chain pullbacks in reverse order.
+5. Return the function evaluation and the chained pullback.
 
 ### Simplified implementation
 The following code is adapted from [this example](https://github.com/FluxML/IRTools.jl/blob/master/examples/reverse.jl)
@@ -656,7 +640,7 @@ end
 
 ```
 where 
-- the generated function `forward` calls `primal` to perform AD  manual chainrule
+- the generated function `forward` calls `primal` to perform AD manual chainrule
 - actual chainrule is performed in the for loop
 - every function call is replaced  `xcall(Main, :forward, ex.args...)`, which is the recursion we have observed above. `stmt` allows to insert information about lines in the source code).
 - the output of the forward is the value of the function, and *pullback*, the function calculating gradient with respect to its inputs.
