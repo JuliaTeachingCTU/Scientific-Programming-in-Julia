@@ -22,6 +22,7 @@ end
 ```
 now observe the output
 ```julia
+julia> genplus(1.0, 1.0) == 1.0 + 1.0
 generating genplus(x, y)
 (x, y, typeof(x), typeof(y)) = (Float64, Float64, DataType, DataType)
 executing generated genplus(x, y)
