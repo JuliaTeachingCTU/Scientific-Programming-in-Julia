@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Performance Forward vs. Reverse · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_09/irtools/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Introduction to automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><span class="tocitem">9: Manipulating intermediate representation</span></li><li><span class="tocitem">10: Different levels of parallel programming</span></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><span class="tocitem">12: Uncertainty propagation in ODE</span></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Performance Forward vs. Reverse</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Performance Forward vs. Reverse</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_09/irtools.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h2 id="Zygote-internals"><a class="docs-heading-anchor" href="#Zygote-internals">Zygote internals</a><a id="Zygote-internals-1"></a><a class="docs-heading-anchor-permalink" href="#Zygote-internals" title="Permalink"></a></h2><pre><code class="language-julia hljs">function pullback(f, args...)
+  y, back = _pullback(f, args...)
+  y, Δ -&gt; tailmemaybe(back(Δ))
+end
+
+function gradient(f, args...)
+  y, back = pullback(f, args...)
+  grad = back(sensitivity(y))
+  isnothing(grad) ? nothing : map(_project, args, grad)
+end
+
+_pullback(f, args...) = _pullback(Context(), f, args...)
+
+@generated function _pullback(ctx::AContext, f, args...)
+  # Try using ChainRulesCore
+  if is_kwfunc(f, args...)
+    # if it is_kw then `args[1]` are the keyword args, `args[2]` is actual function
+    cr_T = Tuple{ZygoteRuleConfig{ctx}, args[2:end]...}
+    chain_rrule_f = :chain_rrule_kw
+  else
+    cr_T = Tuple{ZygoteRuleConfig{ctx}, f, args...}
+    chain_rrule_f = :chain_rrule
+  end
+
+  hascr, cr_edge = has_chain_rrule(cr_T)
+  hascr &amp;&amp; return :($chain_rrule_f(ZygoteRuleConfig(ctx), f, args...))
+
+  # No ChainRule, going to have to work it out.
+  T = Tuple{f,args...}
+  ignore_sig(T) &amp;&amp; return :(f(args...), Pullback{$T}(()))
+
+  g = try
+    _generate_pullback_via_decomposition(T)
+  catch e
+    rethrow(CompileError(T,e))
+  end
+  g === nothing &amp;&amp; return :(f(args...), Pullback{$T}((f,)))
+  meta, forw, _ = g
+  argnames!(meta, Symbol(&quot;#self#&quot;), :ctx, :f, :args)
+  forw = varargs!(meta, forw, 3)
+  # IRTools.verify(forw)
+  forw = slots!(pis!(inlineable!(forw)))
+  # be ready to swap to using chainrule if one is declared
+  cr_edge != nothing &amp;&amp; edge!(meta, cr_edge)
+  return update!(meta.code, forw)
+end</code></pre><h2 id="Source-Code-Transformation"><a class="docs-heading-anchor" href="#Source-Code-Transformation">Source Code Transformation</a><a id="Source-Code-Transformation-1"></a><a class="docs-heading-anchor-permalink" href="#Source-Code-Transformation" title="Permalink"></a></h2><p>The most recent approach to Reverse Mode AD is <strong><em>Source-to-Source</em></strong> transformation adopted by packages like <strong><em>JAX</em></strong> and <strong><em>Zygote.jl</em></strong>. Transforming code promises to eliminate the problems of tracing-based AD. <code>Tracked</code> types are not needed anymore, which reduces memory usage, promising significant speedups. Additionally, the reverse pass becomes a <em>compiler problem</em>, which makes it possible to leverage highly optimized compilers like LLVM.</p><p>Source-to-source AD uses meta-programming to produce <code>rrule</code>s for any function that is a composition of available <code>rrule</code>s. The code for <code>foo</code></p><pre><code class="language-julia hljs">foo(x) = h(g(f(x)))
+
+f(x) = x^2
+g(x) = sin(x)
+h(x) = 5x</code></pre><p>is transformed into</p><pre><code class="language-julia hljs">function rrule(::typeof(foo), x)
+    a, Ja = rrule(f, x)
+    b, Jb = rrule(g, a)
+    y, Jy = rrule(h, b)
+
+    function dfoo(Δy)
+        Δb = Jy(Δy)
+        Δa = Jb(Δb)
+        Δx = Ja(Δa)
+        return Δx
+    end
+    
+    return y, dfoo
+end</code></pre><p>For this simple example we can define the three <code>rrule</code>s by hand:</p><pre><code class="language-julia hljs">rrule(::typeof(f), x) = f(x), Δ -&gt; 2x*Δ
+rrule(::typeof(g), x) = g(x), Δ -&gt; cos(x)*Δ
+rrule(::typeof(h), x) = h(x), Δ -&gt; 5*Δ</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">rrule (generic function with 3 methods)</code></pre><p>Remember that this is a very artificial example. In real AD code you would overload functions like <code>+</code>, <code>*</code>, etc, such that you don&#39;t have to define a <code>rrule</code> for something like <code>5x</code>.</p><p>In order to transform our functions safely we will make use of <code>IRTools.jl</code> (<em>Intermediate Representation Tools</em>) which provide some convenience functions for inspecting and manipulating code snippets. The IR for <code>foo</code> looks like this:</p><pre><code class="language-julia hljs">using IRTools: @code_ir, evalir
+ir = @code_ir foo(2.)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1: (%1, %2)
+  %3 = Main.f(%2)
+  %4 = Main.g(%3)
+  %5 = Main.h(%4)
+  return %5</code></pre><p>Variable names are replaced by <code>%N</code> and each function gets is own line. We can evalulate the IR (to actually run it) like this</p><pre><code class="language-julia hljs">evalir(ir, nothing, 2.)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-3.7840124765396412</code></pre><p>As a first step, lets transform the function calls to <code>rrule</code> calls.  For this, all we need to do is iterate through the IR line by line and replace each statement with <code>(Main.rrule)(Main.func, %N)</code>, where <code>Main</code> just stand for the gobal main module in which we just defined our functions. But remember that the <code>rrule</code> returns the value <code>v</code> <em>and</em> the pullback <code>J</code> to compute the gradient. Just replacing the statements would alter our forward pass. Instead we can insert each statement <em>before</em> the one we want to change. Then we can replace the the original statement with <code>v = rr[1]</code> to use only <code>v</code> and not <code>J</code> in the subsequent computation.</p><pre><code class="language-julia hljs">using IRTools
+using IRTools: xcall, stmt
+
+xgetindex(x, i...) = xcall(Base, :getindex, x, i...)
+
+ir = @code_ir foo(2.)
+pr = IRTools.Pipe(ir)
+
+for (v,statement) in pr
+    ex = statement.expr
+    rr = xcall(rrule, ex.args...)
+    # pr[v] = stmt(rr, line=ir[v].line)
+    vJ = insert!(pr, v, stmt(rr, line = ir[v].line))
+    pr[v] = xgetindex(vJ,1)
+end
+ir = IRTools.finish(pr)
+#
+#msg = &quot;&quot;&quot;
+#ir = 1: (%1, %2)                          ## rrule(foo, x)
+#       %3 = (Main.rrule)(Main.f, %2)      ##   ra = rrule(f,x)
+#       %4 = Base.getindex(%3, 1)          ##   a  = ra[1]
+#       %5 = (Main.rrule)(Main.g, %4)      ##   rb = rrule(g,a)
+#       %6 = Base.getindex(%5, 1)          ##   b  = rb[1]
+#       %7 = (Main.rrule)(Main.h, %6)      ##   ry = rrule(h,b)
+#       %8 = Base.getindex(%7, 1)          ##   y  = ry[1]
+#       return %8                          ##   return y
+#&quot;&quot;&quot;
+#println(msg)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1: (%1, %2)
+  %3 = (Main.rrule)(Main.f, %2)
+  %4 = Base.getindex(%3, 1)
+  %5 = (Main.rrule)(Main.g, %4)
+  %6 = Base.getindex(%5, 1)
+  %7 = (Main.rrule)(Main.h, %6)
+  %8 = Base.getindex(%7, 1)
+  return %8</code></pre><p>Evaluation of this transformed IR should still give us the same value</p><pre><code class="language-julia hljs">evalir(ir, nothing, 2.)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-3.7840124765396412</code></pre><p>The only thing that is left to do now is collect the <code>Js</code> and return a tuple of our forward value and the <code>Js</code>.</p><pre><code class="language-julia hljs">using IRTools: insertafter!, substitute, xcall, stmt
+
+xtuple(xs...) = xcall(Core, :tuple, xs...)
+
+ir = @code_ir foo(2.)
+pr = IRTools.Pipe(ir)
+Js = IRTools.Variable[]
+
+for (v,statement) in pr
+    ex = statement.expr
+    rr = xcall(rrule, ex.args...)  # ex.args = (f,x)
+    vJ = insert!(pr, v, stmt(rr, line = ir[v].line))
+    pr[v] = xgetindex(vJ,1)
+
+    # collect Js
+    J = insertafter!(pr, v, stmt(xgetindex(vJ,2), line=ir[v].line))
+    push!(Js, substitute(pr, J))
+end
+ir = IRTools.finish(pr)
+# add the collected `Js` to `ir`
+Js  = push!(ir, xtuple(Js...))
+# return a tuple of the last `v` and `Js`
+ret = ir.blocks[end].branches[end].args[1]
+IRTools.return!(ir, xtuple(ret, Js))
+ir
+#msg = &quot;&quot;&quot;
+#ir = 1: (%1, %2)                          ## rrule(foo, x)
+#       %3 = (Main.rrule)(Main.f, %2)      ##   ra = rrule(f,x)
+#       %4 = Base.getindex(%3, 1)          ##   a  = ra[1]
+#       %5 = Base.getindex(%3, 2)          ##   Ja = ra[2]
+#       %6 = (Main.rrule)(Main.g, %4)      ##   rb = rrule(g,a)
+#       %7 = Base.getindex(%6, 1)          ##   b  = rb[1]
+#       %8 = Base.getindex(%6, 2)          ##   Jb = rb[2]
+#       %9 = (Main.rrule)(Main.h, %7)      ##   ry = rrule(h,b)
+#       %10 = Base.getindex(%9, 1)         ##   y  = ry[1]
+#       %11 = Base.getindex(%9, 2)         ##   Jy = ry[2]
+#       %12 = Core.tuple(%5, %8, %11)      ##   Js = (Ja,Jb,Jy)
+#       %13 = Core.tuple(%10, %12)         ##   rr = (y, Js)
+#       return %13                         ##   return rr
+#&quot;&quot;&quot;
+#println(msg)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1: (%1, %2)
+  %3 = (Main.rrule)(Main.f, %2)
+  %4 = Base.getindex(%3, 1)
+  %5 = Base.getindex(%3, 2)
+  %6 = (Main.rrule)(Main.g, %4)
+  %7 = Base.getindex(%6, 1)
+  %8 = Base.getindex(%6, 2)
+  %9 = (Main.rrule)(Main.h, %7)
+  %10 = Base.getindex(%9, 1)
+  %11 = Base.getindex(%9, 2)
+  %12 = Core.tuple(%5, %8, %11)
+  %13 = Core.tuple(%10, %12)
+  return %13</code></pre><p>The resulting IR can be evaluated to the forward pass value and the Jacobians:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; (y, Js) = evalir(ir, foo, 2.)</code><code class="nohighlight hljs ansi" style="display:block;">(-3.7840124765396412, (Main.var&quot;#1#2&quot;{Float64}(2.0), Main.var&quot;#3#4&quot;{Float64}(4.0), Main.var&quot;#5#6&quot;()))</code></pre><p>To compute the derivative given the tuple of <code>Js</code> we just need to compose them and set the initial gradient to one:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; reduce(|&gt;, Js, init=1)  # Ja(Jb(Jy(1)))</code><code class="nohighlight hljs ansi" style="display:block;">-13.072872417272238</code></pre><p>The code for transforming the IR as described above looks like this.</p><pre><code class="language-julia hljs">function transform(ir, x)
+    pr = IRTools.Pipe(ir)
+    Js = IRTools.Variable[]
+
+    # loop over each line in the IR
+    for (v,statement) in pr
+        ex = statement.expr
+        # insert the rrule
+        rr = xcall(rrule, ex.args...)  # ex.args = (f,x)
+        vJ = insert!(pr, v, stmt(rr, line = ir[v].line))
+        # replace original line with f(x) from rrule
+        pr[v] = xgetindex(vJ,1)
+
+        # save jacobian in a variable
+        J = insertafter!(pr, v, stmt(xgetindex(vJ,2), line=ir[v].line))
+        # add it to a list of jacobians
+        push!(Js, substitute(pr, J))
+    end
+    ir = IRTools.finish(pr)
+    # add the collected `Js` to `ir`
+    Js  = push!(ir, xtuple(Js...))
+    # return a tuple of the foo(x) and `Js`
+    ret = ir.blocks[end].branches[end].args[1]
+    IRTools.return!(ir, xtuple(ret, Js))
+    return ir
+end
+
+xgetindex(x, i...) = xcall(Base, :getindex, x, i...)
+xtuple(xs...) = xcall(Core, :tuple, xs...)</code></pre><p>Now we can write a general <code>rrule</code> that can differentiate any function composed of our defined <code>rrule</code>s</p><pre><code class="language-julia hljs">function rrule(f, x)
+    ir = @code_ir f(x)
+    ir_derived = transform(ir,x)
+    y, Js = evalir(ir_derived, nothing, x)
+    df(Δ) = reduce(|&gt;, Js, init=Δ)
+    return y, df
+end
+
+
+reverse(f,x) = rrule(f,x)[2](one(x))</code></pre><p>Finally, we just have to use <code>reverse</code> to compute the gradient</p><pre><code class="language- hljs">plot(-2:0.1:2, foo, label=&quot;f(x) = 5sin(x^2)&quot;, lw=3)
+plot!(-2:0.1:2, x-&gt;10x*cos(x^2), label=&quot;Analytic f&#39;&quot;, ls=:dot, lw=3)
+plot!(-2:0.1:2, x-&gt;reverse(foo,x), label=&quot;Dual Forward Mode f&#39;&quot;, lw=3, ls=:dash)</code></pre><hr/><ul><li>Efficiency of the forward pass becomes essentially a compiler problem</li><li>If we define specialized rules we will gain performance</li></ul><hr/><h1 id="Performance-Forward-vs.-Reverse"><a class="docs-heading-anchor" href="#Performance-Forward-vs.-Reverse">Performance Forward vs. Reverse</a><a id="Performance-Forward-vs.-Reverse-1"></a><a class="docs-heading-anchor-permalink" href="#Performance-Forward-vs.-Reverse" title="Permalink"></a></h1><p>This section compares the performance of three different, widely used Julia AD systems <code>ForwardDiff.jl</code> (forward mode), <code>ReverseDiff.jl</code> (tracing-based reverse mode), and <code>Zygote.jl</code> (source-to-source reverse mode), as well as JAX forward/reverse modes.</p><p>As a benchmark function we can compute the Jacobian of <span>$f:\mathbb R^N \rightarrow \mathbb R^M$</span> with respect to <span>$\bm x$</span>. In the benchmark we test various different values of <span>$N$</span> and <span>$M$</span> to show the differences between the backends.</p><p class="math-container">\[f(\bm x) = (\bm W \bm x + \bm b)^2\]</p><div class="data-frame"><p>5 rows × 6 columns</p><table class="data-frame"><thead><tr><th></th><th>N x M</th><th>10000x1</th><th>1000x1</th><th>100x1</th><th>100x100</th><th>100x1000</th></tr><tr><th></th><th title="Any">Any</th><th title="Any">Any</th><th title="Any">Any</th><th title="Any">Any</th><th title="Any">Any</th><th title="Any">Any</th></tr></thead><tbody><tr><th>1</th><td>ForwardDiff.jl</td><td>29.4</td><td>0.381397</td><td>0.0119618</td><td>0.21592</td><td>2.92625</td></tr><tr><th>2</th><td>ReverseDiff.jl</td><td>0.271418</td><td>0.0685338</td><td>0.0598211</td><td>0.794221</td><td>11.7976</td></tr><tr><th>3</th><td>Zygote.jl</td><td>0.0480226</td><td>0.00649856</td><td>0.00154686</td><td>0.0200348</td><td>0.173701</td></tr><tr><th>4</th><td>JAX (forward)</td><td>59.0695</td><td>5.01165</td><td>2.87567</td><td>2.48415</td><td>4.09149</td></tr><tr><th>5</th><td>JAX (reverse)</td><td>4.63548</td><td>3.61162</td><td>3.16331</td><td>3.09636</td><td>7.97515</td></tr></tbody></table></div></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Thursday 25 November 2021 20:52">Thursday 25 November 2021</span>. Using Julia version 1.6.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
