@@ -604,11 +604,228 @@ to
 where you should notice the long time the first execution of `profile_fun(foo, 1.0, 1.0)` takes. This is caused by the compiler specializing for every function into which we dive into. The second execution of `profile_fun(foo, 1.0, 1.0)` is fast. It is also interesting to observe how the time of the compilation is logged by the profiler. The output of the profiler `to` is not shown here due to the length of the output.
 
 ## Petite zygote
+`IRTools.jl` were created for `Zygote.jl` --- Julia's source-to-source AD system currently powering `Flux.jl`. An interesting aspect of `Zygote` was to recognize that TensorFlow is in its nutshell a compiler, PyTorch is an interpreter. So the idea was to let Julia's compiler to compile the gradient and perform optimizations that are normally performed with normal code. Recall that a lot of research went into how to generate an efficient code and it is reasonable to use this research. `Zygote.jl` provides mainly reversediff, but there was an experimental support for forwarddiff.
 
-### some thoughts
-ri is the variable
-∂i is a function to which I need to pass the ∂ri to get the gradinets 
+### Strategy
+We assume that we are provided with the set of AD rules (e.g. ChainRules), which for a given function returns its evaluation and pullback. When `Zygote.jl` is tasked with computing gradient.
+1. if a rule exist for this function, return directly the rule
+2. if not, deconstruct the function into a sequence of functions using `CodeInfo` / IR representation
+3. replace statements by calls to obtain the evaluation of the statements and the pullback
+4. chain appropriately pullbacks in reverse order
+5. return the function evaluation and chained pullback
 
-# TODO
+### Simplified implementation
+The following code is adapted from [this example](https://github.com/FluxML/IRTools.jl/blob/master/examples/reverse.jl)
 
-* show constant gradient of linear function in LLVM
+```julia
+using IRTools, ChainRules
+using IRTools: @dynamo, IR, Pipe, finish, substitute, return!, block, blocks,
+  returnvalue, arguments, isexpr, xcall, self, stmt
+
+struct Pullback{S,T}
+  data::T
+end
+
+Pullback{S}(data) where S = Pullback{S,typeof(data)}(data)
+
+function primal(ir, T = Any)
+  pr = Pipe(ir)
+  calls = []
+  ret = []
+  for (v, st) in pr
+    ex = st.expr
+    if isexpr(ex, :call)
+      t = insert!(pr, v, stmt(xcall(Main, :forward, ex.args...), line = st.line))
+      pr[v] = xcall(:getindex, t, 1)
+      J = push!(pr, xcall(:getindex, t, 2))
+      push!(calls, v)
+      push!(ret, J)
+    end
+  end
+  pb = Expr(:call, Pullback{T}, xcall(:tuple, ret...))
+  return!(pr, xcall(:tuple, returnvalue(block(ir, 1)), pb))
+  return finish(pr), calls
+end
+
+@dynamo function forward(m...)
+  ir = IR(m...)
+  ir == nothing && return :(error("Non-differentiable function ", repr(args[1])))
+  length(blocks(ir)) == 1 || error("control flow is not supported")
+  return primal(ir, Tuple{m...})[1]
+end
+
+```
+where 
+- the generated function `forward` calls `primal` to perform AD  manual chainrule
+- actual chainrule is performed in the for loop
+- every function call is replaced  `xcall(Main, :forward, ex.args...)`, which is the recursion we have observed above. `stmt` allows to insert information about lines in the source code).
+- the output of the forward is the value of the function, and *pullback*, the function calculating gradient with respect to its inputs.
+- `pr[v] = xcall(:getindex, t, 1)` fixes the output of the overwritten function call to be the output of `forward(...)`
+- the next line logs the *pullback* 
+- `Expr(:call, Pullback{T}, xcall(:tuple, ret...))` will serve to call generated function which will assemble the pullback in the right order
+
+Let's now observe how the the IR of `foo` is transformed
+```julia
+ir = IR(typeof(foo), Float64, Float64)
+julia> primal(ir)[1]
+1: (%1, %2, %3)
+  %4 = Main.forward(Main.:*, %2, %3)
+  %5 = Base.getindex(%4, 1)
+  %6 = Base.getindex(%4, 2)
+  %7 = Main.forward(Main.sin, %3)
+  %8 = Base.getindex(%7, 1)
+  %9 = Base.getindex(%7, 2)
+  %10 = Main.forward(Main.:+, %5, %8)
+  %11 = Base.getindex(%10, 1)
+  %12 = Base.getindex(%10, 2)
+  %13 = Base.tuple(%6, %9, %12)
+  %14 = (Pullback{Any, T} where T)(%13)
+  %15 = Base.tuple(%11, %14)
+  return %15
+```
+- Every function call was transformed into the sequence of `forward(...)` and obtaining first and second item from the returned typle.
+- Line `%14` constructs the `Pullback`, which (as will be seen shortly below) will allow to generate the pullback for the generated function
+- Line `%15` generates the returned tuple, where the first item is the function value (computed at line `%11`) and pullback (constructed at libe `%15`).
+
+We define few AD rules by specializing `forward`  with calls from `ChainRules`
+```julia
+forward(::typeof(sin), x)    = ChainRules.rrule(sin, x)
+forward(::typeof(*), x, y)   = ChainRules.rrule(*, x, y)
+forward(::typeof(+), x, y)   = ChainRules.rrule(+, x, y)
+```
+Zygote implements this inside the generated function, such that whatever is added to `ChainRules` is automatically reflected. The process is not as trivial (see [`has_chain_rule`](https://github.com/FluxML/Zygote.jl/blob/master/src/compiler/chainrules.jl)) and for the brevity is not shown here. 
+
+We now obtain the value and the pullback of function `foo` as 
+```julia
+julia> v, pb = forward(foo, 1.0, 1.0);
+
+julia> pb(1.0)
+(0, 1.0, 1.5403023058681398)
+```
+The pullback contains in `data` field individual 
+
+Let's now turn the attention to the reverse part implemented as 
+```julia
+
+_sum() = 0
+_sum(x) = x
+_sum(x...) = xcall(:+, x...)
+
+function pullback(pr)
+  ir = empty(pr)
+  grads = Dict()
+  grad(x) = _sum(get(grads, x, [])...)
+  grad(x, x̄) = push!(get!(grads, x, []), x̄)
+  grad(returnvalue(block(pr, 1)), IRTools.argument!(ir))
+  data = push!(ir, xcall(:getfield, self, QuoteNode(:data)))
+  _, pbs = primal(pr)
+  pbs = Dict(pbs[i] => push!(ir, xcall(:getindex, data, i)) for i = 1:length(pbs))
+  for v in reverse(keys(pr))
+    ex = pr[v].expr
+    isexpr(ex, :call) || continue
+    Δs = push!(ir, Expr(:call, pbs[v], grad(v)))
+    for (i, x) in enumerate(ex.args)
+      grad(x, push!(ir, xcall(:getindex, Δs, i)))
+    end
+  end
+  return!(ir, xcall(:tuple, [grad(x) for x in arguments(pr)]...))
+end
+
+@dynamo function (pb::Pullback{S})(Δ) where S
+  return pullback(IR(S.parameters...))
+end
+```
+
+The implementation is a bit twisted. Function `pullback` obtains the `IR` of the primal function (stored in `S` type parameter of the `Pullback` type). But it is generating call for `(pb::Pullback)(Δ)` therefore it will generate code where it assumes to have access for Jacobinas 
+```julia
+pb.data[1]
+pb.data[2]
+pb.data[3]
+```
+
+Let's walk how the reverse is constructed for `pr = IR(typeof(foo), Float64, Float64)`
+```julia
+ir = empty(pr)
+grads = Dict()
+grad(x) = _sum(get(grads, x, [])...)
+grad(x, x̄) = push!(get!(grads, x, []), x̄)
+```
+construct the empty `ir` for the constructed pullback, defines `Dict` where individual contributors of the gradient with respect to certain variable will be stored, and two function for pushing statements to to `grads`. The next statement
+```julia
+grad(returnvalue(block(pr, 1)), IRTools.argument!(ir))
+```
+pushes to `grads` statement that the gradient of the output of the primal `pr` is provided as an argument of the pullback `IRTools.argument!(ir)`. 
+```
+data = push!(ir, xcall(:getfield, self, QuoteNode(:data)))
+_, pbs = primal(pr)
+pbs = Dict(pbs[i] => push!(ir, xcall(:getindex, data, i)) for i = 1:length(pbs))
+```
+sets `data` to the `data` field of the `Pullback` structure containing pullback functions. Then it create a dictionary `pbs`, where the output of each call in the primal (identified by the line) is mapped to the corresponding pullback, which is now a line in the IR representation.
+The IR so far looks as 
+```julia
+1: (%1)
+  %2 = Base.getfield(IRTools.Inner.Self(), :data)
+  %3 = Base.getindex(%2, 1)
+  %4 = Base.getindex(%2, 2)
+  %5 = Base.getindex(%2, 3)
+```
+and `pbs` contains 
+```julia
+julia> pbs
+Dict{IRTools.Inner.Variable, IRTools.Inner.Variable} with 3 entries:
+  %6 => %5
+  %4 => %3
+  %5 => %4
+```
+says that the pullback of a function producing variable at line `%6` in the primal is stored at variable `%5` in the contructed pullback.
+The real deal comes in the for loop 
+```julia
+for v in reverse(keys(pr))
+  ex = pr[v].expr
+  isexpr(ex, :call) || continue
+  Δs = push!(ir, Expr(:call, pbs[v], grad(v)))
+  for (i, x) in enumerate(ex.args)
+    grad(x, push!(ir, xcall(:getindex, Δs, i)))
+  end
+end
+```
+which iterates the primal `pr` in the reverse order and for every call, it inserts statement to calls the appropriate pullback `Δs = push!(ir, Expr(:call, pbs[v], grad(v)))` and adds gradients with respect to the inputs to values accumulating corresponding gradient in the loop `for (i, x) in enumerate(ex.args) ...`
+The last line
+```julia
+return!(ir, xcall(:tuple, [grad(x) for x in arguments(pr)]...))
+```
+puts statements accumulating gradients with respect to individual variables to the ir.
+
+The final generated IR code looks as
+```julia
+julia> pullback(IR(typeof(foo), Float64, Float64))
+1: (%1)
+  %2 = Base.getfield(IRTools.Inner.Self(), :data)
+  %3 = Base.getindex(%2, 1)
+  %4 = Base.getindex(%2, 2)
+  %5 = Base.getindex(%2, 3)
+  %6 = (%5)(%1)
+  %7 = Base.getindex(%6, 1)
+  %8 = Base.getindex(%6, 2)
+  %9 = Base.getindex(%6, 3)
+  %10 = (%4)(%9)
+  %11 = Base.getindex(%10, 1)
+  %12 = Base.getindex(%10, 2)
+  %13 = (%3)(%8)
+  %14 = Base.getindex(%13, 1)
+  %15 = Base.getindex(%13, 2)
+  %16 = Base.getindex(%13, 3)
+  %17 = %12 + %16
+  %18 = Base.tuple(0, %15, %17)
+  return %18
+```
+
+and it calculates the gradient with respect to the input as
+```julia
+julia> pb(1.0)
+(0, 1.0, 1.5403023058681398)
+```
+where the first item is gradient with parameters of the function itself.
+
+## Conclusion
+The above examples served to demonstrate that `@generated` functions offers extremely powerful paradigm, especially if coupled with manipulation of intermediate representation. Within few lines of code, we have implemented reasonably powerful profiler and reverse AD engine. Importantly, it has been done without a single-purpose engine or tooling. 
