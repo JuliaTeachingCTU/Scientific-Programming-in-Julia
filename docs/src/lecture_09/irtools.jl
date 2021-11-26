@@ -1,4 +1,3 @@
-# Generated functions
 using IRTools
 using IRTools: var, xcall, insert!, insertafter!, func, recurse!, @dynamo
 include("loggingprofiler.jl")
@@ -42,17 +41,13 @@ profile_fun(f::Core.Builtin, args...) = f(args...)
     return ir
 end
 
+macro record(ex)
+    esc(Expr(:call, :profile_fun, ex.args...))
+end
+
 function foo(x, y)
   z =  x * y
   z + sin(y)
-end
-
-LoggingProfiler.reset!()
-@elapsed profile_fun(foo, 1.0, 1.0)
-LoggingProfiler.to
-
-macro record(ex)
-    esc(Expr(:call, :profile_fun, ex.args...))
 end
 
 LoggingProfiler.reset!()

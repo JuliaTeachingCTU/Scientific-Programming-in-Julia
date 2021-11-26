@@ -5,12 +5,12 @@ using InteractiveUtils: @code_typed, @code_lowered, code_lowered
 ```
 
 ## Generated functions
-Sometimes, especially as we will see later, it is handy to generate function once the types with which the function is called are known. For example if we have function `foo(args...)`, we can generate different body for different length of `Tuple` and types in `args`. Wait, do we need generated functions for this? Not really, as 
+Sometimes it is convenient to generate function once types of arguments are known. For example if we have function `foo(args...)`, we can generate different body for different length of `Tuple` and types in `args`. Do we really need such thing, or it is just wish of curious programmer? Not really, as 
 - we can deal with variability of `args` using normal control-flow logic `if length(args) == 1 elseif ...`
-- we can (automatically) generate (a possibly infinite) set of functions `foo` specialized for each length of args (or combination of types of args) and let multiple dispatch to deal with this
+- we can (automatically) generate (a possibly infinite) set of functions `foo` specialized for each length of `args` (or combination of types of `args`) and let multiple dispatch to deal with this
 - we cannot deal with this situation with macros, because macros do not see types, only parsed AST, which is in this case always the same.
 
-Generated functions elegantly deals with that situation, as we can specialize the code for a given type of argumnets. Generated functions, like macros, therefore **return expressions** and not **results**. But unlike macros, they do not have access to values of arguments, but to their types (the arguments are of type `Type`). They are also called when compiler needs (which means at least once for each combination of arguments, but possibly more times due to code invalidation).
+Generated functions allow to specialize the code for a given type of argumnets. They are like macros in the sense that they **return expressions** and not **results**. But unlike macros, the input is not expression or value of arguments, but their types (the arguments are of type `Type`). They are also called when compiler needs (which means at least once for each combination of arguments, but possibly more times due to code invalidation).
 
 Let's look at an example
 ```@example lec09
@@ -48,7 +48,7 @@ true
 ```
 which shows that the body of `genplus` is called for each combination of types of parameters, but the generated code is called whenever `genplus` is called.
 
-Generated functions has to be pure in the sense that they are not allowed to have side effects, for example modifying some global variables. Note that printing is not allowed in pure functions, as it modifies the global buffer. This rule is not strict, including things, but not obeying it can lead to unexpected errors, as you do not know, at which moment the functions will be called.
+Generated functions has to be pure in the sense that they are not allowed to have side effects, for example modifying some global variables. Note that printing is not allowed in pure functions, as it modifies the global buffer. From the above example this rule does not seems to be enforced, but not obeying it can lead to unexpected errors mostly caused by not knowing when and how many times the functions will be called.
 
 Finally, generated functions cannot call functions that has been defined after their definition.
 ```@repl lec09
@@ -136,7 +136,7 @@ end
 ```
 
 ## Optionally generated functions
-Let's now observe, how the macro `@generated` is expanded. 
+Macro `@generated` is expanded to
 ```julia
 julia> @macroexpand @generated function gentest(x)
            return :(x + x)
@@ -151,7 +151,7 @@ julia> @macroexpand @generated function gentest(x)
       end
   end)
 ```
-It is expanded into a function with an if-condition, where the first branch `$(Expr(:generated))` generates the expression `:(x + x)` and returns it. The other spits out an error saying that the function has only a generated version. This suggests the possibility (and reality) to implement two versions of the same function; A generated and a *normal* version. It is left up to the compiler to decide which one to use. It is entirely up to the author to ensure that both versions are the same. Which version will the compiler take? The last comment on [23168](https://github.com/JuliaLang/julia/pull/23168) (as of time of writing) states:
+which is a function with an if-condition, where the first branch `$(Expr(:generated))` generates the expression `:(x + x)` and returns it. The other spits out an error saying that the function has only a generated version. This suggests the possibility (and reality) that one can implement two versions of the same function; A generated and a *normal* version. It is left up to the compiler to decide which one to use. It is entirely up to the author to ensure that both versions are the same. Which version will the compiler take? The last comment on [23168](https://github.com/JuliaLang/julia/pull/23168) (as of time of writing) states:
 
 "*Currently the `@generated` branch is always used. In the future, which branch is used will mostly depend on whether the JIT compiler is enabled and available, and if it's not available, then it will depend on how much we were able to compile before the compiler was taken away. So I think it will mostly be a concern for those that might need static compilation and JIT-less deployment.*"
 
@@ -180,7 +180,7 @@ CodeInfo(
 └──      return %3
 )
 ```
-The lowered form is very nice, because on the left hand, there is **always** one variable and the right-hand side is simplified to have (mostly) a single call / expression. Moreover, in the lowered form, all control flow operations like `if`, `for`, `while` and exceptions are converted to `Goto` and `GotoIfNot`, which simplifies their handling. 
+The lowered form is convenient, because on the left hand, there is **always** one variable and the right-hand side is simplified to have (mostly) a single call / expression. Moreover, in the lowered form, all control flow operations like `if`, `for`, `while` and exceptions are converted to `Goto` and `GotoIfNot`, which simplifies their handling. 
 
 ### Codeinfo
 We can access the lowered form by
@@ -227,7 +227,6 @@ The overdubbing pattern works as follows.
 The implementation of the simplified logging profiler is straightforward and looks as follows.
 ```julia
 module LoggingProfiler
-
 struct Calls
     stamps::Vector{Float64} # contains the time stamps
     event::Vector{Symbol}  # name of the function that is being recorded
@@ -239,11 +238,12 @@ function Calls(n::Int)
     Calls(Vector{Float64}(undef, n+1), Vector{Symbol}(undef, n+1), Vector{Symbol}(undef, n+1), Ref{Int}(0))
 end
 
-global const to = Calls(100)
-
 function Base.show(io::IO, calls::Calls)
     offset = 0
-    for i in 1:calls.i[]
+    if calls.i[] >= length(calls.stamps)
+        @warn "The recording buffer was too small, consider increasing it"
+    end
+    for i in 1:min(calls.i[], length(calls.stamps))
         offset -= calls.startstop[i] == :stop
         foreach(_ -> print(io, " "), 1:max(offset, 0))
         rel_time = calls.stamps[i] - calls.stamps[1]
@@ -252,6 +252,7 @@ function Base.show(io::IO, calls::Calls)
     end
 end
 
+global const to = Calls(100)
 
 """
     record_start(ev::Symbol)
@@ -259,8 +260,8 @@ end
     record the start of the event, the time stamp is recorded after all counters are 
     appropriately increased
 """
-function record_start(ev::Symbol)
-    calls = Main.to
+record_start(ev::Symbol) = record_start(to, ev)
+function record_start(calls, ev::Symbol)
     n = calls.i[] = calls.i[] + 1
     n > length(calls.stamps) && return 
     calls.event[n] = ev
@@ -274,9 +275,9 @@ end
     record the end of the event, the time stamp is recorded before all counters are 
     appropriately increased
 """
-function record_end(ev::Symbol)
+record_end(ev::Symbol) = record_end(to, ev::Symbol)
+function record_end(calls, ev::Symbol)
     t = time_ns()
-    calls = Main.to
     n = calls.i[] = calls.i[] + 1
     n > length(calls.stamps) && return 
     calls.event[n] = ev
@@ -284,7 +285,7 @@ function record_end(ev::Symbol)
     calls.stamps[n] = t
 end
 
-reset!(calls::Calls) = calls.i[] = 0
+reset!() = to.i[] = 0
 
 function Base.resize!(calls::Calls, n::Integer)
   resize!(calls.stamps, n)
@@ -295,7 +296,6 @@ end
 ```
 
 The important functions are `report_start` and `report_end` which mark the beggining and end of the executed function. They differ mainly when time is recorded (on the end or on the start of the function call). The profiler has a fixed capacity to prevent garbage collection, which might be increased.
-
 
 Let's now describe the individual parts of `overdub` before presenting it in its entirety.
 At first, we retrieve the codeinfo `ci` of the overdubbed function. For now, we will just assume we obtain it for example by
@@ -318,7 +318,7 @@ Then, we need to copy the slot variables from the `ci` codeinfo of `foo` to the 
 new_ci.slotnames = vcat([Symbol("#self#"), :f, :args], ci.slotnames[2:end])
 new_ci.slotflags = vcat([0x00, 0x00, 0x00], ci.slotflags[2:end])
 ```
-Above, we also filled the `slotflags`. Authors admit that names `:f` and `:args` in the above should be replaced by a `gensym`ed name, but they do not anticipate this code to be used for some bigger problems where name-clashes might occur.
+Above, we also filled the `slotflags`. Authors admit that names `:f` and `:args` in the above should be replaced by a `gensym`ed name, but they do not anticipate this code to be used outside of this educative example where name-clashes might occur.
 We also copy information about the lines from the source code:
 ```@repl lec09
 foreach(s -> push!(new_ci.linetable, s), ci.linetable)
@@ -355,7 +355,7 @@ for i in 1:length(args)
     push!(new_ci.codelocs, ci.codelocs[1])
 end
 ```
-Now we come to the pinnacle of rewriting the body of `foo(x,y)`:
+Now we come to the pinnacle of rewriting the body of `foo(x,y)` while inserting calls to the profiler:
 ```julia
 for (ci_no, ex) in enumerate(ci.code)
     if timable(ex)
@@ -379,6 +379,22 @@ for (ci_no, ex) in enumerate(ci.code)
         maps.ssa[ci_no] = newci_no
     end
 end
+```
+which yields
+```julia
+julia> new_ci.code
+15-element Vector{Any}:
+ :((getindex)(_3, 1))
+ :((getindex)(_3, 2))
+ :(_4 = _2 * _3)
+ :(_4)
+ :(Main.LoggingProfiler.record_start(:sin))
+ :(Main.overdub(Main.sin, _2))
+ :(Main.LoggingProfiler.record_end(:sin))
+ :(Main.LoggingProfiler.record_start(:+))
+ :(Main.overdub(Main.:+, %2, %3))
+ :(Main.LoggingProfiler.record_end(:+))
+ :(return %4)
 ```
 The important parts are:
 - Depending on the type of expressions (controlled by `timable`) we decide, if a function's execution time should be recorded.
@@ -458,6 +474,7 @@ remap(ex, maps) = ex
 The above implementation of the profiler has shown, that rewriting IR manually is doable, but requires a lot of careful book-keeping. `IRTools.jl` makes our life much simpler, as they take away all the needed book-keeping and let us focus on what is important.
 
 ```@repl lec09
+using IRTools
 function foo(x, y)
    z =  x * y
    z + sin(y)
@@ -478,23 +495,23 @@ for b in IRTools.blocks(ir)
     for (v, ex) in b
         if timable(ex.expr)
             fname = exportname(ex.expr)
-            insert!(b, v, xcall(Main, :record_start, fname))
-            insertafter!(b, v, xcall(Main, :record_end, fname))
+            insert!(b, v, xcall(LoggingProfiler, :record_start, fname))
+            insertafter!(b, v, xcall(LoggingProfiler, :record_end, fname))
         end
     end
 end
 
 julia> ir
 1: (%1, %2, %3)
-  %7 = Main.record_start(:*)
+  %7 = Main.LoggingProfiler.record_start(:*)
   %4 = %2 * %3
-  %8 = Main.record_end(:*)
-  %9 = Main.record_start(:sin)
+  %8 = Main.LoggingProfiler.record_end(:*)
+  %9 = Main.LoggingProfiler.record_start(:sin)
   %5 = Main.sin(%3)
-  %10 = Main.record_end(:sin)
-  %11 = Main.record_start(:+)
+  %10 = Main.LoggingProfiler.record_end(:sin)
+  %11 = Main.LoggingProfiler.record_start(:+)
   %6 = %4 + %5
-  %12 = Main.record_end(:+)
+  %12 = Main.LoggingProfiler.record_end(:+)
   return %6
 ```
 
@@ -502,12 +519,13 @@ Observe that the statements are on the right places but they are not ordered.
 We can turn the `ir` object into an anonymous function
 ```julia
 f = IRTools.func(ir)
-reset!(to)
+LoggingProfiler.reset!()
 f(nothing, 1.0, 1.0)
-to
+LoggingProfiler.to
 ```
 where we can observe that our profiler is working as it should. But this is not yet our final goal. Originally, our goal was to recursivelly dive into the nested functions. IRTools offers a macro `@dynamo`, which is similar to `@generated` but simplifies our job by allowing to return the `IRTools.Inner.IR` object and it also taking care of properly renaming the arguments. With that we write
 ```julia
+using IRTools: @dynamo
 profile_fun(f::Core.IntrinsicFunction, args...) = f(args...)
 profile_fun(f::Core.Builtin, args...) = f(args...)
 
@@ -539,8 +557,8 @@ Additionally, the first two definitions of `profile_fun` for `Core.IntrinsicFunc
 ```example lec09
 using IRTools
 using IRTools: var, xcall, insert!, insertafter!, func, recurse!, @dynamo
-include("calls.jl")
-resize!(to, 10000)
+include("loggingprofiler.jl")
+LoggingProfiler.resize!(LoggingProfiler.to, 10000)
 
 function timable(ex::Expr) 
     ex.head != :call && return(false)
@@ -565,13 +583,11 @@ profile_fun(f::Core.Builtin, args...) = f(args...)
 
 @dynamo function profile_fun(f, args...)
     ir = IRTools.Inner.IR(f, args...)
-    for b in IRTools.blocks(ir)
-        for (v, ex) in b
-            if timable(ex.expr)
-                fname = exportname(ex.expr)
-                insert!(b, v, xcall(Main, :record_start, fname))
-                insertafter!(b, v, xcall(Main, :record_end, fname))
-            end
+    for (v, ex) in ir
+        if timable(ex.expr)
+            fname = exportname(ex.expr)
+            insert!(ir, v, xcall(LoggingProfiler, :record_start, fname))
+            insertafter!(ir, v, xcall(LoggingProfiler, :record_end, fname))
         end
     end
     for (x, st) in ir
@@ -581,17 +597,35 @@ profile_fun(f::Core.Builtin, args...) = f(args...)
     # recurse!(ir)
     return ir
 end
-reset!(to)
-profile_fun(foo, 1.0, 1.0)
-to
+
+macro record(ex)
+    esc(Expr(:call, :profile_fun, ex.args...))
+end
+
+LoggingProfiler.reset!()
+@record foo(1.0, 1.0)
+LoggingProfiler.to
 ```
-where you should notice the long time the first execution of `profile_fun(foo, 1.0, 1.0)` takes. This is caused by the compiler specializing for every function into which we dive into. The second execution of `profile_fun(foo, 1.0, 1.0)` is fast. It is also interesting to observe how the time of the compilation is logged by the profiler. The output of the profiler `to` is not shown here due to the length of the output.
+where you should notice the long time the first execution of `@record foo(1.0, 1.0)` takes. This is caused by the compiler specializing for every function into which we dive into. The second execution of `@record foo(1.0, 1.0)` is fast. It is also interesting to observe how the time of the compilation is logged by the profiler. The output of the profiler `to` is not shown here due to the length of the output.
 
 ## Petite Zygote
 `IRTools.jl` were created for `Zygote.jl` --- Julia's source-to-source AD system currently powering `Flux.jl`. An interesting aspect of `Zygote` was to recognize that TensorFlow is in its nutshell a compiler, PyTorch is an interpreter. So the idea was to let Julia's compiler compile the gradient and perform optimizations that are normally performed with normal code. Recall that a lot of research went into how to generate efficient code and it is reasonable to use this research. `Zygote.jl` provides mainly reversediff, but there was an experimental support for forwarddiff.
 
+One of the questions when developing an AD engine is where and how to create a computation graph. Recall that in TensorFlow, you specify it through a domain specific language, in PyTorch it generated on the fly. Mike Innes' idea was use SSA form provided by the julia compiler. 
+```julia
+julia> @code_lowered foo(1.0, 1.0)
+CodeInfo(
+1 ─      z = x * y
+│   %2 = z
+│   %3 = Main.sin(y)
+│   %4 = %2 + %3
+└──      return %4
+)
+```
+It is very easy to differentiate each line, as they correspond to single expressions (or function calls) and importantly, each variable is assigned exactly once. The strategy to use it for AD would as follows.
+
 ### Strategy
-We assume that we are provided with the set of AD rules (e.g. ChainRules), which for a given function returns its evaluation and pullback. Then `Zygote.jl` is tasked with computing the gradient.
+We assume to have a set of AD rules (e.g. ChainRules), which for a given function returns its evaluation and pullback. If `Zygote.jl` is tasked with computing the gradient.
 1. If a rule exists for this function, directly return the rule.
 2. If not, deconstruct the function into a sequence of functions using `CodeInfo` / IR representation
 3. Replace statements by calls to obtain the evaluation of the statements and the pullback.
@@ -686,9 +720,15 @@ julia> v, pb = forward(foo, 1.0, 1.0);
 julia> pb(1.0)
 (0, 1.0, 1.5403023058681398)
 ```
-The pullback contains in `data` field individual 
+- The pullback contains in `data` field with individual jacobians that have been collected in `ret` in `primal` function.
+```julia
+pb.data[1]
+pb.data[2]
+pb.data[3]
+```
+The function for which the Jacobian has been created is stored in type parameter `S` of the `Pullback` type. The pullback for `foo` is generated in another generated function, as `Pullback` `struct` is a functor. This is an interesting **design pattern**, which allows us to return *closure* from a generated function. 
 
-Let's now turn the attention to the reverse part implemented as 
+Let's now investigate the code generating code for pullback.
 ```julia
 
 _sum() = 0
@@ -719,14 +759,6 @@ end
   return pullback(IR(S.parameters...))
 end
 ```
-
-The implementation is a bit twisted. Function `pullback` obtains the `IR` of the primal function (stored in `S` type parameter of the `Pullback` type). But it is generating call for `(pb::Pullback)(Δ)` therefore it will generate code where it assumes to have access for Jacobinas 
-```julia
-pb.data[1]
-pb.data[2]
-pb.data[3]
-```
-
 Let's walk how the reverse is constructed for `pr = IR(typeof(foo), Float64, Float64)`
 ```julia
 ir = empty(pr)

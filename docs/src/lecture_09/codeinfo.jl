@@ -1,4 +1,3 @@
-# Generated functions
 using Dictionaries
 include("loggingprofiler.jl")
 
