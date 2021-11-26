@@ -1,8 +1,7 @@
-# Generated functions
 using IRTools
 using IRTools: var, xcall, insert!, insertafter!, func, recurse!, @dynamo
-include("calls.jl")
-resize!(to, 10000)
+include("loggingprofiler.jl")
+LoggingProfiler.resize!(LoggingProfiler.to, 10000)
 
 function timable(ex::Expr) 
     ex.head != :call && return(false)
@@ -30,8 +29,8 @@ profile_fun(f::Core.Builtin, args...) = f(args...)
     for (v, ex) in ir
         if timable(ex.expr)
             fname = exportname(ex.expr)
-            insert!(ir, v, xcall(Main, :record_start, fname))
-            insertafter!(ir, v, xcall(Main, :record_end, fname))
+            insert!(ir, v, xcall(LoggingProfiler, :record_start, fname))
+            insertafter!(ir, v, xcall(LoggingProfiler, :record_end, fname))
         end
     end
     for (x, st) in ir
@@ -42,13 +41,15 @@ profile_fun(f::Core.Builtin, args...) = f(args...)
     return ir
 end
 
+macro record(ex)
+    esc(Expr(:call, :profile_fun, ex.args...))
+end
+
 function foo(x, y)
   z =  x * y
   z + sin(y)
 end
 
-reset!(to)
-@elapsed profile_fun(foo, 1.0, 1.0)
-to
-
-@record foo(1.0, 1.0) => profile_fun(foo, 1.0, 1.0)
+LoggingProfiler.reset!()
+@record foo(1.0, 1.0)
+LoggingProfiler.to

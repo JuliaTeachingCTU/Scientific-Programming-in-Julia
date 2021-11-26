@@ -1,6 +1,5 @@
-# Generated functions
 using Dictionaries
-include("calls.jl")
+include("loggingprofiler.jl")
 
 function retrieve_code_info(sigtypes, world = Base.get_world_counter())
     S = Tuple{map(s -> Core.Compiler.has_free_typevars(s) ? typeof(s.parameters[1]) : s, sigtypes)...}
@@ -54,7 +53,6 @@ function empty_codeinfo()
     new_ci
 end
 
-
 overdub(f::Core.IntrinsicFunction, args...) = f(args...)
 overdub(f::Core.Builtin, args...) = f(args...)
 
@@ -94,7 +92,7 @@ overdub(f::Core.Builtin, args...) = f(args...)
     for (ci_no, ex) in enumerate(ci.code)
         if timable(ex)
             fname = exportname(ex)
-            push!(new_ci.code, Expr(:call, GlobalRef(Main, :record_start), fname))
+            push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_start), fname))
             push!(new_ci.codelocs, ci.codelocs[ci_no])
             newci_no += 1
             maps.goto[ci_no] = newci_no
@@ -105,7 +103,7 @@ overdub(f::Core.Builtin, args...) = f(args...)
             push!(new_ci.codelocs, ci.codelocs[ci_no])
             newci_no += 1
             maps.ssa[ci_no] = newci_no
-            push!(new_ci.code, Expr(:call, GlobalRef(Main, :record_end), fname))
+            push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_end), fname))
             push!(new_ci.codelocs, ci.codelocs[ci_no])
             newci_no += 1
         else
@@ -126,9 +124,9 @@ overdub(f::Core.Builtin, args...) = f(args...)
     return(new_ci)
 end
 
-reset!(to)
+LoggingProfiler.reset!()
 new_ci = overdub(sin, 1.0)
-to
+LoggingProfiler.to
 
 function foo(x, y)
    z =  x * y
@@ -136,6 +134,14 @@ function foo(x, y)
 end
 
 
-reset!(to)
+LoggingProfiler.reset!()
 overdub(foo, 1.0, 1.0)
-to
+LoggingProfiler.to
+
+macro record(ex)
+    Expr(:call, :overdub, ex.args...)
+end
+
+LoggingProfiler.reset!()
+@record foo(1.0, 1.0)
+LoggingProfiler.to
