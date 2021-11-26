@@ -813,3 +813,4 @@ where the first item is gradient with parameters of the function itself.
 
 ## Conclusion
 The above examples served to demonstrate that `@generated` functions offers extremely powerful paradigm, especially if coupled with manipulation of intermediate representation. Within few lines of code, we have implemented reasonably powerful profiler and reverse AD engine. Importantly, it has been done without a single-purpose engine or tooling. 
+  

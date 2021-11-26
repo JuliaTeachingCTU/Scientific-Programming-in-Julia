@@ -1,3 +1,4 @@
+module LoggingProfiler
 struct Calls
     stamps::Vector{Float64} # contains the time stamps
     event::Vector{Symbol}  # name of the function that is being recorded
@@ -31,8 +32,8 @@ global const to = Calls(100)
     record the start of the event, the time stamp is recorded after all counters are 
     appropriately increased
 """
-function record_start(ev::Symbol)
-    calls = Main.to
+record_start(ev::Symbol) = record_start(to, ev)
+function record_start(calls, ev::Symbol)
     n = calls.i[] = calls.i[] + 1
     n > length(calls.stamps) && return 
     calls.event[n] = ev
@@ -46,9 +47,9 @@ end
     record the end of the event, the time stamp is recorded before all counters are 
     appropriately increased
 """
-function record_end(ev::Symbol)
+record_end(ev::Symbol) = record_end(to, ev::Symbol)
+function record_end(calls, ev::Symbol)
     t = time_ns()
-    calls = Main.to
     n = calls.i[] = calls.i[] + 1
     n > length(calls.stamps) && return 
     calls.event[n] = ev
@@ -56,7 +57,7 @@ function record_end(ev::Symbol)
     calls.stamps[n] = t
 end
 
-reset!(calls::Calls) = calls.i[] = 0
+reset!() = to.i[] = 0
 
 function Base.resize!(calls::Calls, n::Integer)
   resize!(calls.stamps, n)
@@ -64,4 +65,5 @@ function Base.resize!(calls::Calls, n::Integer)
   resize!(calls.startstop, n)
 end
 
+end
 
