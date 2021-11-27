@@ -491,13 +491,11 @@ Let's now use the IRTools to insert the timing statements into the code for `foo
 using IRTools: xcall, insert!, insertafter!
 
 ir = @code_ir foo(1.0, 1.0)
-for b in IRTools.blocks(ir)
-    for (v, ex) in b
-        if timable(ex.expr)
-            fname = exportname(ex.expr)
-            insert!(b, v, xcall(LoggingProfiler, :record_start, fname))
-            insertafter!(b, v, xcall(LoggingProfiler, :record_end, fname))
-        end
+for (v, ex) in ir
+    if timable(ex.expr)
+        fname = exportname(ex.expr)
+        insert!(ir, v, xcall(LoggingProfiler, :record_start, fname))
+        insertafter!(ir, v, xcall(LoggingProfiler, :record_end, fname))
     end
 end
 
@@ -531,13 +529,11 @@ profile_fun(f::Core.Builtin, args...) = f(args...)
 
 @dynamo function profile_fun(f, args...)
     ir = IRTools.Inner.IR(f, args...)
-    for b in IRTools.blocks(ir)
-        for (v, ex) in b
-            if timable(ex.expr)
-                fname = exportname(ex.expr)
-                insert!(b, v, xcall(Main, :record_start, fname))
-                insertafter!(b, v, xcall(Main, :record_end, fname))
-            end
+    for (v, ex) in ir
+        if timable(ex.expr)
+            fname = exportname(ex.expr)
+            insert!(ir, v, xcall(LoggingProfiler, :record_start, fname))
+            insertafter!(ir, v, xcall(LoggingProfiler, :record_end, fname))
         end
     end
     for (x, st) in ir
