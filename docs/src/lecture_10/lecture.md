@@ -117,3 +117,37 @@ Due to task switching overhead, increasing the granularity might not pay off.
 256 tasks: 10.617 ms (2927 allocations: 1.16 MiB)
 512 tasks: 11.012 ms (5999 allocations: 1.38 MiB)
 ```
+
+```julia
+using FLoops, FoldsThreads
+function juliaset_folds!(img, c, n)
+    @floop ThreadedEx(basesize = 2) for j in 1:n
+        juliaset_column!(img, c, n, j)
+    end
+    nothing
+end
+julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_folds!);
+  10.575 ms (52 allocations: 980.12 KiB)
+```
+where `basesize` is the size of the part, in this case 2 columns.
+```julia
+function juliaset_folds!(img, c, n)
+    @floop WorkStealingEx(basesize = 2) for j in 1:n
+        juliaset_column!(img, c, n, j)
+    end
+    nothing
+end
+julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_folds!);
+  10.575 ms (52 allocations: 980.12 KiB)
+```
+
+```julia
+function juliaset_folds!(img, c, n)
+    @floop DepthFirstEx(basesize = 2) for j in 1:n
+        juliaset_column!(img, c, n, j)
+    end
+    nothing
+end
+julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_folds!);
+  10.421 ms (3582 allocations: 1.20 MiB)
+```
