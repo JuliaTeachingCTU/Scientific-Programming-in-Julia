@@ -7,9 +7,33 @@ Julia offers different levels of parallel programming
 
 In this lecture, we will focus mainly on the first two, since SIMD instructions are mainly used for optimization of loops, and task switching is not a true paralelism, but allows to run a different task when one task is waiting for example for IO.
 
+## controller / worker model of parallel processes
+- the usual remote fetch call 
+- solve monte carlo
+- pmap
 
+- how to set up workers, 
+    + how to load functions, modules
+    + julia -p 16 -L load_my_script.jl
+- how to send data / how to define variable on remote process
+
+## Synchronization primitives 
+- Channels and their guarantees
+- How to orchestrate workers by channels
+- how to kill the remote process with channel
+
+## Sending data
+- Do not send `randn(1000, 1000)`
+- Serialization is very time consuming, an efficient converstion to something simple might be wort
+- Dict("a" => [1,2,3], "b" = [2,3,4,5]) -> (Array of elements, array of bounds, keys)
 
 ## Multi-Threadding 
+- Locks / lock-free multi-threadding
+- Show the effect of different schedullers
+- intra-model parallelism
+- sucks when operating with Heap
+
+## Julia sets
 An example adapted from [Eric Aubanel](http://www.cs.unb.ca/~aubanel/JuliaMultithreadingNotes.html).
 
 For ilustration, we will use Julia set fractals, ad they can be easily paralelized. Some fractals (Julia set, Mandelbrot) are determined by properties of some complex-valued functions. Julia set counts, how many iteration is required for  ``f(z)=z^2+c`` to be bigger than two in absolute value, ``|f(z)>=2``. The number of iterations can then be mapped to the pixel's color, which creates a nice visualization we know.
@@ -151,3 +175,12 @@ end
 julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_folds!);
   10.421 ms (3582 allocations: 1.20 MiB)
 ```
+
+### Materials
+- http://cecileane.github.io/computingtools/pages/notes1209.html
+- https://lucris.lub.lu.se/ws/portalfiles/portal/61129522/julia_parallel.pdf
+- https://www.csd.uwo.ca/~mmorenom/cs2101a_moreno/Parallel_computing_with_Julia.pdf
+- Threads: https://juliahighperformance.com/code/Chapter09.html
+- Processes: https://juliahighperformance.com/code/Chapter10.html
+- Alan Adelman uses FLoops in https://www.youtube.com/watch?v=dczkYlOM2sg
+- Examples: ?Heat equation? from https://hpc.llnl.gov/training/tutorials/introduction-parallel-computing-tutorial#Examples
