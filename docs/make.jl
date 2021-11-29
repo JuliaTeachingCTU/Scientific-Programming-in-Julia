@@ -82,9 +82,14 @@ lecture_07 = [
 ]
 
 lecture_08 = [
+    "Lecture" => "./lecture_08/lecture.md"
+    "Lab" => "./lecture_08/lab.md"
+    "Homework" => "./lecture_08/hw.md"
 ]
 
 lecture_09 = [
+    "Lecture" => "./lecture_09/lecture.md"
+    "Lab" => "./lecture_09/lab.md"
 ]
 
 lecture_10 = [
@@ -115,6 +120,7 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Installation" => "installation.md", 
+        "Projects" => "projects.md",
         "1: Introduction" => lecture_01,
         "2: The power of Type System & multiple dispatch" => lecture_02,
         "3: Design patterns" => lecture_03,

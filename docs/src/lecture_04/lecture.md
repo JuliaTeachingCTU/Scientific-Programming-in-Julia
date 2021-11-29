@@ -1,4 +1,4 @@
-# Package development
+# [Package development](@id pkg_lecture)
 
 Organization of the code is more important with the increasing size of the project and the number of contributors and users. Moreover, it will become essential when different codebases are expected to be combined and reused. 
 - Julia was designed from the beginning to encourage code reuse across different codebases as possible
@@ -32,7 +32,7 @@ export test1
 end
 ```
 
-Function ```include``` copies content of the file to this location (will be part of the module).
+Function `include` copies content of the file to this location (will be part of the module).
 
 Creates functions:
 ```julia
@@ -42,13 +42,13 @@ MySpace.test2
 
 For easier manipulation, these functions can be "exported" to be exposed to the outer world (another namespace).
 
-Keyword: ```using``` exposes the exported functions and structs:
+Keyword: `using` exposes the exported functions and structs:
 ```julia
 using .MySpace
 ```
 The dot means that the module was defined in this scope.
 
-Keyword: ```import``` imports function with availability to redefine it.
+Keyword: `import` imports function with availability to redefine it.
 
 Combinations:
 
@@ -78,8 +78,8 @@ When importing/using functions with name that that is already imported/used from
 - both function has to be acessed by their full names.
 
 Resoluton:
-- It may be easier to cherry pick only the functions we need (rather than importing all via ```using```)
-- remane some function using keyword ```as```
+- It may be easier to cherry pick only the functions we need (rather than importing all via `using`)
+- remane some function using keyword `as`
   ```julia
   import MySpace2: test1 as t1
   ```
@@ -100,18 +100,18 @@ end;
 ```
 
 REPL of Julia is a module called "Main". 
-- modules are not copied, but referenced, i.e. ```B.b===B.C.c ```
+- modules are not copied, but referenced, i.e. `B.b===B.C.c`
 - including one module twice (from different packages) is not a problem
 
 ### Revise.jl
 
-The fact that julia can redefine a function in a Module by importing it is used by package ```Revise.jl``` to synchronize REPL with a module or file.
+The fact that julia can redefine a function in a Module by importing it is used by package `Revise.jl` to synchronize REPL with a module or file.
 
 So far, we have worked in REPL. If you have a file that is loaded and you want to modify it, you would need to either:
 1. reload the whole file, or
 2. copy the changes to REPL
 
-```Revise.jl``` do the latter automatically.
+`Revise.jl` do the latter automatically.
 
 Example demo:
 ```julia
@@ -120,8 +120,8 @@ includet("example.jl")
 ```
 
 Works with: 
-- any package loaded with ```import``` or ```using```, 
-- script  loaded with ```includet```, 
+- any package loaded with `import` or `using`, 
+- script  loaded with `includet`, 
 - Base julia itself (with Revise.track(Base))
 - standard libraries (with, e.g., using Unicode; Revise.track(Unicode))
 
@@ -148,39 +148,39 @@ Every module introduces a new global scope.
   
   - No variable or function is expected to exist  outside of it
   - Every module is equal a global scope (no single "global" exists)
-  - The REPL is a global module called ```Main```
+  - The REPL is a global module called `Main`
 
 - Local scope
 
-  Variables in Julia do not need to be explcitely declared, they are created by assignments: ```x=1```. 
+  Variables in Julia do not need to be explcitely declared, they are created by assignments: `x=1`. 
 
-  In local scope, the compiler checks if variable ```x``` does not exists outside. We have seen:
+  In local scope, the compiler checks if variable `x` does not exists outside. We have seen:
 
   ```julia 
   x=1
   f(y)=x+y
   ```
 
-  The rules for local scope determine how to treat assignment of ```x```. If local ```x``` exists, it is used, if it does not:
-  - in *hard* scope: new local ```x``` is created
-  - in *soft* scope: checks if ```x``` exists outside (global)
-    - if not: new local ```x``` is created
+  The rules for local scope determine how to treat assignment of `x`. If local `x` exists, it is used, if it does not:
+  - in *hard* scope: new local `x` is created
+  - in *soft* scope: checks if `x` exists outside (global)
+    - if not: new local `x` is created
     - if yes: the split is REPL/non-interactive:
-      - REPL: global ```x``` is used (convenience, as of 1.6)
-      - non-interactive: local ```x``` is created
+      - REPL: global `x` is used (convenience, as of 1.6)
+      - non-interactive: local `x` is created
 
 
-- keyword ```local``` and ```global``` can be used to specify which variable to use
+- keyword `local` and `global` can be used to specify which variable to use
 
 From documentation:
 
 | Construct | Scope type | Allowed within |
 |:----------|:-----------|:---------------|
-| [`module`](@ref), [`baremodule`](@ref) | global | global |
-| [`struct`](@ref) | local (soft) | global |
-| [`for`](@ref), [`while`](@ref), [`try`](@ref try) | local (soft) | global, local |
-| [`macro`](@ref) | local (hard) | global |
-| functions, [`do`](@ref) blocks, [`let`](@ref) blocks, comprehensions, generators | local (hard) | global, local |
+| `module`, `baremodule` | global | global |
+| `struct` | local (soft) | global |
+| `for`, `while`, `try` | local (soft) | global, local |
+| `macro` | local (hard) | global |
+| functions, `do` blocks, `let` blocks, comprehensions, generators | local (hard) | global, local |
 
 Question:
 ```julia
@@ -198,9 +198,9 @@ end
 @show x;
 ```
 
-## Packages 
+## Packages
 
-Package is a source tree with a standard layout. Can be loaded with ```include``` or ```using``` and provides a module.
+Package is a source tree with a standard layout. Can be loaded with `include` or `using` and provides a module.
 
 
 Minimimal project:
@@ -213,12 +213,12 @@ PackageName/
 ```
 
 Contains:
-- ```Project.toml``` file describing basic properties:
-  - ```Name```, does not have to be Unique (federated package sources)
-  - ```UUID```, has to be uniques (generated automatically)
+- `Project.toml` file describing basic properties:
+  - `Name`, does not have to be Unique (federated package sources)
+  - `UUID`, has to be uniques (generated automatically)
   - optionally [deps], [targets],...
 
--  file ```src/PackageName.jl``` that defines module ```PackageName``` which is executed when loaded.
+-  file `src/PackageName.jl` that defines module `PackageName` which is executed when loaded.
 
 
 Many other optional directories:
@@ -231,7 +231,7 @@ The package typically loads other modules that form package dependencies.
 
 ## Project environments
 
-Is a package that contains additional file ```Manifest.toml```.
+Is a package that contains additional file `Manifest.toml`.
 This file tracks full dependency tree of a project including versions of the packages on which it depends.
 
 for example:
@@ -250,35 +250,35 @@ uuid = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 version = "0.3.4"
 ```
 
-Content of files ```Project.toml``` and ```Manifest.toml``` are maintained by PackageManager.
+Content of files `Project.toml` and `Manifest.toml` are maintained by PackageManager.
 
 ## Package/Project manager
 
 Handles both packages and projects:
-- creating a project ```]generate PkgName```
-- adding an existing project ```add PkgName``` or ``` add https://github.com/JuliaLang/Example.jl```
+- creating a project `]generate PkgName`
+- adding an existing project `add PkgName` or ` add https://github.com/JuliaLang/Example.jl`
 
     Names are resolved by Registrators (public or private).
 
-- removing ```]rm PkgName```
-- updating ```]update```
-- developing ```]dev http://...``` 
+- removing `]rm PkgName`
+- updating `]update`
+- developing `]dev http://...` 
 
-  Always reads the actual content of files. ```Add``` creates a precompiled blob.
+  Always reads the actual content of files. `Add` creates a precompiled blob.
 
-By default these operations are related to environment ```.julia/environments/v1.6```
+By default these operations are related to environment `.julia/environments/v1.6`
 
-E.g. running an updating will update packages in ```Manifest.toml``` in this directory. What if the update breaks functionality of some project package that uses special features?
+E.g. running an updating will update packages in `Manifest.toml` in this directory. What if the update breaks functionality of some project package that uses special features?
 
 There can be more than one environment!
 
 Any package can define its own project environment with a list of dependencies.
 
-- switching by ```]activate Path```
+- switching by `]activate Path`
 
 - from that moment, all package modifications will be relevant only to this project!
-- when switching to a new project ```]instantiate``` will prepare (download and precompile) the environment
-- which Packages are visible is determined by ```LOAD_PATH```
+- when switching to a new project `]instantiate` will prepare (download and precompile) the environment
+- which Packages are visible is determined by `LOAD_PATH`
     - typically contaings default libraries and default environment
     - it is different for REPL and Pkg.tests ! No default env. in tests.
 
@@ -286,16 +286,16 @@ Any package can define its own project environment with a list of dependencies.
 
 Without explicit keywords for checking constructs (think missing functions in interfaces), the good quality of the code is guaranteed by detailed unit testing.
 
-- each package should have directory ```/test```
-- file ```/test/runtest.jl``` is run by command ```]test``` of the package manager
+- each package should have directory `/test`
+- file `/test/runtest.jl` is run by command `]test` of the package manager
 
-  this file typically contains ```include``` of other tests
+  this file typically contains `include` of other tests
 
 - no formal structure of tests is prescribed
   - test files are just ordinary julia scripts
   - user is free to choose what to test and how (freedom x formal rules)
 
-- testing functionality is supported by macros ```@test``` and ```@teststet```
+- testing functionality is supported by macros `@test` and `@teststet`
 
   ```
   @testset "trigonometric identities" begin
@@ -317,7 +317,7 @@ Testset is a collection of tests that will be run and summarized in a common rep
     end
     ```
 
-  - Useful macro ```≈``` checks for equality with given tolerance
+  - Useful macro `≈` checks for equality with given tolerance
 
     ```julia
     a=5+1e-8
@@ -372,8 +372,8 @@ PackageName/
 ```
 
 Where the line-by-line documentation is in the source files.
-- ```/docs/src``` folder can contain more detailed information: introductory pages, howtos, tutorials, examples
-- running ```make.jl``` controls which pages are generated in what form (html or latex) documentation in the /build  directory
+- `/docs/src` folder can contain more detailed information: introductory pages, howtos, tutorials, examples
+- running `make.jl` controls which pages are generated in what form (html or latex) documentation in the /build  directory
 - automated with GitHub actions
 
 Documentation is generated by the julia code.
@@ -397,7 +397,7 @@ x=3
   y = MyType("y")
   ```
 
-  See ```?x``` and ```?y```. 
+  See `?x` and `?y`. 
     
   It uses the same very standdr building blocks: multiple dispatch.
 
@@ -409,7 +409,7 @@ If it defines methods that extend previously defined (e.g. from Base), it may af
 
 Julia has a tracking mechanism that stores information about the whole graph of dependencies. 
 
-Faster code can be achieved by the ```precompile``` directive:
+Faster code can be achieved by the `precompile` directive:
 ```julia
 module FSum
 
@@ -420,7 +420,7 @@ precompile(fsum,(Float64,Float64,Float64))
 end
 ```
 
-Can be investigated using ```MethodAnalysis```.
+Can be investigated using `MethodAnalysis`.
 
 ```julia
 using MethodAnalysis

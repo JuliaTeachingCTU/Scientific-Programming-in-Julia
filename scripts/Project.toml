@@ -1,0 +1,7 @@
+name = "scripts"
+
+[deps]
+EcosystemCore = "3e0d8730-8ea0-4ee2-afe6-c85384c618a2"
+FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Scientific_Programming_in_Julia = "ff288558-a322-4c39-84bc-85bf6acf7e03"

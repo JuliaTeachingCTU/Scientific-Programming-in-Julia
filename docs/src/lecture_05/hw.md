@@ -1,6 +1,9 @@
 # Homework 5: Root finding of polynomials
 This homework should test your ability to use the knowledge of benchmarking, profiling and others to improve an existing implementation of root finding methods for polynomials. The provided [code](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_05/root_finding.jl) is of questionable quality. In spite of the artificial nature, it should simulate a situation in which you may find yourself quite often, as it represents some intermediate step of going from a simple script to something, that starts to resemble a package.
 
+## How to submit?
+Put the modified `root_finding.jl` code inside `hw.jl`. Zip only this file (not its parent folder) and upload it to BRUTE. Your file should not use any dependency other than those already present in the `root_finding.jl`.
+
 ```@raw html
 <div class="admonition is-category-homework">
 <header class="admonition-header">Homework (2 points)</header>
@@ -39,10 +42,6 @@ Nothing to see here.
 ```@raw html
 </p></details>
 ```
-
-# How to submit?
-Put the modified `root_finding.jl` code inside `hw.jl`. Zip only this file (not its parent folder) and upload it to BRUTE. Your file should not use any dependency other than those already present in the `root_finding.jl`.
-
 
 # Voluntary exercise
 ```@raw html

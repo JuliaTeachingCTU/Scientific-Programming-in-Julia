@@ -59,9 +59,7 @@ Hint: The **first few homeworks are easier**. Use them to fill up your points.
 The final project will be individually agreed on for each student. Ideally you
 can use this project to solve a problem you have e.g. in your thesis, but don't
 worry - if you cannot come up with an own project idea, we will suggest one to
-you.
-
-The evaluation criteria of the final project are ...
+you. More info and project suggestion can be found [here](@ref projects).
 
 
 ## Grading
@@ -78,7 +76,7 @@ the standard grading scale below.
 
 | --          | E-mail                                                     | Room     | Role           |
 | :--         | :--                                                        | :--      | :--            |
-| Tomáš Pevný | [pevnytom@fel.cvut.cz](mailto:pevnytom@fel.cvut.cz)        | KN:E-333 | Lecturer       |
+| Tomáš Pevný | [pevnak@protonmail.ch](mailto:pevnak@protonmail.ch)        | KN:E-406 | Lecturer       |
 | Vašek Šmídl | [smidlva1@fjfi.cvut.cz](mailto:smidlva1@fjfi.cvut.cz)      | KN:E-333 | Lecturer       |
 | Jan Franců  | [francja5@fel.cvut.cz](mailto:francja5@fel.cvut.cz)       | KN:E-333 | Lab Instructor |
 | Niklas Heim | [heimnikl@fel.cvut.cz](mailto:heimnikl@fel.cvut.cz)        | KN:E-333 | Lab Instructor |

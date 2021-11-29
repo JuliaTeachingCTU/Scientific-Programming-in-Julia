@@ -1,0 +1,1 @@
+[notes](http://www.cs.unb.ca/~aubanel/JuliaMultithreadingNotes.html)
