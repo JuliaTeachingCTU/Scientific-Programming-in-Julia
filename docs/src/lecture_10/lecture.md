@@ -5,22 +5,238 @@ Julia offers different levels of parallel programming
 - SIMD instructions
 - Task switching.
 
-In this lecture, we will focus mainly on the first two, since SIMD instructions are mainly used for optimization of loops, and task switching is not a true paralelism, but allows to run a different task when one task is waiting for example for IO.
+In this lecture, we will focus mainly on the first two, since SIMD instructions are mainly used for low-level optimization (such as writing you own very performant BLAS library), and task switching is not a true paralelism, but allows to run a different task when one task is waiting for example for IO.
 
-## controller / worker model of parallel processes
-- the usual remote fetch call 
-- solve monte carlo
-- pmap
+## Process-level paralelism
+Process-level paralelism means that Julia runs several compilers in different processes. Compilers *do not share anything by default*, where by anything we mean no libraries, not variables. Everyhing has to be set-up, but Julia offers tooling for remote execution and communication primitives.
 
+Julia off-the-shelf supports a mode, where a single *main* process controlls several workers. This main process has `myid() == 1`, worker processes receive higher numbers. Julia can be started with multiple workers from the very beggining, using `-p` switch as 
+```julia
+julia -p n
+```
+where `n` is the number of workers, or you can add workers after Julia has been started by
+```julia
+using Distributed
+addprocs(4)
+```
+(when Julia is started with `-p`, `Distributed` library is loaded by default on main worker). You can also remove workers using `rmprocs`. Workers can be on the same physical machines, or on different machines. Julia offer integration via `ClusterManagers.jl` with most schedulling systems.
+
+If you want evaluate piece of code on all workers including main process, a convenience macro `@everywhere` is offered.
+```julia
+@everywhere @show myid()
+```
+As we have mentioned, workers are loaded without libraries. We can see that by running
+```julia
+@everywhere InteractiveUtils.varinfo()
+```
+which fails, but
+```julia
+@everywhere begin 
+	using InteractiveUtils
+	println(InteractiveUtils.varinfo())
+end
+```
+
+`@everywhere` macro allows us to define function and variables, and import libraries on workers as 
+```julia
+@everywhere begin 
+	foo(x, y) = x * y + sin(y)
+	foo(x) = foo(x, myid())
+end
+@everywhere @show foo(1.0)
+```
+Alternatively, we can put the code into a separate file and load it on all workers using `-L filename.jl`
+
+A real benefit from multi-processing is when we can *schedulle* an execution of a function and return the control immeadiately to do something else. A low-level function providing this functionality is `remotecall(fun, worker_id, args...)`. For example 
+```julia
+@everywhere begin 
+	function delayed_foo(x, y, n )
+		sleep(n)
+		foo(x, y)
+	end
+end
+r = remotecall(delayed_foo, 2, 1, 1, 60)
+```
+which terminates immediately. `r` does not contain result of `foo(1, 1)`, but a struct `Future`. The `Future` can be seen as a *handle* allowing to retrieve the result later, using `fetch`, which either fetches the result or wait until the result is available.
+```julia
+fetch(r) == foo(1, 1)
+```
+An interesting feature of `fetch` is that it re-throw an exception raised on a different process.
+```julia
+@everywhere begin 
+	function exfoo()
+		throw("Exception from $(myid())")
+	end
+end
+r = @spawnat 2 exfoo()
+```
+where `@spawnat` is a an alternative to `remotecall`, which executes a closure around expression (in this case `exfoo()`) on a specified worker (in this case 2). Fetching the result `r` throws an exception on the main process.
+```jula
+fetch(r)
+```
+
+## Example: Julia sets
+Our example for explaining mechanisms of distributed computing will be the computation of Julia set fractal. The computation of the fractal can be easily paralelized, since the value of each pixel is independent from the remaining. The example is adapted from [Eric Aubanel](http://www.cs.unb.ca/~aubanel/JuliaMultithreadingNotes.html).
+```julia
+using Plots
+@everywhere begin 
+	function juliaset_pixel(z₀, c)
+	    z = z₀
+	    for i in 1:255
+	        abs2(z)> 4.0 && return (i - 1)%UInt8
+	        z = z*z + c
+	    end
+	    return UInt8(255)
+	end
+
+	function juliaset_column!(img, c, n, colj, j)
+	    x = -2.0 + (j-1)*4.0/(n-1)
+	    for i in 1:n
+	        y = -2.0 + (i-1)*4.0/(n-1)
+	        @inbounds img[i,colj] = juliaset_pixel(x+im*y, c)
+	    end
+	    nothing
+	end
+end
+
+function juliaset(x, y, n=1000)
+    c = x + y*im
+    img = Array{UInt8,2}(undef,n,n)
+    for j in 1:n
+        juliaset_column!(img, c, n, j, j)
+    end
+    return img
+end
+
+frac = juliaset(-0.79, 0.15)
+plot(heatmap(1:size(frac,1),1:size(frac,2), frac, color=:Spectral))
+```
+
+We can split the computation of the whole image into bands, such that each worker computes a smaller portion.
+```julia
+@everywhere begin 
+	function juliaset_columns(c, n, columns)
+	    img = Array{UInt8,2}(undef, n, length(columns))
+	    for (colj, j) in enumerate(columns)
+	        juliaset_column!(img, c, n, colj, j)
+	    end
+	    img
+	end
+end
+
+function juliaset_spawn(x, y, n = 1000)
+    c = x + y*im
+    columns = Iterators.partition(1:n, div(n, nworkers()))
+    r_bands = [@spawnat w juliaset_columns(c, n, cols) for (w, cols) in enumerate(columns)]
+    slices = map(fetch, r_bands)
+    reduce(hcat, slices)
+end
+```
+we observe some speed-up over the serial version, but not linear in terms of number of workers
+```julia
+julia> @btime juliaset(-0.79, 0.15);
+  38.699 ms (2 allocations: 976.70 KiB)
+
+julia> @btime juliaset_spawn(-0.79, 0.15);
+  21.521 ms (480 allocations: 1.93 MiB)
+```
+In the above example, we spawn one function on each worker and collect the results. In essence, we are performing `map` over bands. Julia offers for this usecase a parallel version of map `pmap`. With that, our example can look like
+```julia
+function juliaset_pmap(x, y, n = 1000, np = nworkers())
+    c = x + y*im
+    columns = Iterators.partition(1:n, div(n, np))
+    slices = pmap(cols -> juliaset_columns(c, n, cols), columns)
+    reduce(hcat, slices)
+end
+
+julia> @btime juliaset_pmap(-0.79, 0.15);
+  17.597 ms (451 allocations: 1.93 MiB)
+```
+which has slightly better timing then the version based on `@spawnat` and `fetch` (as explained below in section about `Threads`, the parallel computation of Julia set suffers from each pixel taking different time to compute, which can be relieved by dividing the work into more parts --- `@btime juliaset_pmap(-0.79, 0.15, 1000, 16);`).
+
+## Synchronization / Communication primitives
+The orchestration of a complicated computation might be difficult with relatively low-level remote calls. A Producer / Consumer paradigm is a synchronization paradigm that uses queues. Consumer fetches work intructions from the queue and pushes results to different queue. Julia supports this paradigm with `Channel` and `RemoteChannel` primitives. Importantly, putting to and taking from queue is an atomic operation, hence we do not have take care of race conditions.
+The code for the worker might look like
+```julia
+@everywhere begin 
+	function juliaset_channel_worker(instructions, results)
+		while isready(instructions)
+			c, n, cols = take!(instructions)
+			put!(results, (cols, juliaset_columns(c, n, cols)))
+		end
+	end
+	println("finishing juliaset_channel_worker on ", myid())
+end
+```
+The code for the main will look like
+```julia
+function juliaset_channels(x, y, n = 1000, np = nworkers())
+	c = x + y*im
+	columns = Iterators.partition(1:n, div(n, np))
+	instructions = RemoteChannel(() -> Channel{Tuple}(np))
+	foreach(cols -> put!(instructions, (c, n, cols)), columns)
+	results = RemoteChannel(()->Channel{Tuple}(np))
+	rfuns = [@spawnat i juliaset_channel_worker(instructions, results) for i in workers()]
+
+	img = Array{UInt8,2}(undef, n, n)
+	while isready(results)
+		cols, impart = take!(results)
+		img[:,cols] .= impart;
+	end
+	img
+end
+
+julia> @btime juliaset_channels(-0.79, 0.15);
+  254.151 μs (254 allocations: 987.09 KiB)
+```
+The execution tim is much higher then the we have observed in the previous cases and changing the number of workers do not help much. What went wrong? The reason is that setting up the infrastructure around remote channels is a costly process. Consider the following alternative, where (i) we let workers to run end-lessly and (ii) the channel infrastructure is set-up once and wrapped into an anonymous function
+```julia
+@everywhere begin 
+	function juliaset_channel_worker(instructions, results)
+	while true
+	  c, n, cols = take!(instructions)
+	  put!(results, (cols, juliaset_columns(c, n, cols)))
+	end
+end
+
+function juliaset_init(x, y, n = 1000, np = nworkers())
+  c = x + y*im
+  columns = Iterators.partition(1:n, div(n, np))
+  instructions = RemoteChannel(() -> Channel{Tuple}(np))
+  results = RemoteChannel(()->Channel{Tuple}(np))
+  foreach(p -> remote_do(juliaset_channel_worker, p, instructions, results), workers())
+  function compute()
+    img = Array{UInt8,2}(undef, n, n)
+    foreach(cols -> put!(instructions, (c, n, cols)), columns)
+    for i in 1:np
+      cols, impart = take!(results)
+      img[:,cols] .= impart;
+    end
+    img
+  end 
+end
+
+t = juliaset_init(-0.79, 0.15)
+julia> @btime t();
+  17.697 ms (776 allocations: 1.94 MiB)
+```
+with which we obtain the comparable speed.
+Instead of `@spawnat` we can also use `remote_do` as foreach`(p -> remote_do(juliaset_channel_worker, p, instructions, results), workers)`, which executes the function `juliaset_channel_worker` at worker `p` with parameters `instructions` and `results` but does not return handle to receive the future results.
+
+- Channels and their guarantees
+- How to orchestrate workers by channels
+- how to kill the remote process with channel
+
+I can send indices of columns that should be calculated on remote processes over the queue, from which they can pick it up and send it back over the channel.
+
+
+
+
+## tooling
 - how to set up workers, 
     + how to load functions, modules
     + julia -p 16 -L load_my_script.jl
 - how to send data / how to define variable on remote process
-
-## Synchronization primitives 
-- Channels and their guarantees
-- How to orchestrate workers by channels
-- how to kill the remote process with channel
 
 ## Sending data
 - Do not send `randn(1000, 1000)`
