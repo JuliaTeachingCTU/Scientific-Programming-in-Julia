@@ -247,8 +247,163 @@ df[1:50,:]
 ```
 
 ## Threading
+The number of threads that Julia can use can be set up in an environmental variable `JULIA_NUM_THREADS` or directly on julia startup with cmd line option `-t ##` or `--threads ##`. If both are specified the latter takes precedence.
+```bash
+julia -t 8
+```
+In order to find out how many threads are currently available, there exist the `nthreads` function inside `Base.Threads` library. There is also an analog to the Distributed `myid` example, called `threadid`.
+```julia
+using Base.Threads
+nthreads()
+threadid()
+```
+As opposed to distributed/multiprocessing programming, threads have access to the whole memory of Julia's process, therefore we don't have to deal with separate environment manipulation, code loading and data transfers. However we have to be aware of the fact that memory can be modified from two different places and that there may be some performance penalties of accessing memory that is physically further from a given core (e.g. caches of different core or different NUMA[^2] nodes)
 
-### Sum with threads
+[^2]: NUMA - [https://en.wikipedia.org/wiki/Non-uniform\_memory\_access](https://en.wikipedia.org/wiki/Non-uniform_memory_access)
+
+!!! info "Hyper threads"
+    In most of today's CPUs the number of threads is larger than the number of physical cores. These additional threads are usually called hyper threads[^3]. The technology relies on the fact, that for a given "instruction" there may be underutilized parts of the CPU core's machinery (such as one of many arithmetic units) and if a suitable work/instruction comes in it can be run simultaneously. In practice this means that adding more threads than physical cores may not accompanied with the expected speed up.
+
+[^3]: Hyperthreading - [https://en.wikipedia.org/wiki/Hyper-threading](https://en.wikipedia.org/wiki/Hyper-threading)
+
+The easiest (not always yielding the correct result) way how to turn a code into multi threaded code is putting the `@threads` macro in front of a for loop, which instructs Julia to run the body on separate threads.
+```julia
+A = Array{Union{Int,Missing}}(missing, nthreads())
+for i in 1:nthreads()
+    A[threadid()] = threadid()
+end
+A # only the first element is filled
+```
+
+```julia
+@threads for i in 1:nthreads()
+    A[threadid()] = threadid()
+end
+A # the expected results
+```
+
+### Multithreaded sum
+Armed with this knowledge let's tackle the problem of a simple sum.
+```julia
+function threaded_sum_naive(A)
+    r = zero(eltype(A))
+    @threads for i in eachindex(A)
+        @inbounds r += A[i]
+    end
+    return r
+end
+```
+Comparing this with the built-in sum we see not an insignificant discrepancy (one that cannot be explained by reordering of computation)
+```julia
+a = rand(10_000_000);
+sum(a), threaded_sum_naive(a)
+```
+Recalling what has been said above we have to be aware of the fact that the data can be accessed from multiple threads at once, which if not taken into an account means that each thread reads possibly outdated value and overwrites it with its own updated state. There are two solutions which we will tackle in the next two exercises.
+
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Implement `threaded_sum_atom`, which uses `Atomic` wrapper around the accumulator variable `r` in order to ensure correct locking of data access. 
+
+**HINTS**:
+- use `atomic_add!` as a replacement of `r += A[i]`
+- "collect" the result by dereferencing variable `r` with empty bracket operator `[]`
+
+!!! info "Side note on dereferencing"
+    In Julia we can create references to a data types, which are guarranteed to point to correct and allocated type in memory, as long as a reference exists the memory is not garbage collected. These are constructed with `Ref(x)`, `Ref(a, 7)` or `Ref{T}()` for reference to variable `x`, `7`th element of array `a` and an empty reference respectively. Dereferencing aka asking about the underlying value is done using empty bracket operator `[]`.
+    ```@repl lab10_refs
+    x = 1       # integer
+    rx = Ref(x) # reference to that particular integer `x`
+    x == rx[]   # dereferencing yields the same value
+    ```
+    There also exist unsafe references/pointers `Ptr`, however we should not really come into a contact with those.
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+
+```julia
+using BenchmarkTools
+a = rand(10^7);
+
+function threaded_sum_atom(A)
+    r = Atomic{eltype(A)}(zero(eltype(A)))
+    @threads for i in eachindex(A)
+        @inbounds atomic_add!(r, A[i])
+    end
+    return r[]
+end
+```
+There is a fancier and faster way to do this by chunking the array, because this is comparable in speed to sequential code.
+
+```julia
+function threaded_sum_fancy_atomic(A)
+    r = Atomic{eltype(A)}(zero(eltype(A)))
+    len, rem = divrem(length(A), nthreads())
+    @threads for t in 1:nthreads()
+        rₜ = zero(eltype(A))
+        @simd for i in (1:len) .+ (t-1)*len
+            @inbounds rₜ += A[i]
+        end
+        atomic_add!(r, rₜ)
+    end
+    # catch up any stragglers
+    result = r[]
+    @simd for i in length(A)-rem+1:length(A)
+        @inbounds result += A[i]
+    end
+    return result
+end
+```
+
+```@raw html
+</p></details>
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Implement `threaded_sum_buffer`, which uses an array of length `nthreads()` (we will call this buffer) for local aggregation of results of individual threads. 
+
+**HINTS**:
+- use `threadid()` to index the buffer array
+- sum the buffer array to obtain final result
+
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+
+```julia
+using BenchmarkTools
+a = rand(10^7);
+
+function threaded_sum_buffer(A)
+    R = zeros(eltype(A), nthreads())
+    @threads for i in eachindex(A)
+        @inbounds R[threadid()] += A[i]
+    end
+    r = zero(eltype(A))
+    # sum the partial results from each thread
+    for i in eachindex(R)
+        @inbounds r += R[i]
+    end
+    return r
+end
+```
+
+```@raw html
+</p></details>
+```
 
 ### Multithreaded file processing
 
