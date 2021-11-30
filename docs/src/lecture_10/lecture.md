@@ -189,21 +189,24 @@ end
 julia> @btime juliaset_channels(-0.79, 0.15);
   254.151 μs (254 allocations: 987.09 KiB)
 ```
-The execution tim is much higher then the we have observed in the previous cases and changing the number of workers do not help much. What went wrong? The reason is that setting up the infrastructure around remote channels is a costly process. Consider the following alternative, where (i) we let workers to run end-lessly and (ii) the channel infrastructure is set-up once and wrapped into an anonymous function
+The execution timw is much higher then what we have observed in the previous cases and changing the number of workers does not help much. What went wrong? The reason is that setting up the infrastructure around remote channels is a costly process. Consider the following alternative, where (i) we let workers to run endlessly and (ii) the channel infrastructure is set-up once and wrapped into an anonymous function
 ```julia
 @everywhere begin 
 	function juliaset_channel_worker(instructions, results)
-	while true
-	  c, n, cols = take!(instructions)
-	  put!(results, (cols, juliaset_columns(c, n, cols)))
+		while true
+		  c, n, cols = take!(instructions)
+		  put!(results, (cols, juliaset_columns(c, n, cols)))
+		end
 	end
 end
 
 function juliaset_init(x, y, n = 1000, np = nworkers())
   c = x + y*im
   columns = Iterators.partition(1:n, div(n, np))
-  instructions = RemoteChannel(() -> Channel{Tuple}(np))
-  results = RemoteChannel(()->Channel{Tuple}(np))
+  T = Tuple{ComplexF64,Int64,UnitRange{Int64}}
+  instructions = RemoteChannel(() -> Channel{T}(np))
+  T = Tuple{UnitRange{Int64},Array{UInt8,2}}
+  results = RemoteChannel(()->Channel{T}(np))
   foreach(p -> remote_do(juliaset_channel_worker, p, instructions, results), workers())
   function compute()
     img = Array{UInt8,2}(undef, n, n)
@@ -220,28 +223,71 @@ t = juliaset_init(-0.79, 0.15)
 julia> @btime t();
   17.697 ms (776 allocations: 1.94 MiB)
 ```
-with which we obtain the comparable speed.
-Instead of `@spawnat` we can also use `remote_do` as foreach`(p -> remote_do(juliaset_channel_worker, p, instructions, results), workers)`, which executes the function `juliaset_channel_worker` at worker `p` with parameters `instructions` and `results` but does not return handle to receive the future results.
+with which we obtain the comparable speed to the `pmap` approach.
+!!! info
+    ### `remote_do` vs `remote_call`
+    Instead of `@spawnat` (`remote_call`) we can also use `remote_do` as foreach`(p -> remote_do(juliaset_channel_worker, p, instructions, results), workers)`, which executes the function `juliaset_channel_worker` at worker `p` with parameters `instructions` and `results` but does not return `Future` handle to receive the future results.
 
-- Channels and their guarantees
-- How to orchestrate workers by channels
-- how to kill the remote process with channel
+!!! info
+    ### `Channel` and `RemoteChannel`
+    `AbstractChannel` has to implement the interface `put!`, `take!`, `fetch`, `isready` and `wait`, i.e. it should behave like a queue. `Channel` is an implementation if an `AbstractChannel` that facilitates a communication within a single process (for the purpose of multi-threadding and task switching). Channel can be easily created by `Channel{T}(capacity)`, which can be infinite. The storage of a channel can be seen in `data` field, but a direct access will of course break all guarantees like atomicity of `take!` and `put!`.  For communication between proccesses, the `<:AbstractChannel` has to be wrapped in `RemoteChannel`. The constructor for `RemoteChannel(f::Function, pid::Integer=myid())` has a first argument a function (without arguments) which constructs the `Channel` (or something like that) on the remote machine identified by `pid` and returns the `RemoteChannel`. The storage thus resides on the machine specified by `pid` and the handle provided by the `RemoteChannel` can be freely passed to any process. (For curious, `ProcessGroup` `Distributed.PGRP` contains an information about channels on machines.) 
 
-I can send indices of columns that should be calculated on remote processes over the queue, from which they can pick it up and send it back over the channel.
-
-
-
-
-## tooling
-- how to set up workers, 
-    + how to load functions, modules
-    + julia -p 16 -L load_my_script.jl
-- how to send data / how to define variable on remote process
+In the above example, `juliaset_channel_worker` defined as 
+```julia
+function juliaset_channel_worker(instructions, results)
+	while true
+	  c, n, cols = take!(instructions)
+	  put!(results, (cols, juliaset_columns(c, n, cols)))
+	end
+end
+```
+runs forever due to the `while true` loop. To stop the computation, we usually extend the type accepted by the `instructions` channel to accept some stopping token (e.g. :stop) and stop.
+```julia
+function juliaset_channel_worker(instructions, results)
+	while true
+		i = take!(instructions)
+		i === :stop && break
+		c, n, cols = i
+		put!(results, (cols, juliaset_columns(c, n, cols)))
+	end
+	put!(results, :stop)
+end
+```
+Julia does not provide by default any facility to kill the remote execution except sending `ctrl-c` to the remote worker as `interrupt(pids::Integer...)`.
 
 ## Sending data
 - Do not send `randn(1000, 1000)`
+- Sending references and ObjectID would not work
 - Serialization is very time consuming, an efficient converstion to something simple might be wort
 - Dict("a" => [1,2,3], "b" = [2,3,4,5]) -> (Array of elements, array of bounds, keys)
+
+## Practical advices 
+Recall that (i) workers are started as clean processes and (ii) they might not share the same environment with the main process. The latter is due to the fact that files describing the environment (`Project.toml` and `Manifest.toml`) might not be available on remote machines.
+We recommend:
+- to have shared directory (shared home) with code and to share the location of packages
+- to place all code for workers to one file, let's call it `worker.jl` (author of this includes the code for master as well).
+- put to the beggining of `worker.jl` code activating specified environment as 
+```julia
+using Pkg
+Pkg.activate(@__DIR__)
+```
+and optionally
+```julia
+Pkg.resolve()
+Pkg.instantiate()
+```
+- run julia as
+```julia
+julia -p ?? -L worker.jl main.jl
+```
+where `main.jl` is the script to be executed on the main node. Or
+```julia
+julia -p ?? -L worker.jl -e "main()"
+```
+where `main()` is the function defined in `worker.jl` to be executed on the main node.
+
+A complete example can be seen in [`juliaset_p.jl`](juliaset_p.jl).
+
 
 ## Multi-Threadding 
 - Locks / lock-free multi-threadding
@@ -391,6 +437,12 @@ end
 julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_folds!);
   10.421 ms (3582 allocations: 1.20 MiB)
 ```
+
+## Take away message
+When deciding, what kind of paralelism to employ, consider following
+- for tightly coupled computation over shared data, multi-threadding is more suitable due to non-existing sharing of data between processes
+- but if the computation requires frequent allocation and freeing of memery, or IO, separate processes are multi-suitable, since garbage collectors are independent between processes
+- `Transducers` thrives for (almost) the same code to support thread- and process-based paralelism.
 
 ### Materials
 - http://cecileane.github.io/computingtools/pages/notes1209.html
