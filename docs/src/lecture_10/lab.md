@@ -253,8 +253,94 @@ df[1:50,:]
 ### Multithreaded file processing
 
 ## Task switching
+There is a way how to run "multiple" things at once, which does not necessarily involve either threads or processes. In Julia this concept is called task switching or asynchronous programming, where we fire off our requests in a short time and let the cpu/os/network handle the distribution. As an example which we will try today is querrying a web API, which has some variable latency. In the usuall sequantial fashion we can always post querries one at a time, however generally the APIs can handle multiple request at a time, therefore in order to better utilize them, we can call them asynchronously and fetch all results later, in some cases this will be faster.
 
-### Only if we I come up with something interesting
+!!! info "Burst requests"
+    It is a good practice to check if an API supports some sort of batch request, because making a burst of single request might lead to a worse performance for others and a possible blocking of your IP/API key.
+
+Consider following functions
+```julia
+function a()
+    for i in 1:10
+        sleep(1)
+    end
+end
+
+function b()
+    for i in 1:10
+        @async sleep(1)
+    end
+end
+
+function c()
+    @sync for i in 1:10
+        @async sleep(1)
+    end
+end
+```
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">How much time will take the execution of each of them?:</summary><p>
+```
+```
+```julia
+@time a() # 10s
+@time b() # ~0s
+@time c() # >~1s
+```
+```@raw html
+</p></details>
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Choose one of the free web APIs and query its endpoint using the `HTTP.jl` library. Implement both sequential and asynchronous version. Compare them on an burst of 10 requests.
+
+**HINTS**:
+- use `HTTP.request` for `GET` requests on your chosen API, e.g. `r = HTTP.request("GET", "https://catfact.ninja/fact")` for random cat fact
+- converting body of a response can be done simply by constructing a `String` out of it - `String(r.body)`
+- in order to parse a json string use `JSON.jl`'s parse function
+- Julia offers `asyncmap` - asynchronous `map`
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+
+```julia
+using HTTP, JSON
+
+function query_cat_fact()
+    r = HTTP.request("GET", "https://catfact.ninja/fact")
+    j = String(r.body)
+    d = JSON.parse(j)
+    d["fact"]
+end
+
+function get_cat_facts_async(n)
+    facts = String[]
+    @sync for i in 1:10
+        @async facts query_cat_fact()
+    end
+    facts
+end
+
+get_cat_facts_async(n) = asyncmap(x -> query_cat_fact(), Base.OneTo(n))
+get_cat_facts(n) = map(x -> query_cat_fact(), Base.OneTo(n))
+
+@time get_cat_facts_async(10)   # ~0.15s
+@time get_cat_facts(10)         # ~1.1s
+```
+
+```@raw html
+</p></details>
+```
 
 
 ## Summary
