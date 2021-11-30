@@ -323,10 +323,11 @@ function query_cat_fact()
     d["fact"]
 end
 
+# without asyncmap
 function get_cat_facts_async(n)
-    facts = String[]
+    facts = Vector{String}(undef, n)
     @sync for i in 1:10
-        @async facts query_cat_fact()
+        @async facts[i] = query_cat_fact()
     end
     facts
 end
