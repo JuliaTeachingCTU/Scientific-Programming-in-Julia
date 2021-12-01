@@ -14,8 +14,12 @@ Image source[^1]
 
 
 !!! warning "Shortcomings of parallelism"
-	Parallel computing brings its own set of problems and not an insignificant overhead with data manipulation and communication, therefore try always to optimize your serial code as much as you can before advancing to parallel acceleration.
-	- parallel programs are hard to debug
+    Parallel computing brings its own set of problems and not an insignificant overhead with data manipulation and communication, therefore try always to optimize your serial code as much as you can before advancing to parallel acceleration.
+
+!!! warning "Disclaimer (don't know if I should state this)"
+    - parallel programs are hard to debug
+    - with the further increase in complexity of computer hw some statements about parallel programming may become outdated
+    - we won't cover as many tips that you may encounter on a parallel programming specific course
 
 ## Distributed/multi-processing
 Wrapping our heads around having multiple running Julia processes
@@ -33,6 +37,8 @@ julia -p 4
 ```julia
 using Distributed
 addprocs(4) # returns a list of ids of individual processes
+nworkers()  # returns number of workers
+nprocs()    # returns number of processes `nworkers() + 1`
 ```
 
 The result shown in a process manager such as `htop`:
@@ -54,72 +60,143 @@ As we have seen from the `htop/top` output, added processes start with specific 
 ```julia
 @everywhere begin
   using Pkg; Pkg.activate(@__DIR__) # @__DIR__ equivalent to a call to pwd()
-  Pkg.instantiate(); Pkg.precompile() # this should not be necessary to call everywhere
 end
 ```
 We can load files on all processes `-L` has to include
 
 There are generally two ways of working with multiple processes
 - using low level functionality - we specify what/where is loaded, what/where is being run and when we fetch results
-	+ `@everywhere` macro
-	+ `@spawnat` macro
-	+ `fetch` function
-	+ `myid` function
-
+    + macro `@everywhere`
+    + macro `@spawnat`
+    + function `fetch`
+    + function `myid`
+    + `pmap`
 - using high level functionality - define only simple functions and apply them on distributed data structures 
-	+ `DistributedArrays`' `DArray`s
-	+ `pmap`
+    + `DistributedArrays`' with `DArray`s
+    + `SharedArrays`' with `SharedArray`s
 
 ### Sum with processes
+Writing your own sum of an array function is a good way to show all the potential problems, you may encounter with parallel programming. For comparison here is the naive version that uses `zero` for initialization and `@inbounds` for removing boundschecks.
+```julia
+function naive_sum(a)
+    r = zero(eltype(a))
+    for i in eachindex(a)
+        @inbounds r += a[i]
+    end
+    r
+end
+```
+Its performance will serve us as a sequential baseline.
+```julia
+using BenchmarkTools
+a = rand(10_000_000); # 10^7
+sum(a) ≈ naive_sum(a)
+@btime sum($a)
+@btime naive_sum($a)
+```
+Note that the built-in `sum` exploits single core parallelism with Single instruction, multiple data (SIMD instructions).
+
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Write an aggregated sum with multiprocessing/distributed.
-- without `DistributedArrays`
-- with `DistributedArrays`
+Write a distributed/multiprocessing version of `sum` function `dist_sum(a, np=nworkers())` without the help from `DistributedArrays`. Measure the speed up when doubling the number of workers (up to the number of logical cores - see note on hyper threading).
 
 **HINTS**:
-- for base functionality `DistributedArrays`' functionality of distributing preexisting array (`distribute` function) works well
-- you have to consider option that the array may not fit into memory
+- map builtin `sum` over chunks of the array using `pmap`
+- there are built in partition iterators `Iterators.partition(array, chunk_size)`
+- `pmap` has the option to pass the ids of workers as the second argument `pmap(f, WorkerPool([2,4]), collection)`
 
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-
 ```julia
-using BenchmarkTools
-a = rand(10^7);
 using Distributed
-# using DistributedArrays
 addprocs(4)
-@everywhere using DistributedArrays
-adist = distribute(a)
-j_bench_base = @benchmark sum($a)
-j_bench_dist = @benchmark sum($adist)
-```
 
-```julia
-function mysum_dist(a::DArray)
-    r = Array{Future}(undef, length(procs(a)))
-    for (i, id) in enumerate(procs(a))
-        r[i] = @spawnat id sum(localpart(a))
-    end
-    return sum(fetch.(r))
+@everywhere begin
+    using Pkg; Pkg.activate(@__DIR__)
 end
-j_bench_hand_dist = @benchmark mysum_dist($adist)
+
+function dist_sum(a, np=nworkers())
+    chunk_size = div(length(a), np)
+    sum(pmap(sum, WorkerPool(workers()[1:np]), Iterators.partition(a, chunk_size)))
+end
+
+dist_sum(a) ≈ sum(a)
+@btime dist_sum($a)
+
+@time dist_sum(a, 1) # 74ms 
+@time dist_sum(a, 2) # 46ms
+@time dist_sum(a, 4) # 49ms
+@time dist_sum(a, 8) # 35ms
 ```
-
-
 
 ```@raw html
 </p></details>
 ```
 
-### Distributed file processing
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Write a distributed/multiprocessing version of `sum` function `dist_sum_lib(a, np=nworkers())` with the help of `DistributedArrays`. Measure the speed up when doubling the number of workers (up to the number of logical cores - see note on hyper threading).
+
+!!! info "DistributedArrays.jl"
+    `DistributedArrays.jl` is a 3rd party pkg for Julia, which judging by the name, allows us to work easily with D
+    functionality of distributing preexisting array - `distribute` function
+
+**HINTS**:
+- 
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+Setting up.
+```julia
+using Distributed
+addprocs(8)
+
+@everywhere begin
+    using Pkg; Pkg.activate(@__DIR__)
+end
+
+@everywhere begin
+    using DistributedArrays
+end 
+```
+
+```julia
+adist = distribute(a)       # distribute array to workers |> typeof - DArray
+@time adist = distribute(a) # we should not disregard this time
+@btime sum($adist)          # call the built-in function (dispatch on DArrray)
+
+function dist_sum_lib(a, np=nworkers())
+    adist = distribute(a, procs = workers()[1:np])
+    sum(adist)
+end
+
+dist_sum_lib(a) ≈ sum(a)
+@btime dist_sum_lib($a)
+
+@time dist_sum_lib(a, 1) # 80ms 
+@time dist_sum_lib(a, 2) # 54ms
+@time dist_sum_lib(a, 4) # 48ms
+@time dist_sum_lib(a, 8) # 33ms
+```
+
+```@raw html
+</p></details>
+```
+In both previous examples we have included the data transfer time from the controller process, in practice however distributed computing is used in situations where the data may be stored on individual local machines. As a general rule of thumb we should always send only instruction what to do and not the actual data to be processed. This will be more clearly demonstrated in the next more practical example.
+
+### [Distributed file processing](@id lab10_dist_file_p)
 `Distributed` is often used in processing of files, such as the commonly encountered `mapreduce` jobs with technologies like [`Hadoop`](https://hadoop.apache.org/), [`Spark`](http://spark.apache.org/), where the files live on a distributed file system and a typical job requires us to map over all the files and gather some statistics such as histograms, sums and others. We will simulate this situation with the Julia's pkg codebase, which on a typical user installation can contain up to hundreds of thousand of `.jl` files (depending on how extensively one uses Julia).
 
 ```@raw html
@@ -155,23 +232,23 @@ include("./pkg_processing.jl")
 
 using ProgressMeter
 function sequential_histogram(path)
-	h = Dict{Symbol, Int}()
-	@showprogress for pkg_dir in sample_all_installed_pkgs(path)
-		for jl_path in filter_jl(pkg_dir)
-			syms = tokenize(jl_path)
-			for s in syms
-				v = get!(h, s, 0)
-				h[s] += 1
-			end
-		end
-	end
-	h
+    h = Dict{Symbol, Int}()
+    @showprogress for pkg_dir in sample_all_installed_pkgs(path)
+        for jl_path in filter_jl(pkg_dir)
+            syms = tokenize(jl_path)
+            for s in syms
+                v = get!(h, s, 0)
+                h[s] += 1
+            end
+        end
+    end
+    h
 end
 path = joinpath(DEPOT_PATH[1], "packages") # usually the first entry
-@elapsed h = sequential_histogram(path)
+@time h = sequential_histogram(path)
 ```
 
-First we try to distribute over package folders. 
+First we try to distribute over package folders. **TODO** add the ability to run it only on some workers
 ```julia
 using Distributed
 addprocs(8)
@@ -183,55 +260,54 @@ addprocs(8)
 end
 
 """
-	merge_with!(h1, h2)
+    merge_with!(h1, h2)
 
 Merges count dictionary `h2` into `h1` by adding the counts.
 """
 function merge_with!(h1, h2)
-	for s in keys(h2)
-		get!(h1, s, 0)
-		h1[s] += h2[s]
-	end
-	h1
+    for s in keys(h2)
+        get!(h1, s, 0)
+        h1[s] += h2[s]
+    end
+    h1
 end
 
 using ProgressMeter
-function distributed_histogram(path)
-	r = @showprogress pmap(sample_all_installed_pkgs(path)) do pkg_dir
-		h = Dict{Symbol, Int}()
-		for jl_path in filter_jl(pkg_dir)
-			syms = tokenize(jl_path)
-			for s in syms
-				v = get!(h, s, 0)
-				h[s] += 1
-			end
-		end
-		h
-	end
-	reduce(merge_with!, r)
+function distributed_histogram_pkgwise(path)
+    r = @showprogress pmap(sample_all_installed_pkgs(path)) do pkg_dir
+        h = Dict{Symbol, Int}()
+        for jl_path in filter_jl(pkg_dir)
+            syms = tokenize(jl_path)
+            for s in syms
+                v = get!(h, s, 0)
+                h[s] += 1
+            end
+        end
+        h
+    end
+    reduce(merge_with!, r)
 end
 path = joinpath(DEPOT_PATH[1], "packages")
-@elapsed h = distributed_histogram(path)
+@time h = distributed_histogram_pkgwise(path)
 ```
 
 Second we try to distribute over all files.
 ```julia
-function distributed_histogram_naive(path)
-	jl_files = reduce(vcat, filter_jl(pkg_dir) for pkg_dir in sample_all_installed_pkgs(path))
-	r = @showprogress pmap(jl_files) do jl_path
-	# r = @showprogress pmap(WorkerPool([2,3,4,5]), jl_files) do jl_path
-		h = Dict{Symbol, Int}()
-		syms = tokenize(jl_path)
-		for s in syms
-			v = get!(h, s, 0)
-			h[s] += 1
-		end
-		h
-	end
-	reduce(merge_with!, r)
+function distributed_histogram_filewise(path)
+    jl_files = reduce(vcat, filter_jl(pkg_dir) for pkg_dir in sample_all_installed_pkgs(path))
+    r = @showprogress pmap(jl_files) do jl_path
+        h = Dict{Symbol, Int}()
+        syms = tokenize(jl_path)
+        for s in syms
+            v = get!(h, s, 0)
+            h[s] += 1
+        end
+        h
+    end
+    reduce(merge_with!, r)
 end
 path = joinpath(DEPOT_PATH[1], "packages")
-@elapsed h = distributed_histogram_naive(path)
+@time h = distributed_histogram_filewise(path)
 ```
 
 **BONUS**: You can do some analysis with `DataFrames`
@@ -262,7 +338,7 @@ As opposed to distributed/multiprocessing programming, threads have access to th
 [^2]: NUMA - [https://en.wikipedia.org/wiki/Non-uniform\_memory\_access](https://en.wikipedia.org/wiki/Non-uniform_memory_access)
 
 !!! info "Hyper threads"
-    In most of today's CPUs the number of threads is larger than the number of physical cores. These additional threads are usually called hyper threads[^3]. The technology relies on the fact, that for a given "instruction" there may be underutilized parts of the CPU core's machinery (such as one of many arithmetic units) and if a suitable work/instruction comes in it can be run simultaneously. In practice this means that adding more threads than physical cores may not accompanied with the expected speed up.
+    In most of today's CPUs the number of threads is larger than the number of physical cores. These additional threads are usually called hyper threads[^3] or when talking about cores - logical cores. The technology relies on the fact, that for a given "instruction" there may be underutilized parts of the CPU core's machinery (such as one of many arithmetic units) and if a suitable work/instruction comes in it can be run simultaneously. In practice this means that adding more threads than physical cores may not accompanied with the expected speed up.
 
 [^3]: Hyperthreading - [https://en.wikipedia.org/wiki/Hyper-threading](https://en.wikipedia.org/wiki/Hyper-threading)
 
@@ -282,23 +358,28 @@ end
 A # the expected results
 ```
 
+How to setup VSCode cmdline arguments *TODO*
+
+Another significant difference from distributed computing is that we cannot spawn additional threads on the fly in the same way that we have been able to do with `addprocs` function.
+
 ### Multithreaded sum
 Armed with this knowledge let's tackle the problem of a simple sum.
 ```julia
-function threaded_sum_naive(A)
-    r = zero(eltype(A))
-    @threads for i in eachindex(A)
-        @inbounds r += A[i]
+function threaded_sum_naive(a)
+    r = zero(eltype(a))
+    @threads for i in eachindex(a)
+        @inbounds r += a[i]
     end
     return r
 end
 ```
-Comparing this with the built-in sum we see not an insignificant discrepancy (one that cannot be explained by reordering of computation)
+Comparing this with the built-in sum we see not an insignificant discrepancy (one that cannot be explained by reordering of computation) and moreover the timings show us some ridiculous overhead.
 ```julia
-a = rand(10_000_000);
 sum(a), threaded_sum_naive(a)
+@btime sum($a)
+@btime threaded_sum_naive($a)
 ```
-Recalling what has been said above we have to be aware of the fact that the data can be accessed from multiple threads at once, which if not taken into an account means that each thread reads possibly outdated value and overwrites it with its own updated state. There are two solutions which we will tackle in the next two exercises.
+Recalling what has been said above we have to be aware of the fact that the data can be accessed from multiple threads at once, which if not taken into an account means that each thread reads possibly outdated value and overwrites it with its own updated state. There are two solutions which we will tackle in the next two exercises. 
 
 
 ```@raw html
@@ -321,6 +402,9 @@ Implement `threaded_sum_atom`, which uses `Atomic` wrapper around the accumulato
     ```
     There also exist unsafe references/pointers `Ptr`, however we should not really come into a contact with those.
 
+**BONUS**:
+Try chunking the array and calling sum on individual chunks to obtain some real speedup.
+
 ```@raw html
 </div></div>
 <details class = "solution-body">
@@ -328,38 +412,44 @@ Implement `threaded_sum_atom`, which uses `Atomic` wrapper around the accumulato
 ```
 
 ```julia
-using BenchmarkTools
-a = rand(10^7);
-
-function threaded_sum_atom(A)
-    r = Atomic{eltype(A)}(zero(eltype(A)))
-    @threads for i in eachindex(A)
-        @inbounds atomic_add!(r, A[i])
+function threaded_sum_atom(a)
+    r = Atomic{eltype(a)}(zero(eltype(a)))
+    @threads for i in eachindex(a)
+        @inbounds atomic_add!(r, a[i])
     end
     return r[]
 end
+
+sum(a) ≈ threaded_sum_naive(a)
+@btime sum($a)
+@btime threaded_sum_atom($a)
 ```
-There is a fancier and faster way to do this by chunking the array, because this is comparable in speed to sequential code.
+That's better but far from the performance we need. There is a fancier and faster way to do this by chunking the array
 
 ```julia
-function threaded_sum_fancy_atomic(A)
-    r = Atomic{eltype(A)}(zero(eltype(A)))
-    len, rem = divrem(length(A), nthreads())
+function threaded_sum_fancy_atom(a)
+    r = Atomic{eltype(a)}(zero(eltype(a)))
+    len, rem = divrem(length(a), nthreads())
     @threads for t in 1:nthreads()
-        rₜ = zero(eltype(A))
+        rₜ = zero(eltype(a))
         @simd for i in (1:len) .+ (t-1)*len
-            @inbounds rₜ += A[i]
+            @inbounds rₜ += a[i]
         end
         atomic_add!(r, rₜ)
     end
     # catch up any stragglers
     result = r[]
-    @simd for i in length(A)-rem+1:length(A)
-        @inbounds result += A[i]
+    @simd for i in length(a)-rem+1:length(a)
+        @inbounds result += a[i]
     end
     return result
 end
+
+sum(a) ≈ threaded_sum_fancy_atom(a)
+@btime sum($a)
+@btime threaded_sum_fancy_atom($a)
 ```
+Finally we have beaten the "sequential" sum. The quotes are intentional, because the `Base`'s implementation of a sum uses Single instruction, multiple data (SIMD) instructions as well, which allow to process multiple elements at once.
 
 ```@raw html
 </p></details>
@@ -384,23 +474,25 @@ Implement `threaded_sum_buffer`, which uses an array of length `nthreads()` (we 
 ```
 
 ```julia
-using BenchmarkTools
-a = rand(10^7);
-
-function threaded_sum_buffer(A)
-    R = zeros(eltype(A), nthreads())
-    @threads for i in eachindex(A)
-        @inbounds R[threadid()] += A[i]
+function threaded_sum_buffer(a)
+    R = zeros(eltype(a), nthreads())
+    @threads for i in eachindex(a)
+        @inbounds R[threadid()] += a[i]
     end
-    r = zero(eltype(A))
+    r = zero(eltype(a))
     # sum the partial results from each thread
     for i in eachindex(R)
         @inbounds r += R[i]
     end
     return r
 end
+
+sum(a) ≈ threaded_sum_buffer(a)
+@btime sum($a)
+@btime threaded_sum_buffer($a)
 ```
 
+Though this implementation is cleaner and faster, there is possible drawback with this implementation, as the buffer `R` lives in a continuous part of the memory and each thread that accesses it brings it to its caches as a whole, thus invalidating the values for the other threads, which it in the same way.
 ```@raw html
 </p></details>
 ```
@@ -521,11 +613,10 @@ function c()
 end
 ```
 
+How much time will the execution of each of them take?
 ```@raw html
-</div></div>
 <details class = "solution-body">
-<summary class = "solution-header">How much time will take the execution of each of them?:</summary><p>
-```
+<summary class = "solution-header">Solution</summary><p>
 ```
 ```julia
 @time a() # 10s
@@ -588,6 +679,10 @@ get_cat_facts(n) = map(x -> query_cat_fact(), Base.OneTo(n))
 
 ## Summary
 - when to use what
+    + Distributed - memory heavy, needs data transfers
+    + Threads - limited by single thread GC, data access collisions, limited memory to one worker
+    + Tasks - "parallelism"
+    + we can use combination of Distributed and Threads (controlling the number of threads using `addprocs`)
 
 # Resources
 - parallel computing [course](https://juliacomputing.com/resources/webinars/) by Julia Computing
