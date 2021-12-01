@@ -407,6 +407,93 @@ end
 
 ### Multithreaded file processing
 
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Write a multithreaded analog of the file processing pipeline from [exercise](@ref lab10_dist_file_p) above. We have already implemented most of the code that you will need (available as source code [here](source code)). **TODO**
+
+Your job is to write the `map` and `reduce` steps, that will gather the dictionaries from different workers. There are two ways to map
+- either over directories inside `.julia/packages/`
+- or over all files obtained by concatenation of `filter_jl` outputs (*NOTE* that this might not be possible if the listing itself is expensive - speed or memory requirements)
+Measure if the speed up scales linearly with the number of threads in each case. (*NOTE* that this )
+
+
+**HINTS**:
+- create a separate dictionary for each thread in order to avoid the need for atomic operations
+
+
+**BONUS**:
+In each of the cases count how many files/pkgs each thread processed. Would the dynamic scheduler help us in this situation?
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+
+```julia
+using Base.Threads
+include("./pkg_processing.jl") 
+
+"""
+    merge_with!(h1, h2)
+
+Merges count dictionary `h2` into `h1` by adding the counts.
+"""
+function merge_with!(h1, h2)
+    for s in keys(h2)
+        get!(h1, s, 0)
+        h1[s] += h2[s]
+    end
+    h1
+end
+```
+
+Firstly the version with folder-wise parallelism.
+```julia
+function threaded_histogram_pkgwise(path)
+    ht = [Dict{Symbol, Int}() for _ in 1:nthreads()]
+    @threads for pkg_dir in sample_all_installed_pkgs(path)
+        h = ht[threadid()]
+        for jl_path in filter_jl(pkg_dir)
+            syms = tokenize(jl_path)
+            for s in syms
+                v = get!(h, s, 0)
+                h[s] += 1
+            end
+        end
+    end
+    reduce(merge_with!, ht)
+end
+path = joinpath(DEPOT_PATH[1], "packages")
+@time h = threaded_histogram_pkgwise(path)
+```
+
+Secondly the version with file-wise parallelism.
+```julia
+function threaded_histogram_filewise(path)
+    jl_files = reduce(vcat, filter_jl(pkg_dir) for pkg_dir in sample_all_installed_pkgs(path))
+    ht = [Dict{Symbol, Int}() for _ in 1:nthreads()]
+    @threads for jl_path in jl_files
+        h = ht[threadid()]
+        syms = tokenize(jl_path)
+        for s in syms
+            v = get!(h, s, 0)
+            h[s] += 1
+        end
+    end
+    reduce(merge_with!, ht)
+end
+path = joinpath(DEPOT_PATH[1], "packages")
+@time h = threaded_histogram_filewise(path)
+```
+
+```@raw html
+</p></details>
+```
+
 ## Task switching
 There is a way how to run "multiple" things at once, which does not necessarily involve either threads or processes. In Julia this concept is called task switching or asynchronous programming, where we fire off our requests in a short time and let the cpu/os/network handle the distribution. As an example which we will try today is querrying a web API, which has some variable latency. In the usuall sequantial fashion we can always post querries one at a time, however generally the APIs can handle multiple request at a time, therefore in order to better utilize them, we can call them asynchronously and fetch all results later, in some cases this will be faster.
 
