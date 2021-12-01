@@ -7,6 +7,8 @@ Julia offers different levels of parallel programming
 
 In this lecture, we will focus mainly on the first two, since SIMD instructions are mainly used for low-level optimization (such as writing you own very performant BLAS library), and task switching is not a true paralelism, but allows to run a different task when one task is waiting for example for IO.
 
+**The most important lesson is that before you jump into the parallelism, make sure your code is fast sequentially**
+
 ## Process-level paralelism
 Process-level paralelism means that Julia runs several compilers in different processes. By default, different processes *do not share anything by default*, meaning no libraries and variables. Everyhing has to be therefore set-up on all processes.
 
@@ -321,11 +323,10 @@ end
 remotecall_fetch(g -> eval(:(g = $(g))), 2, g)
 @everywhere show_secret()
 ```
-which is implemented in the 
+which is implemented in the `ParallelDataTransfer.jl` with other variants, but in general, this construct should be avoided.
 
 ## Practical advices 
-Recall that (i) workers are started as clean processes and (ii) they might not share the same environment with the main process. The latter is due to the fact that files describing the environment (`Project.toml` and `Manifest.toml`) might not be available on remote machines.
-We recommend:
+Recall that (i) workers are started as clean processes and (ii) they might not share the same environment with the main process. The latter is due to the possibility of remote machines to have a different directory structure. Our best practices are:
 - to have shared directory (shared home) with code and to share the location of packages
 - to place all code for workers to one file, let's call it `worker.jl` (author of this includes the code for master as well).
 - put to the beggining of `worker.jl` code activating specified environment as 
@@ -349,13 +350,6 @@ julia -p ?? -L worker.jl -e "main()"
 where `main()` is the function defined in `worker.jl` to be executed on the main node.
 
 A complete example can be seen in [`juliaset_p.jl`](juliaset_p.jl).
-
-
-## Multi-Threadding 
-- Locks / lock-free multi-threadding
-- Show the effect of different schedullers
-- intra-model parallelism
-- sucks when operating with Heap
 
 ## Julia sets
 An example adapted from [Eric Aubanel](http://www.cs.unb.ca/~aubanel/JuliaMultithreadingNotes.html).
@@ -500,15 +494,66 @@ julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_folds!);
   10.421 ms (3582 allocations: 1.20 MiB)
 ```
 
+## Garbage collector is single-threadded
+Keep reminded that while threads are very easy very convenient to use, there are use-cases where you might be better off with proccess, even though there will be some communication overhead. One such case happens when you need to allocate and free a lot of memory. This is because Julia's garbage collector is single-threadded. Imagine a task of making histogram of bytes in a directory.
+For a fair comparison, we will use `Transducers`, since they offer thread and process based paralelism
+```julia
+using Transducers
+@everywhere begin 
+	function histfile(filename)
+		h = Dict{UInt8,Int}()
+		foreach(open(read, filename, "r")) do b 
+			h[b] = get(h, b, 0) + 1
+		end
+		h
+	end
+end
+
+files = filter(isfile, readdir("/Users/tomas.pevny/Downloads/", join = true))
+@elapsed foldxd(mergewith(+), files |> Map(histfile))
+150.863183701
+```
+and using the multi-threaded version of `map`
+```julia
+@elapsed foldxt(mergewith(+), files |> Map(histfile))
+205.309952618
+```
+we see that the threadding is actually worse than process based paralelism despite us paying the price for serialization  and deserialization of  `Dict`. Needless to say that changing `Dict` to `Vector` as
+```julia
+using Transducers
+@everywhere begin 
+	function histfile(filename)
+		h = Dict{UInt8,Int}()
+		foreach(open(read, filename, "r")) do b 
+			h[b] = get(h, b, 0) + 1
+		end
+		h
+	end
+end
+files = filter(isfile, readdir("/Users/tomas.pevny/Downloads/", join = true))
+@elapsed foldxd(mergewith(+), files |> Map(histfile))
+36.224765744
+@elapsed foldxt(mergewith(+), files |> Map(histfile))
+23.257072067
+```
+is much better.
+
+
+## Multi-Threadding 
+- Locks / lock-free multi-threadding
+
+
 ## Take away message
 When deciding, what kind of paralelism to employ, consider following
 - for tightly coupled computation over shared data, multi-threadding is more suitable due to non-existing sharing of data between processes
 - but if the computation requires frequent allocation and freeing of memery, or IO, separate processes are multi-suitable, since garbage collectors are independent between processes
+- Making all cores busy while achieving an ideally linear speedup is difficult and needs a lot of experience and knowledge. Tooling and profilers supporting debugging of parallel processes is not much developped.
 - `Transducers` thrives for (almost) the same code to support thread- and process-based paralelism.
 
 ### Materials
 - http://cecileane.github.io/computingtools/pages/notes1209.html
 - https://lucris.lub.lu.se/ws/portalfiles/portal/61129522/julia_parallel.pdf
+- http://igoro.com/archive/gallery-of-processor-cache-effects/
 - https://www.csd.uwo.ca/~mmorenom/cs2101a_moreno/Parallel_computing_with_Julia.pdf
 - Threads: https://juliahighperformance.com/code/Chapter09.html
 - Processes: https://juliahighperformance.com/code/Chapter10.html
