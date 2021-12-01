@@ -21,7 +21,7 @@ function juliaset_column!(img, c, n, colj, j)
     nothing
 end
 
-function juliaset_range(c, n, columns)
+function juliaset_columns(c, n, columns)
     img = Array{UInt8,2}(undef, n, length(columns))
     for (colj, j) in enumerate(columns)
         juliaset_column!(img, c, n, colj, j)
@@ -32,7 +32,7 @@ end
 function juliaset_distributed(x, y, partitions = nworkers(), n = 1000)
     c = x + y*im
     columns = Iterators.partition(1:n, div(n, partitions))
-    slices = pmap(cols -> juliaset_range(c, n, cols), columns)
+    slices = pmap(cols -> juliaset_columns(c, n, cols), columns)
     reduce(hcat, slices)
 end
 
@@ -70,4 +70,4 @@ function juliaset_shared(x, y, partitions = nworkers(), n = 1000)
 end
 
 juliaset_shared(-0.79, 0.15)
-
+juliaset_shared(-0.79, 0.15, 16)

@@ -8,7 +8,7 @@ Julia offers different levels of parallel programming
 In this lecture, we will focus mainly on the first two, since SIMD instructions are mainly used for low-level optimization (such as writing you own very performant BLAS library), and task switching is not a true paralelism, but allows to run a different task when one task is waiting for example for IO.
 
 ## Process-level paralelism
-Process-level paralelism means that Julia runs several compilers in different processes. Compilers *do not share anything by default*, where by anything we mean no libraries, not variables. Everyhing has to be set-up, but Julia offers tooling for remote execution and communication primitives.
+Process-level paralelism means that Julia runs several compilers in different processes. By default, different processes *do not share anything by default*, meaning no libraries and variables. Everyhing has to be therefore set-up on all processes.
 
 Julia off-the-shelf supports a mode, where a single *main* process controlls several workers. This main process has `myid() == 1`, worker processes receive higher numbers. Julia can be started with multiple workers from the very beggining, using `-p` switch as 
 ```julia
@@ -47,7 +47,7 @@ end
 ```
 Alternatively, we can put the code into a separate file and load it on all workers using `-L filename.jl`
 
-A real benefit from multi-processing is when we can *schedulle* an execution of a function and return the control immeadiately to do something else. A low-level function providing this functionality is `remotecall(fun, worker_id, args...)`. For example 
+Julia's multi-processing model is based on message-passing paradigm, but the abstraction is more akin to procedure calls. This means that users are saved from prepending messages with headers and implementing logic deciding which function should be called for thich header. Instead, we can *schedulle* an execution of a function on a remote worker and return the control immeadiately to continue in our job. A low-level function providing this functionality is `remotecall(fun, worker_id, args...)`. For example 
 ```julia
 @everywhere begin 
 	function delayed_foo(x, y, n )
@@ -57,9 +57,15 @@ A real benefit from multi-processing is when we can *schedulle* an execution of 
 end
 r = remotecall(delayed_foo, 2, 1, 1, 60)
 ```
-which terminates immediately. `r` does not contain result of `foo(1, 1)`, but a struct `Future`. The `Future` can be seen as a *handle* allowing to retrieve the result later, using `fetch`, which either fetches the result or wait until the result is available.
+returns immediately, even though the function will take at least 60 seconds. `r` does not contain result of `foo(1, 1)`, but a struct `Future`, which is a *remote reference* in Julia's terminology. It points data located on some machine, indicates, if they are available and allows to `fetch` them from the remote worker. `fetch` is blocking, which means that the execution is blocked until data are available (if they are never available, the process can wait forever.) The presence of data can be checked using `isready`, which in case of `Future` returned from `remote_call` indicate that the computation has finished.
 ```julia
+isready(r)
 fetch(r) == foo(1, 1)
+```
+An advantage of the remote reference is that it can be freely shared around processes and the result can be retrieved on different node then the one which issued the call.s
+```julia
+r = remotecall(delayed_foo, 2, 1, 1, 60)
+remotecall(r -> println("value: ",fetch(r), " retrieved on ", myid()) , 3, r)
 ```
 An interesting feature of `fetch` is that it re-throw an exception raised on a different process.
 ```julia
@@ -71,8 +77,17 @@ end
 r = @spawnat 2 exfoo()
 ```
 where `@spawnat` is a an alternative to `remotecall`, which executes a closure around expression (in this case `exfoo()`) on a specified worker (in this case 2). Fetching the result `r` throws an exception on the main process.
-```jula
+```julia
 fetch(r)
+```
+`@spawnat` can be executed with `:any`  to signal that the user does not care, where the function will be executed and it will be left up to Julia.
+```julia
+r = @spawnat :any foo(1,1)
+fetch(r)
+```
+Finally, if you would for some reason need to wait for the computed value, you can use 
+```julia
+remotecall_fetch(foo, 2, 1, 1)
 ```
 
 ## Example: Julia sets
@@ -256,10 +271,57 @@ end
 Julia does not provide by default any facility to kill the remote execution except sending `ctrl-c` to the remote worker as `interrupt(pids::Integer...)`.
 
 ## Sending data
-- Do not send `randn(1000, 1000)`
-- Sending references and ObjectID would not work
-- Serialization is very time consuming, an efficient converstion to something simple might be wort
-- Dict("a" => [1,2,3], "b" = [2,3,4,5]) -> (Array of elements, array of bounds, keys)
+Sending parameters of functions and receiving results from a remotely called functions migh incur a significant cost. 
+1. Try to minimize the data movement as much as possible. A prototypical example is
+```julia
+A = rand(1000,1000);
+Bref = @spawnat :any A^2;
+```
+and
+```julia
+Bref = @spawnat :any rand(1000,1000)^2;
+```
+2. It is not only volume of data (in terms of the number of bytes), but also a complexity of objects that are being sent. Serialization can be very time consuming, an efficient converstion to something simple might be wort
+```julia
+using BenchmarkTools
+@everywhere begin 
+	using Random
+	v = [randstring(rand(1:20)) for i in 1:1000];
+	p = [i => v[i] for i in 1:1000]
+	d = Dict(p)
+
+	send_vec() = v
+	send_dict() = d
+	send_pairs() = p
+	custom_serialization() = (length.(v), join(v, ""))
+end
+
+@btime remotecall_fetch(send_vec, 2);
+@btime remotecall_fetch(send_dict, 2);
+@btime remotecall_fetch(send_pairs, 2);
+@btime remotecall_fetch(custom_serialization, 2);
+```
+3. Some type of objects cannot be properly serialized and deserialized
+```julia
+a = IdDict(
+	:a => rand(1,1),
+	)
+b = remotecall_fetch(identity, 2, a)
+a[:a] === a[:a]
+a[:a] === b[:a]
+```
+4. If you need to send the data to worker, i.e. you want to define (overwrite) a global variable there
+```julia
+@everywhere begin 
+	g = rand()
+	show_secret() = println("secret of ", myid(), " is ", g)
+end
+@everywhere show_secret()
+
+remotecall_fetch(g -> eval(:(g = $(g))), 2, g)
+@everywhere show_secret()
+```
+which is implemented in the 
 
 ## Practical advices 
 Recall that (i) workers are started as clean processes and (ii) they might not share the same environment with the main process. The latter is due to the fact that files describing the environment (`Project.toml` and `Manifest.toml`) might not be available on remote machines.
@@ -298,7 +360,7 @@ A complete example can be seen in [`juliaset_p.jl`](juliaset_p.jl).
 ## Julia sets
 An example adapted from [Eric Aubanel](http://www.cs.unb.ca/~aubanel/JuliaMultithreadingNotes.html).
 
-For ilustration, we will use Julia set fractals, ad they can be easily paralelized. Some fractals (Julia set, Mandelbrot) are determined by properties of some complex-valued functions. Julia set counts, how many iteration is required for  ``f(z)=z^2+c`` to be bigger than two in absolute value, ``|f(z)>=2``. The number of iterations can then be mapped to the pixel's color, which creates a nice visualization we know.
+For ilustration, we will use Julia set fractals, ad they can be easily paralelized. Some fractals (Julia set, Mandelbrot) are determined by properties of some complex-valued functions. Julia set counts, how many iteration is required for  ``f(z) = z^2+c`` to be bigger than two in absolute value, ``|f(z)| >=2 ``. The number of iterations can then be mapped to the pixel's color, which creates a nice visualization we know.
 ```julia
 function juliaset_pixel(z₀, c)
     z = z₀
