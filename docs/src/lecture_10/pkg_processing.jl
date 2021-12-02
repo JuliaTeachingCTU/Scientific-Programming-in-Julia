@@ -19,14 +19,14 @@ filter_jl(path) = reduce(vcat, joinpath.(rootpath, filter(endswith(".jl"), files
 """
 	tokenize(jl_path)
 
-Parses a ".jl" file located at `jl_path` and extracts all symbols from the extracted AST.
+Parses a ".jl" file located at `jl_path` and extracts all symbols and expression heads from the extracted AST.
 """
 function tokenize(jl_path)
 	_extract_symbols(x) = Symbol[]
 	_extract_symbols(x::Symbol) = [x]
 	function _extract_symbols(x::Expr) 
 		if length(x.args) > 0
-			Symbol.(reduce(vcat, _extract_symbols(arg) for arg in x.args))
+			Symbol.(vcat(x.head, reduce(vcat, _extract_symbols(arg) for arg in x.args)))
 		else
 			Symbol[]
 		end
