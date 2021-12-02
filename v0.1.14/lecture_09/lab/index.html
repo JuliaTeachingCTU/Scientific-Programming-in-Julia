@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_09/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Introduction to automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-12" type="checkbox" checked/><label class="tocitem" for="menuitem-12"><span class="docs-label">9: Manipulating intermediate representation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#@generated-Functions"><span><code>@generate</code>d Functions</span></a></li><li><a class="tocitem" href="#OptionalArgChecks.jl"><span><code>OptionalArgChecks.jl</code></span></a></li><li><a class="tocitem" href="#References"><span>References</span></a></li></ul></li></ul></li><li><input class="collapse-toggle" id="menuitem-13" type="checkbox"/><label class="tocitem" for="menuitem-13"><span class="docs-label">10: Different levels of parallel programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_10/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_10/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_10/hw/">Homework</a></li></ul></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><input class="collapse-toggle" id="menuitem-15" type="checkbox"/><label class="tocitem" for="menuitem-15"><span class="docs-label">12: Uncertainty propagation in ODE</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_12/lecture/">Lecture</a></li></ul></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">9: Manipulating intermediate representation</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_09/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Lab-09-Generated-Functions-and-IR"><a class="docs-heading-anchor" href="#Lab-09-Generated-Functions-and-IR">Lab 09 - Generated Functions &amp; IR</a><a id="Lab-09-Generated-Functions-and-IR-1"></a><a class="docs-heading-anchor-permalink" href="#Lab-09-Generated-Functions-and-IR" title="Permalink"></a></h1><p>In this lab you will practice two advanced meta programming techniques:</p><ul><li><em><strong>Generated functions</strong></em> can help you write specialized code for certain kinds of parametric types with more flexibility and/or less code.</li><li><em><strong>IRTools.jl</strong></em> is a package that simplifies the manipulation of lowered and typed Julia code</li></ul><h2 id="@generated-Functions"><a class="docs-heading-anchor" href="#@generated-Functions"><code>@generate</code>d Functions</a><a id="@generated-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#@generated-Functions" title="Permalink"></a></h2><p>Remember the three most important things about generated functions:</p><ul><li>They return <em>quoted expressions</em> (like macros).</li><li>You have access to type information of your input variables.</li><li>They have to be <em><strong>pure</strong></em></li></ul><h3 id="A-faster-polynomial"><a class="docs-heading-anchor" href="#A-faster-polynomial">A faster <code>polynomial</code></a><a id="A-faster-polynomial-1"></a><a class="docs-heading-anchor-permalink" href="#A-faster-polynomial" title="Permalink"></a></h3><p>Throughout this course we have come back to our <code>polynomial</code> function which evaluates a polynomial based on the Horner schema. Below you can find a version of the function that operates on a tuple of length <span>$N$</span>.</p><pre><code class="language-julia hljs">function polynomial(x, p::NTuple{N}) where N
+    acc = p[N]
+    for i in N-1:-1:1
+        acc = x*acc + p[i]
+    end
+    acc
+end</code></pre><p>Julia has its own implementation of this function called <code>evalpoly</code>. If we compare the performance of our <code>polynomial</code> and Julia&#39;s <code>evalpoly</code> we can observe a pretty big difference:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; x = 2.0</code><code class="nohighlight hljs ansi" style="display:block;">2.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = ntuple(float,20);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($x,$p)</code><code class="nohighlight hljs ansi" style="display:block;">  14.313 ns (0 allocations: 0 bytes)
+1.9922945e7</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime evalpoly($x,$p)</code><code class="nohighlight hljs ansi" style="display:block;">  0.001 ns (0 allocations: 0 bytes)
+1.9922945e7</code></pre><p>Julia&#39;s implementation uses a generated function which specializes on different tuple lengths (i.e. it <em>unrolls</em> the loop) and eliminates the (small) overhead of looping over the tuple. This is possible, because the length of the tuple is known during compile time. You can check the difference between <code>polynomial</code> and <code>evalpoly</code> yourself via the introspectionwtools you know - e.g. <code>@code_lowered</code>.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Rewrite the <code>polynomial</code> function as a generated function with the signature</p><pre><code class="nohighlight hljs">genpoly(x::Number, p::NTuple{N}) where N</code></pre><p><strong>Hints:</strong></p><ul><li>Remember that you have to generate a quoted expression inside your generated function, so you will need things like <code>:($expr1 + $expr2)</code>.</li><li>You can debug the expression you are generating by omitting the <code>@generated</code> macro from your function.</li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">@generated function genpoly(x, p::NTuple{N}) where N
+    ex = :(p[$N])
+    for i in N-1:-1:1
+        ex = :(x*$ex + p[$i])
+    end
+    ex
+end</code></pre></p></details><p>You should get the same performance as <code>evalpoly</code> (and as <code>@poly</code> from Lab 7 with the added convenience of not having to spell out all the coefficients in your code like: <code>p = @poly 1 2 3 ...</code>).</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime genpoly($x,$p)</code><code class="nohighlight hljs ansi" style="display:block;">  0.001 ns (0 allocations: 0 bytes)
+1.9922945e7</code></pre><h3 id="Fast,-Static-Matrices"><a class="docs-heading-anchor" href="#Fast,-Static-Matrices">Fast, Static Matrices</a><a id="Fast,-Static-Matrices-1"></a><a class="docs-heading-anchor-permalink" href="#Fast,-Static-Matrices" title="Permalink"></a></h3><p>Another great example that makes heavy use of generated functions are <em>static arrays</em>. A static array is an array of fixed size which can be implemented via an <code>NTuple</code>. This means that it will be allocated on the stack, which can buy us a lot of performance for smaller static arrays. We define a <code>StaticMatrix{T,C,R,L}</code> where the paramteric types represent the matrix element type <code>T</code> (e.g. <code>Float32</code>), the number of rows <code>R</code>, the number of columns <code>C</code>, and the total length of the matrix <code>L=C*R</code> (which we need to set the size of the <code>NTuple</code>).</p><pre><code class="language-julia hljs">struct StaticMatrix{T,R,C,L} &lt;: AbstractArray{T,2}
+    data::NTuple{L,T}
+end
+
+function StaticMatrix(x::AbstractMatrix{T}) where T
+    (R,C) = size(x)
+    StaticMatrix{T,R,C,C*R}(x |&gt; Tuple)
+end</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>As a warm-up, overload the <code>Base</code> functions <code>size</code>, <code>length</code>, <code>getindex(x::StaticMatrix,i::Int)</code>, and <code>getindex(x::Solution,r::Int,c::Int)</code>.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">Base.size(x::StaticMatrix{T,R,C}) where {T,R,C} = (R,C)
+Base.length(x::StaticMatrix{T,R,C,L}) where {T,R,C,L} = L
+Base.getindex(x::StaticMatrix, i::Int) = x.data[i]
+Base.getindex(x::StaticMatrix{T,R,C}, r::Int, c::Int) where {T,R,C} = x.data[R*(c-1) + r]</code></pre></p></details><p>You can check if everything works correctly by comparing to a normal <code>Matrix</code>:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; x = rand(2,3)</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Matrix{Float64}:
+ 0.421544  0.627879  0.841121
+ 0.984304  0.245478  0.137493</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; x[1,2]</code><code class="nohighlight hljs ansi" style="display:block;">0.6278794630860016</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; a = StaticMatrix(x)</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Main.StaticMatrix{Float64, 2, 3, 6}:
+ 0.421544  0.627879  0.841121
+ 0.984304  0.245478  0.137493</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; a[1,2]</code><code class="nohighlight hljs ansi" style="display:block;">0.6278794630860016</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Overload matrix multiplication between two static matrices</p><pre><code class="language-julia hljs">Base.:*(x::StaticMatrix{T,K,M},y::StaticMatrix{T,M,N})</code></pre><p>with a generated function that creates an expression without loops.  Below you can see an example for an expression that would be generated from multiplying two <span>$2\times 2$</span> matrices.</p><pre><code class="language-julia hljs">:(StaticMatrix{T,2,2,4}((
+    (x[1,1]*y[1,1] + x[1,2]*y[2,1]),
+    (x[2,1]*y[1,1] + x[2,2]*y[2,1]),
+    (x[1,1]*y[1,2] + x[1,2]*y[2,2]),
+    (x[2,1]*y[1,2] + x[2,2]*y[2,2])
+)))</code></pre><p><strong>Hints:</strong></p><ul><li>You can get output like above by leaving out the <code>@generated</code> in front of your overload.</li><li>It might be helpful to implement matrix multiplication in a <em>normal</em> Julia function first.</li><li>You can construct an expression for a sum of multiple elements like below.</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; Expr(:call,:+,1,2,3)</code><code class="nohighlight hljs ansi" style="display:block;">:(1 + 2 + 3)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Expr(:call,:+,1,2,3) |&gt; eval</code><code class="nohighlight hljs ansi" style="display:block;">6</code></pre></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">@generated function Base.:*(x::StaticMatrix{T,K,M}, y::StaticMatrix{T,M,N}) where {T,K,M,N}
+    zs = map(Iterators.product(1:K, 1:N) |&gt; collect |&gt; vec) do (k,n)
+        Expr(:call, :+, [:(x[$k,$m] * y[$m,$n]) for m=1:M]...)
+    end
+    z = Expr(:tuple, zs...)
+    :(StaticMatrix{$T,$K,$N,$(K*N)}($z))
+end</code></pre></p></details><p>You can check that your matrix multiplication works by multiplying two random matrices. Which one is faster?</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; a = rand(2,3)</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Matrix{Float64}:
+ 0.29024   0.118794   0.744554
+ 0.515067  0.0775056  0.354128</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; b = rand(3,4)</code><code class="nohighlight hljs ansi" style="display:block;">3×4 Matrix{Float64}:
+ 0.638651  0.980891  0.149524  0.858618
+ 0.743715  0.214389  0.860738  0.36332
+ 0.263223  0.180587  0.219938  0.0953702</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; c = StaticMatrix(a)</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Main.StaticMatrix{Float64, 2, 3, 6}:
+ 0.29024   0.118794   0.744554
+ 0.515067  0.0775056  0.354128</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; d = StaticMatrix(b)</code><code class="nohighlight hljs ansi" style="display:block;">3×4 Main.StaticMatrix{Float64, 3, 4, 12}:
+ 0.638651  0.980891  0.149524  0.858618
+ 0.743715  0.214389  0.860738  0.36332
+ 0.263223  0.180587  0.219938  0.0953702</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; a*b</code><code class="nohighlight hljs ansi" style="display:block;">2×4 Matrix{Float64}:
+ 0.469695  0.444619  0.309404  0.363374
+ 0.479805  0.585792  0.221613  0.504179</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; c*d</code><code class="nohighlight hljs ansi" style="display:block;">2×4 Main.StaticMatrix{Float64, 2, 4, 8}:
+ 0.469695  0.444619  0.309404  0.363374
+ 0.479805  0.585792  0.221613  0.504179</code></pre><h2 id="OptionalArgChecks.jl"><a class="docs-heading-anchor" href="#OptionalArgChecks.jl"><code>OptionalArgChecks.jl</code></a><a id="OptionalArgChecks.jl-1"></a><a class="docs-heading-anchor-permalink" href="#OptionalArgChecks.jl" title="Permalink"></a></h2><p>The package <a href="https://github.com/simeonschaub/OptionalArgChecks.jl"><code>OptionalArgChecks.jl</code></a> makes is possible to add checks to a function which can then be removed by calling the function with the <code>@skip</code> macro.  For example, we can check if the input to a function <code>f</code> is an even number</p><pre><code class="language-julia hljs">function f(x::Number)
+    iseven(x) || error(&quot;Input has to be an even number!&quot;)
+    x
+end</code></pre><p>If you are doing more involved argument checking it can take quite some time to perform all your checks. However, if you want to be fast and are completely sure that you are always passing in the correct inputs to your function, you might want to remove them in some cases. Hence, we would like to transform the IR of the function above</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using IRTools</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using IRTools: @code_ir</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_ir f(1)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = Main.iseven(%2)
+  br 2 unless %3
+  br 3
+2:
+  %4 = Main.error(&quot;Input has to be an even number!&quot;)
+3:
+  return %2</code></pre><p>To some thing like this</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; transformed_f(x::Number) = x</code><code class="nohighlight hljs ansi" style="display:block;">transformed_f (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_ir transformed_f(1)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  return %2</code></pre><h3 id="Marking-Argument-Checks"><a class="docs-heading-anchor" href="#Marking-Argument-Checks">Marking Argument Checks</a><a id="Marking-Argument-Checks-1"></a><a class="docs-heading-anchor-permalink" href="#Marking-Argument-Checks" title="Permalink"></a></h3><p>As a first step we will implement a macro that marks checks which we might want to remove later by surrounding it with <code>:meta</code> expressions. This will make it easy to detect which part of the code can be removed. A <code>:meta</code> expression can be created like this</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; Expr(:meta, :mark_begin)</code><code class="nohighlight hljs ansi" style="display:block;">:($(Expr(:meta, :mark_begin)))</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Expr(:meta, :mark_end)</code><code class="nohighlight hljs ansi" style="display:block;">:($(Expr(:meta, :mark_end)))</code></pre><p>and they will not be evaluated but remain in your IR. To surround an expression with two meta expressions you can use a <code>:block</code> expression:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ex = :(x+x)</code><code class="nohighlight hljs ansi" style="display:block;">:(x + x)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Expr(:block, :(print(x)), ex, :(print(x)))</code><code class="nohighlight hljs ansi" style="display:block;">quote
+    print(x)
+    x + x
+    print(x)
+end</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Define a macro <code>@mark</code> that takes an expression and surrounds it with two meta expressions marking the beginning and end of a check. <strong>Hints</strong></p><ul><li>Defining a function <code>_mark(ex::Expr)</code> which manipulates your expressions can help a lot with debugging your macro.</li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function _mark(ex::Expr)
+    return Expr(
+        :block,
+        Expr(:meta, :mark_begin),
+        esc(ex),
+        Expr(:meta, :mark_end),
+    )
+end
+
+macro mark(ex)
+    _mark(ex)
+end</code></pre></p></details><p>If you have defined a <code>_mark</code> function you can test that it works like this</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; _mark(:(println(x)))</code><code class="nohighlight hljs ansi" style="display:block;">quote
+    $(Expr(:meta, :mark_begin))
+    $(Expr(:escape, :(println(x))))
+    $(Expr(:meta, :mark_end))
+end</code></pre><p>The complete macro should work like below</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; function f(x::Number)
+           @mark @show x
+           x
+       end;</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_ir f(2)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = $(Expr(:meta, :mark_begin))
+  %4 = Base.repr(%2)
+  %5 = Base.println(&quot;x = &quot;, %4)
+  %6 = $(Expr(:meta, :mark_end))
+  return %2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; f(2)</code><code class="nohighlight hljs ansi" style="display:block;">x = 2
+2</code></pre><h3 id="Removing-Argument-Checks"><a class="docs-heading-anchor" href="#Removing-Argument-Checks">Removing Argument Checks</a><a id="Removing-Argument-Checks-1"></a><a class="docs-heading-anchor-permalink" href="#Removing-Argument-Checks" title="Permalink"></a></h3><p>Now comes tricky part for which we need <code>IRTools.jl</code>. We want to remove all lines that are between our two meta blocks. You can delete the line that corresponds to a certain variable with the <code>delete!</code> and the <code>var</code> functions. E.g. deleting the line that defines variable <code>%4</code> works like this:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using IRTools: delete!, var</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = @code_ir f(2)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = $(Expr(:meta, :mark_begin))
+  %4 = Base.repr(%2)
+  %5 = Base.println(&quot;x = &quot;, %4)
+  %6 = $(Expr(:meta, :mark_end))
+  return %2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; delete!(ir, var(4))</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = $(Expr(:meta, :mark_begin))
+  %5 = Base.println(&quot;x = &quot;, %4)
+  %6 = $(Expr(:meta, :mark_end))
+  return %2</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Write a function <code>skip(ir::IR)</code> which deletes all lines between the meta expression <code>:mark_begin</code> and <code>:mark_end</code>.</p><p><strong>Hints</strong> You can check whether a statement is one of our meta expressions like this:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ismarkbegin(e::Expr) = Meta.isexpr(e,:meta) &amp;&amp; e.args[1]===:mark_begin</code><code class="nohighlight hljs ansi" style="display:block;">ismarkbegin (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ismarkbegin(Expr(:meta,:mark_begin))</code><code class="nohighlight hljs ansi" style="display:block;">true</code></pre></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">ismarkend(e::Expr) = Meta.isexpr(e,:meta) &amp;&amp; e.args[1]===:mark_end
+
+function skip(ir)
+    delete_line = false
+    for (x,st) in ir
+        isbegin = ismarkbegin(st.expr)
+        isend   = ismarkend(st.expr)
+
+        if isbegin
+            delete_line = true
+        end
+
+        if delete_line
+            delete!(ir,x)
+        end
+
+        if isend
+            delete_line = false
+        end
+    end
+    ir
+end</code></pre></p></details><p>Your function should transform the IR of <code>f</code> like below.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = @code_ir f(2)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = $(Expr(:meta, :mark_begin))
+  %4 = Base.repr(%2)
+  %5 = Base.println(&quot;x = &quot;, %4)
+  %6 = $(Expr(:meta, :mark_end))
+  return %2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = skip(ir)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  return %2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using IRTools: func</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; func(ir)(nothing, 2)  # no output from @show!</code><code class="nohighlight hljs ansi" style="display:block;">2</code></pre><p>However, if we have a slightly more complicated IR like below this version of our function will fail. It actually fails so badly that running <code>func(ir)(nothing,2)</code> after <code>skip</code> will cause the build of this page to crash, so we cannot show you the output here ;).</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; function g(x)
+           @mark iseven(x) &amp;&amp; println(&quot;even&quot;)
+           x
+       end</code><code class="nohighlight hljs ansi" style="display:block;">g (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = @code_ir g(2)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = $(Expr(:meta, :mark_begin))
+  %4 = Main.iseven(%2)
+  br 3 unless %4
+2:
+  %5 = Main.println(&quot;even&quot;)
+  br 3
+3:
+  %6 = $(Expr(:meta, :mark_end))
+  return %2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = skip(ir)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  br 3 unless %4
+2:
+  br 3
+3:
+  return %2</code></pre><p>The crash is due to <code>%4</code> not existing anymore. We can fix this by emptying the block in which we found the <code>:mark_begin</code> expression and branching to the block that contains <code>:mark_end</code> (unless they are in the same block already). If some (branching) code in between remained, it should then be removed by the compiler because it is never reached.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Use the functions <code>IRTools.block</code>, <code>IRTools.branches</code>, <code>IRTools.empty!</code>, and <code>IRTools.branch!</code> to modify <code>skip</code> such that it also empties the <code>:mark_begin</code> block, and adds a branch to the <code>:mark_end</code> block (unless they are the same block).</p><p><strong>Hints</strong></p><ul><li><code>block</code> gets you the block of IR in which a given variable is if you call e.g. <code>block(ir,var(4))</code>.</li><li><code>empty!</code> removes all statements in a block.</li><li><code>branches</code> returns all branches of a block.</li><li><code>branch!(a,b)</code> creates a branch from the end of block <code>a</code> to the beginning block <code>b</code></li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">using IRTools: block, branch!, empty!, branches
+function skip(ir)
+    delete_line = false
+    orig = nothing
+    for (x,st) in ir
+        isbegin = ismarkbegin(st.expr)
+        isend   = ismarkend(st.expr)
+
+        if isbegin
+            delete_line = true
+        end
+
+        # this part is new
+        if isbegin
+            orig = block(ir,x)
+        elseif isend
+            dest = block(ir,x)
+            if orig != dest
+                empty!(branches(orig))
+                branch!(orig,dest)
+            end
+        end
+
+        if delete_line
+            delete!(ir,x)
+        end
+
+        if isend
+            delete_line = false
+        end
+    end
+    ir
+end</code></pre></p></details><p>The result should construct valid IR for our <code>g</code> function.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; g(2)</code><code class="nohighlight hljs ansi" style="display:block;">even
+2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = @code_ir g(2)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = $(Expr(:meta, :mark_begin))
+  %4 = Main.iseven(%2)
+  br 3 unless %4
+2:
+  %5 = Main.println(&quot;even&quot;)
+  br 3
+3:
+  %6 = $(Expr(:meta, :mark_end))
+  return %2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = skip(ir)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  br 3
+2:
+  br 3
+3:
+  return %2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; func(ir)(nothing,2)</code><code class="nohighlight hljs ansi" style="display:block;">2</code></pre><p>And it should not break when applying it to <code>f</code>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; f(2)</code><code class="nohighlight hljs ansi" style="display:block;">x = 2
+2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = @code_ir f(2)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = $(Expr(:meta, :mark_begin))
+  %4 = Base.repr(%2)
+  %5 = Base.println(&quot;x = &quot;, %4)
+  %6 = $(Expr(:meta, :mark_end))
+  return %2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = skip(ir)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  return %2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; func(ir)(nothing,2)</code><code class="nohighlight hljs ansi" style="display:block;">2</code></pre><h3 id="Recursively-Removing-Argument-Checks"><a class="docs-heading-anchor" href="#Recursively-Removing-Argument-Checks">Recursively Removing Argument Checks</a><a id="Recursively-Removing-Argument-Checks-1"></a><a class="docs-heading-anchor-permalink" href="#Recursively-Removing-Argument-Checks" title="Permalink"></a></h3><p>The last step to finalize the <code>skip</code> function is to make it work recursively. In the current version we can handle functions that contain <code>@mark</code> statements, but we are not going any deeper than that. Nested functions will not be touched:</p><pre><code class="language-julia hljs">foo(x) = bar(baz(x))
+
+function bar(x)
+    @mark iseven(x) &amp;&amp; println(&quot;The input is even.&quot;)
+    x
+end
+
+function baz(x)
+    @mark x&lt;0 &amp;&amp; println(&quot;The input is negative.&quot;)
+    x
+end</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = @code_ir foo(-2)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = Main.baz(%2)
+  %4 = Main.bar(%3)
+  return %4</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = skip(ir)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = Main.baz(%2)
+  %4 = Main.bar(%3)
+  return %4</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; func(ir)(nothing,-2)</code><code class="nohighlight hljs ansi" style="display:block;">The input is negative.
+The input is even.
+-2</code></pre><p>For recursion we will use the macro <code>IRTools.@dynamo</code> which will make recursion of our <code>skip</code> function a lot easier. Additionally, it will save us from all the <code>func(ir)(nothing, args...)</code> statements. To use <code>@dynamo</code> we have to slightly modify how we call <code>skip</code>:</p><pre><code class="language-julia hljs">@dynamo function skip(args...)
+    ir = IR(args...)
+    
+    # same code as before that modifies `ir`
+    # ...
+
+    return ir
+end
+
+# now we can call `skip` like this
+skip(f,2)</code></pre><p>Now we can easily use <code>skip</code> in recursion, because we can just pass the arguments of an expression like this:</p><pre><code class="language-julia hljs">using IRTools: xcall
+
+for (x,st) in ir
+    isexpr(st.expr,:call) || continue
+    ir[x] = xcall(skip, st.expr.args...)
+end</code></pre><p>The function <code>xcall</code> will create an expression that calls <code>skip</code> with the given arguments and returns <code>Expr(:call, skip, args...)</code>.  Note that you can modify expressions of a given variable in the IR via <code>setindex!</code>.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Modify <code>skip</code> such that it uses <code>@dynamo</code> and apply it recursively to all <code>:call</code> expressions that you ecounter while looping over the given IR. This will dive all the way down to <code>Core.Builtin</code>s and <code>Core.IntrinsicFunction</code>s which you cannot maniuplate anymore (because they are written in C). You have to end the recursion at these places which can be done via multiple dispatch of <code>skip</code> on <code>Builtin</code>s and <code>IntrinsicFunction</code>s.</p><p>Once you are done with this you can also define a macro such that you can conveniently call <code>@skip</code> with an expression:</p><pre><code class="language-julia hljs">skip(f,2)
+@skip f(2)</code></pre></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">using IRTools: @dynamo, xcall, IR
+
+# this is where we want to stop recursion
+skip(f::Core.IntrinsicFunction, args...) = f(args...)
+skip(f::Core.Builtin, args...) = f(args...)
+
+@dynamo function skip(args...)
+    ir = IR(args...)
+    delete_line = false
+    orig = nothing
+    for (x,st) in ir
+        isbegin = ismarkbegin(st.expr)
+        isend   = ismarkend(st.expr)
+
+        if isbegin
+            delete_line = true
+        end
+
+        if isbegin
+            orig = block(ir,x)
+        elseif isend
+            dest = block(ir,x)
+            if orig != dest
+                empty!(branches(orig))
+                branch!(orig,dest)
+            end
+        end
+
+        if delete_line
+            delete!(ir,x)
+        end
+
+        if isend
+            delete_line = false
+        end
+
+        # this part is new
+        if haskey(ir,x) &amp;&amp; Meta.isexpr(st.expr,:call)
+            ir[x] = xcall(skip, st.expr.args...)
+        end
+    end
+    return ir
+end
+
+macro skip(ex)
+    ex.head == :call || error(&quot;Input expression has to be a `:call`.&quot;)
+    return xcall(skip, ex.args...)
+end</code></pre></p></details><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_ir foo(2)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = Main.baz(%2)
+  %4 = Main.bar(%3)
+  return %4</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_ir skip(foo,2)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2)
+  %3 = Base.getfield(%2, 1)
+  %4 = Base.getfield(%2, 2)
+  %5 = (Main.skip)(Main.baz, %4)
+  %6 = (Main.skip)(Main.bar, %5)
+  return %6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; foo(-2)</code><code class="nohighlight hljs ansi" style="display:block;">The input is negative.
+The input is even.
+-2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; skip(foo,-2)</code><code class="nohighlight hljs ansi" style="display:block;">-2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @skip foo(-2)</code><code class="nohighlight hljs ansi" style="display:block;">-2</code></pre><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><ul><li><a href="https://wesselb.github.io/2020/12/13/julia-learning-circle-meeting-3.html">Static matrices</a> with <code>@generate</code>d functions blog post</li><li><a href="https://github.com/simeonschaub/OptionalArgChecks.jl"><code>OptionalArgChecks.jl</code></a></li><li>IRTools <a href="https://fluxml.ai/IRTools.jl/latest/dynamo/">Dynamo</a></li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../../lecture_10/lecture/">Lecture »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Thursday 2 December 2021 22:15">Thursday 2 December 2021</span>. Using Julia version 1.7.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

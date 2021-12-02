@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lecture · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_05/lecture/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox" checked/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>Lecture</a><ul class="internal"><li><a class="tocitem" href="#Numpy-10x-faster-than-julia-what-am-i-doing-wrong?-(solved-julia-faster-now)-[1]"><span>Numpy 10x faster than julia what am i doing wrong? (solved julia faster now) <sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup></span></a></li><li><a class="tocitem" href="#Replacing-deep-copies-with-shallow-copies-(use-view-if-possible)"><span>Replacing deep copies with shallow copies (use view if possible)</span></a></li><li><a class="tocitem" href="#Traverse-arrays-in-the-right-order"><span>Traverse arrays in the right order</span></a></li><li><a class="tocitem" href="#Type-stability"><span>Type stability</span></a></li><li><a class="tocitem" href="#Global-variables-introduce-type-instability-(avoid-non-const-globals)"><span>Global variables introduce type instability (avoid non-const globals)</span></a></li><li><a class="tocitem" href="#Boxing-in-closure"><span>Boxing in closure</span></a></li><li><a class="tocitem" href="#NamedTuples-are-more-efficient-that-Dicts"><span>NamedTuples are more efficient that Dicts</span></a></li><li><a class="tocitem" href="#Don&#39;t-use-IO-unless-you-have-to"><span>Don&#39;t use IO unless you have to</span></a></li></ul></li><li><a class="tocitem" href="../lab/">Lab</a></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Introduction to automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-12" type="checkbox"/><label class="tocitem" for="menuitem-12"><span class="docs-label">9: Manipulating intermediate representation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_09/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_09/lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-13" type="checkbox"/><label class="tocitem" for="menuitem-13"><span class="docs-label">10: Different levels of parallel programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_10/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_10/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_10/hw/">Homework</a></li></ul></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><input class="collapse-toggle" id="menuitem-15" type="checkbox"/><label class="tocitem" for="menuitem-15"><span class="docs-label">12: Uncertainty propagation in ODE</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_12/lecture/">Lecture</a></li></ul></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">5: Benchmarking, profiling, and performance gotchas</a></li><li class="is-active"><a href>Lecture</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lecture</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_05/lecture.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="perf_lecture"><a class="docs-heading-anchor" href="#perf_lecture">Benchmarking, profiling, and performance gotchas</a><a id="perf_lecture-1"></a><a class="docs-heading-anchor-permalink" href="#perf_lecture" title="Permalink"></a></h1><p>This class is a short introduction to writing a performant code. As such, we want to cover</p><ul><li>how to identify weak spots in the code</li><li>how to properly benchmark</li><li>common performance anti-patterns</li><li>Julia&#39;s &quot;performance gotchas&quot;, by which we mean performance problems specific for Julia (typical caused by the lack of understanding of Julia or by a errors in conversion from script to functions)</li></ul><p>Though recall the most important rule of thumb: <strong>Never optimize code from the very beginning.</strong> A much more productive workflow is </p><ol><li>write the code that is idiomatic and easy to understand</li><li>cover the code with unit test, such that you know that the optimized code works the same as the original</li><li>optimize the code</li></ol><p>Premature optimization frequently backfires, because:</p><ul><li>you might end-up optimizing wrong thing, i.e. you will not optimize performance bottleneck, but something very different</li><li>optimized code can be difficult to read and reason about, which means it is more difficult to make it right.</li></ul><p>It frequently happens that Julia newbies asks on forum that their code in Julia is slow in comparison to the same code in Python (numpy). Most of the time, they make trivial mistakes and it is very educative to go over their mistakes</p><h2 id="Numpy-10x-faster-than-julia-what-am-i-doing-wrong?-(solved-julia-faster-now)-[1]"><a class="docs-heading-anchor" href="#Numpy-10x-faster-than-julia-what-am-i-doing-wrong?-(solved-julia-faster-now)-[1]">Numpy 10x faster than julia what am i doing wrong? (solved julia faster now) <sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup></a><a id="Numpy-10x-faster-than-julia-what-am-i-doing-wrong?-(solved-julia-faster-now)-[1]-1"></a><a class="docs-heading-anchor-permalink" href="#Numpy-10x-faster-than-julia-what-am-i-doing-wrong?-(solved-julia-faster-now)-[1]" title="Permalink"></a></h2><pre><code class="language-julia hljs">function f(p)														# line 1 
+    t0,t1 = p 														# line 2
+    m0 = [[cos(t0) - 1im*sin(t0)  0]; [0  cos(t0) + 1im*sin(t0)]]	# line 3
+    m1 = [[cos(t1) - 1im*sin(t1)  0]; [0  cos(t1) + 1im*sin(t1)]]	# line 4
+    r = m1*m0*[1. ; 0.] 											# line 5
+    return abs(r[1])^2 												# line 6
+end
+
+function g(p,n)
+    return [f(p[:,i]) for i=1:n]
+end
+
+g(rand(2,3),3)  # call to force jit compilation
+
+n = 10^6
+p = 2*pi*rand(2,n)
+
+@elapsed g(p,n)
+</code></pre><p>The first thing we do is to run Profiler, to identify, where the function spends most of the time.</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><h2>Julia&#39;s built-in profiler</h2><p>Julia&#39;s built-in profiler is part of the standard library in the <code>Profile</code> module implementing a fairly standard sampling based profiler. It a nutshell it asks at regular intervals, where the code execution is currently and marks it and collects this information in some statistics. This allows us to analyze, where these &quot;probes&quot; have occurred most of the time which implies those parts are those, where the execution of your function spends most of the time. As such, the profiler has two &quot;controls&quot;, which is the <code>delay</code> between two consecutive probes and the maximum number of probes <code>n</code> (if the profile code takes a long time, you might need to increase it).</p><pre><code class="nohighlight hljs">using Profile
+Profile.init(; n = 989680, delay = 0.001))
+@profile g(p,n)
+Profile.clear()
+@profile g(p,n)</code></pre><h3>Making sense of profiler&#39;s output</h3><p>The default <code>Profile.print</code> function shows the call-tree with count, how many times the probe occurred in each function sorted from the most to least. The output is a little bit difficult to read and orient in, therefore there are some visualization options.</p><p>What are our options?</p><ul><li><code>ProfileView</code> is the workhorse with a GTK based API and therefore recommended for those with working GTK</li><li><code>ProfileSVG</code> is the <code>ProfileView</code> with the output exported in SVG format, which is viewed by most browser (it is also very convenient for sharing with others)</li><li><code>PProf.jl</code> is a front-end to Google&#39;s PProf profile viewer <a href="https://github.com/JuliaPerf/PProf.jl">https://github.com/JuliaPerf/PProf.jl</a></li><li><code>StatProfilerHTML</code>  <a href="https://github.com/tkluck/StatProfilerHTML.jl">https://github.com/tkluck/StatProfilerHTML.jl</a></li></ul><p>By personal opinion I mostly use ProfileView (or ProfileSVG) as it indicates places of potential type instability, which as will be seen later is very useful feature. </p><h3>Profiling caveats</h3><p>The same function, but with keyword arguments, can be used to change these settings, however these settings are system dependent. For example on Windows, there is a known issue that does not allow to sample faster than at <code>0.003s</code> and even on Linux based system this may not do much. There are some further caveat specific to Julia:</p><ul><li>When running profile from REPL, it is usually dominated by the interactive part which spawns the task and waits for it&#39;s completion.</li><li>Code has to be run before profiling in order to filter out all the type inference and interpretation stuff. (Unless compilation is what we want to profile.)</li><li>When the execution time is short, the sampling may be insufficient -&gt; run multiple times.</li></ul><p>We will use <code>ProfileSVG</code> for its simplicity (especially installation). It shows the statistics in for of a flame graph which read as follows: , where . The hierarchy is expressed as functions on the bottom calls functions on the top. reads as follows:</p><ul><li>each function is represented by a horizontal bar</li><li>function in the bottom calls functions that lays on it</li><li>the width of the bar corresponds to time spent in the function</li><li>red colored bars indicate type instabilities</li><li>functions in bottom bars calls functions on top of upper bars</li></ul><p>Function name contains location in files and particular line number called. GTK version is even &quot;clickable&quot; and opens the file in default editor.</p></div></div><p>Let&#39;s use the profiler on the above function <code>g</code> to find potential weak spots</p><pre><code class="language-julia hljs">using Profile, ProfileSVG
+Profile.clear()
+@profile g(p, n)
+ProfileSVG.save(&quot;profile.svg&quot;)</code></pre><p>The output can be seen <a href="../profile.svg">here</a></p><p>We can see that the function is type stable and 2/3 of the time is spent in lines 3 and 4, which allocates arrays</p><pre><code class="language-julia hljs">[[cos(t0) - 1im*sin(t0)  0]; 
+ [0  cos(t0) + 1im*sin(t0)]]</code></pre><p>and</p><pre><code class="language-julia hljs">[[cos(t1) - 1im*sin(t1)  0]; 
+ [0  cos(t1) + 1im*sin(t1)]]</code></pre><p>Scrutinizing the function <code>f</code>, we see that in every call, it has to allocate arrays <code>m0</code> and <code>m1</code> <strong>on the heap.</strong> The allocation on heap is expensive, because it might require interaction with the operating system and it pu stress on the potential garbage collector. Can we avoid it? Repeated allocation can be frequently avoided by:</p><ul><li>preallocating arrays (if the arrays are of the fixed dimensions)</li><li>or allocating objects on stack, which does not involve interaction with OS (but can be used in limited cases.)</li></ul><h3 id="Adding-preallocation"><a class="docs-heading-anchor" href="#Adding-preallocation">Adding preallocation</a><a id="Adding-preallocation-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-preallocation" title="Permalink"></a></h3><pre><code class="language-julia hljs">function f!(m0, m1, p, u)   										# line 1 
+    t0,t1 = p 														# line 2
+    m0[1,1] = cos(t0) - 1im*sin(t0)									# line 3
+    m0[2,2] = cos(t0) + 1im*sin(t0)									# line 4
+    m1[1,1] = cos(t1) - 1im*sin(t1)									# line 5
+    m1[2,2] = cos(t1) + 1im*sin(t1)									# line 6
+    r = m1*m0*u 													# line 7
+    return abs(r[1])^2 												# line 8
+end
+
+function g2(p,n)
+    u = [1. ; 0.]
+    m0 = [[cos(p[1]) - 1im*sin(p[1])  0]; [0  cos(p[1]) + 1im*sin(p[1])]]	# line 3
+    m1 = [[cos(p[2]) - 1im*sin(p[2])  0]; [0  cos(p[2]) + 1im*sin(p[2])]]
+    return [f!(m0, m1, p[:,i], u) for i=1:n]
+end</code></pre><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><h2>Benchmarking</h2><p>The simplest benchmarking can be as simple as writing </p><pre><code class="language-julia hljs">repetitions = 100
+t₀ = time()
+for  in 1:100
+	g(p, n)
+end
+(time() - t₀) / n </code></pre><p>where we add repetitions to calibrate for background processes that can step in the precise measurements (recall that your program is not allone). Writing the above for benchmarking is utterly boring. Moreover, you might want to automatically determine the number of repetitions (the shorter time the more repetitions you want), take care of compilation of your function, you might want to have more informative output, for example median, mean, and maximum time of execution, information about number of allocation, time spent in garbage collector, etc. This is in nutshell what <code>BenchmarkTools.jl</code> offers, which we consider an essential tool for anyone interesting in tuning its code.</p></div></div><p>We will using macro <code>@benchmark</code> from <code>BenchmarkTools.jl</code> to observe the speedup we will get between <code>g</code> and <code>g2</code>.</p><pre><code class="language-julia hljs">using BenchmarkTools
+
+julia&gt; @benchmark g(p,n)
+BenchmarkTools.Trial: 5 samples with 1 evaluation.
+ Range (min … max):  1.168 s …   1.199 s  ┊ GC (min … max): 11.57% … 13.27%
+ Time  (median):     1.188 s              ┊ GC (median):    11.91%
+ Time  (mean ± σ):   1.183 s ± 13.708 ms  ┊ GC (mean ± σ):  12.10% ±  0.85%
+
+  █ █                                 █ █                 █
+  █▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
+  1.17 s         Histogram: frequency by time         1.2 s &lt;
+
+ Memory estimate: 1.57 GiB, allocs estimate: 23000002.</code></pre><pre><code class="language-julia hljs">julia&gt; @benchmark g2(p,n)
+BenchmarkTools.Trial: 11 samples with 1 evaluation.
+ Range (min … max):  413.167 ms … 764.393 ms  ┊ GC (min … max):  6.50% … 43.76%
+ Time  (median):     426.728 ms               ┊ GC (median):     6.95%
+ Time  (mean ± σ):   460.688 ms ± 102.776 ms  ┊ GC (mean ± σ):  12.85% ± 11.04%
+
+  ▃█ █
+  ██▇█▁▁▁▁▁▁▁▁▇▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▇ ▁
+  413 ms           Histogram: frequency by time          764 ms &lt;
+
+ Memory estimate: 450.14 MiB, allocs estimate: 4000021.
+</code></pre><p>We can see that we have approximately 3-fold improvement.</p><p>Let&#39;s profile again, not forgetting to use <code>Profile.clear()</code> to clear already stored probes.</p><pre><code class="nohighlight hljs">Profile.clear()
+@profile g2(p,n)
+ProfileSVG.save(&quot;/tmp/profile2.svg&quot;)</code></pre><p>What the profiler tells is now (clear <a href="../profile2.svg">here</a> to see the output)? 	- we spend a lot of time in <code>similar</code> in <code>matmul</code>, which is again an allocation of results for storing output of multiplication on line 7 matrix <code>r</code>. 	- the trigonometric operations on line 3-6 are very costly 	- Slicing <code>p</code> always allocates a new array and performs a deep copy.</p><p>Let&#39;s get rid of memory allocations at the expense of the code clarity</p><pre><code class="language-julia hljs">using LinearAlgebra
+@inline function initm!(m, t)
+    st, ct = sincos(t) 
+    @inbounds m[1,1] = Complex(ct, -st)								
+    @inbounds m[2,2] = Complex(ct, st)   								
+end
+
+function f1!(r1, r2, m0, m1, t0, t1, u)   					
+    initm!(m0, t0)
+    initm!(m1, t1)
+    mul!(r1, m0, u)
+    mul!(r2, m1, r1)
+    return @inbounds abs(@inbounds r2[1])^2
+end
+
+function g3(p,n)
+	u = [1. ; 0.]
+	m0 = [cos(p[1]) - 1im*sin(p[1])  0; 0  cos(p[1]) + 1im*sin(p[1])]
+    m1 = [cos(p[2]) - 1im*sin(p[2])  0; 0  cos(p[2]) + 1im*sin(p[2])]
+    r1 = m0*u
+    r2 = m1*r1
+    return [f1!(r1, r2, m0, m1, p[1,i], p[2,i], u) for i=1:n]
+end</code></pre><pre><code class="language-julia hljs">julia&gt; @benchmark g3(p,n)
+ Range (min … max):  193.922 ms … 200.234 ms  ┊ GC (min … max): 0.00% … 1.67%
+ Time  (median):     195.335 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   196.003 ms ±   1.840 ms  ┊ GC (mean ± σ):  0.26% ± 0.61%
+
+  █▁  ▁ ██▁█▁  ▁█ ▁ ▁ ▁        ▁   ▁     ▁   ▁▁   ▁  ▁        ▁
+  ██▁▁█▁█████▁▁██▁█▁█▁█▁▁▁▁▁▁▁▁█▁▁▁█▁▁▁▁▁█▁▁▁██▁▁▁█▁▁█▁▁▁▁▁▁▁▁█ ▁
+  194 ms           Histogram: frequency by time          200 ms &lt;
+
+ Memory estimate: 7.63 MiB, allocs estimate: 24.</code></pre><p>Notice that now, we are about six times faster than the first solution, albeit passing the pre code is getting messy. Also notice that we spent a very little time in garbage collector. Running the profiler, </p><pre><code class="language-julia hljs">Profile.clear()
+@profile g3(p,n)
+ProfileSVG.save(&quot;/tmp/profile3.svg&quot;)</code></pre><p>we see <a href="../profile3.svg">here</a> that there is a very little what we can do now. May-be, remove bounds checks (more on this later) and make the code a bit nicer.</p><p>Let&#39;s look at solution from a Discourse</p><pre><code class="language-julia hljs">using StaticArrays, BenchmarkTools
+
+function f(t0,t1)
+    cis0, cis1 = cis(t0), cis(t1)
+    m0 = @SMatrix [ conj(cis0) 0 ; 0 cis0]
+    m1 = @SMatrix [ conj(cis1) 0 ; 0 cis1]
+    r = m1 * (m0 * @SVector [1. , 0.])
+    return abs2(r[1])
+end
+
+g(p) = [f(p[1,i],p[2,i]) for i in axes(p,2)]</code></pre><pre><code class="nohighlight hljs">julia&gt; @benchmark g(p)
+ Range (min … max):  36.076 ms … 43.657 ms  ┊ GC (min … max): 0.00% … 9.96%
+ Time  (median):     37.948 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   38.441 ms ±  1.834 ms  ┊ GC (mean ± σ):  1.55% ± 3.60%
+
+        █▃▅   ▅▂  ▂
+  ▅▇▇███████▅███▄████▅▅▅▅▄▇▅▇▄▇▄▁▄▇▄▄▅▁▄▁▄▁▄▅▅▁▁▅▁▁▅▄▅▄▁▁▁▁▁▅ ▄
+  36.1 ms         Histogram: frequency by time        43.4 ms &lt;
+
+ Memory estimate: 7.63 MiB, allocs estimate: 2.</code></pre><p>We can see that it is six-times faster than ours while also being much nicer to read and  having almost no allocations. Where is the catch? It uses <code>StaticArrays</code> which offers linear algebra primitices performant for vectors and matrices of small size. They are allocated on stack, therefore there is no pressure of GarbageCollector and the type is specialized on size of matrices (unlike regular matrices) works on arrays of an sizes. This allows the compiler to perform further optimizations like unrolling loops, etc.</p><p>What we have learned so far?</p><ul><li>Profiler is extremely useful in identifying functions, where your code spends most time.</li><li>Memory allocation (on heap to be specific) can be very bad for the performance. We can generally avoided by pre-allocation (if possible) or allocating on the stack (Julia offers increasingly larger number of primitives for hits. We have already seen StaticArrays, DataFrames now offers for example String3, String7, String15, String31).</li><li>Benchmarking is useful for comparison of solutions</li></ul><h2 id="Replacing-deep-copies-with-shallow-copies-(use-view-if-possible)"><a class="docs-heading-anchor" href="#Replacing-deep-copies-with-shallow-copies-(use-view-if-possible)">Replacing deep copies with shallow copies (use view if possible)</a><a id="Replacing-deep-copies-with-shallow-copies-(use-view-if-possible)-1"></a><a class="docs-heading-anchor-permalink" href="#Replacing-deep-copies-with-shallow-copies-(use-view-if-possible)" title="Permalink"></a></h2><p>Let&#39;s look at the following function computing mean of a columns</p><pre><code class="language-julia hljs">function cmean(x::AbstractMatrix{T}) where {T}
+	o = zeros(T, size(x,1))
+	for i in axes(x, 2)
+		o .+= x[:,i]								# line 4
+	end
+	n = size(x, 2)
+	n &gt; 0 ? o ./ n : o 
+end
+x = randn(2, 10000)</code></pre><pre><code class="language-julia hljs">@benchmark cmean(x)
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  371.018 μs …   3.291 ms  ┊ GC (min … max): 0.00% … 83.30%
+ Time  (median):     419.182 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   482.785 μs ± 331.939 μs  ┊ GC (mean ± σ):  9.91% ± 12.02%
+
+  ▃█▄▃▃▂▁                                                       ▁
+  ████████▇▆▅▃▁▁▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▃▇██ █
+  371 μs        Histogram: log(frequency) by time       2.65 ms &lt;
+
+ Memory estimate: 937.59 KiB, allocs estimate: 10001.</code></pre><p>What we see that function is performing more than 10000 allocations. They come from <code>x[:,i]</code> which allocates a new memory and copies the content. In this case, this is completely unnecessary, as the content of the array <code>x</code> is never modified. We can avoid it by creating a <code>view</code> into an <code>x</code>, which you can imagine as a pointer to <code>x</code> which automatically adjust the bounds. Views can be constructed either using a function call <code>view(x, axes...)</code> or using a convenience macro <code>@view</code> which turns the usual notation <code>x[...]</code> to <code>view(x, ...)</code></p><pre><code class="language-julia hljs">function view_cmean(x::AbstractMatrix{T}) where {T}
+	o = zeros(T, size(x,1))
+	for i in axes(x, 2)
+		o .+= @view x[:,i]
+	end
+	n = size(x,2)
+	n &gt; 0 ? o ./ n : o 
+end</code></pre><p>We obtain instantly a 10-fold speedup</p><pre><code class="language-julia hljs">julia&gt; @benchmark view_cmean(x)
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  36.802 μs … 166.260 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     41.676 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   42.936 μs ±   9.921 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ▂ █▆█▆▂      ▁▁ ▁ ▁                                          ▂
+  █▄█████████▇▅██▆█▆██▆▆▇▆▆▆▆▇▆▅▆▆▅▅▁▅▅▆▇▆▆▆▆▄▃▆▆▆▄▆▄▅▅▄▆▅▆▅▄▆ █
+  36.8 μs       Histogram: log(frequency) by time      97.8 μs &lt;
+
+ Memory estimate: 96 bytes, allocs estimate: 1.</code></pre><h2 id="Traverse-arrays-in-the-right-order"><a class="docs-heading-anchor" href="#Traverse-arrays-in-the-right-order">Traverse arrays in the right order</a><a id="Traverse-arrays-in-the-right-order-1"></a><a class="docs-heading-anchor-permalink" href="#Traverse-arrays-in-the-right-order" title="Permalink"></a></h2><p>Let&#39;s now compute rowmean using the function similar to <code>cmean</code> and since we have learnt from the above, we use the <code>view</code> to have non-allocating version</p><pre><code class="language-julia hljs">function rmean(x::AbstractMatrix{T}) where {T}
+	o = zeros(T, size(x,2))
+	for i in axes(x, 1)
+		o .+= @view x[i,:]
+	end
+	n = size(x,1)
+	n &gt; 0 ? o ./ n : o 
+end
+x = randn(10000, 2)</code></pre><pre><code class="language-julia hljs">x = randn(10000, 2)
+@benchmark rmean(x)
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  44.165 μs … 194.395 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     46.654 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   48.544 μs ±  10.940 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  █▆█▇▄▁            ▁                                          ▂
+  ██████▇▇▇▇▆▇▅██▇█▇█▇▆▅▄▄▅▅▄▄▄▄▂▄▅▆▅▅▅▆▅▅▅▆▄▆▄▄▅▅▄▅▄▄▅▅▅▅▄▄▃▅ █
+  44.2 μs       Histogram: log(frequency) by time       108 μs &lt;
+
+ Memory estimate: 192 bytes, allocs estimate: 2.</code></pre><p>The above seems OK and the speed is comparable to our tuned <code>cmean</code>.  But, can we actually do better? We have to realize that when we are accessing slices in the matrix <code>x</code>, they are not aligned in the memory. Recall that Julia is column major (like Fortran and unlike C and Python), which means that consecutive arrays of memory are along columns. i.e for a matrix with n rows and m columns they are aligned as </p><pre><code class="nohighlight hljs">1 | n + 1 | 2n + 1 | ⋯ | (m-1)n + 1
+2 | n + 2 | 2n + 2 | ⋯ | (m-1)n + 2
+3 | n + 3 | 2n + 3 | ⋯ | (m-1)n + 3
+⋮ |   ⋮   |    ⋮   | ⋯ |        ⋮  
+n |  2n   |    3n  | ⋯ |       mn</code></pre><p>accessing non-consecutively is really bad for cache, as we have to load the memory into a cache line and use a single entry (in case of Float64 it is 8 bytes) out of it, discard it and load another one. If cache line has length 32 bytes, then we are wasting remaining 24 bytes. Therefore, we rewrite <code>rmean</code> to access the memory in consecutive blocks as follows, where we essentially sum the matrix column by columns.</p><pre><code class="language-julia hljs">function aligned_rmean(x::AbstractMatrix{T}) where {T}
+	o = zeros(T, size(x,2))
+	for i in axes(x, 2)
+		o[i] = sum(@view x[:, i])
+	end
+	n = size(x, 1)
+	n &gt; 0 ? o ./ n : o 
+end
+
+aligned_rmean(x) ≈ rmean(x)</code></pre><pre><code class="language-julia hljs">julia&gt; @benchmark aligned_rmean(x)
+BenchmarkTools.Trial: 10000 samples with 10 evaluations.
+ Range (min … max):  1.988 μs …  11.797 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     2.041 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   2.167 μs ± 568.616 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  █▇▄▂▂▁▁ ▁  ▂▁                                               ▂
+  ██████████████▅▅▃▁▁▁▁▁▄▅▄▁▅▆▆▆▇▇▆▆▆▆▅▃▅▅▄▅▅▄▄▄▃▃▁▁▁▄▁▁▄▃▄▃▆ █
+  1.99 μs      Histogram: log(frequency) by time      5.57 μs &lt;
+
+ Memory estimate: 192 bytes, allocs estimate: 2.</code></pre><p>Running the benchmark shows that we have about 20x speedup and we are on par with Julia&#39;s built-in functions.</p><p><strong>Remark tempting it might be, there is actually nothing we can do to speed-up the <code>cmean</code> function. This trouble is inherent to the processor design and you should be careful how you align things in the memory, such that it is performant in your project</strong></p><p>Detecting this type of inefficiencies is generally difficult, and requires processor assisted measurement. <code>LIKWID.jl</code> is a wrapper for a LIKWID library providing various processor level statistics, like throughput, cache misses</p><h2 id="Type-stability"><a class="docs-heading-anchor" href="#Type-stability">Type stability</a><a id="Type-stability-1"></a><a class="docs-heading-anchor-permalink" href="#Type-stability" title="Permalink"></a></h2><p>Sometimes it happens that we create a non-stable code, which might be difficult to spot at first, for a non-trained eye. A prototypical example of such bug is as follows</p><pre><code class="language-julia hljs">function poor_sum(x)
+	s = 0
+	n = length(x)
+	for i in 1:n
+		s += x[i]	
+	end
+	s
+end</code></pre><pre><code class="language-julia hljs">x = randn(10^8);
+julia&gt; @benchmark poor_sum(x)
+BenchmarkTools.Trial: 23 samples with 1 evaluation.
+ Range (min … max):  222.055 ms … 233.552 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     225.259 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   225.906 ms ±   3.016 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ▁ ▁ ▁▁█  ▁▁  ▁ ▁█ ▁ ▁ ▁ ▁ ▁    ▁▁▁▁                      ▁  ▁
+  █▁█▁███▁▁██▁▁█▁██▁█▁█▁█▁█▁█▁▁▁▁████▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█▁▁█ ▁
+  222 ms           Histogram: frequency by time          234 ms &lt;
+
+ Memory estimate: 16 bytes, allocs estimate: 1.</code></pre><p>Can we do better? Let&#39;s look what profiler says.</p><pre><code class="language-julia hljs">using Profile, ProfileSVG
+Profile.clear()
+@profile  poor_sum(x)
+ProfileSVG.save(&quot;/tmp/profile4.svg&quot;)</code></pre><p>The profiler (output <a href="../profile4.svg">here</a>) does not show any red, which means that according to the profilerthe code is type stable (and so does the <code>@code_typed poor_sum(x)</code> does not show anything bad.) Yet, we can see that the fourth line of the <code>poor_sum</code> function takes unusually long (there is a white area above, which means that the time spend in childs of that line (iteration and sum) does the sum to the time spent in the line, which is fishy). </p><p>A close lookup on the code reveals that <code>s</code> is initialized as <code>Int64</code>, because <code>typeof(0)</code> is <code>Int64</code>. But then in the loop, we add to <code>s</code> a <code>Float64</code> because <code>x</code> is <code>Vector{Float64}</code>, which means during the execution, the type <code>s</code> changes the type.</p><p>So why nor compiler nor <code>@code_typed(poor_sum(x))</code> warns us about the type instability? This is because of the optimization called <strong>small unions</strong>, where Julia can optimize &quot;small&quot; type instabilitites (recall the second <a href="../../lecture_02/lecture/#type_lecture">lecture</a>).</p><p>We can fix it for example by initializing <code>x</code> to be the zero of an element type of the array <code>x</code> (though this solution technically assumes <code>x</code> is an array, which means that <code>poor_sum</code> will not work for generators)</p><pre><code class="language-julia hljs">function stable_sum(x)
+	s = zero(eltype(x))
+	n = length(x)
+	for i in 1:n
+		s += x[i]
+	end
+	s
+end</code></pre><p>But there is no difference, due to small union optimization (the above would kill any performance in older versions.)</p><pre><code class="language-julia hljs">julia&gt; @benchmark stable_sum(x)
+BenchmarkTools.Trial: 42 samples with 1 evaluation.
+ Range (min … max):  119.491 ms … 123.062 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     120.535 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   120.687 ms ± 819.740 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+            █
+  ▅▁▅▁▅▅██▅▁█▁█▁██▅▁█▅▅▁█▅▁█▁█▅▅▅█▁▁▁▁▁▁▁▅▁▁▁▁▁▅▁▅▁▁▁▁▁▁▅▁▁▁▁▁▅ ▁
+  119 ms           Histogram: frequency by time          123 ms &lt;
+
+ Memory estimate: 16 bytes, allocs estimate: 1.</code></pre><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><p>The optimization of small unions has been added in Julia 1.0. If we compare the of the same function in Julia 0.6, the difference is striking</p><pre><code class="language-julia hljs">julia&gt; @time poor_sum(x)
+  1.863665 seconds (300.00 M allocations: 4.470 GiB, 4.29% gc time)
+9647.736705951513
+julia&gt; @time stable_sum(x)
+  0.167794 seconds (5 allocations: 176 bytes)
+9647.736705951513</code></pre><p>The optimization of small unions is a big deal. It simplifies implementation of arrays with missing values, or allows to signal that result has not been produced by returning <code>missing</code>. In case of arrays with missing values, the type of element is <code>Union{Missing,T}</code> where <code>T</code> is the type of non-missing element.</p></div></div><p>The main problem with the above formulation is that Julia is checking that getting element of arrays from <code>x[i]</code> is within bounds. We can remove the check using <code>@inbounds</code> macro.</p><pre><code class="language-julia hljs">function inbounds_sum(x)
+	n = length(x)
+	n == 0 &amp;&amp; return(zero(eltype(x)))
+	n == 1 &amp;&amp; return(x[1])
+    @inbounds a1 = x[1]
+    @inbounds a2 = x[2]
+    v = a1 + a2
+    @inbounds for i = 3 : n
+        ai = x[i]
+        v += ai
+    end
+    v
+end</code></pre><p>This did not give us much.</p><pre><code class="language-julia hljs">BenchmarkTools.Trial: 42 samples with 1 evaluation.
+ Range (min … max):  117.804 ms … 123.634 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     119.077 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   119.387 ms ±   1.225 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+           ▂  ▂█
+  ▅█▁▅▅▁██▅█████▅▅▁██▁▅▅▁▅▁▅▁▅▅▁▁▅▁▅▁▁▁▁▁▁▁▁▁▁▅▁▁▁▁▁▁▅▁▁▁▁▁▁▁▁▅ ▁
+  118 ms           Histogram: frequency by time          124 ms &lt;
+
+ Memory estimate: 16 bytes, allocs estimate: 1.</code></pre><p>Further, we can tell Julia that it is safe to vectorize the code</p><pre><code class="language-julia hljs">function simd_sum(x)
+	n = length(x)
+	n == 0 &amp;&amp; return(zero(eltype(x)))
+	n == 1 &amp;&amp; return(x[1])
+    @inbounds a1 = x[1]
+    @inbounds a2 = x[2]
+    v = a1 + a2
+    @simd for i = 3 : n
+        @inbounds ai = x[i]
+        v += ai
+    end
+    v
+end</code></pre><pre><code class="language-julia hljs">julia&gt; @benchmark simd_sum(x)
+BenchmarkTools.Trial: 90 samples with 1 evaluation.
+ Range (min … max):  50.854 ms … 62.260 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     54.656 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   55.630 ms ±  3.437 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+    █  ▂     ▄ ▂                    ▂    ▂            ▄
+  ▄▆█▆▁█▄██▁▁█▆██▆▄█▁▆▄▁▆▆▄▁▁▆▁▁▁▁▄██▁█▁▁█▄▄▆▆▄▄▁▄▁▁▁▄█▁▆▁▆▁▆ ▁
+  50.9 ms         Histogram: frequency by time        62.1 ms &lt;
+
+ Memory estimate: 16 bytes, allocs estimate: 1.</code></pre><h2 id="Global-variables-introduce-type-instability-(avoid-non-const-globals)"><a class="docs-heading-anchor" href="#Global-variables-introduce-type-instability-(avoid-non-const-globals)">Global variables introduce type instability (avoid non-const globals)</a><a id="Global-variables-introduce-type-instability-(avoid-non-const-globals)-1"></a><a class="docs-heading-anchor-permalink" href="#Global-variables-introduce-type-instability-(avoid-non-const-globals)" title="Permalink"></a></h2><pre><code class="language-julia hljs">function implicit_sum()
+    n = length(y)
+    n == 0 &amp;&amp; return(zero(eltype(y)))
+    n == 1 &amp;&amp; return(y[1])
+    @inbounds a1 = y[1]
+    @inbounds a2 = y[2]
+    v = a1 + a2
+    @simd for i = 3 : n
+        @inbounds ai = y[i]
+        v += ai
+    end
+    v
+end</code></pre><pre><code class="language-julia hljs">julia&gt; @benchmark implicit_sum()
+BenchmarkTools.Trial: 1 sample with 1 evaluation.
+ Single result which took 10.837 s (11.34% GC) to evaluate,
+ with a memory estimate of 8.94 GiB, over 499998980 allocations.</code></pre><p>What? The same function where I made the parameters to be implicit has just turned <strong>nine orders of magnitude</strong> slower? </p><p>Let&#39;s look what the profiler says</p><pre><code class="language-julia hljs">Profile.clear()
+y = randn(10^4)
+@profile implicit_sum()
+ProfileSVG.save(&quot;/tmp/profile5.svg&quot;)</code></pre><p>(output available <a href="../profile5.svg">here</a>) which does not say anything except that there is a huge type-instability (red bar). In fact, the whole computation is dominated by Julia constantly determining the type (of something).</p><p>How can we determine, where is the type instability?</p><ul><li><code>@code_typed implicit_sum()</code> is </li><li>Cthulhu as <code>@descend implicit_sum()</code></li><li>JET (available with the nightly build of Julia and 1.7 pre-releases)</li></ul><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><h2>JET</h2><p>JET is a code analyzer, which analyze the code without actually invoking it. The technique is called &quot;abstract interpretation&quot; and JET internally uses Julia&#39;s native type inference implementation, so it can analyze code as fast/correctly as Julia&#39;s code generation. JET internally traces the compiler&#39;s knowledge about types and detects, where the compiler cannot infer the type (outputs <code>Any</code>). Note that small unions are no longer considered type instability, since as we have seen above, the performance bottleneck is small. We can use JET as </p><pre><code class="language-julia hljs">	using JET
+	@report_opt implicit_sum()</code></pre></div></div><p>All of these tools tells us that the Julia&#39;s compiler cannot determine the type of <code>x</code>. But why? I can just invoke <code>typeof(x)</code> and I know immediately the type of <code>x</code>. </p><p>To understand the problem, you have to think about the compiler.</p><ol><li>You define function <code>implicit_sum().</code></li><li>If you call <code>implicit_sum</code> and <code>x</code> does not exist, Julia will happily crash.</li><li>If you call <code>implicit_sum</code> and <code>x</code> exist, the function will give you the result (albeit slowly). At this moment, Julia has to specialize <code>implicit_sum</code>. It has two options how to behave with respect to <code>x</code>.   a. The compiler can assume that type of <code>x</code> is the current <code>typeof(x)</code> but that would mean that if a user redefines x and change the type, the specialization of the function <code>implicit_sum</code> will assume the wrong type of <code>x</code> and it can have unexpected results.  b. The compiler take safe approach and determine the type of <code>x</code> inside the function <code>implicit_sum</code> and behave accordingly (recall that julia is dynamically typed). Yet, not knowing the type precisely is absolute disaster for performance.</li></ol><p>Notice the compiler dispatches on the name of the function and type of its arguments, hence, the compiler cannot create different versions of <code>implicit_sum</code> for different types of <code>x</code>, since it is not in argument, hence the dynamic resolution of types <code>x</code> inside <code>implicit_sum</code> function.</p><p>Julia takes the <strong>safe approach</strong>, which we can verify that although the <code>implicit_sum</code> was specialized (compiled) when <code>x</code> was <code>Vector{Float64}</code>, it works for other types</p><pre><code class="language-julia hljs">x = rand(Int, 1000)
+implicit_sum() ≈ sum(x)
+x = map(x -&gt; Complex(x...), zip(rand(1000), rand(1000)))
+implicit_sum() ≈ sum(x)</code></pre><p>This means, using global variables inside functions without passing them as arguments ultimately leads to type-instability. What are the solutions</p><h3 id="Declaring-x-as-const"><a class="docs-heading-anchor" href="#Declaring-x-as-const">Declaring <code>x</code> as const</a><a id="Declaring-x-as-const-1"></a><a class="docs-heading-anchor-permalink" href="#Declaring-x-as-const" title="Permalink"></a></h3><p>We can declare <code>x</code> as const, which tells the compiler that <code>x</code> will not change (and for the compiler mainly indicates <strong>that type of <code>x</code> will not change</strong>).</p><p>Let&#39;s see that, but restart the julia before trying</p><pre><code class="language-julia hljs">using BenchmarkTools
+function implicit_sum()
+	n = length(x)
+	n == 0 &amp;&amp; return(zero(eltype(x)))
+	n == 1 &amp;&amp; return(x[1])
+    @inbounds a1 = x[1]
+    @inbounds a2 = x[2]
+    v = a1 + a2
+    @simd for i = 3 : n
+        @inbounds ai = x[i]
+        v += ai
+    end
+    v
+end
+const x = randn(10^8);</code></pre><p>after benchmarking we see that the speed is the same as of <code>simd_sum()</code>.</p><pre><code class="language-julia hljs">julia&gt; @benchmark implicit_sum()
+BenchmarkTools.Trial: 99 samples with 1 evaluation.
+ Range (min … max):  47.864 ms … 58.365 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     50.042 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   50.479 ms ±  1.598 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+          ▂ █▂▂▇ ▅  ▃
+  ▃▁▃▁▁▁▁▇██████▅█▆██▇▅▆▁▁▃▅▃▃▁▃▃▁▃▃▁▁▃▁▃▁▁▁▁▁▁▁▁▁▁▁▁▁▃▁▁▁▁▁▃ ▁
+  47.9 ms         Histogram: frequency by time        57.1 ms &lt;
+
+ Memory estimate: 0 bytes, allocs estimate: 0.</code></pre><h3 id="Barier-function"><a class="docs-heading-anchor" href="#Barier-function">Barier function</a><a id="Barier-function-1"></a><a class="docs-heading-anchor-permalink" href="#Barier-function" title="Permalink"></a></h3><p>The reason, why the <code>implicit_sum</code> is so slow that every time the function invokes <code>getindex</code> and <code>+</code>, it has to resolve types. The solution would be to limit the number of resolutions, which can done by passing all parameters to inner function as follows.</p><pre><code class="language-julia hljs">using BenchmarkTools
+function simd_sum(x)
+	n = length(x)
+	n == 0 &amp;&amp; return(zero(eltype(x)))
+	n == 1 &amp;&amp; return(x[1])
+    @inbounds a1 = x[1]
+    @inbounds a2 = x[2]
+    v = a1 + a2
+    @simd for i = 3 : n
+        @inbounds ai = x[i]
+        v += ai
+    end
+    v
+end
+
+function barrier_sum()
+	simd_sum(x)
+end
+x = randn(10^8);</code></pre><pre><code class="language-julia hljs">@benchmark barrier_sum()
+BenchmarkTools.Trial: 93 samples with 1 evaluation.
+ Range (min … max):  50.229 ms … 58.484 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     53.882 ms              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   54.064 ms ±  2.892 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+   ▂▆█                                          ▆▄
+  ▆█████▆▄█▆▄▆▁▄▄▄▄▁▁▄▁▄▄▆▁▄▄▄▁▁▄▁▁▄▁▁▆▆▁▁▄▄▁▄▆████▄▆▄█▆▄▄▄▄█ ▁
+  50.2 ms         Histogram: frequency by time        58.4 ms &lt;
+
+ Memory estimate: 16 bytes, allocs estimate: 1.</code></pre><pre><code class="language-julia hljs">using JET
+@report_opt barrier_sum()</code></pre><h2 id="Boxing-in-closure"><a class="docs-heading-anchor" href="#Boxing-in-closure">Boxing in closure</a><a id="Boxing-in-closure-1"></a><a class="docs-heading-anchor-permalink" href="#Boxing-in-closure" title="Permalink"></a></h2><p>Recall closure is a function which contains some parameters contained </p><p>An example of closure from Jet.jl</p><pre><code class="language-julia hljs">function abmult(r::Int)
+   if r &lt; 0
+       r = -r
+   end
+   # the closure assigned to `f` make the variable `r` captured
+   f = x -&gt; x * r
+   return f
+end;</code></pre><p>Another example of closure counting the error and printing it every <code>steps</code></p><pre><code class="language-julia hljs">function initcallback(; steps = 10)
+	i = 0
+	ts = time()
+	y = 0.0
+	cby = function evalcb(_y)
+		i += 1.0
+		y += _y
+		if mod(i, steps) == 0
+			l = y / steps
+			y = 0.0
+			println(i, &quot;: loss: &quot;, l,&quot; time per step: &quot;,round((time() - ts)/steps, sigdigits = 2))
+			ts = time()
+		end
+	end
+	cby
+end
+
+cby = initcallback()
+
+for i in 1:100
+	cby(rand())
+end</code></pre><pre><code class="language-julia hljs">function simulation()
+	cby = initcallback(;steps = 10000)	#intentionally disable printing
+	for i in 1:1000
+		cby(sin(rand()))
+	end
+end
+
+@benchmark simulation()</code></pre><pre><code class="language-julia hljs">using Profile, ProfileSVG
+Profile.clear()
+@profile (for i in 1:100; simulation(); end)
+ProfileSVG.save(&quot;/tmp/profile.svg&quot;)</code></pre><p>We see a red bars in lines 4 and 8 of evalcb, which indicates the type instability hindering the performance. Why they are there? The answer is tricky.</p><p>In closures, as the name suggest, function <em>closes over</em> (or captures) some variables defined in the function outside the function that is returned. If these variables are of primitive types (think <code>Int</code>, <code>Float64</code>, etc.), the compiler assumes that they might be changed. Though when primitive types are used in calculations, the result is not written to the same memory location but to a new location and the name of the variable is made to point to this new variable location (this is called rebinding). We can demonstrate it on this example <sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup>.</p><pre><code class="language-julia hljs">julia&gt; x = [1];
+
+julia&gt; objectid(x)
+0x79eedc509237c203
+
+julia&gt; x .= [10];  # mutating contents
+
+julia&gt; objectid(x)
+0x79eedc509237c203
+
+julia&gt; y = 100;
+
+julia&gt; objectid(y)
+0xdb216d4e5c739c77
+
+julia&gt; y = y + 100;  # rebinding the variable name
+
+julia&gt; objectid(y)
+0xb642af5f06b41e88</code></pre><p>Since the inner function needs to point to the same location, julia uses <code>Box</code> container which can be seen as a translation, where the pointer inside the Box can change while the inner function contains the same pointer to the <code>Box</code>. This makes possible to change the captured variables and tracks changes in the point. Sometimes (it can happen many time) the compiler fails to determine that the captured variable is read only, and it wrap it (box it) in the <code>Box</code> wrapper, which makes it type unstable, as <code>Box</code> does not track types (it would be difficult as even the type can change in the inner function). This is what we can see in the first example of <code>abmult</code>. In the second example, the captured variable <code>y</code> and <code>i</code> changes and the compiler is right.</p><p>What can we do?</p><ul><li>The first difficulty is to even detect this case. We can spot it using <code>@code_typed</code> and of course <code>JET.jl</code> can do it and it will warn us. Above we have seen the effect of the profiler.</li></ul><p>Using <code>@code_typed</code></p><pre><code class="language-julia hljs">julia&gt; @code_typed abmult(1)
+CodeInfo(
+1 ─ %1  = Core.Box::Type{Core.Box}
+│   %2  = %new(%1, r@_2)::Core.Box
+│   %3  = Core.isdefined(%2, :contents)::Bool
+└──       goto #3 if not %3
+2 ─       goto #4
+3 ─       $(Expr(:throw_undef_if_not, :r, false))::Any
+4 ┄ %7  = Core.getfield(%2, :contents)::Any
+│   %8  = (%7 &lt; 0)::Any
+└──       goto #9 if not %8
+5 ─ %10 = Core.isdefined(%2, :contents)::Bool
+└──       goto #7 if not %10
+6 ─       goto #8
+7 ─       $(Expr(:throw_undef_if_not, :r, false))::Any
+8 ┄ %14 = Core.getfield(%2, :contents)::Any
+│   %15 = -%14::Any
+└──       Core.setfield!(%2, :contents, %15)::Any
+9 ┄ %17 = %new(Main.:(var&quot;#5#6&quot;), %2)::var&quot;#5#6&quot;
+└──       return %17
+) =&gt; var&quot;#5#6&quot;</code></pre><p>Using <code>Jet.jl</code> (recall it requires the very latest Julia 1.7)</p><pre><code class="nohighlight hljs">julia&gt; @report_opt abmult(1)
+═════ 3 possible errors found ═════
+┌ @ REPL[15]:2 r = Core.Box(:(_7::Int64))
+│ captured variable `r` detected
+└──────────────
+┌ @ REPL[15]:2 Main.&lt;(%7, 0)
+│ runtime dispatch detected: Main.&lt;(%7::Any, 0)
+└──────────────
+┌ @ REPL[15]:3 Main.-(%14)
+│ runtime dispatch detected: Main.-(%14::Any)
+└──────────────</code></pre><ul><li>Sometimes, we do not have to do anything. For example the above example of <code>evalcb</code> function, we assume that all the other code in the simulation would take much more time so a little type instability is not important.</li><li>Alternatively, we can explicitly use <code>Ref</code> instead of the <code>Box</code>, which are typed wrappers, but they are awkward to use. </li></ul><pre><code class="language-julia hljs">function ref_abmult(r::Int)
+   if r &lt; 0
+       r = -r
+   end
+   rr = Ref(r)
+   f = x -&gt; x * rr[]
+   return f
+end;</code></pre><p>We can see in <code>@code_typed</code> that the compiler is happy as it can resolve the types correctly</p><pre><code class="language-julia hljs">julia&gt; @code_typed ref_abmult(1)
+CodeInfo(
+1 ─ %1 = Base.slt_int(r@_2, 0)::Bool
+└──      goto #3 if not %1
+2 ─ %3 = Base.neg_int(r@_2)::Int64
+3 ┄ %4 = φ (#2 =&gt; %3, #1 =&gt; _2)::Int64
+│   %5 = %new(Base.RefValue{Int64}, %4)::Base.RefValue{Int64}
+│   %6 = %new(var&quot;#7#8&quot;{Base.RefValue{Int64}}, %5)::var&quot;#7#8&quot;{Base.RefValue{Int64}}
+└──      return %6
+) =&gt; var&quot;#7#8&quot;{Base.RefValue{Int64}}</code></pre><p>Jet is also happy.</p><pre><code class="language-julia hljs">
+julia&gt; @report_opt ref_abmult(1)
+No errors !
+</code></pre><p>So when you use closures, you should be careful of the accidental boxing, since it can inhibit the speed of code. <strong>This is a big deal in Multithreadding and in automatic differentiation</strong>, both heavily uses closures. You can track the discussion <a href="https://github.com/JuliaLang/julia/issues/15276">here</a>.</p><h2 id="NamedTuples-are-more-efficient-that-Dicts"><a class="docs-heading-anchor" href="#NamedTuples-are-more-efficient-that-Dicts">NamedTuples are more efficient that Dicts</a><a id="NamedTuples-are-more-efficient-that-Dicts-1"></a><a class="docs-heading-anchor-permalink" href="#NamedTuples-are-more-efficient-that-Dicts" title="Permalink"></a></h2><p>It happens a lot in scientific code, that some experiments have many parameters. It is therefore very convenient to store them in <code>Dict</code>, such that when adding a new parameter, we do not have to go over all defined functions and redefine them.</p><p>Imagine that we have a (nonsensical) simulation like </p><pre><code class="language-julia hljs">settings = Dict(:stepsize =&gt; 0.01, :h =&gt; 0.001, :iters =&gt; 500, :info =&gt; &quot;info&quot;)
+function find_min!(f, x, p)
+	for i in 1:p[:iters]
+		x̃ = x + p[:h]
+		fx = f(x)									# line 4
+		x -= p[:stepsize] * (f(x̃) - fx)/p[:h]		# line 5
+	end
+	x
+end</code></pre><p>Notice the parameter <code>p</code> is a <code>Dict</code> and notice that it can contain arbitrary parameters, which is useful. Hence, <code>Dict</code> is cool for passing parameters. Let&#39;s now run the function through the profiler</p><pre><code class="language-julia hljs">x₀ = rand()
+f(x) = x^2
+Profile.clear()
+@profile find_min!(f, x₀, settings)
+ProfileSVG.save(&quot;/tmp/profile6.svg&quot;)</code></pre><p>from the profiler&#39;s output <a href="../profile6.svg">here</a> we can see some type instabilities. Where they come from? The compiler does not have any information about types stored in <code>settings</code>, as the type of stored values are <code>Any</code> (caused by storing <code>String</code> and <code>Int</code>).</p><pre><code class="language-julia hljs">julia&gt; typeof(settings)
+Dict{Symbol, Any}</code></pre><p>The second problem is <code>get</code> operation on dictionaries is very time consuming operation (although technically it is O(1)), because it has to search the key in the list. <code>Dict</code>s are designed as a mutable container, which is not needed in our use-case, as the settings are static. For similar use-cases, Julia offers <code>NamedTuple</code>, with which we can construct settings as </p><pre><code class="language-julia hljs">nt_settings = (;stepsize = 0.01, h=0.001, iters=500, :info =&gt; &quot;info&quot;)</code></pre><p>The <code>NamedTuple</code> is fully typed, but which we mean the names of fields are part of the type definition and fields are also part of type definition. You can think of it as a struct. Moreover, when accessing fields in <code>NamedTuple</code>, compiler knows precisely where they are located in the memory, which drastically reduces the access time.  Let&#39;s see the effect in <code>BenchmarkTools</code>.</p><pre><code class="language-julia hljs">julia&gt; @benchmark find_min!(x -&gt; x^2, x₀, settings)
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):   86.350 μs …   4.814 ms  ┊ GC (min … max): 0.00% … 97.61%
+ Time  (median):      90.747 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   102.405 μs ± 127.653 μs  ┊ GC (mean ± σ):  4.69% ±  3.75%
+
+  ▅██▆▂     ▁▁    ▁                                             ▂
+  ███████▇▇████▇███▇█▇████▇▇▆▆▇▆▇▇▇▆▆▆▆▇▆▇▇▅▇▆▆▆▆▄▅▅▄▅▆▆▅▄▅▃▅▃▅ █
+  86.4 μs       Histogram: log(frequency) by time        209 μs &lt;
+
+ Memory estimate: 70.36 KiB, allocs estimate: 4002.
+
+julia&gt; @benchmark find_min!(x -&gt; x^2, x₀, nt_settings)
+BenchmarkTools.Trial: 10000 samples with 7 evaluations.
+ Range (min … max):  4.179 μs … 21.306 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     4.188 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   4.493 μs ±  1.135 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  █▃▁        ▁ ▁  ▁                                          ▁
+  ████▇████▄██▄█▃██▄▄▇▇▇▇▅▆▆▅▄▄▅▄▅▅▅▄▁▅▄▁▄▄▆▆▇▄▅▆▄▄▃▄▆▅▆▁▄▄▄ █
+  4.18 μs      Histogram: log(frequency) by time     10.8 μs &lt;
+
+ Memory estimate: 16 bytes, allocs estimate: 1.</code></pre><p>Checking the output with JET, there is no type instability anymore</p><pre><code class="language-julia hljs">@report_opt find_min!(f, x₀, nt_settings)
+No errors !</code></pre><p>&lt;!– </p><h2 id="Don&#39;t-use-IO-unless-you-have-to"><a class="docs-heading-anchor" href="#Don&#39;t-use-IO-unless-you-have-to">Don&#39;t use IO unless you have to</a><a id="Don&#39;t-use-IO-unless-you-have-to-1"></a><a class="docs-heading-anchor-permalink" href="#Don&#39;t-use-IO-unless-you-have-to" title="Permalink"></a></h2><ul><li>debug printing in performance critical code should be kept to minimum or using in memory/file based logger in stdlib <code>Logging.jl</code></li></ul><pre><code class="language-julia hljs">function find_min!(f, x, p; verbose=true)
+	for i in 1:p[:iters]
+		x̃ = x + p[:h]
+		fx = f(x)
+		x -= p[:stepsize] * (f(x̃) - fx)/p[:h]
+		verbose &amp;&amp; println(&quot;x = &quot;, x, &quot; | f(x) = &quot;, fx)
+	end
+	x
+end
+
+@btime find_min!($f, $x₀, $params_tuple; verbose=true)
+@btime find_min!($f, $x₀, $params_tuple; verbose=false)</code></pre><ul><li>interpolation of strings is even worse https://docs.julialang.org/en/v1/manual/performance-tips/#Avoid-string-interpolation-for-I/O</li></ul><pre><code class="language-julia hljs">function find_min!(f, x, p; verbose=true)
+	for i in 1:p[:iters]
+		x̃ = x + p[:h]
+		fx = f(x)
+		x -= p[:stepsize] * (f(x̃) - fx)/p[:h]
+		verbose &amp;&amp; println(&quot;x = $x | f(x) = $fx&quot;)
+	end
+	x
+end
+@btime find_min!($f, $x₀, $params_tuple; verbose=true)</code></pre><p>–&gt;</p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Adapted from Julia&#39;s discourse <a href="https://discourse.julialang.org/t/numpy-10x-faster-than-julia-what-am-i-doing-wrong-solved-julia-faster-now/29922">thread</a></li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Invenia blog <a href="https://invenia.github.io/blog/2019/10/30/julialang-features-part-1/">entry</a></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_04/hw/">« Homework</a><a class="docs-footer-nextpage" href="../lab/">Lab »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Thursday 2 December 2021 22:15">Thursday 2 December 2021</span>. Using Julia version 1.7.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
