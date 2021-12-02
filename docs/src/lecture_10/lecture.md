@@ -5,25 +5,25 @@ Julia offers different levels of parallel programming
 - SIMD instructions
 - Task switching.
 
-In this lecture, we will focus mainly on the first two, since SIMD instructions are mainly used for low-level optimization (such as writing you own very performant BLAS library), and task switching is not a true paralelism, but allows to run a different task when one task is waiting for example for IO.
+In this lecture, we will focus mainly on the first two, since SIMD instructions are mainly used for low-level optimization (such as writing your own very performant BLAS library), and task switching is not a true paralelism, but allows to run a different task when one task is waiting for example for IO.
 
-**The most important lesson is that before you jump into the parallelism, make sure your code is fast sequentially**
+**The most important lesson is that before you jump into the parallelism, be certain you have made your squential code as fast as possible.**
 
 ## Process-level paralelism
-Process-level paralelism means that Julia runs several compilers in different processes. By default, different processes *do not share anything by default*, meaning no libraries and variables. Everyhing has to be therefore set-up on all processes.
+Process-level paralelism means we run several instances of Julia (in different processes) and they communicate between each other using inter-process communication (IPC). The implementation of IPC differs if parallel julia instances share the same machine, or they are located spread over the network. By default, different processes *do not share any libraries or any variables*. The are loaded as clean and it is up to the user to set-up all needed code and data.
 
-Julia off-the-shelf supports a mode, where a single *main* process controlls several workers. This main process has `myid() == 1`, worker processes receive higher numbers. Julia can be started with multiple workers from the very beggining, using `-p` switch as 
+Julia's default modus operandi is a single *main* instance controlling several workers. This main instance has `myid() == 1`, worker processes receive higher numbers. Julia can be started with multiple workers from the very beggining, using `-p` switch as 
 ```julia
 julia -p n
 ```
 where `n` is the number of workers, or you can add workers after Julia has been started by
 ```julia
 using Distributed
-addprocs(4)
+addprocs(n)
 ```
-(when Julia is started with `-p`, `Distributed` library is loaded by default on main worker). You can also remove workers using `rmprocs`. Workers can be on the same physical machines, or on different machines. Julia offer integration via `ClusterManagers.jl` with most schedulling systems.
+You can also remove workers using `rmprocs`.  When Julia is started with `-p`, `Distributed` library is loaded by default on main worker. Workers can be on the same physical machines, or on different machines. Julia offer integration via `ClusterManagers.jl` with most schedulling systems.
 
-If you want evaluate piece of code on all workers including main process, a convenience macro `@everywhere` is offered.
+If you want to evaluate piece of code on all workers including main process, a convenience macro `@everywhere` is offered.
 ```julia
 @everywhere @show myid()
 ```
@@ -35,19 +35,20 @@ which fails, but
 ```julia
 @everywhere begin 
 	using InteractiveUtils
-	println(InteractiveUtils.varinfo())
+	println(InteractiveUtils.varinfo(;imported = true))
 end
 ```
-
 `@everywhere` macro allows us to define function and variables, and import libraries on workers as 
 ```julia
 @everywhere begin 
 	foo(x, y) = x * y + sin(y)
 	foo(x) = foo(x, myid())
+	x = rand()
 end
 @everywhere @show foo(1.0)
+@everywhere @show x
 ```
-Alternatively, we can put the code into a separate file and load it on all workers using `-L filename.jl`
+The fact that `x` has different values on different workers and master demonstrates again the independency of processes. While we can set up everything using `@everywhere` macro, we can also put all the code for workers into a separate file, e.g. `worker.jl` and load it on all workers using `-L worker.jl`.
 
 Julia's multi-processing model is based on message-passing paradigm, but the abstraction is more akin to procedure calls. This means that users are saved from prepending messages with headers and implementing logic deciding which function should be called for thich header. Instead, we can *schedulle* an execution of a function on a remote worker and return the control immeadiately to continue in our job. A low-level function providing this functionality is `remotecall(fun, worker_id, args...)`. For example 
 ```julia
@@ -59,7 +60,7 @@ Julia's multi-processing model is based on message-passing paradigm, but the abs
 end
 r = remotecall(delayed_foo, 2, 1, 1, 60)
 ```
-returns immediately, even though the function will take at least 60 seconds. `r` does not contain result of `foo(1, 1)`, but a struct `Future`, which is a *remote reference* in Julia's terminology. It points data located on some machine, indicates, if they are available and allows to `fetch` them from the remote worker. `fetch` is blocking, which means that the execution is blocked until data are available (if they are never available, the process can wait forever.) The presence of data can be checked using `isready`, which in case of `Future` returned from `remote_call` indicate that the computation has finished.
+returns immediately, even though the function will take at least 60 seconds. `r` does not contain result of `foo(1, 1)`, but a struct `Future`, which is a *remote reference* in Julia's terminology. It points to data located on some machine, indicates, if they are available and allows to `fetch` them from the remote worker. `fetch` is blocking, which means that the execution is blocked until data are available (if they are never available, the process can wait forever.) The presence of data can be checked using `isready`, which in case of `Future` returned from `remote_call` indicate that the computation has finished.
 ```julia
 isready(r)
 fetch(r) == foo(1, 1)
@@ -92,8 +93,54 @@ Finally, if you would for some reason need to wait for the computed value, you c
 remotecall_fetch(foo, 2, 1, 1)
 ```
 
-## Example: Julia sets
-Our example for explaining mechanisms of distributed computing will be the computation of Julia set fractal. The computation of the fractal can be easily paralelized, since the value of each pixel is independent from the remaining. The example is adapted from [Eric Aubanel](http://www.cs.unb.ca/~aubanel/JuliaMultithreadingNotes.html).
+## Running example: Julia sets
+Our example for explaining mechanisms of distributed computing will be Julia set fractals, as they can be easily paralelized.  The example is adapted from [Eric Aubanel](http://www.cs.unb.ca/~aubanel/JuliaMultithreadingNotes.html). Some fractals (Julia set, Mandelbrot) are determined by properties of some complex-valued functions. Julia set counts, how many iteration is required for  ``f(z) = z^2+c`` to be bigger than two in absolute value, ``|f(z)| >=2 ``. The number of iterations can then be mapped to the pixel's color, which creates a nice visualization we know.
+```julia
+function juliaset_pixel(z₀, c)
+    z = z₀
+    for i in 1:255
+        abs2(z)> 4.0 && return (i - 1)%UInt8
+        z = z*z + c
+    end
+    return UInt8(255)
+end
+```
+A nice property of fractals like Julia set is that the computation can be easily paralelized, since the value of each pixel is independent from the remaining. In our experiments, the level of granulity will be one column, since calculation of single pixel is so fast, that thread-switching will have much higher overhead.
+```julia
+function juliaset_column!(img, c, n, j)
+    x = -2.0 + (j-1)*4.0/(n-1)
+    for i in 1:n
+        y = -2.0 + (i-1)*4.0/(n-1)
+        @inbounds img[i,j] = juliaset_pixel(x+im*y, c)
+    end
+    nothing
+end
+```
+To calculate full image
+```julia
+function juliaset(x, y, n=1000)
+    c = x + y*im
+    img = Array{UInt8,2}(undef,n,n)
+    for j in 1:n
+        juliaset_column!(img, c, n, j)
+    end
+    return img
+end
+```
+and run it
+```julia
+using Plots
+frac = juliaset(-0.79, 0.15)
+plot(heatmap(1:size(frac,1),1:size(frac,2), frac, color=:Spectral))
+```
+To observe the execution length, we will use `BenchmarkTools.jl` again
+```
+using BenchmarkTools
+julia> @btime juliaset(-0.79, 0.15);
+  39.822 ms (2 allocations: 976.70 KiB)
+```
+
+Let's now try to speed-up the computation using more processes.
 ```julia
 using Plots
 @everywhere begin 
@@ -115,20 +162,9 @@ using Plots
 	    nothing
 	end
 end
-
-function juliaset(x, y, n=1000)
-    c = x + y*im
-    img = Array{UInt8,2}(undef,n,n)
-    for j in 1:n
-        juliaset_column!(img, c, n, j, j)
-    end
-    return img
-end
-
 frac = juliaset(-0.79, 0.15)
 plot(heatmap(1:size(frac,1),1:size(frac,2), frac, color=:Spectral))
 ```
-
 We can split the computation of the whole image into bands, such that each worker computes a smaller portion.
 ```julia
 @everywhere begin 
@@ -171,8 +207,37 @@ julia> @btime juliaset_pmap(-0.79, 0.15);
 ```
 which has slightly better timing then the version based on `@spawnat` and `fetch` (as explained below in section about `Threads`, the parallel computation of Julia set suffers from each pixel taking different time to compute, which can be relieved by dividing the work into more parts --- `@btime juliaset_pmap(-0.79, 0.15, 1000, 16);`).
 
+## Shared memory
+When all workers and master are located on the same process, and the OS supports sharing memory between processes (by sharing memory pages), we can use `SharedArrays` to avoid sending the matrix with results.
+```julia
+@everywhere using SharedArrays
+function juliaset_shared(x, y, n=1000)
+    c = x + y*im
+    img = SharedArray(Array{UInt8,2}(undef,n,n))
+    @sync @distributed for j in 1:n
+        juliaset_column!(img, c, n, j, j)
+    end
+    return img
+end 
+julia> @elapsed juliaset_shared(-0.79, 0.15);
+0.021699503
+```
+On author's machine `@btime` the above crash. The following version, where we pre-allocated the shared array works fine 
+```
+img = SharedArray(Array{UInt8,2}(undef,1000,1000))
+function juliaset_shared!(img, x, y, n=1000)
+    c = x + y*im
+    @sync @distributed for j in 1:n
+        juliaset_column!(img, c, n, j, j)
+    end
+    return img
+end 
+@btime juliaset_shared!(img, -0.79, 0.15);
+```
+but both versions are not akin. It seems like the alocation of `SharedArray` costs approximately `30`ms.
+
 ## Synchronization / Communication primitives
-The orchestration of a complicated computation might be difficult with relatively low-level remote calls. A Producer / Consumer paradigm is a synchronization paradigm that uses queues. Consumer fetches work intructions from the queue and pushes results to different queue. Julia supports this paradigm with `Channel` and `RemoteChannel` primitives. Importantly, putting to and taking from queue is an atomic operation, hence we do not have take care of race conditions.
+The orchestration of a complicated computation might be difficult with relatively low-level remote calls. A *producer / consumer* paradigm is a synchronization paradigm that uses queues. Consumer fetches work intructions from the queue and pushes results to different queue. Julia supports this paradigm with `Channel` and `RemoteChannel` primitives. Importantly, putting to and taking from queue is an atomic operation, hence we do not have take care of race conditions.
 The code for the worker might look like
 ```julia
 @everywhere begin 
@@ -182,7 +247,6 @@ The code for the worker might look like
 			put!(results, (cols, juliaset_columns(c, n, cols)))
 		end
 	end
-	println("finishing juliaset_channel_worker on ", myid())
 end
 ```
 The code for the main will look like
@@ -258,19 +322,51 @@ function juliaset_channel_worker(instructions, results)
 	end
 end
 ```
-runs forever due to the `while true` loop. To stop the computation, we usually extend the type accepted by the `instructions` channel to accept some stopping token (e.g. :stop) and stop.
+runs forever due to the `while true` loop. 
+
+Julia does not provide by default any facility to kill the remote execution except sending `ctrl-c` to the remote worker as `interrupt(pids::Integer...)`. To stop the computation, we usually extend the type accepted by the `instructions` channel to accept some stopping token (e.g. :stop) and stop.
 ```julia
-function juliaset_channel_worker(instructions, results)
-	while true
-		i = take!(instructions)
-		i === :stop && break
-		c, n, cols = i
-		put!(results, (cols, juliaset_columns(c, n, cols)))
+@everywhere begin 
+	function juliaset_channel_worker(instructions, results)
+		while true
+			i = take!(instructions)
+			i === :stop && break
+			c, n, cols = i
+			put!(results, (cols, juliaset_columns(c, n, cols)))
+		end
+		println("worker $(myid()) stopped")
+		put!(results, :stop)
 	end
-	put!(results, :stop)
 end
+
+function juliaset_init(x, y, n = 1000, np = nworkers())
+  c = x + y*im
+  columns = Iterators.partition(1:n, div(n, np))
+  instructions = RemoteChannel(() -> Channel(np))
+  results = RemoteChannel(()->Channel(np))
+  foreach(p -> remote_do(juliaset_channel_worker, p, instructions, results), workers())
+  function compute()
+    img = Array{UInt8,2}(undef, n, n)
+    foreach(cols -> put!(instructions, (c, n, cols)), columns)
+    for i in 1:np
+      cols, impart = take!(results)
+      img[:,cols] .= impart;
+    end
+    img
+  end 
+end
+
+t = juliaset_init(-0.79, 0.15)
+t()
+foreach(i -> put!(t.instructions, :stop), workers())
 ```
-Julia does not provide by default any facility to kill the remote execution except sending `ctrl-c` to the remote worker as `interrupt(pids::Integer...)`.
+In the above example we paid the price of introducing type instability into the channels, which now contain types `Any` instead of carefully constructed tuples. But the impact on the overall running time is negligible
+```julia
+t = juliaset_init(-0.79, 0.15)
+julia> @btime t()
+  17.551 ms (774 allocations: 1.94 MiB)
+foreach(i -> put!(t.instructions, :stop), workers())
+```
 
 ## Sending data
 Sending parameters of functions and receiving results from a remotely called functions migh incur a significant cost. 
@@ -351,11 +447,10 @@ where `main()` is the function defined in `worker.jl` to be executed on the main
 
 A complete example can be seen in [`juliaset_p.jl`](juliaset_p.jl).
 
-## Julia sets
-An example adapted from [Eric Aubanel](http://www.cs.unb.ca/~aubanel/JuliaMultithreadingNotes.html).
-
-For ilustration, we will use Julia set fractals, ad they can be easily paralelized. Some fractals (Julia set, Mandelbrot) are determined by properties of some complex-valued functions. Julia set counts, how many iteration is required for  ``f(z) = z^2+c`` to be bigger than two in absolute value, ``|f(z)| >=2 ``. The number of iterations can then be mapped to the pixel's color, which creates a nice visualization we know.
+## Multi-threadding
+So far, we have been able to decrese the computation from 39ms to something like 13ms. Can we improve? Let's now turn our attention to multi-threadding, where we will not pay the penalty for IPC. Moreover, the computation of Julia set is multi-thread friendly, as all the memory can be pre-allocatted. We slightly modify our code to accept different methods distributing the work among slices in the pre-allocated matrix. To start Julia with support of multi-threadding, run it with `julia -t n`, where `n` is the number of threads. It is reccomended to set `n` to number of physical cores, since in hyper-threadding two threads shares arithmetic units of a single core, and in applications for which Julia was built, they are usually saturated.
 ```julia
+using BenchmarkTools
 function juliaset_pixel(z₀, c)
     z = z₀
     for i in 1:255
@@ -364,10 +459,7 @@ function juliaset_pixel(z₀, c)
     end
     return UInt8(255)
 end
-```
 
-In our multi-threadding experiments, the level of granulity will be one column, since calculation of single pixel is so fast, that thread-switching will have much higher overhead.
-```julia
 function juliaset_column!(img, c, n, j)
     x = -2.0 + (j-1)*4.0/(n-1)
     for i in 1:n
@@ -376,56 +468,59 @@ function juliaset_column!(img, c, n, j)
     end
     nothing
 end
-```
 
-To calculate full image
-```julia
-function juliaset_image!(img, c, n)
+function juliaset(x, y, n=1000)
+    c = x + y*im
+    img = Array{UInt8,2}(undef,n,n)
     for j in 1:n
         juliaset_column!(img, c, n, j)
     end
-    nothing
-end
-```
-
-```julia
-function juliaset(x, y, n=1000, method = juliaset_image!, extra...)
-    c = x + y*im
-    img = Array{UInt8,2}(undef,n,n)
-    method(img, c, n, extra...)
     return img
 end
-```
 
-and run it
-```julia
-using Plots
-frac = juliaset(-0.79, 0.15)
-plot(heatmap(1:size(frac,1),1:size(frac,2), frac, color=:Spectral))
+julia> @btime juliaset(-0.79, 0.15, 1000);
+   38.932 ms (2 allocations: 976.67 KiB)
 ```
-
-To observe the execution length, we will use `BenchmarkTools.jl` again
-```
-using BenchmarkTools
-julia> @btime juliaset(-0.79, 0.15);
-  39.822 ms (2 allocations: 976.70 KiB)
-```
-
 Let's now try to speed-up the calculation using multi-threadding. `Julia v0.5` has introduced multi-threadding with static-scheduller with a simple syntax: just prepend the for-loop with a `Threads.@threads` macro. With that, the first multi-threaded version will looks like
 ```julia
-function juliaset_static!(img, c, n)
+function juliaset_static(x, y, n=1000)
+    c = x + y*im
+    img = Array{UInt8,2}(undef,n,n)
     Threads.@threads for j in 1:n
         juliaset_column!(img, c, n, j)
     end
-    nothing
+    return img
 end
 ```
 with benchmark
 ```
-julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_static!);
+julia> 	@btime juliaset_static(-0.79, 0.15, 1000);
   16.206 ms (26 allocations: 978.42 KiB)
 ```
-Although we have used four-threads, the speed improvement is ``2.4``. Why is that? The reason is that the static scheduller partition the total number of columns (1000) into equal parts, where the total number of parts is equal to the number of threads, and assign each to a single thread. In our case, we will have four parts each of size 250. Since the execution time of computing value of each pixel is not the same and therefore there will be threads who will not do anything. This problem is addressed by dynamic schedulling, which divides the problem into smaller parts, and when a thread is finished with one part, it assigned new not-yet computed part.
+Although we have used four-threads, and the communication overhead should be next to zero, the speed improvement is ``2.4``. Why is that? 
+
+To understand bettern what is going on, we have improved the profiler we have been developing last week. The logging profiler logs time of entering and exitting every function call of every thread, which is useful to understand, what is going on. The api is not yet polished, but it will do its job. Importantly, to prevent excessive logging, we ask to log only some functions.
+```julia
+using LoggingProfiler
+function juliaset_static(x, y, n=1000)
+    c = x + y*im
+    img = Array{UInt8,2}(undef,n,n)
+    Threads.@threads for j in 1:n
+        LoggingProfiler.@recordfun juliaset_column!(img, c, n, j)
+    end
+    return img
+end
+
+LoggingProfiler.initbuffer!(1000)
+juliaset_static(-0.79, 0.15, 1000);
+LoggingProfiler.recorded()
+LoggingProfiler.adjustbuffer!()
+juliaset_static(-0.79, 0.15, 1000)
+LoggingProfiler.export2svg("/tmp/profile.svg")
+LoggingProfiler.export2luxor("profile.png")
+```
+![profile.png](profile.png)
+From the visualization of the profiler we can see not all threads were working the same time. Thread 1 and 4 were working less that Thread 2 and 3. The reason is that the static scheduller partition the total number of columns (1000) into equal parts, where the total number of parts is equal to the number of threads, and assign each to a single thread. In our case, we will have four parts each of size 250. Since execution time of computing value of each pixel is not the same, threads with a lot zero iterations will finish considerably faster. This is the incarnation of one of the biggest problems in multi-threadding / schedulling. A contemprary approach is to switch to  dynamic schedulling, which divides the problem into smaller parts, and when a thread is finished with one part, it assigned new not-yet computed part.
 
 Dynamic scheduller is supported using `Threads.@spawn` macro. The prototypical approach is the fork-join model, where one recursivelly partitions the problems and wait in each thread for the other
 ```julia
@@ -445,7 +540,14 @@ end
 ```
 Measuring the time we observe four-times speedup, which corresponds to the number of threads.
 ```julia
-julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_recspawn!);
+function juliaset_forkjoin(x, y, n=1000, ntasks = 16)
+    c = x + y*im
+    img = Array{UInt8,2}(undef,n,n)
+    juliaset_recspawn!(img, c, n, 1, n, ntasks)
+    return img
+end
+
+julia> @btime juliaset_forkjoin(-0.79, 0.15);
   10.326 ms (142 allocations: 986.83 KiB)
 ```
 Due to task switching overhead, increasing the granularity might not pay off.
@@ -462,35 +564,34 @@ Due to task switching overhead, increasing the granularity might not pay off.
 
 ```julia
 using FLoops, FoldsThreads
-function juliaset_folds!(img, c, n)
-    @floop ThreadedEx(basesize = 2) for j in 1:n
+function juliaset_folds(x, y, n=1000, basesize = 2)
+    c = x + y*im
+    img = Array{UInt8,2}(undef,n,n)
+    @floop ThreadedEx(basesize = basesize) for j in 1:n
         juliaset_column!(img, c, n, j)
     end
-    nothing
+    return img
 end
-julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_folds!);
+
+julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_folds);
   10.575 ms (52 allocations: 980.12 KiB)
 ```
 where `basesize` is the size of the part, in this case 2 columns.
 ```julia
-function juliaset_folds!(img, c, n)
-    @floop WorkStealingEx(basesize = 2) for j in 1:n
-        juliaset_column!(img, c, n, j)
-    end
-    nothing
-end
-julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_folds!);
+julia> @btime juliaset_folds(-0.79, 0.15, 1000);
   10.575 ms (52 allocations: 980.12 KiB)
 ```
 
 ```julia
-function juliaset_folds!(img, c, n)
-    @floop DepthFirstEx(basesize = 2) for j in 1:n
+function juliaset_folds(x, y, n=1000, basesize = 2)
+    c = x + y*im
+    img = Array{UInt8,2}(undef,n,n)
+    @floop DepthFirstEx(basesize = basesize) for j in 1:n
         juliaset_column!(img, c, n, j)
     end
-    nothing
+    return img
 end
-julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_folds!);
+julia> @btime juliaset_folds(-0.79, 0.15, 1000);
   10.421 ms (3582 allocations: 1.20 MiB)
 ```
 
