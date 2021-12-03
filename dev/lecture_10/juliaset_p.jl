@@ -1,3 +1,5 @@
+using Pkg
+Pkg.activate(@__DIR__)
 using Plots
 using BenchmarkTools
 using Distributed
@@ -69,5 +71,5 @@ function juliaset_shared(x, y, partitions = nworkers(), n = 1000)
     img
 end
 
-juliaset_shared(-0.79, 0.15)
-juliaset_shared(-0.79, 0.15, 16)
+# juliaset_shared(-0.79, 0.15)
+# juliaset_shared(-0.79, 0.15, 16)
