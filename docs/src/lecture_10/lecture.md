@@ -7,10 +7,10 @@ Julia offers different levels of parallel programming
 
 In this lecture, we will focus mainly on the first two, since SIMD instructions are mainly used for low-level optimization (such as writing your own very performant BLAS library), and task switching is not a true paralelism, but allows to run a different task when one task is waiting for example for IO.
 
-**The most important lesson is that before you jump into the parallelism, be certain you have made your squential code as fast as possible.**
+**The most important lesson is that before you jump into the parallelism, be certain you have made your sequential code as fast as possible.**
 
 ## Process-level paralelism
-Process-level paralelism means we run several instances of Julia (in different processes) and they communicate between each other using inter-process communication (IPC). The implementation of IPC differs if parallel julia instances share the same machine, or they are located spread over the network. By default, different processes *do not share any libraries or any variables*. The are loaded as clean and it is up to the user to set-up all needed code and data.
+Process-level paralelism means we run several instances of Julia (in different processes) and they communicate between each other using inter-process communication (IPC). The implementation of IPC differs if parallel julia instances share the same machine, or they are on different machines spread over the network. By default, different processes *do not share any libraries or any variables*. They are loaded clean and it is up to the user to set-up all needed code and data.
 
 Julia's default modus operandi is a single *main* instance controlling several workers. This main instance has `myid() == 1`, worker processes receive higher numbers. Julia can be started with multiple workers from the very beggining, using `-p` switch as 
 ```julia
@@ -31,14 +31,16 @@ As we have mentioned, workers are loaded without libraries. We can see that by r
 ```julia
 @everywhere InteractiveUtils.varinfo()
 ```
-which fails, but
+which fails, but after loading `InteractiveUtils` everywhere
 ```julia
+using Statistics
 @everywhere begin 
 	using InteractiveUtils
 	println(InteractiveUtils.varinfo(;imported = true))
 end
 ```
-`@everywhere` macro allows us to define function and variables, and import libraries on workers as 
+we see that `Statistics` was loaded only on the main process. Thus, there is not magical sharing of data and code.
+With `@everywhere` macro we can define function and variables, and import libraries on workers as 
 ```julia
 @everywhere begin 
 	foo(x, y) = x * y + sin(y)
@@ -79,7 +81,7 @@ An interesting feature of `fetch` is that it re-throw an exception raised on a d
 end
 r = @spawnat 2 exfoo()
 ```
-where `@spawnat` is a an alternative to `remotecall`, which executes a closure around expression (in this case `exfoo()`) on a specified worker (in this case 2). Fetching the result `r` throws an exception on the main process.
+where we have used `@spawnat` instead of `remote_call`. It is higher level alternative executing a closure around the expression (in this case `exfoo()`) on a specified worker, in this case 2. Coming back to the example, when we fetch the result `r`, the exception is throwed on the main process, not on the worker
 ```julia
 fetch(r)
 ```
@@ -133,14 +135,14 @@ using Plots
 frac = juliaset(-0.79, 0.15)
 plot(heatmap(1:size(frac,1),1:size(frac,2), frac, color=:Spectral))
 ```
-To observe the execution length, we will use `BenchmarkTools.jl` again
+To observe the execution length, we will use `BenchmarkTools.jl` 
 ```
 using BenchmarkTools
 julia> @btime juliaset(-0.79, 0.15);
   39.822 ms (2 allocations: 976.70 KiB)
 ```
 
-Let's now try to speed-up the computation using more processes.
+Let's now try to speed-up the computation using more processes. We first make functions available to workers
 ```julia
 using Plots
 @everywhere begin 
@@ -162,10 +164,8 @@ using Plots
 	    nothing
 	end
 end
-frac = juliaset(-0.79, 0.15)
-plot(heatmap(1:size(frac,1),1:size(frac,2), frac, color=:Spectral))
 ```
-We can split the computation of the whole image into bands, such that each worker computes a smaller portion.
+For the actual parallelisation, we split the computation of the whole image into bands, such that each worker computes a smaller portion.
 ```julia
 @everywhere begin 
 	function juliaset_columns(c, n, columns)
@@ -208,17 +208,19 @@ julia> @btime juliaset_pmap(-0.79, 0.15);
 which has slightly better timing then the version based on `@spawnat` and `fetch` (as explained below in section about `Threads`, the parallel computation of Julia set suffers from each pixel taking different time to compute, which can be relieved by dividing the work into more parts --- `@btime juliaset_pmap(-0.79, 0.15, 1000, 16);`).
 
 ## Shared memory
-When all workers and master are located on the same process, and the OS supports sharing memory between processes (by sharing memory pages), we can use `SharedArrays` to avoid sending the matrix with results.
+When main and all workers are located on the same process, and the OS supports sharing memory between processes (by sharing memory pages), we can use `SharedArrays` to avoid sending the matrix with results.
 ```julia
-@everywhere using SharedArrays
-function juliaset_shared(x, y, n=1000)
-    c = x + y*im
-    img = SharedArray(Array{UInt8,2}(undef,n,n))
-    @sync @distributed for j in 1:n
-        juliaset_column!(img, c, n, j, j)
-    end
-    return img
-end 
+@everywhere begin
+	using SharedArrays
+	function juliaset_shared(x, y, n=1000)
+	    c = x + y*im
+	    img = SharedArray(Array{UInt8,2}(undef,n,n))
+	    @sync @distributed for j in 1:n
+	        juliaset_column!(img, c, n, j, j)
+	    end
+	    return img
+	end 
+end
 julia> @elapsed juliaset_shared(-0.79, 0.15);
 0.021699503
 ```
@@ -254,13 +256,13 @@ The code for the main will look like
 function juliaset_channels(x, y, n = 1000, np = nworkers())
 	c = x + y*im
 	columns = Iterators.partition(1:n, div(n, np))
-	instructions = RemoteChannel(() -> Channel{Tuple}(np))
+	instructions = RemoteChannel(() -> Channel(np))
 	foreach(cols -> put!(instructions, (c, n, cols)), columns)
-	results = RemoteChannel(()->Channel{Tuple}(np))
+	results = RemoteChannel(()->Channel(np))
 	rfuns = [@spawnat i juliaset_channel_worker(instructions, results) for i in workers()]
 
 	img = Array{UInt8,2}(undef, n, n)
-	while isready(results)
+	for i in 1:np
 		cols, impart = take!(results)
 		img[:,cols] .= impart;
 	end
@@ -268,7 +270,6 @@ function juliaset_channels(x, y, n = 1000, np = nworkers())
 end
 
 julia> @btime juliaset_channels(-0.79, 0.15);
-  254.151 μs (254 allocations: 987.09 KiB)
 ```
 The execution timw is much higher then what we have observed in the previous cases and changing the number of workers does not help much. What went wrong? The reason is that setting up the infrastructure around remote channels is a costly process. Consider the following alternative, where (i) we let workers to run endlessly and (ii) the channel infrastructure is set-up once and wrapped into an anonymous function
 ```julia
@@ -367,6 +368,17 @@ julia> @btime t()
   17.551 ms (774 allocations: 1.94 MiB)
 foreach(i -> put!(t.instructions, :stop), workers())
 ```
+In some use-cases, the alternative can be to put all jobs to the `RemoteChannel` before workers are started, and then stop the workers when the remote channel is empty as 
+```julia
+@everywhere begin 
+	function juliaset_channel_worker(instructions, results)
+		while !isready(instructions)
+		  c, n, cols = take!(instructions)
+		  put!(results, (cols, juliaset_columns(c, n, cols)))
+		end
+	end
+end
+``` 
 
 ## Sending data
 Sending parameters of functions and receiving results from a remotely called functions migh incur a significant cost. 
@@ -379,7 +391,7 @@ and
 ```julia
 Bref = @spawnat :any rand(1000,1000)^2;
 ```
-2. It is not only volume of data (in terms of the number of bytes), but also a complexity of objects that are being sent. Serialization can be very time consuming, an efficient converstion to something simple might be wort
+2. It is not only volume of data (in terms of the number of bytes), but also a complexity of objects that are being sent. Serialization can be very time consuming, an efficient converstion to something simple might be worth
 ```julia
 using BenchmarkTools
 @everywhere begin 
@@ -422,7 +434,14 @@ remotecall_fetch(g -> eval(:(g = $(g))), 2, g)
 which is implemented in the `ParallelDataTransfer.jl` with other variants, but in general, this construct should be avoided.
 
 ## Practical advices 
-Recall that (i) workers are started as clean processes and (ii) they might not share the same environment with the main process. The latter is due to the possibility of remote machines to have a different directory structure. Our best practices are:
+Recall that (i) workers are started as clean processes and (ii) they might not share the same environment with the main process. The latter is due to the possibility of remote machines to have a different directory structure. 
+```julia
+@everywhere begin 
+	using Pkg
+	println(Pkg.project().path)
+end
+```
+Our advices earned by practice are:
 - to have shared directory (shared home) with code and to share the location of packages
 - to place all code for workers to one file, let's call it `worker.jl` (author of this includes the code for master as well).
 - put to the beggining of `worker.jl` code activating specified environment as 
@@ -550,7 +569,7 @@ end
 julia> @btime juliaset_forkjoin(-0.79, 0.15);
   10.326 ms (142 allocations: 986.83 KiB)
 ```
-Due to task switching overhead, increasing the granularity might not pay off.
+Unfortunatelly, the `LoggingProfiler` does not handle task migration at the moment, which means that we cannot visualize the results. Due to task switching overhead, increasing the granularity might not pay off.
 ```julia
 4 tasks: 16.262 ms (21 allocations: 978.05 KiB)
 8 tasks: 10.660 ms (45 allocations: 979.80 KiB)
@@ -640,9 +659,8 @@ files = filter(isfile, readdir("/Users/tomas.pevny/Downloads/", join = true))
 is much better.
 
 
-## Multi-Threadding 
-- Locks / lock-free multi-threadding
-
+## Locks / lock-free multi-threadding
+Avoid locks.
 
 ## Take away message
 When deciding, what kind of paralelism to employ, consider following
@@ -652,11 +670,13 @@ When deciding, what kind of paralelism to employ, consider following
 - `Transducers` thrives for (almost) the same code to support thread- and process-based paralelism.
 
 ### Materials
-- http://cecileane.github.io/computingtools/pages/notes1209.html
-- https://lucris.lub.lu.se/ws/portalfiles/portal/61129522/julia_parallel.pdf
-- http://igoro.com/archive/gallery-of-processor-cache-effects/
-- https://www.csd.uwo.ca/~mmorenom/cs2101a_moreno/Parallel_computing_with_Julia.pdf
-- Threads: https://juliahighperformance.com/code/Chapter09.html
-- Processes: https://juliahighperformance.com/code/Chapter10.html
-- Alan Adelman uses FLoops in https://www.youtube.com/watch?v=dczkYlOM2sg
-- Examples: ?Heat equation? from https://hpc.llnl.gov/training/tutorials/introduction-parallel-computing-tutorial#Examples
+- [http://cecileane.github.io/computingtools/pages/notes1209.html](http://cecileane.github.io/computingtools/pages/notes1209.html)
+- [https://lucris.lub.lu.se/ws/portalfiles/portal/61129522/julia_parallel.pdf](https://lucris.lub.lu.se/ws/portalfiles/portal/61129522/julia_parallel.pdf)
+- [http://igoro.com/archive/gallery-of-processor-cache-effects/](http://igoro.com/archive/gallery-of-processor-cache-effects/)
+- [https://www.csd.uwo.ca/~mmorenom/cs2101a_moreno/Parallel_computing_with_Julia.pdf](https://www.csd.uwo.ca/~mmorenom/cs2101a_moreno/Parallel_computing_with_Julia.pdf)
+- Complexity of thread schedulling [https://www.youtube.com/watch?v=YdiZa0Y3F3c](https://www.youtube.com/watch?v=YdiZa0Y3F3c)
+- TapIR --- Teaching paralelism to Julia compiler [https://www.youtube.com/watch?v=-JyK5Xpk7jE](https://www.youtube.com/watch?v=-JyK5Xpk7jE)
+- Threads: [https://juliahighperformance.com/code/Chapter09.html](https://juliahighperformance.com/code/Chapter09.html)
+- Processes: [https://juliahighperformance.com/code/Chapter10.html](https://juliahighperformance.com/code/Chapter10.html)
+- Alan Adelman uses FLoops in [https://www.youtube.com/watch?v=dczkYlOM2sg](https://www.youtube.com/watch?v=dczkYlOM2sg)
+- Examples: ?Heat equation? from [https://hpc.llnl.gov/training/tutorials/](introduction-parallel-computing-tutorial#Examples(https://hpc.llnl.gov/training/tutorials/)
