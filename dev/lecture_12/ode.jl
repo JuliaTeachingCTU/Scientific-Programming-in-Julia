@@ -56,6 +56,9 @@ import Base: +, -, *, zero
 *(x::GaussNum{T},a::T) where T =GaussNum(x.μ*a,a*x.σ)
 *(a::T,x::GaussNum{T}) where T =GaussNum(x.μ*a,a*x.σ)
 
+# TODO
+# sin(x::GaussNum)= @uncertain sin(x)
+
 
 +(x1::GaussNum{T},x2::GaussNum{T}) where T =GaussNum(x1.μ+x2.μ, sqrt(x1.σ.^2 + x2.σ.^2))
 -(x1::GaussNum{T},x2::GaussNum{T}) where T =GaussNum(x1.μ-x2.μ, sqrt(x1.σ.^2 + x2.σ.^2))
@@ -75,7 +78,25 @@ end
 
 GX=solve(f,[GaussNum(1.0,0.1),GaussNum(1.0,0.1)],[0.1,0.2,0.3,0.2],0.1,1000)
 M,V=MV(GX)
-plot(M',errorbar=V')
+plot(M')
+plot(M[1,1:30:end],errorbar=V[1,1:30:end],label="x",color=:blue)
+plot!(M[2,1:30:end],errorbar=V[2,1:30:end],label="y",color=:red)
+
+savefig("LV_GaussNum.svg")
+
 using Measurements
 MX=solve(f,[1.0±0.1,1.0±0.1],[0.1,0.2,0.3,0.2],0.1,1000)
-plot(MX[1,:])
+plot(MX[1,1:30:end],label="x",color=:blue)
+plot!(MX[2,1:30:end],label="y",color=:red)
+
+savefig("LV_Measurements.svg")
+
+MX=solve(f,[1.0±0.1,1.0±0.1],[0.1±0.01,0.2±0.01,0.3±0.01,0.2±0.01],0.1,1000)
+plot(MX[1,1:30:end],label="x",color=:blue)
+plot!(MX[2,1:30:end],label="y",color=:red)
+
+savefig("LV_Measurements2.svg")
+
+
+# Plot receipe
+# plot(Vector{GaussNum})
