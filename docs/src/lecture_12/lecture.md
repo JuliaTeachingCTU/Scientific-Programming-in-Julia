@@ -20,10 +20,10 @@ Can be written in vector arguments ``\mathbf{x}=[x,y]``:
 ```math
 \frac{d\mathbf{x}}{dt}=f(\mathbf{x},\theta)
 ```
-with arbitrary function ``f`` with vector of parmeters ``\theta``.
+with arbitrary function ``f`` with vector of parameters ``\theta``.
 
 
-The first steps we may want to do with an ODE is to see it evolution in time. The most simple approach is to discretize the time axis into steps:
+The first steps we may want to do with an ODE is to see it's evolution in time. The most simple approach is to discretize the time axis into steps:
 ``t = [t_1, t_2, t_3, \ldots t_T]``
 and evaluate solution at these points.
 
@@ -47,7 +47,7 @@ function f(x,θ)
 end
 
 function solve(f,x0::AbstractVector,θ,dt,N)
-  X = zeros(length(x0),N)
+  X = hcat([zero(x0) for i=1:N]...)
   X[:,1]=x0
   for t=1:N-1
      X[:,t+1]=X[:,t]+dt*f(X[:,t],θ)
@@ -56,10 +56,85 @@ function solve(f,x0::AbstractVector,θ,dt,N)
 end
 ```
 
+
 Is trivial but works:
+
 ![](lotka.svg)
 
-Note that the method was dispatched on abstract vector. The reason is that ODE does not only 
+
+## Uncertainty propagation
+
+Prediction of the ODE model is valid only if all parameters and all initial conditions are accurate. This is almost never the case. While the number of sheep can be known, the number of wolfes in a forest is more uncertain. The same model holds for predator-prey in insects where the number of individuals can be only estimated.
+
+Uncertain initial conditions:
+- number given by a probability distribution 
+-  interval ``[0.8,1.2]`` corresponds to uniform distribution ``U(0.8,1.2)``
+- gaussian ``N(\mu,\sigma)``, with mean ``\mu`` and standard deviation ``\sigma`` e.g. ``N(1,0.1)``
+-  more complicated distributins are more realistic (the number of animals is not negative!)
+
+### Ensemble approach
+
+The most simple approach is to represent distribution by an empirical density = discrete samples.
+```math
+p(x)\approx \frac{1}{K}\sum_{k=1}^{K} \delta(x-x^{(k)})
+```
+
+In the case of a Gaussian, we just sample:
+```julia
+K = 10
+X0 = [x0 .+ 0.1*randn(2) for _=1:K]
+Xens=[X=solve(f,X0[i],θ0,dt,N) for i=1:K]
+```
+(can be implemented more elegantly using multiple dispatch on Vector{Vector})
+
+While it is very simple and universal, it may become hard to intepret. - What is the probability that it will higher than ``x_{max}``?
+- Improving accuracy with higher number of samples (expensive!)
+
+### Propagating a Gaussian
+
+Propagation of uncertainty has been studied in many areas of science. Relation between accuracy and computational speed is always a tradeoff.
+
+A common appoach to propagation of uncertainty is linearized Gaussian:
+- variable ``x`` is represented by gaussian ``N(\mu,\sigma)``
+- transformation of addition: ``x+a\sim N(\mu+a,\sigma)``
+- transformation of multiplication: ``a*x\sim N(a*\mu,a*\sigma)``
+- general transformation approximated:
+```math
+g(x)\sim N(g(\mu),g'(x)*\sigma)
+```
+
+This can be efficienty implemneted in Julia:
+```julia
+struct GNum{T} where T<:Real
+  μ::T
+  σ::T
+end
+import Base: +, *
++(x::GaussNum{T},a::T) where T =GaussNum(x.μ+a,x.σ)
++(a::T,x::GaussNum{T}) where T =GaussNum(x.μ+a,x.σ)
+*(x::GaussNum{T},a::T) where T =GaussNum(x.μ*a,a*x.σ)
+*(a::T,x::GaussNum{T}) where T =GaussNum(x.μ*a,a*x.σ)
+```
+
+For the ODE we need multiplication of two Gaussians. Using Taylor expansion:
+```math
+g(x_1,x_2)=N(g(\mu_1,\mu_2), \sqrt{(dg/dx_1(\mu_1,\mu_2)\sigma_1)^2 + (dg/dx_1(\mu_1,\mu_2)\sigma_1)^2})
+```
+which trivially applies to sum: ``x_1+x_2=N(\mu_1+\mu_2, \sqrt{\sigma_1^2 + \sigma_1^2})``
+
+```julia
++(x1::GaussNum{T},x2::GaussNum{T}) where T =GaussNum(x1.μ+x2.μ,sqrt(x1.σ.^2 + x2.σ.^2))
+*(x1::GaussNum{T},x2::GaussNum{T}) where T =GaussNum(x1.μ*x2.μ, sqrt(x1.σ.^2 + x2.σ.^2))
+
+```
+
+- TODO: can we make this more fancy? Automatic generation
+
+
+## Vector uncertainty
+The approach above competely ignores the covariances between variables
+
+
 
 - check Chris Raucausacc latest blog
   https://julialang.org/blog/2021/10/DEQ/
