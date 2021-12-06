@@ -77,4 +77,5 @@ GX=solve(f,[GaussNum(1.0,0.1),GaussNum(1.0,0.1)],[0.1,0.2,0.3,0.2],0.1,1000)
 M,V=MV(GX)
 plot(M',errorbar=V')
 using Measurements
-GX=solve(f,[1.0±0.1,1.0±0.1],[0.1,0.2,0.3,0.2],0.1,1000)
+MX=solve(f,[1.0±0.1,1.0±0.1],[0.1,0.2,0.3,0.2],0.1,1000)
+plot(MX[1,:])
