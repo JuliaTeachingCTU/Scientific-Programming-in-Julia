@@ -132,8 +132,14 @@ which trivially applies to sum: ``x_1+x_2=N(\mu_1+\mu_2, \sqrt{\sigma_1^2 + \sig
 
 
 ## Vector uncertainty
-The approach above competely ignores the covariances between variables
+The approach above competely ignores the covariances between variables. While it is possible to do it linearnly in the same fashion, the approach suffer from a loss of precision under non-linearity.
 
+A more sophisticated approach is based on decomposition of the covariance matrix 
+
+
+# Manipulating ODEs
+
+So far, we have considered first-order ODEs. Many ODEs are defined in higher order form, e.g. 
 
 
 - check Chris Raucausacc latest blog
