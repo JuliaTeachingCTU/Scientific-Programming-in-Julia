@@ -98,5 +98,34 @@ plot!(MX[2,1:30:end],label="y",color=:red)
 savefig("LV_Measurements2.svg")
 
 
+
 # Plot receipe
 # plot(Vector{GaussNum})
+
+using LinearAlgebra
+function solve(f,x0::AbstractVector,√Σ0, θ,dt,N)
+  const n = length(x0)
+  const n2 = 2*length(x0)
+  const Qp = sqrt(n2)*[I(n) -I(n)]
+
+  X = hcat([zero(x0) for i=1:N]...)
+  S = hcat([zero(x0) for i=1:N]...)
+  X[:,1]=x0
+  √Σ = √Σ0
+  Σ = √Σ* √Σ'
+  S[:,1]= diag(Σ)
+  for t=1:N-1
+    Xp = x0 .+ √Σ * Qp
+    for i=1:n2 # all quadrature points
+      Xp.=X[:,t] + dt*f(Xp[:,i],θ)
+    end
+    mXp=mean(Xp,dims=2)
+    X[:,t+1]=mXp
+    Σ=(Xp.-mXp)*(Xp.-mXp)'/sqrt(n2)
+    S[:,t+1]=diag(Σ)
+    √Σ = chol(Σ)
+  end
+  X,S
+end
+
+## Extension to arbitrary 
