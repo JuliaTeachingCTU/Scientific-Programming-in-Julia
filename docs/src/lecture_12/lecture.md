@@ -87,7 +87,10 @@ Xens=[X=solve(f,X0[i],θ0,dt,N) for i=1:K]
 ```
 (can be implemented more elegantly using multiple dispatch on Vector{Vector})
 
-While it is very simple and universal, it may become hard to intepret. - What is the probability that it will higher than ``x_{max}``?
+![](LV_ensemble.svg)
+
+While it is very simple and universal, it may become hard to intepret. 
+- What is the probability that it will higher than ``x_{max}``?
 - Improving accuracy with higher number of samples (expensive!)
 
 ### Propagating a Gaussian
@@ -116,9 +119,9 @@ import Base: +, *
 *(a::T,x::GaussNum{T}) where T =GaussNum(x.μ*a,a*x.σ)
 ```
 
-For the ODE we need multiplication of two Gaussians. Using Taylor expansion:
+For the ODE we need multiplication of two Gaussians. Using Taylor expansion and neglecting covariances:
 ```math
-g(x_1,x_2)=N(g(\mu_1,\mu_2), \sqrt{(dg/dx_1(\mu_1,\mu_2)\sigma_1)^2 + (dg/dx_1(\mu_1,\mu_2)\sigma_1)^2})
+g(x_1,x_2)=N(g(\mu_1,\mu_2), \sqrt{(\frac{dg}{dx_1}(\mu_1,\mu_2)\sigma_1)^2 + (\frac{dg}{dx_1}(\mu_1,\mu_2)\sigma_1)^2})
 ```
 which trivially applies to sum: ``x_1+x_2=N(\mu_1+\mu_2, \sqrt{\sigma_1^2 + \sigma_1^2})``
 
@@ -128,14 +131,45 @@ which trivially applies to sum: ``x_1+x_2=N(\mu_1+\mu_2, \sqrt{\sigma_1^2 + \sig
 
 ```
 
-- TODO: can we make this more fancy? Automatic generation
+- it is necessary to define new initialization (functions `zero`)
+- function overloading can be automated (macro, generated functions)
+
+![](LV_GaussNum.svg)
+
+The result does not correspond to the ensemble version above.
+- we have ignored the covariances
+- extension to version with covariances is possible by keeping track of the correlations (`Measurements.jl`), where other variables are stored in a dictionary:
+  - correlations found by language manipulations
+  - very flexible and easy-to-use
+  - discovering the covariances requires to build the covariance from `ids`. (Expensive if done too often).
 
 
 ## Vector uncertainty
+To represent the uncertainty 
 The approach above competely ignores the covariances between variables. While it is possible to do it linearnly in the same fashion, the approach suffer from a loss of precision under non-linearity.
 
-A more sophisticated approach is based on decomposition of the covariance matrix 
+A more sophisticated approach is based on moment matching:
+```math
+\mu_g = \int g(x) p(x) dx
+```
+for which is ``g(\mu)`` poor approximation, corresponding to:
+```math
+\mu_g = g(\mu) = \int g(x) \delta(x-\mu) dx
+```
+For Gaussian distribution, we can use a smarter integration rule, called the Gauss-Hermite quadrature:
+```math
+\mu_g = \int g(x) p(x) dx \approx \sum_{j=1}^J w_j g(x_j)
+```
+where ``x_j`` are prescribed quadrature points (see e.g. ![online tables](https://www.efunda.com/math/num_integration/findgausshermite.cfm))
 
+In multivariate setting, the same problem is typically solved with the aim to reduce the computational cost to linear complexity with dimension. Most often aimimg at ``O(2dim(d))`` complexity.
+
+One of the most popular approaches today is based on cubature rules approximating the Gaussian in radial-spherical coordinates.
+
+decomposition of the covariance matrix 
+```math
+
+```
 
 # Manipulating ODEs
 
