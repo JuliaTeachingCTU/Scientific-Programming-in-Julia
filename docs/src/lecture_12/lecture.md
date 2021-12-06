@@ -166,15 +166,33 @@ In multivariate setting, the same problem is typically solved with the aim to re
 
 One of the most popular approaches today is based on cubature rules approximating the Gaussian in radial-spherical coordinates.
 
-decomposition of the covariance matrix 
-```math
+## Cubature rules
 
+Consider Gaussian distribution with mean ``\mu`` and covariance matrix ``\Sigma`` that is positive definite with square root ``\sqrt\Sigma``, such that ``\sqrt\Sigma^T \sqrt\Sigma=\Sigma``. The quadrature pints are:
+```math
+X_q = \mu .+ \sqrt\Sigma Q
+```
+where ``Q=[q_1,\ldots q_{2d}]`` are constant vectors
+```math
+Q = \sqrt{d} [ I_d -I_d]
+```
+with associated weights
+```math
+w_i = \frac{1}{2d}, i=1,\ldots,sd
+```
+where ``d`` is dimension of the vectors.
+
+The quadrature points are propogated through the non-linearity and the resulting Gaussian distribution is:
+```math
+\begin{align}
+x' & \sim N(\mu',\Sigma')\\
+\mu' & = \frac{1}{2d}\sum_{j=1}^{2d} x_i\\
+\Sigma &= \frac{1}{2d}\sum_{j=1}^{2d} (x_i-\mu')^T (X_i-\mu')
+\end{align}
 ```
 
-# Manipulating ODEs
 
-So far, we have considered first-order ODEs. Many ODEs are defined in higher order form, e.g. 
+## Containing uncertainty in vectors
 
+With vectorized uncertainty, it is now harder to assign which variable is now the first, second, etc.
 
-- check Chris Raucausacc latest blog
-  https://julialang.org/blog/2021/10/DEQ/
