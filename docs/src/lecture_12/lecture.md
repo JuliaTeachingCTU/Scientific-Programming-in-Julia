@@ -134,7 +134,25 @@ which trivially applies to sum: ``x_1+x_2=N(\mu_1+\mu_2, \sqrt{\sigma_1^2 + \sig
 - it is necessary to define new initialization (functions `zero`)
 - function overloading can be automated (macro, generated functions)
 
+```julia
+GX=solve(f,[GaussNum(1.0,0.1),GaussNum(1.0,0.1)],[0.1,0.2,0.3,0.2],0.1,1000)
+```
+
 ![](LV_GaussNum.svg)
+
+## Flexibility
+
+The great advantage of the former model was the ability to run an arbitrary code with uncertainty at an arbitrary number.
+
+For example, we may know the initial conditions, but do not know the parameter value.
+
+```julia
+GX=solve(f,[GaussNum(1.0,0.1),GaussNum(1.0,0.1)],[GaussNum(0.1,0.1),0.2,0.3,0.2],0.1,1000)
+```
+
+![](LV_GaussNum2.svg)
+
+## Disadvantage
 
 The result does not correspond to the ensemble version above.
 - we have ignored the covariances
@@ -145,8 +163,7 @@ The result does not correspond to the ensemble version above.
 
 
 ## Vector uncertainty
-To represent the uncertainty 
-The approach above competely ignores the covariances between variables. While it is possible to do it linearnly in the same fashion, the approach suffer from a loss of precision under non-linearity.
+The previous approach competely ignores the covariances between variables. Even if we tract covariances linearnly in the same fashion, the approach will suffer from a loss of precision under non-linearity. 
 
 A more sophisticated approach is based on moment matching:
 ```math
@@ -163,6 +180,10 @@ For Gaussian distribution, we can use a smarter integration rule, called the Gau
 where ``x_j`` are prescribed quadrature points (see e.g. ![online tables](https://www.efunda.com/math/num_integration/findgausshermite.cfm))
 
 In multivariate setting, the same problem is typically solved with the aim to reduce the computational cost to linear complexity with dimension. Most often aimimg at ``O(2dim(d))`` complexity.
+
+
+![](https://photos1.blogger.com/blogger/5955/293/1600/unscented-transform-explained.jpg)
+
 
 One of the most popular approaches today is based on cubature rules approximating the Gaussian in radial-spherical coordinates.
 
@@ -191,8 +212,19 @@ x' & \sim N(\mu',\Sigma')\\
 \end{align}
 ```
 
+- it is easy to check that if the sigma-points are propagated through an identity, they preserve the mean and variance.
 
-## Containing uncertainty in vectors
+For our example:
 
-With vectorized uncertainty, it is now harder to assign which variable is now the first, second, etc.
+![](LV_Quadrics.svg)
+
+- only 4 trajectories propagated deterministically
+- can not be implemented using a single number type
+- in this implementation we need to use vector representations
+  - simple for initial conditions,
+  - how to extend to operate also on parameters?
+  - define translation of vectors to ODE
+
+-- Lab/Homework?
+
 

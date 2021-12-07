@@ -84,6 +84,14 @@ plot!(M[2,1:30:end],errorbar=V[2,1:30:end],label="y",color=:red)
 
 savefig("LV_GaussNum.svg")
 
+GX=solve(f,[GaussNum(1.0,0.1),GaussNum(1.0,0.1)],[GaussNum(0.1,0.1),0.2,0.3,0.2],0.1,1000)
+M,V=MV(GX)
+plot(M')
+plot(M[1,1:30:end],errorbar=V[1,1:30:end],label="x",color=:blue)
+plot!(M[2,1:30:end],errorbar=V[2,1:30:end],label="y",color=:red)
+
+savefig("LV_GaussNum2.svg")
+
 using Measurements
 MX=solve(f,[1.0±0.1,1.0±0.1],[0.1,0.2,0.3,0.2],0.1,1000)
 plot(MX[1,1:30:end],label="x",color=:blue)
@@ -103,7 +111,7 @@ savefig("LV_Measurements2.svg")
 # plot(Vector{GaussNum})
 
 using LinearAlgebra
-function solve(f,x0::AbstractVector,sqΣ0, θ,dt,N)
+function solve(f,x0::AbstractVector,sqΣ0, θ,dt,N,Nr)
    n = length(x0)
    n2 = 2*length(x0)
    Qp = sqrt(n)*[I(n) -I(n)]
@@ -111,19 +119,23 @@ function solve(f,x0::AbstractVector,sqΣ0, θ,dt,N)
   X = hcat([zero(x0) for i=1:N]...)
   S = hcat([zero(x0) for i=1:N]...)
   X[:,1]=x0
+  Xp = x0 .+ sqΣ0*Qp
   sqΣ = sqΣ0
   Σ = sqΣ* sqΣ'
   S[:,1]= diag(Σ)
   for t=1:N-1
-    Xp = X[:,t] .+ sqΣ * Qp
+    if rem(t,Nr)==0
+      Xp .= X[:,t] .+ sqΣ * Qp
+    end
     for i=1:n2 # all quadrature points
       Xp[:,i].=Xp[:,i] + dt*f(Xp[:,i],θ)
     end
     mXp=mean(Xp,dims=2)
     X[:,t+1]=mXp
     Σ=Matrix((Xp.-mXp)*(Xp.-mXp)'/n2)
-    S[:,t+1]=diag(Σ)
-    # @show Σ
+    S[:,t+1]=sqrt.(diag(Σ))
+    @show Σ
+
     sqΣ = cholesky(Σ).L
 
   end
@@ -132,10 +144,8 @@ end
 
 ## Extension to arbitrary 
 
-QX,QS=solve(f,[1.0,1.0],sqrt(0.1)*I(2),θ0,0.1,1000)
+QX,QS=solve(f,[1.0,1.0],(0.1)*I(2),θ0,0.1,1000,1e5)
 plot(QX[1,1:30:end],label="x",color=:blue,errorbar=QS[1,1:30:end])
 plot!(QX[2,1:30:end],label="y",color=:red,errorbar=QS[2,1:30:end])
 
-QX,QS=solve(f,[1.0,1.0],sqrt(0.1)*I(2),θ0,0.01,10000)
-plot(QX[1,1:100:end],label="x",color=:blue,errorbar=QS[1,1:100:end])
-plot!(QX[2,1:100:end],label="y",color=:red,errorbar=QS[2,1:100:end])
+savefig("LV_Quadrics.svg")
