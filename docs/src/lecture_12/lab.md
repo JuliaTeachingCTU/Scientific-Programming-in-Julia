@@ -139,7 +139,11 @@ plot!(p1,t,X[2,:], color=2, lw=3, alpha=0.8, label="y Euler")
 ## Runge-Kutta ODE Solver
 
 As you can see in the plot above, the Euler method quickly becomes quite
-inaccurate. There exist many different ODE solvers. To demonstrate how we can
+inaccurate because we make a step in the direction of the tangent which inevitably
+leads us away from the perfect solution as shown in the plot below
+![euler](euler.jpg)
+
+There exist many different ODE solvers. To demonstrate how we can
 get significantly better results with a simple tweak, we will now implement the
 second order Runge-Kutta method `RK2`:
 ```math
@@ -148,6 +152,11 @@ second order Runge-Kutta method `RK2`:
        x_{n+1} &= x_n + \frac{h}{2}(f(x_n,t_n)+f(\tilde x_{n+1},t_{n+1}))
 \end{align*}
 ```
+`RK2` computes an initial guess $\tilde x_{n+1}$ to then average
+the slopes at the current point $x_n$ and at the guess $\tilde x_{n+1}$
+which is illustarted below
+![rk2](rk2.png)
+
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
@@ -165,8 +174,9 @@ struct RK2{T} <: ODESolver
 end
 function (solver::RK2)(prob::ODEProblem, u, t)
     f, θ, dt  = prob.f, prob.θ, solver.dt
-    uh = u + f(u,θ)*dt
-    u + dt/2*(f(u,θ) + f(uh,θ)), t+dt
+    du = f(u,θ)
+    uh = u + du*dt
+    u + dt/2*(du + f(uh,θ)), t+dt
 end
 ```
 ```@raw html
