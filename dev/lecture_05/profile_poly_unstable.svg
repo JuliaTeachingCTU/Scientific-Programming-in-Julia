@@ -1,53 +1,53 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" width="777" height="555" viewBox="0 0 777 555"
-     xmlns="http://www.w3.org/2000/svg" id="fig-b4151c5769a24225a42af2f441378c2a">
+     xmlns="http://www.w3.org/2000/svg" id="fig-e9dc194bec174a8b804f8556e5675f0f">
 <defs>
-    <clipPath id="fig-b4151c5769a24225a42af2f441378c2a-clip">
+    <clipPath id="fig-e9dc194bec174a8b804f8556e5675f0f-clip">
         <rect x="0" y="0" width="777" height="555"/>
     </clipPath>
 </defs>
 <style type="text/css">
-    #fig-b4151c5769a24225a42af2f441378c2a text {
+    #fig-e9dc194bec174a8b804f8556e5675f0f text {
         pointer-events: none;
         font-family: inherit;
         font-size: 12px;
         fill: #000000;
     }
-    text#fig-b4151c5769a24225a42af2f441378c2a-caption {
+    text#fig-e9dc194bec174a8b804f8556e5675f0f-caption {
         font-size: 16.8px;
         fill: #000000;
         text-anchor: middle;
     }
-    #fig-b4151c5769a24225a42af2f441378c2a-bg {
+    #fig-e9dc194bec174a8b804f8556e5675f0f-bg {
         fill: #FFFFFF;
     }
-    #fig-b4151c5769a24225a42af2f441378c2a-viewport rect, #fig-b4151c5769a24225a42af2f441378c2a-viewport path {
+    #fig-e9dc194bec174a8b804f8556e5675f0f-viewport rect, #fig-e9dc194bec174a8b804f8556e5675f0f-viewport path {
         vector-effect: non-scaling-stroke;
         fill-opacity: 1;
     }
-    #fig-b4151c5769a24225a42af2f441378c2a-viewport text {
+    #fig-e9dc194bec174a8b804f8556e5675f0f-viewport text {
         stroke: #000000;
         stroke-width: 0;
         stroke-opacity: 0.35;
     }
-    #fig-b4151c5769a24225a42af2f441378c2a-viewport rect:hover, #fig-b4151c5769a24225a42af2f441378c2a-viewport path:hover {
+    #fig-e9dc194bec174a8b804f8556e5675f0f-viewport rect:hover, #fig-e9dc194bec174a8b804f8556e5675f0f-viewport path:hover {
         fill-opacity: 0.75;
         stroke: #000000;
         stroke-width: 0.5;
     }
-    #fig-b4151c5769a24225a42af2f441378c2a-viewport + rect {
+    #fig-e9dc194bec174a8b804f8556e5675f0f-viewport + rect {
         fill: #FFFFFF;
         opacity: 0.8;
     }
-    text#fig-b4151c5769a24225a42af2f441378c2a-details{
+    text#fig-e9dc194bec174a8b804f8556e5675f0f-details{
         fill: #000000;
     }
 </style>
-<g id="fig-b4151c5769a24225a42af2f441378c2a-frame" clip-path="url(#fig-b4151c5769a24225a42af2f441378c2a-clip)">
-<rect id="fig-b4151c5769a24225a42af2f441378c2a-bg" x="0" y="0" width="777" height="555"/>
-<text id="fig-b4151c5769a24225a42af2f441378c2a-caption" x="388.5" y="24">Profile results</text>
-<g id="fig-b4151c5769a24225a42af2f441378c2a-viewport" transform="scale(1)">
+<g id="fig-e9dc194bec174a8b804f8556e5675f0f-frame" clip-path="url(#fig-e9dc194bec174a8b804f8556e5675f0f-clip)">
+<rect id="fig-e9dc194bec174a8b804f8556e5675f0f-bg" x="0" y="0" width="777" height="555"/>
+<text id="fig-e9dc194bec174a8b804f8556e5675f0f-caption" x="388.5" y="24">Profile results</text>
+<g id="fig-e9dc194bec174a8b804f8556e5675f0f-viewport" transform="scale(1)">
 <rect x="8" y="504" width="760" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
 <text x="8" dx="4" y="515.25"> in :-1</text>
 <rect x="8" y="489" width="746.67" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
@@ -100,16 +100,24 @@
 <text x="8" dx="4" y="155.25">eval in boot.jl:373</text>
 <rect x="8" y="129" width="746.67" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="8" dx="4" y="140.25">run_polynomial in REPL[1]:3</text>
-<rect x="8" y="114" width="733.33" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="8" dx="4" y="125.25">polynomial in REPL[1]:4</text>
-<rect x="8" y="99" width="706.67" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="110.25">^ in math.jl:928</text>
-<rect x="714.67" y="99" width="13.33" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="714.67" dx="4" y="110.25">iterate in range.jl:837</text>
-<rect x="714.67" y="84" width="13.33" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="714.67" dx="4" y="95.25">== in promotion.jl:468</text>
-<rect x="741.33" y="114" width="13.34" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="741.33" dx="4" y="125.25">polynomial in range.jl:0</text>
+<rect x="8" y="114" width="13.33" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="8" dx="4" y="125.25">polynomial in REPL[1]:0</text>
+<rect x="21.33" y="114" width="13.34" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="21.33" dx="4" y="125.25">polynomial in REPL[1]:3</text>
+<rect x="21.33" y="99" width="13.34" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="21.33" dx="4" y="110.25">iterate in range.jl:833</text>
+<rect x="34.67" y="114" width="720" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="34.67" dx="4" y="125.25">polynomial in REPL[1]:4</text>
+<rect x="34.67" y="99" width="693.33" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="34.67" dx="4" y="110.25">^ in math.jl:928</text>
+<rect x="728" y="99" width="13.33" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="728" dx="4" y="110.25">* in promotion.jl:380</text>
+<rect x="728" y="84" width="13.33" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="728" dx="4" y="95.25">* in float.jl:405</text>
+<rect x="741.33" y="99" width="13.34" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="741.33" dx="4" y="110.25">iterate in range.jl:837</text>
+<rect x="741.33" y="84" width="13.34" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="741.33" dx="4" y="95.25">== in promotion.jl:468</text>
 </g></g>
 <script><![CDATA[
 // Snap.svg 0.3.0
@@ -504,10 +512,10 @@ f+=g+"]",i[b]=f}return Function("val","return Snap.path.toString.call(["+i+"])")
 <script><![CDATA[
 if (typeof require === 'function' && define.amd) {
     require(['ProfileSVG'], function (ProfileSVG) {
-        ProfileSVG.initialize("fig-b4151c5769a24225a42af2f441378c2a");
+        ProfileSVG.initialize("fig-e9dc194bec174a8b804f8556e5675f0f");
     });
 } else {
-    ProfileSVG.initialize("fig-b4151c5769a24225a42af2f441378c2a");
+    ProfileSVG.initialize("fig-e9dc194bec174a8b804f8556e5675f0f");
 }
 ]]></script>
 </svg>
