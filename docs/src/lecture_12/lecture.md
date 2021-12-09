@@ -1,6 +1,6 @@
-Ordinary Differencial equation
+# Ordinary Differencial equations
 
-Differential equations are commonly used in science to describe many aspects of the physical world, ranging from dynamical systems, curves in space, to a complex multi-physics phenomena. 
+Differential equations are commonly used in science to describe many aspects of the physical world, ranging from dynamical systems, curves in space, to complex multi-physics phenomena. 
 
 As an example, consider a simple non-linear ordinary differential equation:
 
@@ -57,7 +57,7 @@ end
 ```
 
 
-Is trivial but works:
+Is simple and working (with sufficienty small ``dt``):
 
 ![](lotka.svg)
 
@@ -70,26 +70,26 @@ Uncertain initial conditions:
 - number given by a probability distribution 
 -  interval ``[0.8,1.2]`` corresponds to uniform distribution ``U(0.8,1.2)``
 - gaussian ``N(\mu,\sigma)``, with mean ``\mu`` and standard deviation ``\sigma`` e.g. ``N(1,0.1)``
--  more complicated distributins are more realistic (the number of animals is not negative!)
+-  more complicated distributions are more realistic (the number of animals is not negative!)
 
 ### Ensemble approach
 
 The most simple approach is to represent distribution by an empirical density = discrete samples.
 ```math
-p(x)\approx \frac{1}{K}\sum_{k=1}^{K} \delta(x-x^{(k)})
+p(\mathbf{x})\approx \frac{1}{K}\sum_{k=1}^{K} \delta(\mathbf{x}-\mathbf{x}^{(k)})
 ```
 
 In the case of a Gaussian, we just sample:
 ```julia
 K = 10
-X0 = [x0 .+ 0.1*randn(2) for _=1:K]
-Xens=[X=solve(f,X0[i],θ0,dt,N) for i=1:K]
+X0 = [x0 .+ 0.1*randn(2) for _=1:K]         # samples of initial conditions
+Xens=[X=solve(f,X0[i],θ0,dt,N) for i=1:K]   # solve multiple times
 ```
 (can be implemented more elegantly using multiple dispatch on Vector{Vector})
 
 ![](LV_ensemble.svg)
 
-While it is very simple and universal, it may become hard to intepret. 
+While it is very simple and universal, it may become hard to interpret. 
 - What is the probability that it will higher than ``x_{max}``?
 - Improving accuracy with higher number of samples (expensive!)
 
@@ -103,10 +103,10 @@ A common appoach to propagation of uncertainty is linearized Gaussian:
 - transformation of multiplication: ``a*x\sim N(a*\mu,a*\sigma)``
 - general transformation approximated:
 ```math
-g(x)\sim N(g(\mu),g'(x)*\sigma)
+g(x)\sim N(g(\mu),g'(\mu)*\sigma)
 ```
 
-This can be efficienty implemneted in Julia:
+This can be efficienty implemented in Julia:
 ```julia
 struct GNum{T} where T<:Real
   μ::T
@@ -163,7 +163,14 @@ The result does not correspond to the ensemble version above.
 
 
 ## Vector uncertainty
-The previous approach competely ignores the covariances between variables. Even if we tract covariances linearnly in the same fashion, the approach will suffer from a loss of precision under non-linearity. 
+The previous simple approach ignores the covariances between variables. Even if we tract covariances linearnly in the same fashion (``Measurements.jl``), the approach will suffer from a loss of precision under non-linearity. 
+
+
+![](https://photos1.blogger.com/blogger/5955/293/1600/unscented-transform-explained.jpg)
+
+- The linearization-based approach propogates through the non-linearity only the mean and models its neighborhood by a plane.
+- Propagating all samples 
+
 
 A more sophisticated approach is based on moment matching:
 ```math
@@ -179,40 +186,70 @@ For Gaussian distribution, we can use a smarter integration rule, called the Gau
 ```
 where ``x_j`` are prescribed quadrature points (see e.g. ![online tables](https://www.efunda.com/math/num_integration/findgausshermite.cfm))
 
-In multivariate setting, the same problem is typically solved with the aim to reduce the computational cost to linear complexity with dimension. Most often aimimg at ``O(2dim(d))`` complexity.
-
-
-![](https://photos1.blogger.com/blogger/5955/293/1600/unscented-transform-explained.jpg)
+In multivariate setting, the same problem is typically solved with the aim to reduce the computational cost to linear complexity with dimension. Most often aimimg at ``O(2d)`` complexity where ``d`` is the  dimension of vector ``x``.
 
 
 One of the most popular approaches today is based on cubature rules approximating the Gaussian in radial-spherical coordinates.
 
 ## Cubature rules
 
-Consider Gaussian distribution with mean ``\mu`` and covariance matrix ``\Sigma`` that is positive definite with square root ``\sqrt\Sigma``, such that ``\sqrt\Sigma^T \sqrt\Sigma=\Sigma``. The quadrature pints are:
+Consider Gaussian distribution with mean ``\mu`` and covariance matrix ``\Sigma`` that is positive definite with square root ``\sqrt\Sigma``, such that ``\sqrt\Sigma \sqrt\Sigma^T=\Sigma``. The quadrature pints are:
 ```math
 X_q = \mu .+ \sqrt\Sigma Q
 ```
 where ``Q=[q_1,\ldots q_{2d}]`` are constant vectors
 ```math
-Q = \sqrt{d} [ I_d -I_d]
+Q = \sqrt{d} [ I_d, -I_d]
 ```
-with associated weights
-```math
-w_i = \frac{1}{2d}, i=1,\ldots,sd
-```
-where ``d`` is dimension of the vectors.
-
-The quadrature points are propogated through the non-linearity and the resulting Gaussian distribution is:
+i.e. 
 ```math
 \begin{align}
-x' & \sim N(\mu',\Sigma')\\
-\mu' & = \frac{1}{2d}\sum_{j=1}^{2d} x_i\\
-\Sigma &= \frac{1}{2d}\sum_{j=1}^{2d} (x_i-\mu')^T (X_i-\mu')
+q_{1}&=\sqrt{d}\begin{bmatrix}1\\
+0\\
+\vdots
+\end{bmatrix}
+&
+q_{2}&=\sqrt{d}\begin{bmatrix}0\\
+1\\
+\vdots
+\end{bmatrix}
+&
+q_{d+1}&=\sqrt{d}\begin{bmatrix}-1\\
+0\\
+\vdots
+\end{bmatrix}
+q_{d+2}&=\sqrt{d}\begin{bmatrix}0\\
+-1\\
+\vdots
+\end{bmatrix}
 \end{align}
 ```
 
-- it is easy to check that if the sigma-points are propagated through an identity, they preserve the mean and variance.
+Those quadrature points are in integration weighted by:
+```math
+w_i = \frac{1}{2d}, i=1,\ldots,2d
+```
+where ``d`` is dimension of the vectors.
+
+The quadrature points are propogated through the non-linearity in parallel (``x_i'=g(x_i)``) and the resulting Gaussian distribution is:
+```math
+\begin{align}
+x' & \sim N(\mu',\Sigma')\\
+\mu' & = \frac{1}{2d}\sum_{j=1}^{2d} x'_i\\
+\Sigma &= \frac{1}{2d}\sum_{j=1}^{2d} (x'_i-\mu')^T (x'_i-\mu')
+\end{align}
+```
+
+- it is easy to check that if the sigma-points are propagated through an identity, they preserve the mean and variance. 
+```math
+\begin{align}
+\mu' & = \frac{1}{2d}\sum_{j=1}^{2d} (\mu + \sqrt{\Sigma}q_i)\\
+ & = \frac{1}{2d}(2d\mu + \sqrt{\Sigma} \sum_{j=1}^{2d} (q_i)
+ & = \mu
+\end{align}
+
+```
+
 
 For our example:
 
@@ -220,11 +257,56 @@ For our example:
 
 - only 4 trajectories propagated deterministically
 - can not be implemented using a single number type
-- in this implementation we need to use vector representations
+  - the number of points to store is proportional to the dimension
+  - we operations from linear algebra
+- moving to represenattions in vector form
   - simple for initial conditions,
   - how to extend to operate also on parameters?
-  - define translation of vectors to ODE
 
--- Lab/Homework?
+Easiest solution:
+- define the mapping between ODE and vectors manually
+- ode, its state and parameters can be wrapped into a ODEProblem
 
+```julia
+struct ODEProblem{F,T,U,P}
+    f::F
+    tspan::T
+    u0::U
+    θ::P
+end
+```
+- the solver can operate on the ODEProbelm type
 
+### Unceratinty propagation in vectors
+
+Example: consider uncertainty in state ``[x_1,x_2]`` and the first parameter ``\theta_1``. 
+
+Quick and dirty: 
+```julia
+getuncertainty(o::ODEProblem) = [o.u0[1:2];o.θ[1]]
+setuncertainty!(o::ODEProblem,x::AbstractVector) = o.u0[1:2]=x[1:2],o.θ[1]=x[3]
+```
+
+and write a general Cubature solver using multiple dispatch.
+- it would be smart to dispatch on subtypes
+
+Practical issues:
+- how to check bounds? (Asserts)
+- what if we provide a different 
+- define a type that speficies the type of uncertainty? 
+```julia
+struct UncODEProblem
+  OP::ODEProblem
+  unc_in_u # any indexing type accepted by to_index()
+  unc_in_θ
+end
+```
+
+We can dispatch cubature solve on UncODEProblem and solve on UncODEProblem.OP internally.
+
+```julia
+getuncertainty(o::UncODEProblem) =[ o.OP.u0[o.unc_in_u];o.OP.θ[o.unc_in_θ]]
+setuncertainty!(o::UncODEProblem,x::AbstractVector) = begin o.u0[o.unc_in_u]=x[1:2],o.θ[1]=x[3] end
+```
+
+- smart indexing?
