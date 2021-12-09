@@ -140,7 +140,7 @@ plot!(p1,t,X[2,:], color=2, lw=3, alpha=0.8, label="y Euler")
 
 As you can see in the plot above, the Euler method quickly becomes quite
 inaccurate because we make a step in the direction of the tangent which inevitably
-leads us away from the perfect solution as shown in the plot below
+leads us away from the perfect solution as shown in the plot below.
 ![euler](euler.jpg)
 
 There exist many different ODE solvers. To demonstrate how we can
@@ -152,9 +152,14 @@ second order Runge-Kutta method `RK2`:
        x_{n+1} &= x_n + \frac{h}{2}(f(x_n,t_n)+f(\tilde x_{n+1},t_{n+1}))
 \end{align*}
 ```
-`RK2` computes an initial guess $\tilde x_{n+1}$ to then average
-the slopes at the current point $x_n$ and at the guess $\tilde x_{n+1}$
-which is illustarted below
+`RK2` is a 2nd order method. It uses not only $f$ (the slope at a given point),
+but also $f'$ (the derivative of the slope). With some clever manipulations you
+can arrive at the equations above with make use of $f'$ without needing an
+explicit expression for it (if you want to know how, see
+[here](https://web.mit.edu/10.001/Web/Course_Notes/Differential_Equations_Notes/node5.html)).
+Essentially, `RK2` computes an initial guess $\tilde x_{n+1}$ to then average
+the slopes at the current point $x_n$ and at the guess $\tilde x_{n+1}$ which
+is illustarted below.
 ![rk2](rk2.png)
 
 ```@raw html
@@ -410,3 +415,4 @@ plot!(p1, t, X[2,:], label="y", lw=3)
 # References
 
 * [MIT18-330S12: Chapter 5](https://ocw.mit.edu/courses/mathematics/18-330-introduction-to-numerical-analysis-spring-2012/lecture-notes/MIT18_330S12_Chapter5.pdf)
+* [RK2 derivation](https://web.mit.edu/10.001/Web/Course_Notes/Differential_Equations_Notes/node5.html)
