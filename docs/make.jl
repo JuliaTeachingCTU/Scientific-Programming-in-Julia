@@ -104,6 +104,7 @@ lecture_11 = [
 lecture_12 = [
     "Lecture" => "./lecture_12/lecture.md"
     "Lab" => "./lecture_12/lab.md"
+    "Homework" => "./lecture_12/hw.md"
 ]
 
 lecture_13 = [
@@ -123,20 +124,20 @@ makedocs(;
         ansicolor=true,
     ),
     pages = [
-        "Home" => "index.md",
-        "Installation" => "installation.md", 
-        "Projects" => "projects.md",
-        "1: Introduction" => lecture_01,
-        "2: The power of Type System & multiple dispatch" => lecture_02,
-        "3: Design patterns" => lecture_03,
-        "4: Packages development, Unit Tests & CI" => lecture_04,
-        "5: Benchmarking, profiling, and performance gotchas" => lecture_05,
-        "6: Language introspection" => lecture_06,
-        "7: Macros" => lecture_07,
-        "8: Introduction to automatic differentiation" => lecture_08,
-        "9: Manipulating intermediate representation" => lecture_09,
-        "10: Different levels of parallel programming" => lecture_10,
-        "11: Julia for GPU programming" => lecture_11,
+        #"Home" => "index.md",
+        #"Installation" => "installation.md", 
+        #"Projects" => "projects.md",
+        #"1: Introduction" => lecture_01,
+        #"2: The power of Type System & multiple dispatch" => lecture_02,
+        #"3: Design patterns" => lecture_03,
+        #"4: Packages development, Unit Tests & CI" => lecture_04,
+        #"5: Benchmarking, profiling, and performance gotchas" => lecture_05,
+        #"6: Language introspection" => lecture_06,
+        #"7: Macros" => lecture_07,
+        #"8: Introduction to automatic differentiation" => lecture_08,
+        #"9: Manipulating intermediate representation" => lecture_09,
+        #"10: Different levels of parallel programming" => lecture_10,
+        #"11: Julia for GPU programming" => lecture_11,
         "12: Uncertainty propagation in ODE" => lecture_12,
         "13: Learning ODE from data" => lecture_13,
         #"How to submit homeworks" => "how_to_submit_hw.md",

@@ -4,9 +4,13 @@ struct GaussNum{T<:Real} <: Real
     μ::T
     σ::T
 end
+mu(x::GaussNum) = x.μ
+sig(x::GaussNum) = x.σ
+GaussNum(x,y) = GaussNum(promote(x,y)...)
+±(x,y) = GaussNum(x,y)
 Base.convert(::Type{T}, x::T) where T<:GaussNum = x
 Base.convert(::Type{GaussNum{T}}, x::Number) where T = GaussNum(x,zero(T))
-Base.promote_rule(::Type{GaussNum{T}}, ::Type{T}) where T = GaussNum{T}
+Base.promote_rule(::Type{GaussNum{T}}, ::Type{S}) where {T,S} = GaussNum{T}
 Base.promote_rule(::Type{GaussNum{T}}, ::Type{GaussNum{T}}) where T = GaussNum{T}
 
 # convert(GaussNum{Float64}, 1.0) |> display
@@ -49,24 +53,30 @@ macro uncertain(expr)
     _uncertain(expr)
 end
 
-#register(mod, func) = :($mod.$func(args::GaussNum...) = _uncertain($func, args...))
-function _register(func)
+getmodule(f) = first(methods(f)).module
+
+function _register(func::Symbol)
     mod = getmodule(eval(func))
-    :($(mod).$(func)(args::GaussNum...) = _uncertain($func, args...)) |> eval
+    :($(mod).$(func)(args::GaussNum...) = _uncertain($func, args...))
 end
-#register(mod::Nothing, func) = register(func)
-macro register(func)
-    _register(func) |> eval
+
+function _register(funcs::Expr)
+    Expr(:block, map(_register, funcs.args)...)
 end
+
+macro register(funcs)
+    _register(funcs)
+end
+
+@register - + *
 
 f(x,y) = x+y*x
 
-getmodule(f) = first(methods(f)).module
 
-@register *
-@register +
-@register -
-@register f
+# @register *
+# @register +
+# @register -
+# @register f
 
 asdf(x1::GaussNum{T},x2::GaussNum{T}) where T =GaussNum(x1.μ*x2.μ, sqrt((x2.μ*x1.σ).^2 + (x1.μ * x2.σ).^2))
 gggg(x1::GaussNum{T},x2::GaussNum{T}) where T =GaussNum(x1.μ+x2.μ, sqrt(x1.σ.^2 + x2.σ.^2))
@@ -77,15 +87,20 @@ x2 = GaussNum(rand(),rand())
 display(x1*x2)
 display(asdf(x1,x2))
 display(_uncertain(*,x1,x2))
-display(f(x1,x2))
 display(@uncertain x1*x2)
 
+display(x1-x2)
+display(x1+x2)
+display(f(x1,x2))
+error()
 
 
 using Plots
 using JLD2
 
-struct ODEProblem{F,T,U,P}
+abstract type AbstractODEProblem end
+
+struct ODEProblem{F,T,U,P} <: AbstractODEProblem
     f::F
     tspan::T
     u0::U
@@ -110,7 +125,7 @@ function f(x,θ)
     [dx₁, dx₂]
 end
 
-function solve(prob::ODEProblem, solver::ODESolver)
+function solve(prob::AbstractODEProblem, solver::ODESolver)
     t = prob.tspan[1]; u = prob.u0
     us = [u]; ts = [t]
     while t < prob.tspan[2]
