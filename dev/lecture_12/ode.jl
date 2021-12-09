@@ -134,7 +134,7 @@ function solve(f,x0::AbstractVector,sqΣ0, θ,dt,N,Nr)
     X[:,t+1]=mXp
     Σ=Matrix((Xp.-mXp)*(Xp.-mXp)'/n2)
     S[:,t+1]=sqrt.(diag(Σ))
-    @show Σ
+    # @show Σ
 
     sqΣ = cholesky(Σ).L
 
@@ -144,7 +144,7 @@ end
 
 ## Extension to arbitrary 
 
-QX,QS=solve(f,[1.0,1.0],(0.1)*I(2),θ0,0.1,1000,1e5)
+QX,QS=solve(f,[1.0,1.0],(0.1)*I(2),θ0,0.1,1000,1)
 plot(QX[1,1:30:end],label="x",color=:blue,errorbar=QS[1,1:30:end])
 plot!(QX[2,1:30:end],label="y",color=:red,errorbar=QS[2,1:30:end])
 
