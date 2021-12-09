@@ -1,6 +1,6 @@
-# Ordinary Differencial equations
+# Uncertainty Propagation in Ordinary Differential Equations
 
-Differential equations are commonly used in science to describe many aspects of the physical world, ranging from dynamical systems, curves in space, to complex multi-physics phenomena. 
+Differential equations are commonly used in science to describe many aspects of the physical world, ranging from dynamical systems and curves in space to complex multi-physics phenomena. 
 
 As an example, consider a simple non-linear ordinary differential equation:
 
@@ -61,13 +61,18 @@ Is simple and working (with sufficienty small ``dt``):
 
 ![](lotka.svg)
 
+ODE of this kind is an example of a "complex" simulation code that we may want to use, interact with, modify or incorporate into a more complex scheme.
+- we will test how to re-define the elemnetary oeprations using custom types, automatic differnetiation and automatic code generation
+- we will redefine the plotting operation to display the new type correctly
+- we will use composition to incorporate the ODE into a more complex solver
+
 
 ## Uncertainty propagation
 
 Prediction of the ODE model is valid only if all parameters and all initial conditions are accurate. This is almost never the case. While the number of sheep can be known, the number of wolfes in a forest is more uncertain. The same model holds for predator-prey in insects where the number of individuals can be only estimated.
 
 Uncertain initial conditions:
-- number given by a probability distribution 
+- number of predators and prey given by a probability distribution 
 -  interval ``[0.8,1.2]`` corresponds to uniform distribution ``U(0.8,1.2)``
 - gaussian ``N(\mu,\sigma)``, with mean ``\mu`` and standard deviation ``\sigma`` e.g. ``N(1,0.1)``
 -  more complicated distributions are more realistic (the number of animals is not negative!)
@@ -121,21 +126,18 @@ import Base: +, *
 
 For the ODE we need multiplication of two Gaussians. Using Taylor expansion and neglecting covariances:
 ```math
-g(x_1,x_2)=N(g(\mu_1,\mu_2), \sqrt{(\frac{dg}{dx_1}(\mu_1,\mu_2)\sigma_1)^2 + (\frac{dg}{dx_1}(\mu_1,\mu_2)\sigma_1)^2})
+g(x_1,x_2)=N\left(g(\mu_1,\mu_2), \sqrt{\left(\frac{dg}{dx_1}(\mu_1,\mu_2)\sigma_1\right)^2 + \left(\frac{dg}{dx_1}(\mu_1,\mu_2)\sigma_1\right)^2}\right)
 ```
 which trivially applies to sum: ``x_1+x_2=N(\mu_1+\mu_2, \sqrt{\sigma_1^2 + \sigma_1^2})``
 
 ```julia
 +(x1::GaussNum{T},x2::GaussNum{T}) where T =GaussNum(x1.μ+x2.μ,sqrt(x1.σ.^2 + x2.σ.^2))
-*(x1::GaussNum{T},x2::GaussNum{T}) where T =GaussNum(x1.μ*x2.μ, sqrt(x1.σ.^2 + x2.σ.^2))
+*(x1::GaussNum{T},x2::GaussNum{T}) where T =GaussNum(x1.μ*x2.μ, sqrt(x2.μ*x1.σ.^2 + x1.μ*x2.σ.^2))
 
 ```
 
-
-
+Following the principle of defining the necessary functions on the type, we can make it pass through the ODE:
 - it is necessary to define new initialization (functions `zero`)
-- function overloading can be automated (macro, generated functions)
-
 - define nice-looking constructor (``±``)
   ```julia
   ±(a::T,b::T) where T:<Real =GaussNum(a,b)
@@ -147,7 +149,10 @@ GX=solve(f,[1.0±0.1,1.0±0.1],[0.1,0.2,0.3,0.2],0.1,1000)
 
 ![](LV_GaussNum.svg)
 
-## Flexibility
+- function overloading follows a deterministic procedure => can be automated (macro, generated functions)
+
+
+### Flexibility
 
 The great advantage of the former model was the ability to run an arbitrary code with uncertainty at an arbitrary number.
 
@@ -159,7 +164,7 @@ GX=solve(f,[1.0±0.1,1.0±0.1],[0.1±0.1,0.2,0.3,0.2],0.1,1000)
 
 ![](LV_GaussNum2.svg)
 
-## Disadvantage
+### Disadvantage
 
 The result does not correspond to the ensemble version above.
 - we have ignored the covariances
@@ -176,10 +181,11 @@ The previous simple approach ignores the covariances between variables. Even if 
 ![](https://photos1.blogger.com/blogger/5955/293/1600/unscented-transform-explained.jpg)
 
 - The linearization-based approach propogates through the non-linearity only the mean and models its neighborhood by a plane.
-- Propagating all samples 
+- Propagating all samples is too expensive
+- Methods based on quadrature or cubature rules are a compromise
 
 
-A more sophisticated approach is based on moment matching:
+The cubature approach is based on moment matching:
 ```math
 \mu_g = \int g(x) p(x) dx
 ```
@@ -198,17 +204,12 @@ In multivariate setting, the same problem is typically solved with the aim to re
 
 One of the most popular approaches today is based on cubature rules approximating the Gaussian in radial-spherical coordinates.
 
-## Cubature rules
+### Cubature rules
 
 Consider Gaussian distribution with mean ``\mu`` and covariance matrix ``\Sigma`` that is positive definite with square root ``\sqrt\Sigma``, such that ``\sqrt\Sigma \sqrt\Sigma^T=\Sigma``. The quadrature pints are:
 ```math
-X_q = \mu .+ \sqrt\Sigma Q
+x_i = \mu + \sqrt\Sigma q_i
 ```
-where ``Q=[q_1,\ldots q_{2d}]`` are constant vectors
-```math
-Q = \sqrt{d} [ I_d, -I_d]
-```
-i.e. 
 ```math
 \begin{align}
 q_{1}&=\sqrt{d}\begin{bmatrix}1\\
@@ -219,7 +220,7 @@ q_{1}&=\sqrt{d}\begin{bmatrix}1\\
 q_{2}&=\sqrt{d}\begin{bmatrix}0\\
 1\\
 \vdots
-\end{bmatrix}
+\end{bmatrix} \ldots 
 &
 q_{d+1}&=\sqrt{d}\begin{bmatrix}-1\\
 0\\
@@ -228,9 +229,15 @@ q_{d+1}&=\sqrt{d}\begin{bmatrix}-1\\
 q_{d+2}&=\sqrt{d}\begin{bmatrix}0\\
 -1\\
 \vdots
-\end{bmatrix}
+\end{bmatrix} \ldots
 \end{align}
 ```
+that can be composed into a matrix ``Q=[q_1,\ldots q_{2d}]`` that is constant:
+```math
+Q = \sqrt{d} [ I_d, -I_d]
+```
+
+![](cubature.png)
 
 Those quadrature points are in integration weighted by:
 ```math
@@ -247,7 +254,7 @@ x' & \sim N(\mu',\Sigma')\\
 \end{align}
 ```
 
-- it is easy to check that if the sigma-points are propagated through an identity, they preserve the mean and variance. 
+It is easy to check that if the sigma-points are propagated through an identity, they preserve the mean and variance. 
 ```math
 \begin{align}
 \mu' & = \frac{1}{2d}\sum_{j=1}^{2d} (\mu + \sqrt{\Sigma}q_i)\\
@@ -265,20 +272,23 @@ For our example:
 - only 4 trajectories propagated deterministically
 - can not be implemented using a single number type
   - the number of points to store is proportional to the dimension
-  - we operations from linear algebra
-- moving to represenattions in vector form
+  - manipulation requires operations from linear algebra
+- moving to representations in vector form
   - simple for initial conditions,
   - how to extend to operate also on parameters?
 
-Easiest solution:
-- define the mapping between ODE and vectors manually
-- ode, its state and parameters can be wrapped into a ODEProblem
+### Smarter implementation
+Easiest solution is to put the corresponding parts of the problem together:
+- ode function ``f``, 
+- its state ``x0``,
+- and parameters ``θ``
+can be wrapped into an ODEProblem
 
 ```julia
-struct ODEProblem{F,T,U<:AbstractVector,P<:AbstractVector}
+struct ODEProblem{F,T,X<:AbstractVector,P<:AbstractVector}
     f::F
     tspan::T
-    u0::U
+    x0::X
     θ::P
 end
 ```
@@ -293,31 +303,33 @@ Quick and dirty:
 getuncertainty(o::ODEProblem) = [o.u0[1:2];o.θ[1]]
 setuncertainty!(o::ODEProblem,x::AbstractVector) = o.u0[1:2]=x[1:2],o.θ[1]=x[3]
 ```
-
 and write a general Cubature solver using multiple dispatch.
-- it would be smart to dispatch on subtypes
 
 Practical issues:
 - how to check bounds? (Asserts)
-- what if we provide a different 
-- define a type that speficies the type of uncertainty? 
+- what if we provide an incompatible ODEProblem
+- define a type that specifies the type of uncertainty? 
 ```julia
-struct UncertainODEProblem
-  OP::ODEProblem
+struct GaussODEProblem
+  mean::ODEProblem
   unc_in_u # any indexing type accepted by to_index()
   unc_in_θ
   sqΣ0
 end
 ```
 
-We can dispatch cubature solve on UncODEProblem and solve on UncODEProblem.OP internally.
+We can dispatch the cubature solver on GaussODEProblem and the ordinary ``solve`` on GaussODEProblem.OP internally.
 
 ```julia
-getmean(o::UncertainODEProblem) =[ o.OP.u0[o.unc_in_u];o.OP.θ[o.unc_in_θ]]
-setmean!(o::UncertainODEProblem,x::AbstractVector) = begin 
-  o.OP.u0[o.unc_in_u]=x[1:length(unc_in_u)]
-  o.OP.θ[o.unc_in_θ]=x[length(unc_in_u).+[1:length(unc_in_θ)]] 
+getmean(gop::GaussODEProblem) =[ gop.mean.x0[gop.unc_in_u];gop.mean.θ[gop.unc_in_θ]]
+setmean!(gop::GaussODEProblem,x::AbstractVector) = begin 
+  gop.mean.x0[gop.unc_in_u]=x[1:length(gop.unc_in_u)]
+  gop.mean.θ[gop.unc_in_θ]=x[length(gop.unc_in_u).+[1:length(gop.unc_in_θ)]] 
 end
 ```
 
-- constructor accepts an ODEProblem with uncertain numbers and converts it
+Constructor accepts an ODEProblem with uncertain numbers and converts it to GaussODEProblem:
+- goes through ODEProblem ``x0`` and ``θ`` fields and checks their types
+- replaces GaussNums in ODEProblem  by ordinary numbers
+- remembers indices of GaussNum in ``x0`` and ``θ``
+- copies standard deviations in GaussNum to ``sqΣ0``
