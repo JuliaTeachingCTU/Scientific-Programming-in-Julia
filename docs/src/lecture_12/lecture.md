@@ -131,11 +131,18 @@ which trivially applies to sum: ``x_1+x_2=N(\mu_1+\mu_2, \sqrt{\sigma_1^2 + \sig
 
 ```
 
+
+
 - it is necessary to define new initialization (functions `zero`)
 - function overloading can be automated (macro, generated functions)
 
+- define nice-looking constructor (``±``)
+  ```julia
+  ±(a::T,b::T) where T:<Real =GaussNum(a,b)
+  ```
+
 ```julia
-GX=solve(f,[GaussNum(1.0,0.1),GaussNum(1.0,0.1)],[0.1,0.2,0.3,0.2],0.1,1000)
+GX=solve(f,[1.0±0.1,1.0±0.1],[0.1,0.2,0.3,0.2],0.1,1000)
 ```
 
 ![](LV_GaussNum.svg)
@@ -147,7 +154,7 @@ The great advantage of the former model was the ability to run an arbitrary code
 For example, we may know the initial conditions, but do not know the parameter value.
 
 ```julia
-GX=solve(f,[GaussNum(1.0,0.1),GaussNum(1.0,0.1)],[GaussNum(0.1,0.1),0.2,0.3,0.2],0.1,1000)
+GX=solve(f,[1.0±0.1,1.0±0.1],[0.1±0.1,0.2,0.3,0.2],0.1,1000)
 ```
 
 ![](LV_GaussNum2.svg)
@@ -268,7 +275,7 @@ Easiest solution:
 - ode, its state and parameters can be wrapped into a ODEProblem
 
 ```julia
-struct ODEProblem{F,T,U,P}
+struct ODEProblem{F,T,U<:AbstractVector,P<:AbstractVector}
     f::F
     tspan::T
     u0::U
@@ -295,18 +302,22 @@ Practical issues:
 - what if we provide a different 
 - define a type that speficies the type of uncertainty? 
 ```julia
-struct UncODEProblem
+struct UncertainODEProblem
   OP::ODEProblem
   unc_in_u # any indexing type accepted by to_index()
   unc_in_θ
+  sqΣ0
 end
 ```
 
 We can dispatch cubature solve on UncODEProblem and solve on UncODEProblem.OP internally.
 
 ```julia
-getuncertainty(o::UncODEProblem) =[ o.OP.u0[o.unc_in_u];o.OP.θ[o.unc_in_θ]]
-setuncertainty!(o::UncODEProblem,x::AbstractVector) = begin o.u0[o.unc_in_u]=x[1:2],o.θ[1]=x[3] end
+getmean(o::UncertainODEProblem) =[ o.OP.u0[o.unc_in_u];o.OP.θ[o.unc_in_θ]]
+setmean!(o::UncertainODEProblem,x::AbstractVector) = begin 
+  o.OP.u0[o.unc_in_u]=x[1:length(unc_in_u)]
+  o.OP.θ[o.unc_in_θ]=x[length(unc_in_u).+[1:length(unc_in_θ)]] 
+end
 ```
 
-- smart indexing?
+- constructor accepts an ODEProblem with uncertain numbers and converts it
