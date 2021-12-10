@@ -84,10 +84,10 @@ function (s::GaussODESolver)(prob::GaussODEProblem, u::MvNormal, t)
         xi .= s.solver(prob.mean, ui, t)[1]
     end
 
-    μ̄ = mean(Xp,dims=2) |> vec
-    Σ̄ = (Xp .- μ)*(Xp .- μ)' / (2d)
+    μ = mean(Xp,dims=2) |> vec
+    Σ = (Xp .- μ)*(Xp .- μ)' / (2d)
 
-    MvNormal(μ̄,Σ̄), t+s.solver.dt
+    MvNormal(μ,Σ), t+s.solver.dt
 end
 
 function solve(prob::GaussODEProblem, solver::GaussODESolver)
