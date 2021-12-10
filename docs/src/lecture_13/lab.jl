@@ -1,5 +1,186 @@
 using LinearAlgebra
 using Statistics
+using Distributions
+
+abstract type AbstractODEProblem end
+
+struct ODEProblem{F,T<:Tuple{Number,Number},U<:AbstractVector,P<:AbstractVector} <: AbstractODEProblem
+    f::F
+    tspan::T
+    u0::U
+    θ::P
+end
+
+
+abstract type ODESolver end
+
+struct Euler{T} <: ODESolver
+    dt::T
+end
+
+function (solver::Euler)(prob::ODEProblem, u, t)
+    f, θ, dt  = prob.f, prob.θ, solver.dt
+    (u + dt*f(u,θ), t+dt)
+end
+struct RK2{T} <: ODESolver
+    dt::T
+end
+function (solver::RK2)(prob::ODEProblem, u, t)
+    f, θ, dt  = prob.f, prob.θ, solver.dt
+    du = f(u,θ)
+    uh = u + du*dt
+    u + dt/2*(du + f(uh,θ)), t+dt
+end
+
+
+function solve(prob::ODEProblem, solver::ODESolver)
+    t = prob.tspan[1]; u = prob.u0
+    us = [u]; ts = [t]
+    while t < prob.tspan[2]
+        (u,t) = solver(prob, u, t)
+        push!(us,u)
+        push!(ts,t)
+    end
+    ts, reduce(hcat,us)
+end
+
+
+# Define & Solve ODE
+
+function lotkavolterra(x,θ)
+    α, β, γ, δ = θ
+    x₁, x₂ = x
+
+    dx₁ = α*x₁ - β*x₁*x₂
+    dx₂ = δ*x₁*x₂ - γ*x₂
+
+    [dx₁, dx₂]
+end
+
+struct GaussODEProblem{P<:ODEProblem,D<:MvNormal} <: AbstractODEProblem
+    mean::P
+    u0::D
+end
+Base.size(prob::GaussODEProblem) = length(prob.mean.u0)
+
+
+struct GaussODESolver{S<:ODESolver} <: ODESolver
+    solver::S
+end
+
+setmean!(prob,xi) = xi
+
+function (s::GaussODESolver)(prob::GaussODEProblem, u::MvNormal, t)
+    d  = size(prob)
+    μ  = mean(u)
+    Σ  = cov(u)
+    Σ½ = cholesky(Σ).L
+    Qp = sqrt(d)*[I(d) -I(d)]
+    Xp = μ .+ Σ½*Qp
+
+    for i in 1:2d
+        xi = @view Xp[:,i]
+        ui = setmean!(prob, xi)
+        xi .= s.solver(prob.mean, ui, t)[1]
+    end
+
+    μ̄ = mean(Xp,dims=2) |> vec
+    Σ̄ = (Xp .- μ)*(Xp .- μ)' / (2d)
+
+    MvNormal(μ̄,Σ̄), t+s.solver.dt
+end
+
+function solve(prob::GaussODEProblem, solver::GaussODESolver)
+    t = prob.mean.tspan[1]; u = prob.u0
+    us = [u]; ts = [t]
+    while t < prob.mean.tspan[2]
+        (u,t) = solver(prob, u, t)
+        push!(us,u)
+        push!(ts,t)
+    end
+    ts, us
+end
+
+
+function lotkavolterra(x,θ)
+    α, β, γ, δ = θ
+    x₁, x₂ = x
+
+    dx₁ = α*x₁ - β*x₁*x₂
+    dx₂ = δ*x₁*x₂ - γ*x₂
+
+    [dx₁, dx₂]
+end
+
+θ = [0.1,0.2,0.3,0.2]
+u0 = [1.0,1.0]
+tspan = (0.,100.)
+oprob = ODEProblem(lotkavolterra,tspan,u0,θ)
+
+d = length(u0)
+Σ = 0.1*I(d) |> Matrix
+u = MvNormal(u0,Σ)
+gprob = GaussODEProblem(oprob,u)
+
+solver = GaussODESolver(Euler(0.1))
+#solver(gprob, u, 0.0) |> display
+
+t, us = solve(gprob,solver)
+
+
+
+struct GaussNum{T<:Real} <: Real
+    μ::T
+    σ::T
+end
+mu(x::GaussNum) = x.μ
+sig(x::GaussNum) = x.σ
+GaussNum(x,y) = GaussNum(promote(x,y)...)
+±(x,y) = GaussNum(x,y)
+Base.convert(::Type{T}, x::T) where T<:GaussNum = x
+Base.convert(::Type{GaussNum{T}}, x::Number) where T = GaussNum(x,zero(T))
+Base.promote_rule(::Type{GaussNum{T}}, ::Type{S}) where {T,S} = GaussNum{T}
+Base.promote_rule(::Type{GaussNum{T}}, ::Type{GaussNum{T}}) where T = GaussNum{T}
+
+gaussnums(x::MvNormal) = GaussNum.(mean(x), sqrt.(var(u)))
+gaussnums(xs::Vector{<:MvNormal}) = reduce(hcat, gaussnums.(xs))
+
+using Plots
+@recipe function plot(ts::AbstractVector, xs::AbstractVector{<:GaussNum})
+    # you can set a default value for an attribute with `-->`
+    # and force an argument with `:=`
+    μs = [x.μ for x in xs]
+    σs = [x.σ for x in xs]
+    @series begin
+        :seriestype := :path
+        # ignore series in legend and color cycling
+        primary := false
+        linecolor := nothing
+        fillcolor := :lightgray
+        fillalpha := 0.5
+        fillrange := μs .- σs
+        # ensure no markers are shown for the error band
+        markershape := :none
+        # return series data
+        ts, μs .+ σs
+    end
+    ts, μs
+end
+
+gus = gaussnums(us)
+plot(t, gus[1,:], lw=3)
+plot!(t, gus[2,:], lw=3) |> display
+
+
+
+
+error()
+
+
+
+
+
+
 
 θ = [0.1,GaussNum(0.2,0.1),0.3,0.2]
 u0 = [GaussNum(1.0,0.1),GaussNum(1.0,0.1)]
