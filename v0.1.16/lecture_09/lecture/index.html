@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lecture · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_09/lecture/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Introduction to automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-12" type="checkbox" checked/><label class="tocitem" for="menuitem-12"><span class="docs-label">9: Manipulating intermediate representation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>Lecture</a><ul class="internal"><li><a class="tocitem" href="#Generated-functions"><span>Generated functions</span></a></li><li><a class="tocitem" href="#Optionally-generated-functions"><span>Optionally generated functions</span></a></li><li><a class="tocitem" href="#Contextual-dispatch-/-overdubbing"><span>Contextual dispatch / overdubbing</span></a></li><li><a class="tocitem" href="#Implementing-the-profiler-with-IRTools"><span>Implementing the profiler with IRTools</span></a></li><li><a class="tocitem" href="#Petite-Zygote"><span>Petite Zygote</span></a></li><li><a class="tocitem" href="#Conclusion"><span>Conclusion</span></a></li></ul></li><li><a class="tocitem" href="../lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-13" type="checkbox"/><label class="tocitem" for="menuitem-13"><span class="docs-label">10: Different levels of parallel programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_10/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_10/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_10/hw/">Homework</a></li></ul></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><input class="collapse-toggle" id="menuitem-15" type="checkbox"/><label class="tocitem" for="menuitem-15"><span class="docs-label">12: Uncertainty propagation in ODE</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_12/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_12/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_12/hw/">Homework</a></li></ul></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">9: Manipulating intermediate representation</a></li><li class="is-active"><a href>Lecture</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lecture</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_09/lecture.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Manipulating-Intermediate-Represenation-(IR)"><a class="docs-heading-anchor" href="#Manipulating-Intermediate-Represenation-(IR)">Manipulating Intermediate Represenation (IR)</a><a id="Manipulating-Intermediate-Represenation-(IR)-1"></a><a class="docs-heading-anchor-permalink" href="#Manipulating-Intermediate-Represenation-(IR)" title="Permalink"></a></h1><h2 id="Generated-functions"><a class="docs-heading-anchor" href="#Generated-functions">Generated functions</a><a id="Generated-functions-1"></a><a class="docs-heading-anchor-permalink" href="#Generated-functions" title="Permalink"></a></h2><p>Sometimes it is convenient to generate function once types of arguments are known. For example if we have function <code>foo(args...)</code>, we can generate different body for different length of <code>Tuple</code> and types in <code>args</code>. Do we really need such thing, or it is just wish of curious programmer? Not really, as </p><ul><li>we can deal with variability of <code>args</code> using normal control-flow logic <code>if length(args) == 1 elseif ...</code></li><li>we can (automatically) generate (a possibly infinite) set of functions <code>foo</code> specialized for each length of <code>args</code> (or combination of types of <code>args</code>) and let multiple dispatch to deal with this</li><li>we cannot deal with this situation with macros, because macros do not see types, only parsed AST, which is in this case always the same.</li></ul><p>Generated functions allow to specialize the code for a given type of argumnets. They are like macros in the sense that they <strong>return expressions</strong> and not <strong>results</strong>. But unlike macros, the input is not expression or value of arguments, but their types (the arguments are of type <code>Type</code>). They are also called when compiler needs (which means at least once for each combination of arguments, but possibly more times due to code invalidation).</p><p>Let&#39;s look at an example</p><pre><code class="language-julia hljs">@generated function genplus(x, y)
+  println(&quot;generating genplus(x, y)&quot;)
+  @show (x, y, typeof(x), typeof(y))
+  quote
+    println(&quot;executing generated genplus(x, y)&quot;)
+    @show (x, y, typeof(x), typeof(y))
+    x + y
+  end
+end</code></pre><p>and observe the output</p><pre><code class="language-julia hljs">julia&gt; genplus(1.0, 1.0) == 1.0 + 1.0
+generating genplus(x, y)
+(x, y, typeof(x), typeof(y)) = (Float64, Float64, DataType, DataType)
+executing generated genplus(x, y)
+(x, y, typeof(x), typeof(y)) = (1.0, 1.0, Float64, Float64)
+true
+
+julia&gt; genplus(1.0, 1.0) == 1.0 + 1.0
+executing generated genplus(x, y)
+(x, y, typeof(x), typeof(y)) = (1.0, 1.0, Float64, Float64)
+true
+
+julia&gt; genplus(1, 1) == 1 + 1
+generating genplus(x, y)
+(x, y, typeof(x), typeof(y)) = (Int64, Int64, DataType, DataType)
+executing generated genplus(x, y)
+(x, y, typeof(x), typeof(y)) = (1, 1, Int64, Int64)
+true</code></pre><p>which shows that the body of <code>genplus</code> is called for each combination of types of parameters, but the generated code is called whenever <code>genplus</code> is called.</p><p>Generated functions has to be pure in the sense that they are not allowed to have side effects, for example modifying some global variables. Note that printing is not allowed in pure functions, as it modifies the global buffer. From the above example this rule does not seems to be enforced, but not obeying it can lead to unexpected errors mostly caused by not knowing when and how many times the functions will be called.</p><p>Finally, generated functions cannot call functions that has been defined after their definition.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @generated function genplus(x, y)
+         foo()
+         :(x + y)
+       end</code><code class="nohighlight hljs ansi" style="display:block;">genplus (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; foo() = println(&quot;foo&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">foo (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; genplus(1,1)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching foo()
+The applicable method may be too new: running in world age 32019, while current world is 32020.
+Closest candidates are:
+  foo() at REPL[2]:1 (method too new to be called from this world context.)</code></pre><p>Here, the <em>applicable method</em> is <code>foo</code>.</p><h3 id="An-example-that-explains-everything."><a class="docs-heading-anchor" href="#An-example-that-explains-everything.">An example that explains everything.</a><a id="An-example-that-explains-everything.-1"></a><a class="docs-heading-anchor-permalink" href="#An-example-that-explains-everything." title="Permalink"></a></h3><p>Consider a version of <code>map</code> applicable to <code>NamedTuple</code>s with permuted names. Recall the behavior of normal map, which works if the names are in the same order.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; x = (a = 1, b = 2, c = 3)</code><code class="nohighlight hljs ansi" style="display:block;">(a = 1, b = 2, c = 3)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; y = (a = 4, b = 5, c = 6)</code><code class="nohighlight hljs ansi" style="display:block;">(a = 4, b = 5, c = 6)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; map(+, x, y)</code><code class="nohighlight hljs ansi" style="display:block;">(a = 5, b = 7, c = 9)</code></pre><p>The same does not work with permuted names:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; x = (a = 1, b = 2, c = 3)</code><code class="nohighlight hljs ansi" style="display:block;">(a = 1, b = 2, c = 3)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; y = (c = 6, b = 5, a = 4)</code><code class="nohighlight hljs ansi" style="display:block;">(c = 6, b = 5, a = 4)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; map(+, x, y)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: ArgumentError: Named tuple names do not match.</code></pre><p>How to fix this? The usual approach would be to iterate over the keys in named tuples:</p><pre><code class="language-julia hljs">function permuted_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY}
+    @assert issubset(KX,KY)
+    NamedTuple{KX}(map(k -&gt; f(x[k], y[k]), KX))
+end</code></pre><p>But, can we do better? Recall that in <code>NamedTuple</code>s, we exactly know the position of the arguments, hence we should be able to directly match the corresponding arguments without using <code>get</code>. </p><p>Since creation (and debugging) of generated functions is difficult, we start with a single-argument unrolled map.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @generated function unrolled_map(f, x::NamedTuple{KX}) where {KX}
+           vals = [:(f(getfield(x, $(QuoteNode(k))))) for k in KX]
+           :(($(vals...),))
+       end</code><code class="nohighlight hljs ansi" style="display:block;">unrolled_map (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; unrolled_map(e-&gt;e+1, x)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: x not defined</code></pre><p>We see that inserting a <code>Symbol</code> specifying the field in the <code>NamedTuple</code> is a bit tricky. It needs to be quoted, since <code>$()</code> which is needed to substitute <code>k</code> for its value &quot;peels&quot; one layer of the quoting. Compare this to</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; vals = [:(f(getfield(x, $(k)))) for k in KX]</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: KX not defined</code></pre><p>Since getting the field is awkward, we write syntactic sugar for that</p><pre><code class="language-julia hljs">_get(name, k) = :(getfield($(name), $(QuoteNode(k))))</code></pre><p>with that, we proceed to a nicer two argument function which we have desired:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @generated function unrolled_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY}
+           @assert issubset(KX,KY)
+           _get(name, k) = :(getfield($(name), $(QuoteNode(k))))
+           vals = [:(f($(_get(:x, k)), $(_get(:y, k)))) for k in KX]
+           :(NamedTuple{$(KX)}(($(vals...),)))
+       end</code><code class="nohighlight hljs ansi" style="display:block;">unrolled_map (generic function with 1 method)</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p>We can check that the <code>unrolled_map</code> unrolls the map and generates just needed operations</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_typed unrolled_map(+, x, y)</code><code class="nohighlight hljs ansi" style="display:block;">CodeInfo(
+<span class="sgr90">1 ─</span> %1  = Main.getfield(x, :a)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %2  = Main.getfield(y, :a)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %3  = Base.add_int(%1, %2)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %4  = Main.getfield(x, :b)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %5  = Main.getfield(y, :b)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %6  = Base.add_int(%4, %5)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %7  = Main.getfield(x, :c)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %8  = Main.getfield(y, :c)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %9  = Base.add_int(%7, %8)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %10 = %new(NamedTuple{(:a, :b, :c), Tuple{Int64, Int64, Int64}}, %3, %6, %9)<span class="sgr36">::NamedTuple{(:a, :b, :c), Tuple{Int64, Int64, Int64}}</span>
+<span class="sgr90">└──</span>       return %10
+) =&gt; NamedTuple{(:a, :b, :c), Tuple{Int64, Int64, Int64}}</code></pre><p>and compare this to the code generated by the non-generated version <code>permuted_map</code>:</p><pre><code class="language-julia hljs">@code_typed permuted_map(+, x, y)</code></pre><p>which is not shown here for the sake of conciseness.</p><p>For fun, we can create a version which replaces the <code>Symbol</code> arguments directly by position numbers</p><pre><code class="language-julia hljs">@generated function unrolled_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY} 
+    @assert issubset(KX,KY)
+    _get(name, k, KS) = :(getfield($(name), $(findfirst(k .== KS))))
+    vals = [:(f($(_get(:x, k, KX)), $(_get(:y, k, KY)))) for k in KX]
+    :(NamedTuple{$(KX)}(($(vals...),)))
+end</code></pre><h2 id="Optionally-generated-functions"><a class="docs-heading-anchor" href="#Optionally-generated-functions">Optionally generated functions</a><a id="Optionally-generated-functions-1"></a><a class="docs-heading-anchor-permalink" href="#Optionally-generated-functions" title="Permalink"></a></h2><p>Macro <code>@generated</code> is expanded to</p><pre><code class="language-julia hljs">julia&gt; @macroexpand @generated function gentest(x)
+           return :(x + x)
+       end
+
+:(function gentest(x)
+      if $(Expr(:generated))
+          return $(Expr(:copyast, :($(QuoteNode(:(x + x))))))
+      else
+          $(Expr(:meta, :generated_only))
+          return
+      end
+  end)</code></pre><p>which is a function with an if-condition, where the first branch <code>$(Expr(:generated))</code> generates the expression <code>:(x + x)</code> and returns it. The other spits out an error saying that the function has only a generated version. This suggests the possibility (and reality) that one can implement two versions of the same function; A generated and a <em>normal</em> version. It is left up to the compiler to decide which one to use. It is entirely up to the author to ensure that both versions are the same. Which version will the compiler take? The last comment on <a href="https://github.com/JuliaLang/julia/pull/23168">23168</a> (as of time of writing) states:</p><p>&quot;<em>Currently the <code>@generated</code> branch is always used. In the future, which branch is used will mostly depend on whether the JIT compiler is enabled and available, and if it&#39;s not available, then it will depend on how much we were able to compile before the compiler was taken away. So I think it will mostly be a concern for those that might need static compilation and JIT-less deployment.</em>&quot;</p><h2 id="Contextual-dispatch-/-overdubbing"><a class="docs-heading-anchor" href="#Contextual-dispatch-/-overdubbing">Contextual dispatch / overdubbing</a><a id="Contextual-dispatch-/-overdubbing-1"></a><a class="docs-heading-anchor-permalink" href="#Contextual-dispatch-/-overdubbing" title="Permalink"></a></h2><p>Imagine that under some circumstances (context), you would like to use alternative implementations of some functions. One of the most cited motivations for this is automatic differentiation, where you would like to take the code <strong>as-is</strong> and calculate gradients with respect to some variables. Other use cases of this approach are mentioned in <code>Cassette.jl</code>:</p><p>&quot;<em>Downstream applications for Cassette include dynamic code analysis (e.g. profiling, rr-style debugging, etc.), JIT compilation to new hardware/software backends, automatic differentiation, interval constraint programming, automatic parallelization/rescheduling, automatic memoization, lightweight multistage programming, graph extraction, and more.</em>&quot;</p><p>In theory, we can do all the above by directly modifying the code or introducing new types, but that may require a lot of coding and changing of foreign libraries.</p><p>The technique we desire is called contextual dispatch, which means that under some context, we invoke a different function. The library <code>Casette.jl</code> provides a high-level API for overdubbing, but it is interesting to see, how it works, as it shows, how we can &quot;interact&quot; with the lowered code before the code is typed.</p><h3 id="Insertion-of-code"><a class="docs-heading-anchor" href="#Insertion-of-code">Insertion of code</a><a id="Insertion-of-code-1"></a><a class="docs-heading-anchor-permalink" href="#Insertion-of-code" title="Permalink"></a></h3><p>Imagine that julia has compiled some function. For example </p><pre><code class="language-julia hljs">foo(x,y) = x * y + sin(x)</code></pre><p>and observe its lowered SSA format</p><pre><code class="language-julia hljs">julia&gt; @code_lowered foo(1.0, 1.0)
+CodeInfo(
+1 ─ %1 = x * y
+│   %2 = Main.sin(x)
+│   %3 = %1 + %2
+└──      return %3
+)</code></pre><p>The lowered form is convenient, because on the left hand, there is <strong>always</strong> one variable and the right-hand side is simplified to have (mostly) a single call / expression. Moreover, in the lowered form, all control flow operations like <code>if</code>, <code>for</code>, <code>while</code> and exceptions are converted to <code>Goto</code> and <code>GotoIfNot</code>, which simplifies their handling. </p><h3 id="Codeinfo"><a class="docs-heading-anchor" href="#Codeinfo">Codeinfo</a><a id="Codeinfo-1"></a><a class="docs-heading-anchor-permalink" href="#Codeinfo" title="Permalink"></a></h3><p>We can access the lowered form by</p><pre><code class="language-julia hljs">ci = @code_lowered foo(1.0, 1.0)</code></pre><p>which returns an object of type <code>CodeInfo</code> containing many fields <a href="https://docs.julialang.org/en/v1/devdocs/ast/#Lowered-form">docs</a>. To make the investigation slightly more interesting, we modify the function a bit to have local variables:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; function foo(x,y)
+         z = x * y
+         z + sin(x)
+       end</code><code class="nohighlight hljs ansi" style="display:block;">foo (generic function with 2 methods)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ci = @code_lowered foo(1.0, 1.0)</code><code class="nohighlight hljs ansi" style="display:block;">CodeInfo(
+<span class="sgr90">1 ─</span>      z = x * y
+<span class="sgr90">│  </span> %2 = z
+<span class="sgr90">│  </span> %3 = Main.sin(x)
+<span class="sgr90">│  </span> %4 = %2 + %3
+<span class="sgr90">└──</span>      return %4
+)</code></pre><p>The most important (and interesting) field is <code>code</code>:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ci.code</code><code class="nohighlight hljs ansi" style="display:block;">5-element Vector{Any}:
+ :(_4 = _2 * _3)
+ :(_4)
+ :(Main.sin(_2))
+ :(%2 + %3)
+ :(return %4)</code></pre><p>It contains expressions corresponding to each line of the lowered form. You are free to access them (and modify them with care). Variables identified with underscore <code>Int</code>, for example <code>_2</code>, are slotted variables which are variables which have a name in the code, defined via input arguments or through an explicit assignment <code>:(=)</code>. The names of slotted variables are stored in <code>ci.slotnames</code> and they are of type </p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; typeof(ci.code[1].args[2].args[2])</code><code class="nohighlight hljs ansi" style="display:block;">Core.SlotNumber</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ci.slotnames[ci.code[1].args[2].args[2].id]</code><code class="nohighlight hljs ansi" style="display:block;">:x</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ci.slotnames[ci.code[1].args[2].args[3].id]</code><code class="nohighlight hljs ansi" style="display:block;">:y</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ci.slotnames[ci.code[1].args[1].id]</code><code class="nohighlight hljs ansi" style="display:block;">:z</code></pre><p>The remaining variables are identified by an integer with prefix <code>%</code>, where the number corresponds to the line (index in <code>ci.code</code>), in which the variable was created. For example the fourth line <code>:(%2 + %3)</code> adds the results of the second line <code>:(_4)</code> containing variable <code>z</code> and the third line <code>:(Main.sin(_2))</code>. The type of each slot variable is stored in <code>slottypes</code>, which provides some information about how the variable is used (<a href="https://docs.julialang.org/en/v1/devdocs/ast/#CodeInfo">see docs</a>). Note that if you modify / introduce slot variables, the length of <code>slotnames</code> and <code>slottypes</code> has to match and it has to be equal to the maximum number of slotted variables.</p><p><code>CodeInfo</code> also contains information about the source code. Each item of <code>ci.code</code> has an identifier in <code>ci.codelocs</code> which is an index into <code>ci.linetable</code> containing <code>Core.LineInfoNode</code> identifying lines in the source code (or in the REPL). Notice that <code>ci.linetable</code> is generally shorter then <code>ci.codelocs</code>, as one line of source code can be translated to multiple lines in lowered code. </p><p>The important feature of the lowered form is that we can freely edit (create new) <code>CodeInfo</code> and that generated functions can return a <code>CodeInfo</code> object instead of the AST. However, you need to <strong>explicitly</strong> write a <code>return</code> statement (<a href="https://github.com/JuliaLang/julia/issues/25678">see issue 25678</a>).</p><h3 id="Strategy-for-overdubbing"><a class="docs-heading-anchor" href="#Strategy-for-overdubbing">Strategy for overdubbing</a><a id="Strategy-for-overdubbing-1"></a><a class="docs-heading-anchor-permalink" href="#Strategy-for-overdubbing" title="Permalink"></a></h3><p>In overdubbing, our intention is to recursively dive into called function definitions and modify / change their code. In our example below, with which we will demonstrate the manual implementation (for educational purposes), our goal is to enclose each function call with statements that log the exection time. This means we would like to implement a simplified recording profiler. This functionality cannot be implemented by a macros, since macros do not allow us to dive into function definitions. For example, in our function <code>foo</code>, we would would not be able to dive into the definition of <code>sin</code> (not that this is a terribly good idea, but the point should be clear).</p><p>The overdubbing pattern works as follows.</p><ol><li>We define a <code>@generated function overdub(f, args...)</code> which takes as a first argument a function <code>f</code> and then its arguments.</li><li>In the function <code>overdub</code> we retrieve the <code>CodeInfo</code> for <code>f(args...)</code>, which is possible as we know types of the arguments at this time.</li><li>We modify the the <code>CodeInfo</code> of <code>f(args...)</code> according to our liking. Importantly, we replace all function calls <code>some_fun(some_args...)</code> with <code>overdub(some_fun, some_args...)</code> which establishes the recursive pattern.</li><li>Modify the arguments of the <code>CodeInfo</code> of <code>f(args...)</code> to match <code>overdub(f, args..)</code>.</li><li>Return the modified <code>CodeInfo</code>.</li></ol><h4 id="The-profiler"><a class="docs-heading-anchor" href="#The-profiler">The profiler</a><a id="The-profiler-1"></a><a class="docs-heading-anchor-permalink" href="#The-profiler" title="Permalink"></a></h4><p>The implementation of the simplified logging profiler is straightforward and looks as follows.</p><pre><code class="language-julia hljs">module LoggingProfiler
+struct Calls
+    stamps::Vector{Float64} # contains the time stamps
+    event::Vector{Symbol}  # name of the function that is being recorded
+    startstop::Vector{Symbol} # if the time stamp corresponds to start or to stop
+    i::Ref{Int}
+end
+
+function Calls(n::Int)
+    Calls(Vector{Float64}(undef, n+1), Vector{Symbol}(undef, n+1), Vector{Symbol}(undef, n+1), Ref{Int}(0))
+end
+
+function Base.show(io::IO, calls::Calls)
+    offset = 0
+    if calls.i[] &gt;= length(calls.stamps)
+        @warn &quot;The recording buffer was too small, consider increasing it&quot;
+    end
+    for i in 1:min(calls.i[], length(calls.stamps))
+        offset -= calls.startstop[i] == :stop
+        foreach(_ -&gt; print(io, &quot; &quot;), 1:max(offset, 0))
+        rel_time = calls.stamps[i] - calls.stamps[1]
+        println(io, calls.event[i], &quot;: &quot;, rel_time)
+        offset += calls.startstop[i] == :start
+    end
+end
+
+global const to = Calls(100)
+
+&quot;&quot;&quot;
+    record_start(ev::Symbol)
+
+    record the start of the event, the time stamp is recorded after all counters are 
+    appropriately increased
+&quot;&quot;&quot;
+record_start(ev::Symbol) = record_start(to, ev)
+function record_start(calls, ev::Symbol)
+    n = calls.i[] = calls.i[] + 1
+    n &gt; length(calls.stamps) &amp;&amp; return 
+    calls.event[n] = ev
+    calls.startstop[n] = :start
+    calls.stamps[n] = time_ns()
+end
+
+&quot;&quot;&quot;
+    record_end(ev::Symbol)
+
+    record the end of the event, the time stamp is recorded before all counters are 
+    appropriately increased
+&quot;&quot;&quot;
+record_end(ev::Symbol) = record_end(to, ev::Symbol)
+function record_end(calls, ev::Symbol)
+    t = time_ns()
+    n = calls.i[] = calls.i[] + 1
+    n &gt; length(calls.stamps) &amp;&amp; return 
+    calls.event[n] = ev
+    calls.startstop[n] = :stop
+    calls.stamps[n] = t
+end
+
+reset!() = to.i[] = 0
+
+function Base.resize!(calls::Calls, n::Integer)
+  resize!(calls.stamps, n)
+  resize!(calls.event, n)
+  resize!(calls.startstop, n)
+end
+end</code></pre><p>The important functions are <code>report_start</code> and <code>report_end</code> which mark the beggining and end of the executed function. They differ mainly when time is recorded (on the end or on the start of the function call). The profiler has a fixed capacity to prevent garbage collection, which might be increased.</p><p>Let&#39;s now describe the individual parts of <code>overdub</code> before presenting it in its entirety. At first, we retrieve the codeinfo <code>ci</code> of the overdubbed function. For now, we will just assume we obtain it for example by</p><pre><code class="language-julia hljs">ci = @code_lowered foo(1.0, 1.0)</code></pre><p>we initialize the new <code>CodeInfo</code> object by emptying some dummy function as </p><pre><code class="language-julia hljs">dummy() = return
+new_ci = code_lowered(dummy, Tuple{})[1]
+empty!(new_ci.code)
+empty!(new_ci.slotnames)
+empty!(new_ci.linetable)
+empty!(new_ci.codelocs)
+new_ci</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">CodeInfo(
+)</code></pre><p>Then, we need to copy the slot variables from the <code>ci</code> codeinfo of <code>foo</code> to the new codeinfo. Additionally, we have to add the arguments of <code>overdub(f, args...)</code> since the compiler sees <code>overdub(f, args...)</code> and not <code>foo(x,y)</code>:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; new_ci.slotnames = vcat([Symbol(&quot;#self#&quot;), :f, :args], ci.slotnames[2:end])</code><code class="nohighlight hljs ansi" style="display:block;">6-element Vector{Symbol}:
+ Symbol(&quot;#self#&quot;)
+ :f
+ :args
+ :x
+ :y
+ :z</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; new_ci.slotflags = vcat([0x00, 0x00, 0x00], ci.slotflags[2:end])</code><code class="nohighlight hljs ansi" style="display:block;">6-element Vector{UInt8}:
+ 0x00
+ 0x00
+ 0x00
+ 0x08
+ 0x08
+ 0x18</code></pre><p>Above, we also filled the <code>slotflags</code>. Authors admit that names <code>:f</code> and <code>:args</code> in the above should be replaced by a <code>gensym</code>ed name, but they do not anticipate this code to be used outside of this educative example where name-clashes might occur. We also copy information about the lines from the source code:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; foreach(s -&gt; push!(new_ci.linetable, s), ci.linetable)</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p>The most difficult part when rewriting <code>CodeInfo</code> objects is working with indexes, as the line numbers and left hand side variables are strictly ordered one by one and we need to properly change the indexes to reflect changes we made. We will therefore keep three lists</p><pre><code class="language-julia hljs">maps = (
+    ssa = Dict{Int, Int}(),
+    slots = Dict{Int, Any}(),
+    goto = Dict{Int,Int}(),
+)</code></pre><p>where </p><ul><li><code>slots</code> maps slot variables in <code>ci</code> to those in <code>new_ci</code></li><li><code>ssa</code> maps indexes of left-hand side assignments in <code>ci</code> to <code>new_ci</code></li><li><code>goto</code> maps lines to which <code>GotoNode</code> and <code>GotoIfNot</code> point to variables in <code>ci</code> to <code>new_ci</code> (in our profiler example, we need to ensure to jump on the beggining of logging of executions)</li></ul><p>Mapping of slots can be initialized in advance, as it is a static shift by <code>2</code> :</p><pre><code class="language-julia hljs">maps.slots[1] = Core.SlotNumber(1)
+foreach(i -&gt; maps.slots[i] = Core.SlotNumber(i + 2), 2:length(ci.slotnames)) </code></pre><p>and we can check the correctness by</p><pre><code class="language-julia hljs">@assert all(ci.slotnames[i] == new_ci.slotnames[maps.slots[i].id] for i in 1:length(ci.slotnames))  #test that </code></pre><p>Equipped with that, we start rewriting the code of <code>foo(x, y)</code>. We start by a small preample, where we assign values of <code>args...</code> to <code>x</code>, and <code>y</code>. For the sake of simplicity, we map the slotnames to either <code>Core.SlotNumber</code> or to <code>Core.SSAValues</code> which simplifies the rewriting logic a bit.</p><pre><code class="language-julia hljs">newci_no = 0
+for i in 1:length(args)
+    newci_no +=1
+    push!(new_ci.code, Expr(:call, Base.getindex, Core.SlotNumber(3), i))
+    maps.slots[i+1] = Core.SSAValue(newci_no)
+    push!(new_ci.codelocs, ci.codelocs[1])
+end</code></pre><p>Now we come to the pinnacle of rewriting the body of <code>foo(x,y)</code> while inserting calls to the profiler:</p><pre><code class="language-julia hljs">for (ci_no, ex) in enumerate(ci.code)
+    if timable(ex)
+        fname = exportname(ex)
+        push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_start), fname))
+        push!(new_ci.codelocs, ci.codelocs[ci_no])
+        newci_no += 1
+        maps.goto[ci_no] = newci_no
+        ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex
+        push!(new_ci.code, ex)
+        push!(new_ci.codelocs, ci.codelocs[ci_no])
+        newci_no += 1
+        maps.ssa[ci_no] = newci_no
+        push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_end), fname))
+        push!(new_ci.codelocs, ci.codelocs[ci_no])
+        newci_no += 1
+    else
+        push!(new_ci.code, ex)
+        push!(new_ci.codelocs, ci.codelocs[ci_no])
+        newci_no += 1
+        maps.ssa[ci_no] = newci_no
+    end
+end</code></pre><p>which yields</p><pre><code class="language-julia hljs">julia&gt; new_ci.code
+15-element Vector{Any}:
+ :((getindex)(_3, 1))
+ :((getindex)(_3, 2))
+ :(_4 = _2 * _3)
+ :(_4)
+ :(Main.LoggingProfiler.record_start(:sin))
+ :(Main.overdub(Main.sin, _2))
+ :(Main.LoggingProfiler.record_end(:sin))
+ :(Main.LoggingProfiler.record_start(:+))
+ :(Main.overdub(Main.:+, %2, %3))
+ :(Main.LoggingProfiler.record_end(:+))
+ :(return %4)</code></pre><p>The important parts are:</p><ul><li>Depending on the type of expressions (controlled by <code>timable</code>) we decide, if a function&#39;s execution time should be recorded.</li><li><code>fname = exportname(ex)</code> obtains the name of the profiled function call.</li><li><code>push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_start), fname))</code> records the start of the exection.</li><li><code>maps.goto[ci_ssa_no] = ssa_no</code> updates the map from the code line number in <code>ci</code> to the one in <code>new_ci</code>.</li><li><code>maps.ssa[ci_ssa_no] = ssa_no</code> updates the map from the SSA line number in <code>ci</code> to <code>new_ci</code>.</li><li><code>ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex</code> modifies the function call (expression in general) to recurse the overdubbing.</li></ul><p>Finally, we need to change the names of slot variables (<code>Core.SlotNumber</code>) and variables indexed by the SSA (<code>Core.SSAValue</code>).</p><pre><code class="language-julia hljs">for i in length(args)+1:length(new_ci.code)
+    new_ci.code[i] = remap(new_ci.code[i], maps)
+end</code></pre><p>where <code>remap</code> is defined by the following block of code</p><pre><code class="language-julia hljs">remap(ex::Expr, maps) = Expr(ex.head, remap(ex.args, maps)...)
+remap(args::AbstractArray, maps) = map(a -&gt; remap(a, maps), args)
+remap(c::Core.GotoNode, maps) = Core.GotoNode(maps.goto[c.label])
+remap(c::Core.GotoIfNot, maps) = Core.GotoIfNot(remap(c.cond, maps), maps.goto[c.dest])
+remap(r::Core.ReturnNode, maps) = Core.ReturnNode(remap(r.val, maps))
+remap(a::Core.SlotNumber, maps) = maps.slots[a.id]
+remap(a::Core.SSAValue, maps) = Core.SSAValue(maps.ssa[a.id])
+remap(a::Core.NewvarNode, maps) = Core.NewvarNode(maps.slots[a.slot.id])
+remap(a::GlobalRef, maps) = a
+remap(a::QuoteNode, maps) = a
+remap(ex, maps) = ex</code></pre><div class="admonition is-category-warn"><header class="admonition-header">Warn</header><div class="admonition-body"><h3>Retrieving the code properly</h3><p>Consider the following function:</p><pre><code class="language-julia hljs">function test(x::T) where T&lt;:Union{Float64, Float32}
+   x &lt; T(pi)
+end
+
+julia&gt; ci = @code_lowered test(1.0)
+CodeInfo(
+1 ─ %1 = ($(Expr(:static_parameter, 1)))(Main.pi)
+│   %2 = x &lt; %1
+└──      return %2
+)</code></pre><p>the <code>Expr(:static_parameter, 1)</code> in the first line of code obtains the type parameter <code>T</code> of the function <code>test</code>. Since this information is not accessible in the <code>CodeInfo</code>, it might render our tooling useless. The needed hook is <code>Base.Meta.partially_inline!</code> which partially inlines this into the <code>CodeInfo</code> object. The code to retrieve the <code>CodeInfo</code> adapted from <code>IRTools</code> is a little involved:</p><pre><code class="language-julia hljs">function retrieve_code_info(sigtypes, world = Base.get_world_counter())
+    S = Tuple{map(s -&gt; Core.Compiler.has_free_typevars(s) ? typeof(s.parameters[1]) : s, sigtypes)...}
+    _methods = Base._methods_by_ftype(S, -1, world)
+    if isempty(_methods) 
+        @info(&quot;method $(sigtypes) does not exist&quot;)
+        return(nothing)
+    end
+    type_signature, raw_static_params, method = _methods[1]
+    mi = Core.Compiler.specialize_method(method, type_signature, raw_static_params, false)
+    ci = Base.isgenerated(mi) ? Core.Compiler.get_staged(mi) : Base.uncompressed_ast(method)
+    Base.Meta.partially_inline!(ci.code, [], method.sig, Any[raw_static_params...], 0, 0, :propagate)
+    ci
+end</code></pre><p>but</p><pre><code class="language-julia hljs">julia&gt; ci = retrieve_code_info((typeof(test), Float64))
+CodeInfo(
+    @ REPL[5]:2 within `test&#39;
+1 ─ %1 = ($(QuoteNode(Float64)))(Main.pi)
+│   %2 = x &lt; %1
+└──      return %2
+)</code></pre><p>it performs the needed inlining of <code>Float64</code>.</p></div></div><h2 id="Implementing-the-profiler-with-IRTools"><a class="docs-heading-anchor" href="#Implementing-the-profiler-with-IRTools">Implementing the profiler with IRTools</a><a id="Implementing-the-profiler-with-IRTools-1"></a><a class="docs-heading-anchor-permalink" href="#Implementing-the-profiler-with-IRTools" title="Permalink"></a></h2><p>The above implementation of the profiler has shown, that rewriting IR manually is doable, but requires a lot of careful book-keeping. <code>IRTools.jl</code> makes our life much simpler, as they take away all the needed book-keeping and let us focus on what is important.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using IRTools</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; function foo(x, y)
+          z =  x * y
+          z + sin(y)
+       end;</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ir = @code_ir foo(1.0, 1.0)</code><code class="nohighlight hljs ansi" style="display:block;">1: (%1, %2, %3)
+  %4 = %2 * %3
+  %5 = Main.sin(%3)
+  %6 = %4 + %5
+  return %6</code></pre><p>We can see that at first sight, the representation of the lowered code in IRTools is similar to that of <code>CodeInfo</code>. Some notable differences:</p><ul><li><code>SlotNumber</code> are converted to <code>SSAValues</code></li><li>SSA form is divided into blocks by <code>GotoNode</code> and <code>GotoIfNot</code> in the parsed <code>CodeInfo</code></li><li>SSAValues do not need to be ordered. The reordering is deffered to the moment when one converts <code>IRTools.Inner.IR</code> back to the <code>CodeInfo</code>.</li></ul><p>Let&#39;s now use the IRTools to insert the timing statements into the code for <code>foo</code>:</p><pre><code class="language-julia hljs">using IRTools: xcall, insert!, insertafter!
+
+ir = @code_ir foo(1.0, 1.0)
+for (v, ex) in ir
+    if timable(ex.expr)
+        fname = exportname(ex.expr)
+        insert!(ir, v, xcall(LoggingProfiler, :record_start, fname))
+        insertafter!(ir, v, xcall(LoggingProfiler, :record_end, fname))
+    end
+end
+
+julia&gt; ir
+1: (%1, %2, %3)
+  %7 = Main.LoggingProfiler.record_start(:*)
+  %4 = %2 * %3
+  %8 = Main.LoggingProfiler.record_end(:*)
+  %9 = Main.LoggingProfiler.record_start(:sin)
+  %5 = Main.sin(%3)
+  %10 = Main.LoggingProfiler.record_end(:sin)
+  %11 = Main.LoggingProfiler.record_start(:+)
+  %6 = %4 + %5
+  %12 = Main.LoggingProfiler.record_end(:+)
+  return %6</code></pre><p>Observe that the statements are on the right places but they are not ordered. We can turn the <code>ir</code> object into an anonymous function</p><pre><code class="language-julia hljs">f = IRTools.func(ir)
+LoggingProfiler.reset!()
+f(nothing, 1.0, 1.0)
+LoggingProfiler.to</code></pre><p>where we can observe that our profiler is working as it should. But this is not yet our final goal. Originally, our goal was to recursivelly dive into the nested functions. IRTools offers a macro <code>@dynamo</code>, which is similar to <code>@generated</code> but simplifies our job by allowing to return the <code>IRTools.Inner.IR</code> object and it also taking care of properly renaming the arguments. With that we write</p><pre><code class="language-julia hljs">using IRTools: @dynamo
+profile_fun(f::Core.IntrinsicFunction, args...) = f(args...)
+profile_fun(f::Core.Builtin, args...) = f(args...)
+
+@dynamo function profile_fun(f, args...)
+    ir = IRTools.Inner.IR(f, args...)
+    for (v, ex) in ir
+        if timable(ex.expr)
+            fname = exportname(ex.expr)
+            insert!(ir, v, xcall(LoggingProfiler, :record_start, fname))
+            insertafter!(ir, v, xcall(LoggingProfiler, :record_end, fname))
+        end
+    end
+    for (x, st) in ir
+        recursable(st.expr) || continue
+        ir[x] = xcall(profile_fun, st.expr.args...)
+    end
+    return ir
+end</code></pre><p>where the first pass is as it was above and the <code>ir[x] = xcall(profile_fun, st.expr.args...)</code> ensures that the profiler will recursively call itself. <code>recursable</code> is a filter defined as below, which is used to prevent profiling itself (and possibly other things).</p><pre><code class="language-julia hljs">recursable(gr::GlobalRef) = gr.name ∉ [:profile_fun, :record_start, :record_end]
+recursable(ex::Expr) = ex.head == :call &amp;&amp; recursable(ex.args[1])
+recursable(ex) = false</code></pre><p>Additionally, the first two definitions of <code>profile_fun</code> for <code>Core.IntrinsicFunction</code> and for <code>Core.Builtin</code> prevent trying to dive into functions which do not have a Julia IR. And that&#39;s all. The full code is </p><pre><code class="language-example hljs">using IRTools
+using IRTools: var, xcall, insert!, insertafter!, func, recurse!, @dynamo
+include(&quot;loggingprofiler.jl&quot;)
+LoggingProfiler.resize!(LoggingProfiler.to, 10000)
+
+function timable(ex::Expr) 
+    ex.head != :call &amp;&amp; return(false)
+    length(ex.args) &lt; 2 &amp;&amp; return(false)
+    ex.args[1] isa Core.GlobalRef &amp;&amp; return(true)
+    ex.args[1] isa Symbol &amp;&amp; return(true)
+    return(false)
+end
+timable(ex) = false
+
+recursable(gr::GlobalRef) = gr.name ∉ [:profile_fun, :record_start, :record_end]
+recursable(ex::Expr) = ex.head == :call &amp;&amp; recursable(ex.args[1])
+recursable(ex) = false
+
+exportname(ex::GlobalRef) = QuoteNode(ex.name)
+exportname(ex::Symbol) = QuoteNode(ex)
+exportname(ex::Expr) = exportname(ex.args[1])
+exportname(i::Int) = QuoteNode(Symbol(&quot;Int(&quot;,i,&quot;)&quot;))
+
+profile_fun(f::Core.IntrinsicFunction, args...) = f(args...)
+profile_fun(f::Core.Builtin, args...) = f(args...)
+
+@dynamo function profile_fun(f, args...)
+    ir = IRTools.Inner.IR(f, args...)
+    for (v, ex) in ir
+        if timable(ex.expr)
+            fname = exportname(ex.expr)
+            insert!(ir, v, xcall(LoggingProfiler, :record_start, fname))
+            insertafter!(ir, v, xcall(LoggingProfiler, :record_end, fname))
+        end
+    end
+    for (x, st) in ir
+        recursable(st.expr) || continue
+        ir[x] = xcall(profile_fun, st.expr.args...)
+    end
+    # recurse!(ir)
+    return ir
+end
+
+macro record(ex)
+    esc(Expr(:call, :profile_fun, ex.args...))
+end
+
+LoggingProfiler.reset!()
+@record foo(1.0, 1.0)
+LoggingProfiler.to</code></pre><p>where you should notice the long time the first execution of <code>@record foo(1.0, 1.0)</code> takes. This is caused by the compiler specializing for every function into which we dive into. The second execution of <code>@record foo(1.0, 1.0)</code> is fast. It is also interesting to observe how the time of the compilation is logged by the profiler. The output of the profiler <code>to</code> is not shown here due to the length of the output.</p><h2 id="Petite-Zygote"><a class="docs-heading-anchor" href="#Petite-Zygote">Petite Zygote</a><a id="Petite-Zygote-1"></a><a class="docs-heading-anchor-permalink" href="#Petite-Zygote" title="Permalink"></a></h2><p><code>IRTools.jl</code> were created for <code>Zygote.jl</code> –- Julia&#39;s source-to-source AD system currently powering <code>Flux.jl</code>. An interesting aspect of <code>Zygote</code> was to recognize that TensorFlow is in its nutshell a compiler, PyTorch is an interpreter. So the idea was to let Julia&#39;s compiler compile the gradient and perform optimizations that are normally performed with normal code. Recall that a lot of research went into how to generate efficient code and it is reasonable to use this research. <code>Zygote.jl</code> provides mainly reversediff, but there was an experimental support for forwarddiff.</p><p>One of the questions when developing an AD engine is where and how to create a computation graph. Recall that in TensorFlow, you specify it through a domain specific language, in PyTorch it generated on the fly. Mike Innes&#39; idea was use SSA form provided by the julia compiler. </p><pre><code class="language-julia hljs">julia&gt; @code_lowered foo(1.0, 1.0)
+CodeInfo(
+1 ─      z = x * y
+│   %2 = z
+│   %3 = Main.sin(y)
+│   %4 = %2 + %3
+└──      return %4
+)</code></pre><p>It is very easy to differentiate each line, as they correspond to single expressions (or function calls) and importantly, each variable is assigned exactly once. The strategy to use it for AD would as follows.</p><h3 id="Strategy"><a class="docs-heading-anchor" href="#Strategy">Strategy</a><a id="Strategy-1"></a><a class="docs-heading-anchor-permalink" href="#Strategy" title="Permalink"></a></h3><p>We assume to have a set of AD rules (e.g. ChainRules), which for a given function returns its evaluation and pullback. If <code>Zygote.jl</code> is tasked with computing the gradient.</p><ol><li>If a rule exists for this function, directly return the rule.</li><li>If not, deconstruct the function into a sequence of functions using <code>CodeInfo</code> / IR representation</li><li>Replace statements by calls to obtain the evaluation of the statements and the pullback.</li><li>Chain pullbacks in reverse order.</li><li>Return the function evaluation and the chained pullback.</li></ol><h3 id="Simplified-implementation"><a class="docs-heading-anchor" href="#Simplified-implementation">Simplified implementation</a><a id="Simplified-implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Simplified-implementation" title="Permalink"></a></h3><p>The following code is adapted from <a href="https://github.com/FluxML/IRTools.jl/blob/master/examples/reverse.jl">this example</a></p><pre><code class="language-julia hljs">using IRTools, ChainRules
+using IRTools: @dynamo, IR, Pipe, finish, substitute, return!, block, blocks,
+  returnvalue, arguments, isexpr, xcall, self, stmt
+
+struct Pullback{S,T}
+  data::T
+end
+
+Pullback{S}(data) where S = Pullback{S,typeof(data)}(data)
+
+function primal(ir, T = Any)
+  pr = Pipe(ir)
+  calls = []
+  ret = []
+  for (v, st) in pr
+    ex = st.expr
+    if isexpr(ex, :call)
+      t = insert!(pr, v, stmt(xcall(Main, :forward, ex.args...), line = st.line))
+      pr[v] = xcall(:getindex, t, 1)
+      J = push!(pr, xcall(:getindex, t, 2))
+      push!(calls, v)
+      push!(ret, J)
+    end
+  end
+  pb = Expr(:call, Pullback{T}, xcall(:tuple, ret...))
+  return!(pr, xcall(:tuple, returnvalue(block(ir, 1)), pb))
+  return finish(pr), calls
+end
+
+@dynamo function forward(m...)
+  ir = IR(m...)
+  ir == nothing &amp;&amp; return :(error(&quot;Non-differentiable function &quot;, repr(args[1])))
+  length(blocks(ir)) == 1 || error(&quot;control flow is not supported&quot;)
+  return primal(ir, Tuple{m...})[1]
+end
+</code></pre><p>where </p><ul><li>the generated function <code>forward</code> calls <code>primal</code> to perform AD manual chainrule</li><li>actual chainrule is performed in the for loop</li><li>every function call is replaced  <code>xcall(Main, :forward, ex.args...)</code>, which is the recursion we have observed above. <code>stmt</code> allows to insert information about lines in the source code).</li><li>the output of the forward is the value of the function, and <em>pullback</em>, the function calculating gradient with respect to its inputs.</li><li><code>pr[v] = xcall(:getindex, t, 1)</code> fixes the output of the overwritten function call to be the output of <code>forward(...)</code></li><li>the next line logs the <em>pullback</em> </li><li><code>Expr(:call, Pullback{T}, xcall(:tuple, ret...))</code> will serve to call generated function which will assemble the pullback in the right order</li></ul><p>Let&#39;s now observe how the the IR of <code>foo</code> is transformed</p><pre><code class="language-julia hljs">ir = IR(typeof(foo), Float64, Float64)
+julia&gt; primal(ir)[1]
+1: (%1, %2, %3)
+  %4 = Main.forward(Main.:*, %2, %3)
+  %5 = Base.getindex(%4, 1)
+  %6 = Base.getindex(%4, 2)
+  %7 = Main.forward(Main.sin, %3)
+  %8 = Base.getindex(%7, 1)
+  %9 = Base.getindex(%7, 2)
+  %10 = Main.forward(Main.:+, %5, %8)
+  %11 = Base.getindex(%10, 1)
+  %12 = Base.getindex(%10, 2)
+  %13 = Base.tuple(%6, %9, %12)
+  %14 = (Pullback{Any, T} where T)(%13)
+  %15 = Base.tuple(%11, %14)
+  return %15</code></pre><ul><li>Every function call was transformed into the sequence of <code>forward(...)</code> and obtaining first and second item from the returned typle.</li><li>Line <code>%14</code> constructs the <code>Pullback</code>, which (as will be seen shortly below) will allow to generate the pullback for the generated function</li><li>Line <code>%15</code> generates the returned tuple, where the first item is the function value (computed at line <code>%11</code>) and pullback (constructed at libe <code>%15</code>).</li></ul><p>We define few AD rules by specializing <code>forward</code>  with calls from <code>ChainRules</code></p><pre><code class="language-julia hljs">forward(::typeof(sin), x)    = ChainRules.rrule(sin, x)
+forward(::typeof(*), x, y)   = ChainRules.rrule(*, x, y)
+forward(::typeof(+), x, y)   = ChainRules.rrule(+, x, y)</code></pre><p>Zygote implements this inside the generated function, such that whatever is added to <code>ChainRules</code> is automatically reflected. The process is not as trivial (see <a href="https://github.com/FluxML/Zygote.jl/blob/master/src/compiler/chainrules.jl"><code>has_chain_rule</code></a>) and for the brevity is not shown here. </p><p>We now obtain the value and the pullback of function <code>foo</code> as </p><pre><code class="language-julia hljs">julia&gt; v, pb = forward(foo, 1.0, 1.0);
+
+julia&gt; pb(1.0)
+(0, 1.0, 1.5403023058681398)</code></pre><ul><li>The pullback contains in <code>data</code> field with individual jacobians that have been collected in <code>ret</code> in <code>primal</code> function.</li></ul><pre><code class="language-julia hljs">pb.data[1]
+pb.data[2]
+pb.data[3]</code></pre><p>The function for which the Jacobian has been created is stored in type parameter <code>S</code> of the <code>Pullback</code> type. The pullback for <code>foo</code> is generated in another generated function, as <code>Pullback</code> <code>struct</code> is a functor. This is an interesting <strong>design pattern</strong>, which allows us to return <em>closure</em> from a generated function. </p><p>Let&#39;s now investigate the code generating code for pullback.</p><pre><code class="language-julia hljs">
+_sum() = 0
+_sum(x) = x
+_sum(x...) = xcall(:+, x...)
+
+function pullback(pr)
+  ir = empty(pr)
+  grads = Dict()
+  grad(x) = _sum(get(grads, x, [])...)
+  grad(x, x̄) = push!(get!(grads, x, []), x̄)
+  grad(returnvalue(block(pr, 1)), IRTools.argument!(ir))
+  data = push!(ir, xcall(:getfield, self, QuoteNode(:data)))
+  _, pbs = primal(pr)
+  pbs = Dict(pbs[i] =&gt; push!(ir, xcall(:getindex, data, i)) for i = 1:length(pbs))
+  for v in reverse(keys(pr))
+    ex = pr[v].expr
+    isexpr(ex, :call) || continue
+    Δs = push!(ir, Expr(:call, pbs[v], grad(v)))
+    for (i, x) in enumerate(ex.args)
+      grad(x, push!(ir, xcall(:getindex, Δs, i)))
+    end
+  end
+  return!(ir, xcall(:tuple, [grad(x) for x in arguments(pr)]...))
+end
+
+@dynamo function (pb::Pullback{S})(Δ) where S
+  return pullback(IR(S.parameters...))
+end</code></pre><p>Let&#39;s walk how the reverse is constructed for <code>pr = IR(typeof(foo), Float64, Float64)</code></p><pre><code class="language-julia hljs">ir = empty(pr)
+grads = Dict()
+grad(x) = _sum(get(grads, x, [])...)
+grad(x, x̄) = push!(get!(grads, x, []), x̄)</code></pre><p>construct the empty <code>ir</code> for the constructed pullback, defines <code>Dict</code> where individual contributors of the gradient with respect to certain variable will be stored, and two function for pushing statements to to <code>grads</code>. The next statement</p><pre><code class="language-julia hljs">grad(returnvalue(block(pr, 1)), IRTools.argument!(ir))</code></pre><p>pushes to <code>grads</code> statement that the gradient of the output of the primal <code>pr</code> is provided as an argument of the pullback <code>IRTools.argument!(ir)</code>. </p><pre><code class="nohighlight hljs">data = push!(ir, xcall(:getfield, self, QuoteNode(:data)))
+_, pbs = primal(pr)
+pbs = Dict(pbs[i] =&gt; push!(ir, xcall(:getindex, data, i)) for i = 1:length(pbs))</code></pre><p>sets <code>data</code> to the <code>data</code> field of the <code>Pullback</code> structure containing pullback functions. Then it create a dictionary <code>pbs</code>, where the output of each call in the primal (identified by the line) is mapped to the corresponding pullback, which is now a line in the IR representation. The IR so far looks as </p><pre><code class="language-julia hljs">1: (%1)
+  %2 = Base.getfield(IRTools.Inner.Self(), :data)
+  %3 = Base.getindex(%2, 1)
+  %4 = Base.getindex(%2, 2)
+  %5 = Base.getindex(%2, 3)</code></pre><p>and <code>pbs</code> contains </p><pre><code class="language-julia hljs">julia&gt; pbs
+Dict{IRTools.Inner.Variable, IRTools.Inner.Variable} with 3 entries:
+  %6 =&gt; %5
+  %4 =&gt; %3
+  %5 =&gt; %4</code></pre><p>says that the pullback of a function producing variable at line <code>%6</code> in the primal is stored at variable <code>%5</code> in the contructed pullback. The real deal comes in the for loop </p><pre><code class="language-julia hljs">for v in reverse(keys(pr))
+  ex = pr[v].expr
+  isexpr(ex, :call) || continue
+  Δs = push!(ir, Expr(:call, pbs[v], grad(v)))
+  for (i, x) in enumerate(ex.args)
+    grad(x, push!(ir, xcall(:getindex, Δs, i)))
+  end
+end</code></pre><p>which iterates the primal <code>pr</code> in the reverse order and for every call, it inserts statement to calls the appropriate pullback <code>Δs = push!(ir, Expr(:call, pbs[v], grad(v)))</code> and adds gradients with respect to the inputs to values accumulating corresponding gradient in the loop <code>for (i, x) in enumerate(ex.args) ...</code> The last line</p><pre><code class="language-julia hljs">return!(ir, xcall(:tuple, [grad(x) for x in arguments(pr)]...))</code></pre><p>puts statements accumulating gradients with respect to individual variables to the ir.</p><p>The final generated IR code looks as</p><pre><code class="language-julia hljs">julia&gt; pullback(IR(typeof(foo), Float64, Float64))
+1: (%1)
+  %2 = Base.getfield(IRTools.Inner.Self(), :data)
+  %3 = Base.getindex(%2, 1)
+  %4 = Base.getindex(%2, 2)
+  %5 = Base.getindex(%2, 3)
+  %6 = (%5)(%1)
+  %7 = Base.getindex(%6, 1)
+  %8 = Base.getindex(%6, 2)
+  %9 = Base.getindex(%6, 3)
+  %10 = (%4)(%9)
+  %11 = Base.getindex(%10, 1)
+  %12 = Base.getindex(%10, 2)
+  %13 = (%3)(%8)
+  %14 = Base.getindex(%13, 1)
+  %15 = Base.getindex(%13, 2)
+  %16 = Base.getindex(%13, 3)
+  %17 = %12 + %16
+  %18 = Base.tuple(0, %15, %17)
+  return %18</code></pre><p>and it calculates the gradient with respect to the input as</p><pre><code class="language-julia hljs">julia&gt; pb(1.0)
+(0, 1.0, 1.5403023058681398)</code></pre><p>where the first item is gradient with parameters of the function itself.</p><h2 id="Conclusion"><a class="docs-heading-anchor" href="#Conclusion">Conclusion</a><a id="Conclusion-1"></a><a class="docs-heading-anchor-permalink" href="#Conclusion" title="Permalink"></a></h2><p>The above examples served to demonstrate that <code>@generated</code> functions offers extremely powerful paradigm, especially if coupled with manipulation of intermediate representation. Within few lines of code, we have implemented reasonably powerful profiler and reverse AD engine. Importantly, it has been done without a single-purpose engine or tooling. </p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_08/hw/">« Homework</a><a class="docs-footer-nextpage" href="../lab/">Lab »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Friday 10 December 2021 16:05">Friday 10 December 2021</span>. Using Julia version 1.7.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

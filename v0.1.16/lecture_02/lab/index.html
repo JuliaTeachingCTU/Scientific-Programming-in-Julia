@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_02/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox" checked/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#The-Predator-Prey-Model"><span>The Predator-Prey Model</span></a></li><li><a class="tocitem" href="#The-Grass-Agent"><span>The <code>Grass</code> Agent</span></a></li><li><a class="tocitem" href="#Sheep-eat-grass"><span>Sheep eat grass</span></a></li><li><a class="tocitem" href="#Wolves-eat-sheep"><span>Wolves eat sheep</span></a></li><li><a class="tocitem" href="#Finding-food-for-sheep"><span>Finding food for sheep</span></a></li><li><a class="tocitem" href="#Finding-food-for-wolves"><span>Finding food for wolves</span></a></li><li><a class="tocitem" href="#General-food-finding"><span>General food finding</span></a></li><li><a class="tocitem" href="#Eating-nothing"><span>Eating nothing</span></a></li><li><a class="tocitem" href="#Reproduction"><span>Reproduction</span></a></li><li><a class="tocitem" href="#Finally!-world_step!"><span>Finally! <code>world_step!</code></span></a></li></ul></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Introduction to automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-12" type="checkbox"/><label class="tocitem" for="menuitem-12"><span class="docs-label">9: Manipulating intermediate representation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_09/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_09/lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-13" type="checkbox"/><label class="tocitem" for="menuitem-13"><span class="docs-label">10: Different levels of parallel programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_10/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_10/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_10/hw/">Homework</a></li></ul></li><li><span class="tocitem">11: Julia for GPU programming</span></li><li><input class="collapse-toggle" id="menuitem-15" type="checkbox"/><label class="tocitem" for="menuitem-15"><span class="docs-label">12: Uncertainty propagation in ODE</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_12/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_12/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_12/hw/">Homework</a></li></ul></li><li><span class="tocitem">13: Learning ODE from data</span></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">2: The power of Type System &amp; multiple dispatch</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_02/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="lab02"><a class="docs-heading-anchor" href="#lab02">Lab 2: Predator-Prey Agents</a><a id="lab02-1"></a><a class="docs-heading-anchor-permalink" href="#lab02" title="Permalink"></a></h1><h2 id="The-Predator-Prey-Model"><a class="docs-heading-anchor" href="#The-Predator-Prey-Model">The Predator-Prey Model</a><a id="The-Predator-Prey-Model-1"></a><a class="docs-heading-anchor-permalink" href="#The-Predator-Prey-Model" title="Permalink"></a></h2><p>In the next two labs you will implement your own, simplified, agent-based simulation of a <em>predator-prey model</em>.  The model will contain <em>wolves</em>, <em>sheep</em>, and - to feed your sheep - some <em>grass</em>.  Running and plotting your final result could look something like the plot below.</p><p><img src="../pred-prey.png" alt="img"/></p><p>As you can see, in this model, the wolves unfortunately died out :(. In this lab we will first define what our agent simulation does on a high level. Then you will write the core methods for finding food (<code>find_food</code>), to specify what an animal eats (<code>eat!</code>), and how it reproduces (<code>reproduce!</code>).</p><h3 id="High-level-description"><a class="docs-heading-anchor" href="#High-level-description">High level-description</a><a id="High-level-description-1"></a><a class="docs-heading-anchor-permalink" href="#High-level-description" title="Permalink"></a></h3><p>In an agent simulation we assume that we have a bunch of agents (in our case grass, sheep, and wolves) that act in some environment (we will call it a <em>world</em>). At every iteration of the simulation each agent will perform a <em>step</em> in which it performs some of the actions that it can take. For example, a <em>grass</em> agent will grow a little at every step. A <em>sheep</em> agent will try to find some grass and reproduce.</p><p>In short:</p><ul><li>Wolves, sheep, and grass exist in a one dimensional world <code>Dict(1=&gt;🐺, 2=&gt;🐑, 3=&gt;🌿, 4=&gt;🌿, ...)</code> and are identified by a unique ID</li><li>Each agent can perform certain actions (eating, growing, reproducing, dying...)</li><li>In one iteration of the simulation each agent performs its actions</li></ul><h3 id="Code-skeleton"><a class="docs-heading-anchor" href="#Code-skeleton">Code skeleton</a><a id="Code-skeleton-1"></a><a class="docs-heading-anchor-permalink" href="#Code-skeleton" title="Permalink"></a></h3><p>To get started we need a type hierarchy. The first abstract type <code>Agent</code> acts as the root of our tree.  All animals and plants will be subtypes of <code>Agent</code>. There are different kinds of animals and plants so it makes sense to create an <code>Animal</code> type which will be the supertype of all animals. The same is true for <code>Plant</code>s. Finally, we need a simple world which consist of a dictionary of agent IDs to agents, and a field that holds the current maximum ID (so that we can generate new ones).</p><pre><code class="language-julia hljs">abstract type Agent end
+abstract type Animal &lt;: Agent end
+abstract type Plant &lt;: Agent end
+
+mutable struct World{A&lt;:Agent}
+    agents::Dict{Int,A}
+    max_id::Int
+end
+function World(agents::Vector{&lt;:Agent})
+    World(Dict(id(a)=&gt;a for a in agents), maximum(id.(agents)))
+end
+
+# optional: you can overload the `show` method to get custom
+# printing of your World
+function Base.show(io::IO, w::World)
+    println(io, typeof(w))
+    for (_,a) in w.agents
+        println(io,&quot;  $a&quot;)
+    end
+end</code></pre><p>The function <code>world_step!</code> will advance your whole world by one step applying the function <code>agent_step!</code> to each agent. Note that this function assumes that all <code>Agent</code>s have a <em><strong>unique</strong></em> <code>id</code>.</p><pre><code class="language-julia hljs">function world_step!(world::World)
+    # make sure that we only iterate over IDs that already exist in the
+    # current timestep this lets us safely add agents
+    ids = deepcopy(keys(world.agents))
+
+    for id in ids
+        # agents can be killed by other agents, so make sure that we are
+        # not stepping dead agents forward
+        !haskey(world.agents,id) &amp;&amp; continue
+
+        a = world.agents[id]
+        agent_step!(a,world)
+    end
+end</code></pre><p>The <code>agent_step!</code> function will have multiple methods and is the first function in this lab that uses dispatch. The method for plants checks if a plant is fully grown. If it is, nothing happens. While has not reached is maximum size, the plant will grow a little each time <code>agent_step!</code> is called.</p><pre><code class="language-julia hljs">function agent_step!(a::Plant, w::World)
+    if size(a) != max_size(a)
+        grow!(a)
+    end
+end</code></pre><p>The <code>agent_step!</code> method for animals is different. At the beginning of each step an animal looses energy. Afterwards it tries to find some food, which it will subsequently eat. If the animal then has less than zero energy it dies and is removed from the world. If it has positive energy it will try to reproduce.</p><pre><code class="language-julia hljs">function agent_step!(a::Animal, w::World)
+    incr_energy!(a,-1)
+    if rand() &lt;= foodprob(a)
+        dinner = find_food(a,w)
+        eat!(a, dinner, w)
+    end
+    if energy(a) &lt;= 0
+        kill_agent!(a,w)
+        return
+    end
+    if rand() &lt;= reprprob(a)
+        reproduce!(a,w)
+    end
+    return a
+end</code></pre><h2 id="The-Grass-Agent"><a class="docs-heading-anchor" href="#The-Grass-Agent">The <code>Grass</code> Agent</a><a id="The-Grass-Agent-1"></a><a class="docs-heading-anchor-permalink" href="#The-Grass-Agent" title="Permalink"></a></h2><p>The first concrete type we implement is the basis of life in our simulation and source of all energy: <code>Grass</code>. Our <code>Grass</code> will be growing over time and it will need a certain amount of time steps to fully grow before it can be eaten. We will realise this with a <code>countdown</code> field. At every step of the simulation the <code>countdown</code> will decrease until it reaches zero at which point the grass is fully grown.  This has to be reflected in the fields of our grass struct:</p><pre><code class="language-julia hljs">mutable struct Grass &lt;: Plant
+    id::Int
+    size::Int
+    max_size::Int
+end</code></pre><p>Note that <code>Grass</code> is a mutable type because the <code>size</code> field will change during the simulation. Let us assume that all plants have at least the fields <code>id</code>, <code>size</code>, and <code>max_size</code>, because all plants need some time to fully grow. If this is the case we can make <code>Grass</code> a subtype of <code>Plant</code> (via <code>&lt;:</code>) and define a common interface for all <code>Plant</code>s.</p><pre><code class="language-julia hljs">id(a::Agent) = a.id  # every agent has an ID so we can just define id for Agent here
+
+Base.size(a::Plant) = a.size
+max_size(a::Plant) = a.max_size
+grow!(a::Plant) = a.size += 1</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><ol><li>Define a constructor for <code>Grass</code> which, given only an ID and a maximum size <span>$m$</span>, will create an instance of <code>Grass</code> that has a randomly initialized <code>size</code> in the range <span>$(1,m)$</span>.</li><li>Create some <code>Grass</code> agents inside a <code>World</code> and run a few <code>world_step!</code>s.</li></ol></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>The constructor for grass with random growth countdown:</p><pre><code class="language-julia hljs">Grass(id,m) = Grass(id, rand(1:m), m)
+
+# optional: overload show function for Grass
+function Base.show(io::IO, g::Grass)
+    x = size(g)/max_size(g) * 100
+    print(io,&quot;🌿 #$(id(g)) $(round(Int,x))% grown&quot;)
+end</code></pre><p>Creation of a world with a few grass agents:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; w = World([Grass(id,3) for id in 1:2])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Grass}
+  🌿 #2 33% grown
+  🌿 #1 33% grown</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for _ in 1:3
+           world_step!(w)
+           @info w
+       end</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr36"><span class="sgr1">┌ Info: </span></span>Main.World{Main.Grass}
+<span class="sgr36"><span class="sgr1">│ </span></span>  🌿 #2 67% grown
+<span class="sgr36"><span class="sgr1">└ </span></span>  🌿 #1 67% grown
+<span class="sgr36"><span class="sgr1">┌ Info: </span></span>Main.World{Main.Grass}
+<span class="sgr36"><span class="sgr1">│ </span></span>  🌿 #2 100% grown
+<span class="sgr36"><span class="sgr1">└ </span></span>  🌿 #1 100% grown
+<span class="sgr36"><span class="sgr1">┌ Info: </span></span>Main.World{Main.Grass}
+<span class="sgr36"><span class="sgr1">│ </span></span>  🌿 #2 100% grown
+<span class="sgr36"><span class="sgr1">└ </span></span>  🌿 #1 100% grown</code></pre></p></details><h2 id="Sheep-eat-grass"><a class="docs-heading-anchor" href="#Sheep-eat-grass">Sheep eat grass</a><a id="Sheep-eat-grass-1"></a><a class="docs-heading-anchor-permalink" href="#Sheep-eat-grass" title="Permalink"></a></h2><p>Our simulated <code>Sheep</code> will have a certain amount of energy <span>$E$</span>, a reproduction probability <span>$p_r$</span>, and a probablity to find food <span>$p_f$</span> in each iteration of our simulation. Additionally, each sheep with get some amout of energy from eating a <code>Grass</code> which is computed with the variable <span>$\Delta E$</span>.. The corresponding struct then looks like this</p><pre><code class="language-julia hljs">mutable struct Sheep &lt;: Animal
+    id::Int
+    energy::Float64
+    Δenergy::Float64
+    reprprob::Float64
+    foodprob::Float64
+end</code></pre><p>Again we will use <code>Sheep</code> as a generic example for an <code>Animal</code> which leaves us with the interface below. We only have setters for <code>energy</code> because all other fields of our animals will stay constant.</p><pre><code class="language-julia hljs"># get field values
+energy(a::Animal) = a.energy
+Δenergy(a::Animal) = a.Δenergy
+reprprob(a::Animal) = a.reprprob
+foodprob(a::Animal) = a.foodprob
+
+# set field values
+energy!(a::Animal, e) = a.energy = e
+incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
+
+# optional: overload the show method for Sheep
+function Base.show(io::IO, s::Sheep)
+    e = energy(s)
+    d = Δenergy(s)
+    pr = reprprob(s)
+    pf = foodprob(s)
+    print(io,&quot;🐑 #$(id(s)) E=$e ΔE=$d pr=$pr pf=$pf&quot;)
+end</code></pre><p>In every iteration of the simulation each sheep will get a chance to eat some grass. The process of one animal eating a plant (or another animal) will be implemented via the <code>eat!(a::Agent,b::Agent,::World)</code> function. Calling the function will cause agent <code>a</code> to eat agent <code>b</code>, possibly mutating them and the world. The <code>eat!</code> function will do something different for different input types and is our first practical example of <a href="https://docs.julialang.org/en/v1/manual/methods/"><em>multiple dispatch</em></a>.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement a function <code>eat!(::Sheep, ::Grass, ::World)</code> which increases the sheep&#39;s energy by <span>$\Delta E$</span> multiplied by the size of the grass.</p><p>After the sheep&#39;s energy is updated the grass is eaten and its size counter has to be set to zero.</p><p>Note that you do not yet need the world in this function. It is needed later for the case of wolves eating sheep.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function eat!(a::Sheep, b::Grass, w::World)
+    incr_energy!(a, size(b)*Δenergy(a))
+    b.size = 0
+end</code></pre></p></details><p>Below you can see how a fully grown grass is eaten by a sheep.  The sheep&#39;s energy changes <code>size</code> of the grass is set to zero.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = Grass(1,5,5)</code><code class="nohighlight hljs ansi" style="display:block;">🌿 #1 100% grown</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep = Sheep(2,10.0,2.0,0.1,0.1)</code><code class="nohighlight hljs ansi" style="display:block;">🐑 #2 E=10.0 ΔE=2.0 pr=0.1 pf=0.1</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World([grass, sheep])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🐑 #2 E=10.0 ΔE=2.0 pr=0.1 pf=0.1
+  🌿 #1 100% grown</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eat!(sheep,grass,world);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🐑 #2 E=20.0 ΔE=2.0 pr=0.1 pf=0.1
+  🌿 #1 0% grown</code></pre><p>Note that the order of the arguments has a meaning here. Calling <code>eat!(grass,sheep,world)</code> results in a <code>MethodError</code> which is great, because <code>Grass</code> cannot eat <code>Sheep</code>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; eat!(grass,sheep,world);</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching eat!(::Main.Grass, ::Main.Sheep, ::Main.World{Main.Agent})
+Closest candidates are:
+  eat!(<span class="sgr91">::Main.Sheep</span>, <span class="sgr91">::Main.Grass</span>, ::Main.World) at lab.md:251</code></pre><h2 id="Wolves-eat-sheep"><a class="docs-heading-anchor" href="#Wolves-eat-sheep">Wolves eat sheep</a><a id="Wolves-eat-sheep-1"></a><a class="docs-heading-anchor-permalink" href="#Wolves-eat-sheep" title="Permalink"></a></h2><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Next, implement a <code>Wolf</code> with the same properties as the sheep (<span>$E$</span>, <span>$\Delta E$</span>, <span>$p_r$</span>, and <span>$p_f$</span>) as well as its <code>eat!</code> method. The <code>eat!</code> method for wolves increases the wolf&#39;s energy by <code>energy(sheep)*Δenergy(wolf)</code> and kills the sheep (i.e. removes the sheep from the world). Both <code>eat!</code> and <code>agent_step!</code> need to be able to remove agents from the world so it makes sense to create another function <code>kill_agent!(::Animal,::World)</code>. Please implement it as well to make your <code>agent_step!</code> work.</p><p>Hint: You can use <code>delete!</code> to remove agents from the dictionary in your world.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">mutable struct Wolf &lt;: Animal
+    id::Int
+    energy::Float64
+    Δenergy::Float64
+    reprprob::Float64
+    foodprob::Float64
+end
+
+function eat!(wolf::Wolf, sheep::Sheep, w::World)
+    incr_energy!(wolf, energy(sheep)*Δenergy(wolf))
+    kill_agent!(sheep,w)
+end
+
+kill_agent!(a::Animal, w::World) = delete!(w.agents, id(a))
+
+# optional: overload the show method for Wolf
+function Base.show(io::IO, w::Wolf)
+    e = energy(w)
+    d = Δenergy(w)
+    pr = reprprob(w)
+    pf = foodprob(w)
+    print(io,&quot;🐺 #$(id(w)) E=$e ΔE=$d pr=$pr pf=$pf&quot;)
+end</code></pre></p></details><p>With a correct <code>eat!</code> method you should get results like this:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = Grass(1,5,5);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep = Sheep(2,10.0,1.0,0.1,1.0);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; wolf  = Wolf(3,20.0,2.0,0.1,1.0);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World([grass, sheep, wolf])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🐑 #2 E=10.0 ΔE=1.0 pr=0.1 pf=1.0
+  🐺 #3 E=20.0 ΔE=2.0 pr=0.1 pf=1.0
+  🌿 #1 100% grown</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eat!(wolf,sheep,world);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🐺 #3 E=40.0 ΔE=2.0 pr=0.1 pf=1.0
+  🌿 #1 100% grown</code></pre><p>The sheep is removed from the world and the wolf&#39;s energy increased by <span>$\Delta E$</span>.</p><h2 id="Finding-food-for-sheep"><a class="docs-heading-anchor" href="#Finding-food-for-sheep">Finding food for sheep</a><a id="Finding-food-for-sheep-1"></a><a class="docs-heading-anchor-permalink" href="#Finding-food-for-sheep" title="Permalink"></a></h2><p>The next mechanism in our simulation models an animal&#39;s search for food.  For example, a sheep can only try to eat if the world currently holds some grass. The process of finding food for a given animal will be implemented by the function <code>find_food(s::Sheep, ::World)</code>. It will either return <code>nothing</code> (if the sheep does not find grass) or sample a random <code>Grass</code> from all available <code>Grass</code> agents.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement the method <code>find_food(::Sheep, ::World)</code> which first returns either a <code>Grass</code> (sampled randomly from all <code>Grass</code>es with a size larger than zero) or returns <code>nothing</code>.</p><ol><li>Hint: For the functional programming way of coding this can use <code>filter</code> and <code>isa</code> to filter for a certain type and <code>StatsBase.sample</code> to choose a random element from a vector. You can get an <code>Iterator</code> of values of your dictionary via <code>values</code> which you might want to <code>collect</code> before passing it to <code>sample</code>.</li><li>Hint: You could also program this with a for-loop that iterates over your agents in a random order.</li></ol></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">using StatsBase  # needed for `sample`
+# you can install it by typing `]add StatsBase` in the REPL
+
+function find_food(a::Sheep, w::World)
+    as = filter(x-&gt;isa(x,Grass) &amp;&amp; size(x)&gt;0, w.agents |&gt; values |&gt; collect)
+    isempty(as) ? nothing : sample(as)
+end</code></pre></p></details><p>To test your function your can create sheep with different <span>$p_f$</span>. A sheep with <span>$p_f=1$</span> will always find some food if there is some in the world, so you should get a result like below.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = Grass(1,5,5);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep = Sheep(2,10.0,1.0,0.1,1.0);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; wolf  = Wolf(3,20.0,2.0,0.1,1.0);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World([grass, sheep, wolf])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🐑 #2 E=10.0 ΔE=1.0 pr=0.1 pf=1.0
+  🐺 #3 E=20.0 ΔE=2.0 pr=0.1 pf=1.0
+  🌿 #1 100% grown</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; dinner = find_food(sheep,world)</code><code class="nohighlight hljs ansi" style="display:block;">🌿 #1 100% grown</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eat!(sheep,dinner,world);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep</code><code class="nohighlight hljs ansi" style="display:block;">🐑 #2 E=15.0 ΔE=1.0 pr=0.1 pf=1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🐑 #2 E=15.0 ΔE=1.0 pr=0.1 pf=1.0
+  🐺 #3 E=20.0 ΔE=2.0 pr=0.1 pf=1.0
+  🌿 #1 0% grown</code></pre><h2 id="Finding-food-for-wolves"><a class="docs-heading-anchor" href="#Finding-food-for-wolves">Finding food for wolves</a><a id="Finding-food-for-wolves-1"></a><a class="docs-heading-anchor-permalink" href="#Finding-food-for-wolves" title="Permalink"></a></h2><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement a function <code>find_food(::Wolf, ::World)</code> which returns either <code>nothing</code> or a randomly sampled <code>Sheep</code> from all existsing sheep.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function find_food(a::Wolf, w::World)
+    as = filter(x-&gt;isa(x,Sheep), w.agents |&gt; values |&gt; collect)
+    isempty(as) ? nothing : sample(as)
+end</code></pre></p></details><h2 id="General-food-finding"><a class="docs-heading-anchor" href="#General-food-finding">General food finding</a><a id="General-food-finding-1"></a><a class="docs-heading-anchor-permalink" href="#General-food-finding" title="Permalink"></a></h2><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Identify the code duplications between <code>find_food(::Sheep,::World)</code> and <code>find_food(::Wolf,::World)</code> and generalize the function to <code>find_food(::Animal, ::World)</code>.</p><p>Hint: You can introduce a new function <code>eats(::Agent,::Agent)::Bool</code> which specifies which type of agent eats another type of agent.</p><p>Once you have done this, remove the two more specific functions for sheep and wolves and restart the REPL once you have deleted those old methods to clean up your namespace.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function find_food(a::Animal, w::World)
+    as = filter(x-&gt;eats(a,x), w.agents |&gt; values |&gt; collect)
+    isempty(as) ? nothing : sample(as)
+end
+
+eats(::Sheep,g::Grass) = size(g) &gt; 0
+eats(::Wolf,::Sheep) = true
+eats(::Agent,::Agent) = false</code></pre></p></details><h2 id="Eating-nothing"><a class="docs-heading-anchor" href="#Eating-nothing">Eating nothing</a><a id="Eating-nothing-1"></a><a class="docs-heading-anchor-permalink" href="#Eating-nothing" title="Permalink"></a></h2><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>What happens if you call <code>eat!(wolf, find_food(wolf,world), world)</code> and there are no sheep anymore? Or if the wolf&#39;s <span>$p_f&lt;1$</span>?</p><p>Consider the world below and the for-loop which represents a simplified simulation in which the wolf tries to eat a sheep in each iteration. Why does it fail?</p><pre><code class="language-julia hljs">sheep = [Sheep(id,10.0,1.0,1.0,1.0) for id in 1:2]
+wolf  = Wolf(3,20.0,1.0,1.0,1.0)
+world = World(vcat(sheep, [wolf]))
+
+for _ in 1:4
+    dinner = find_food(wolf,world)
+    eat!(wolf,dinner,world)
+    @show world
+end</code></pre><p>Hint: You can try to overload the <code>eat!</code> function appropriately.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs"># make sure any animal can also eat `nothing`
+eat!(a::Animal,b::Nothing,w::World) = nothing
+
+sheep = [Sheep(id,10.0,5.0,1.0,1.0) for id in 1:2]
+wolf  = Wolf(3,20.0,10.0,1.0,1.0)
+world = World(vcat(sheep, [wolf]))
+
+for _ in 1:4
+    @show world
+    dinner = find_food(wolf,world)
+    eat!(wolf,dinner,world)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world = Main.World{Main.Animal}
+  🐑 #2 E=10.0 ΔE=5.0 pr=1.0 pf=1.0
+  🐺 #3 E=20.0 ΔE=10.0 pr=1.0 pf=1.0
+  🐑 #1 E=10.0 ΔE=5.0 pr=1.0 pf=1.0
+
+world = Main.World{Main.Animal}
+  🐑 #2 E=10.0 ΔE=5.0 pr=1.0 pf=1.0
+  🐺 #3 E=120.0 ΔE=10.0 pr=1.0 pf=1.0
+
+world = Main.World{Main.Animal}
+  🐺 #3 E=220.0 ΔE=10.0 pr=1.0 pf=1.0
+
+world = Main.World{Main.Animal}
+  🐺 #3 E=220.0 ΔE=10.0 pr=1.0 pf=1.0</code></pre></p></details><h2 id="Reproduction"><a class="docs-heading-anchor" href="#Reproduction">Reproduction</a><a id="Reproduction-1"></a><a class="docs-heading-anchor-permalink" href="#Reproduction" title="Permalink"></a></h2><p>Currently our animals can only eat. In our simulation we also want them to reproduce. We will do this by adding a <code>reproduce!</code> method to <code>Animal</code>.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Write a function <code>reproduce!</code> that takes an <code>Animal</code> and a <code>World</code>. Reproducing will cost an animal half of its energy and then add an almost identical copy of the given animal to the world.  The only thing that is different from parent to child is the ID. You can simply increase the <code>max_id</code> of the world by one and use that as the new ID for the child.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function reproduce!(a::Animal, w::World)
+    energy!(a, energy(a)/2)
+    new_id = w.max_id + 1
+    â = deepcopy(a)
+    â.id = new_id
+    w.agents[id(â)] = â
+    w.max_id = new_id
+end</code></pre><p>You can avoid mutating the <code>id</code> field by reconstructing the child from scratch:</p><pre><code class="language-julia hljs">function reproduce!(a::A, w::World) where A&lt;:Animal
+    energy!(a, energy(a)/2)
+    a_vals = [getproperty(a,n) for n in fieldnames(A) if n!=:id]
+    new_id = w.max_id + 1
+    â = A(new_id, a_vals...)
+    w.agents[id(â)] = â
+    w.max_id = new_id
+end</code></pre></p></details><h2 id="Finally!-world_step!"><a class="docs-heading-anchor" href="#Finally!-world_step!">Finally! <code>world_step!</code></a><a id="Finally!-world_step!-1"></a><a class="docs-heading-anchor-permalink" href="#Finally!-world_step!" title="Permalink"></a></h2><p>With all our functions in place we can finally run the <code>world_step!</code> function.</p><p>Some grass that is growing:</p><pre><code class="language-julia hljs">gs = [Grass(id,8) for id in 1:3]
+world = World(gs)
+for _ in 1:4
+    world_step!(world)
+    @show world
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world = Main.World{Main.Grass}
+  🌿 #2 75% grown
+  🌿 #3 100% grown
+  🌿 #1 50% grown
+
+world = Main.World{Main.Grass}
+  🌿 #2 88% grown
+  🌿 #3 100% grown
+  🌿 #1 62% grown
+
+world = Main.World{Main.Grass}
+  🌿 #2 100% grown
+  🌿 #3 100% grown
+  🌿 #1 75% grown
+
+world = Main.World{Main.Grass}
+  🌿 #2 100% grown
+  🌿 #3 100% grown
+  🌿 #1 88% grown</code></pre><p>Some sheep that are reproducing and then dying:</p><pre><code class="language-julia hljs">ss = [Sheep(id,5.0,2.0,1.0,1.0) for id in 1:2]
+world = World(ss)
+for _ in 1:3
+    world_step!(world)
+    @show world
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world = Main.World{Main.Sheep}
+  🐑 #4 E=2.0 ΔE=2.0 pr=1.0 pf=1.0
+  🐑 #2 E=2.0 ΔE=2.0 pr=1.0 pf=1.0
+  🐑 #3 E=2.0 ΔE=2.0 pr=1.0 pf=1.0
+  🐑 #1 E=2.0 ΔE=2.0 pr=1.0 pf=1.0
+
+world = Main.World{Main.Sheep}
+  🐑 #5 E=0.5 ΔE=2.0 pr=1.0 pf=1.0
+  🐑 #4 E=0.5 ΔE=2.0 pr=1.0 pf=1.0
+  🐑 #6 E=0.5 ΔE=2.0 pr=1.0 pf=1.0
+  🐑 #7 E=0.5 ΔE=2.0 pr=1.0 pf=1.0
+  🐑 #2 E=0.5 ΔE=2.0 pr=1.0 pf=1.0
+  🐑 #8 E=0.5 ΔE=2.0 pr=1.0 pf=1.0
+  🐑 #3 E=0.5 ΔE=2.0 pr=1.0 pf=1.0
+  🐑 #1 E=0.5 ΔE=2.0 pr=1.0 pf=1.0
+
+world = Main.World{Main.Sheep}</code></pre><p>All of it together!</p><pre><code class="language-julia hljs">gs = [Grass(id,5) for id in 1:5]
+ss = [Sheep(id,10.0,5.0,0.5,0.5) for id in 6:10]
+ws = [Wolf(id,20.0,10.,0.1,0.1) for id in 11:12]
+
+world = World(vcat(gs, ss, ws))
+for _ in 1:2
+    world_step!(world)
+    @show world
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world = Main.World{Main.Agent}
+  🌿 #5 0% grown
+  🐺 #12 E=19.0 ΔE=10.0 pr=0.1 pf=0.1
+  🐑 #8 E=9.0 ΔE=5.0 pr=0.5 pf=0.5
+  🌿 #1 0% grown
+  🐺 #11 E=154.5 ΔE=10.0 pr=0.1 pf=0.1
+  🐑 #9 E=24.0 ΔE=5.0 pr=0.5 pf=0.5
+  🌿 #3 20% grown
+  🐑 #7 E=34.0 ΔE=5.0 pr=0.5 pf=0.5
+  🌿 #4 0% grown
+  🐺 #13 E=154.5 ΔE=10.0 pr=0.1 pf=0.1
+  🌿 #2 100% grown
+  🐑 #10 E=24.0 ΔE=5.0 pr=0.5 pf=0.5
+
+world = Main.World{Main.Agent}
+  🌿 #5 0% grown
+  🐺 #12 E=18.0 ΔE=10.0 pr=0.1 pf=0.1
+  🐑 #8 E=8.0 ΔE=5.0 pr=0.5 pf=0.5
+  🌿 #1 20% grown
+  🐺 #11 E=153.5 ΔE=10.0 pr=0.1 pf=0.1
+  🐑 #9 E=11.5 ΔE=5.0 pr=0.5 pf=0.5
+  🐑 #14 E=11.5 ΔE=5.0 pr=0.5 pf=0.5
+  🌿 #3 40% grown
+  🐑 #7 E=19.0 ΔE=5.0 pr=0.5 pf=0.5
+  🌿 #4 0% grown
+  🐺 #13 E=153.5 ΔE=10.0 pr=0.1 pf=0.1
+  🐑 #15 E=19.0 ΔE=5.0 pr=0.5 pf=0.5
+  🌿 #2 100% grown
+  🐑 #10 E=28.0 ΔE=5.0 pr=0.5 pf=0.5</code></pre><p>The code for this lab is inspired by the predator-prey model of <a href="https://juliadynamics.github.io/Agents.jl/v3.5/examples/predator_prey/"><code>Agents.jl</code></a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Friday 10 December 2021 16:05">Friday 10 December 2021</span>. Using Julia version 1.7.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
