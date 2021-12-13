@@ -82,6 +82,11 @@ function solve_res(f,x0::AbstractVector,sqΣ0, θ,dt,N,Nr)
   X,S
 end
 
+QXr,QSr=solve_res(f,[1.0,1.0,0.1],diagm([0.1,0.1,0.01]),θ0,0.1,1000,100)
+plot(QXr[1,1:30:end],label="x",color=:blue,errorbar=QSr[1,1:30:end])
+plot!(QXr[2,1:30:end],label="y",color=:red,errorbar=QSr[2,1:30:end])
+
+
 function solve(f,x0::AbstractVector,Σ0, θ,dt,N)
    n = length(x0)
    n2 = 2*length(x0)
@@ -112,15 +117,11 @@ end
 
 ## Extension to arbitrary 
 
-QX,QS=solve(f,[1.0,1.0,0.1],diagm([0.1,0.1,0.01]),θ0,0.1,1000)
+QX,QS=solve(f,[1.0,1.0,0.1],diagm([0.1,0.1,0.01].^2),θ0,0.1,1000)
 plot(QX[1,1:30:end],label="x",color=:blue,errorbar=QS[1,1:30:end])
 plot!(QX[2,1:30:end],label="y",color=:red,errorbar=QS[2,1:30:end])
 
 savefig("LV_Quadrics.svg")
-
-QXr,QSr=solve_res(f,[1.0,1.0,0.1],diagm([0.1,0.1,0.01]),θ0,0.1,1000,100)
-plot(QXr[1,1:30:end],label="x",color=:blue,errorbar=QSr[1,1:30:end])
-plot!(QXr[2,1:30:end],label="y",color=:red,errorbar=QSr[2,1:30:end])
 
 function filter(f,x0::AbstractVector,Σ0, θ,dt,Ne,Y,σy)
   XX=[]
