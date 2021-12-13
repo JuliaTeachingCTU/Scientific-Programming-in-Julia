@@ -118,11 +118,11 @@ tspan = (0.,100.)
 oprob = ODEProblem(lotkavolterra,tspan,u0,θ)
 
 d = length(u0)
-Σ = 0.1*I(d) |> Matrix
+Σ = 0.02*I(d) |> Matrix
 u = MvNormal(u0,Σ)
 gprob = GaussODEProblem(oprob,u)
 
-solver = GaussODESolver(Euler(0.1))
+solver = GaussODESolver(RK2(0.1))
 #solver(gprob, u, 0.0) |> display
 
 t, us = solve(gprob,solver)
@@ -142,7 +142,7 @@ Base.convert(::Type{GaussNum{T}}, x::Number) where T = GaussNum(x,zero(T))
 Base.promote_rule(::Type{GaussNum{T}}, ::Type{S}) where {T,S} = GaussNum{T}
 Base.promote_rule(::Type{GaussNum{T}}, ::Type{GaussNum{T}}) where T = GaussNum{T}
 
-gaussnums(x::MvNormal) = GaussNum.(mean(x), sqrt.(var(u)))
+gaussnums(x::MvNormal) = GaussNum.(mean(x), sqrt.(var(x)))
 gaussnums(xs::Vector{<:MvNormal}) = reduce(hcat, gaussnums.(xs))
 
 using Plots
@@ -157,7 +157,7 @@ using Plots
         primary := false
         linecolor := nothing
         fillcolor := :lightgray
-        fillalpha := 0.5
+        fillalpha := 0.7
         fillrange := μs .- σs
         # ensure no markers are shown for the error band
         markershape := :none
