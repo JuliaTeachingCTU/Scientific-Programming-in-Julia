@@ -48,7 +48,7 @@ plot!(MXe[2,1:30:end],label="y",color=:red,errorbar=SXe[2,1:30:end])
 
 
 using LinearAlgebra
-function solve(f,x0::AbstractVector,sqΣ0, θ,dt,N,Nr)
+function solve(f,x0::AbstractVector,Σ0, θ,dt,N)
    n = length(x0)
    n2 = 2*length(x0)
    Qp = sqrt(n)*[I(n) -I(n)]
@@ -56,14 +56,14 @@ function solve(f,x0::AbstractVector,sqΣ0, θ,dt,N,Nr)
   X = hcat([zero(x0) for i=1:N]...)
   S = hcat([zero(x0) for i=1:N]...)
   X[:,1]=x0
-  Xp = x0 .+ sqΣ0*Qp
-  sqΣ = sqΣ0
-  Σ = sqΣ* sqΣ'
+  Σ=Hermitian(Σ0)
+  sqΣ = cholesky(Σ).L
+  Xp = x0 .+ sqΣ*Qp
   S[:,1]= diag(Σ)
   for t=1:N-1
-    if rem(t,Nr)==0
-      Xp .= X[:,t] .+ sqΣ * Qp
-    end
+    # if rem(t,Nr)==0
+    #   Xp .= X[:,t] .+ sqΣ * Qp
+    # end
     for i=1:n2 # all quadrature points
       Xp[:,i].=Xp[:,i] + [dt*f(Xp[1:2,i],[Xp[3,i];θ[2:end]]);0]
     end
@@ -72,17 +72,49 @@ function solve(f,x0::AbstractVector,sqΣ0, θ,dt,N,Nr)
     Σ=Matrix((Xp.-mXp)*(Xp.-mXp)'/n2)
     S[:,t+1]=sqrt.(diag(Σ))
     # @show Σ
-
-    sqΣ = cholesky(Σ).L
-
   end
-  X,S
+  X,S,Xp
 end
 
 ## Extension to arbitrary 
 
-QX,QS=solve(f,[1.0,1.0,0.1],diagm([0.1,0.1,0.01]),θ0,0.1,1000,1)
+QX,QS=solve(f,[1.0,1.0,0.1],diagm([0.1,0.1,0.01]),θ0,0.1,1000)
 plot(QX[1,1:30:end],label="x",color=:blue,errorbar=QS[1,1:30:end])
 plot!(QX[2,1:30:end],label="y",color=:red,errorbar=QS[2,1:30:end])
 
 savefig("LV_Quadrics.svg")
+
+function filter(f,x0::AbstractVector,Σ0, θ,dt,Ne,Y,σy)
+  XX=[]
+  SS=[]
+  Σ=Σ0
+  x=x0
+  for t=1:length(Y)
+    @show x
+    @show eigen(Σ)
+    Xt,St,Xp=solve(f,x,Σ,θ,dt,Ne) # prediction
+    Yp = Xp[1,:] # measure only the first variable
+    mYp = mean(Yp)
+    mXp = mean(Xp,dims=2)
+    SYp = cov(Yp)+σy
+    C = mean([(Xp[:,i].-mXp)*(Yp[i].-mYp) for i=1:6])
+    G = C*inv(SYp)
+    x = vec(Xt[:,end] + G*(Y[t]-mYp))
+    Σ = cov(Xp,dims=2) - G*SYp*G'
+    push!(XX,Xt)
+    push!(SS,St)
+  end
+  XX,SS
+end
+
+
+
+Y = X[1,100:100:end]
+Xh,Sh=filter(f,[1.0,1.0,0.1],diagm([0.1,0.1,0.01].^2),θ0,0.1,100,Y,0.01)
+XF=hcat(Xh...)
+SF=hcat(Sh...)
+
+step=10
+plot([1:step:size(XF,2)],XF[1,1:step:end],label="x",color=:blue,errorbar=SF[1,1:step:end])
+plot!([1:step:size(XF,2)],XF[2,1:step:end],label="y",color=:red,errorbar=SF[2,1:step:end])
+scatter!([100:100:size(XF,2)],Y,label="measured",marker=:xcross)
