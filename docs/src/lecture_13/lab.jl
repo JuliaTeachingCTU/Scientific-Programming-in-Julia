@@ -87,16 +87,16 @@ struct GaussODESolver{S<:ODESolver} <: ODESolver
     solver::S
 end
 
-function (s::GaussODESolver)(prob::GaussODEProblem, u::MvNormal, t)
-    u_idx = prob.u_idx
+function (s::GaussODESolver)(prob::GaussODEProblem, u::MvNormal, t, Xp)
+    u_idx, θ_idx = prob.u_idx, prob.θ_idx
     d  = size(prob)
-    μ  = mean(u)
-    Σ  = cov(u)
-    Σ½ = cholesky(Σ).L
-    Qp = sqrt(d)*[I(d) -I(d)]
-    Xp = μ .+ Σ½*Qp
+    #μ  = mean(u)
+    #Σ  = cov(u)
+    #Σ½ = cholesky(Σ).L
+    #Qp = sqrt(d)*[I(d) -I(d)]
+    #Xp = μ .+ Σ½*Qp
 
-    for i in 1:4
+    for i in 1:size(Xp,2)
         xi = @view Xp[:,i]
         ui = setmean!(prob, xi)
         ui = s.solver(prob, ui, t)[1]
@@ -105,6 +105,7 @@ function (s::GaussODESolver)(prob::GaussODEProblem, u::MvNormal, t)
 
     μ = mean(Xp,dims=2) |> vec
     Σ = (Xp .- μ)*(Xp .- μ)' / (2d)
+    #Σ = cov(Xp,dims=2)
 
     MvNormal(μ,Σ), t+s.solver.dt
 end
@@ -112,8 +113,16 @@ end
 function solve(prob::GaussODEProblem, solver::GaussODESolver)
     t = prob.tspan[1]; u = prob.g
     us = [u]; ts = [t]
+
+    d  = size(prob)
+    μ  = mean(u)
+    Σ  = cov(u)
+    Σ½ = cholesky(Σ).L
+    Qp = sqrt(d)*[I(d) -I(d)]
+    Xp = μ .+ Σ½*Qp
+
     while t < prob.tspan[2]
-        (u,t) = solver(prob, u, t)
+        (u,t) = solver(prob, u, t, Xp)
         push!(us,u)
         push!(ts,t)
     end
@@ -150,7 +159,7 @@ function lotkavolterra(x,θ)
     [dx₁, dx₂]
 end
 
-θ = [0.1±0.0, 0.2, 0.3, 0.2]
+θ = [0.1±0.01, 0.2, 0.3, 0.2]
 u0 = [1.0±0.1, 1.0±0.1]
 tspan = (0., 100.)
 prob = GaussODEProblem(lotkavolterra,tspan,u0,θ)
@@ -169,8 +178,8 @@ using Plots
         # ignore series in legend and color cycling
         primary := false
         linecolor := nothing
-        fillcolor := :lightgray
-        fillalpha := 0.7
+        fillcolor := :gray
+        fillalpha := 0.5
         fillrange := μs .- σs
         # ensure no markers are shown for the error band
         markershape := :none
@@ -195,12 +204,14 @@ Base.rand(prob::ODEProblem) = ODEProblem(prob.f, prob.tspan, rand(prob.u0), rand
 
 p2 = plot()
 Us = []
+Ss = []
 for _ in 1:200
     t, us = solve(rand(prob),solver)
     push!(Us,us)
-    plot!(p2, t, us[1,:], c=1, alpha=0.5, label=false)
-    plot!(p2, t, us[2,:], c=2, alpha=0.5, label=false)
+    #plot!(p2, t, us[1,:], c=1, alpha=0.5, label=false)
+    #plot!(p2, t, us[2,:], c=2, alpha=0.5, label=false)
 end
-plot!(p2, t, mean(Us)[1,:], color=:black, lw=3, label="mean")
-plot!(p2, t, mean(Us)[2,:], color=:black, lw=3, label="mean")
+
+plot!(p2, t, GaussNum.(mean(Us)[1,:],std(Us)[1,:]), lw=3)
+plot!(p2, t, GaussNum.(mean(Us)[2,:],std(Us)[2,:]), lw=3)
 display(plot(p1,p2))
