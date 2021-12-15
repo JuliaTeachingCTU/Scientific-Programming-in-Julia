@@ -78,28 +78,6 @@ solver = GaussODESolver(RK2(0.1))
 t, us = solve(prob,solver)
 
 
-using Plots
-@recipe function plot(ts::AbstractVector, xs::AbstractVector{<:GaussNum})
-    # you can set a default value for an attribute with `-->`
-    # and force an argument with `:=`
-    μs = [x.μ for x in xs]
-    σs = [x.σ for x in xs]
-    @series begin
-        :seriestype := :path
-        # ignore series in legend and color cycling
-        primary := false
-        linecolor := nothing
-        fillcolor := :gray
-        fillalpha := 0.5
-        fillrange := μs .- σs
-        # ensure no markers are shown for the error band
-        markershape := :none
-        # return series data
-        ts, μs .+ σs
-    end
-    ts, μs
-end
-
 gus = map(us) do u
     u = u[1:statesize(prob),:]
     μ = mean(u,dims=2) |> vec
