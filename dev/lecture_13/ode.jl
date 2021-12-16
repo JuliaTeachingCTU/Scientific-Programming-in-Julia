@@ -34,16 +34,43 @@ X0 = [x0 .+ 0.1*randn(2) for k=1:K]
 θ1 =[[θ0[1]+0.01randn();θ0[2:end]] for k=1:K]
 Xens=[X=solve(f,X0[i],θ1[i],dt,N) for i=1:K]
 
+p=plot(X[1,:],xlabel="t",label="x",color=:blue)
+p=plot!(X[2,:],xlabel="t",label="y",color=:red)
 for i=1:K
-  p=plot!(Xens[i][1,:],label="",color=:blue)
-  p=plot!(Xens[i][2,:],label="",color=:red)  
+  p=plot!(Xens[i][1,:],label="",color=:blue,alpha=0.2)
+  p=plot!(Xens[i][2,:],label="",color=:red,alpha=0.2)  
 end
+savefig("LV_MC_param.svg")
+
+ind = 100:100:1000
+scatter!(p,ind,[X[1,ind]],errorbar=[0.2],label="measurements")
+savefig("LV_MC_param_data.svg")
+
+Ds=zeros(100)
+Ind=[]
+for i=1:100
+ Ds[i] = sum((X[1,ind]-Xens[i][1,ind]).^2)
+ if Ds[i]<1
+  push!(Ind,i)
+ end
+end
+
+p=plot(X[1,:],xlabel="t",label="x",color=:blue)
+p=plot!(X[2,:],xlabel="t",label="y",color=:red)
+for i=Ind
+  p=plot!(Xens[i][1,:],label="",color=:blue,alpha=0.2)
+  p=plot!(Xens[i][2,:],label="",color=:red,alpha=0.2)  
+end
+scatter!(p,ind,[X[1,ind]],errorbar=[0.2],label="measurements")
+savefig("LV_MC_param_assim.svg")
+
 
 MXe=mean(Xens)
 SXe=std(Xens)
-savefig("LV_ensemble.svg")
 plot(MXe[1,1:30:end],label="x",color=:blue,errorbar=SXe[1,1:30:end])
 plot!(MXe[2,1:30:end],label="y",color=:red,errorbar=SXe[2,1:30:end])
+
+
 
 
 
@@ -82,6 +109,11 @@ function solve_res(f,x0::AbstractVector,sqΣ0, θ,dt,N,Nr)
   X,S
 end
 
+QXr,QSr=solve_res(f,[1.0,1.0,0.1],diagm([0.1,0.1,0.01]),θ0,0.1,1000,100)
+plot(QXr[1,1:30:end],label="x",color=:blue,errorbar=QSr[1,1:30:end])
+plot!(QXr[2,1:30:end],label="y",color=:red,errorbar=QSr[2,1:30:end])
+
+
 function solve(f,x0::AbstractVector,Σ0, θ,dt,N)
    n = length(x0)
    n2 = 2*length(x0)
@@ -112,15 +144,11 @@ end
 
 ## Extension to arbitrary 
 
-QX,QS=solve(f,[1.0,1.0,0.1],diagm([0.1,0.1,0.01]),θ0,0.1,1000)
+QX,QS=solve(f,[1.0,1.0,0.1],diagm([0.1,0.1,0.01].^2),θ0,0.1,1000)
 plot(QX[1,1:30:end],label="x",color=:blue,errorbar=QS[1,1:30:end])
 plot!(QX[2,1:30:end],label="y",color=:red,errorbar=QS[2,1:30:end])
 
 savefig("LV_Quadrics.svg")
-
-QXr,QSr=solve_res(f,[1.0,1.0,0.1],diagm([0.1,0.1,0.01]),θ0,0.1,1000,100)
-plot(QXr[1,1:30:end],label="x",color=:blue,errorbar=QSr[1,1:30:end])
-plot!(QXr[2,1:30:end],label="y",color=:red,errorbar=QSr[2,1:30:end])
 
 function filter(f,x0::AbstractVector,Σ0, θ,dt,Ne,Y,σy)
   XX=[]
