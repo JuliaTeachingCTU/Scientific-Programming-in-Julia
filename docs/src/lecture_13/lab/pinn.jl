@@ -180,4 +180,4 @@ func = OptimizationFunction(loss, GalacticOptim.AutoForwardDiff())
 prob = OptimizationProblem(func, θ)
 opt  = LBFGS()
 
-@time solve(prob, opt, maxiters=4000, cb=Flux.throttle(callback,1), progress=true)
+@time solve(prob, opt, maxiters=8000, cb=Flux.throttle(callback,1), progress=true)
