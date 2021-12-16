@@ -8,23 +8,15 @@ using Plots
 
 Random.seed!(0)
 
-# taken from Flux.jl
-nfan() = 1, 1 # fan_in, fan_out
-nfan(n) = 1, n # A vector is treated as a n×1 matrix
-nfan(n_out, n_in) = n_in, n_out # In case of Dense kernels: arranged as matrices
-nfan(dims::Tuple) = nfan(dims...)
-glorot_uniform(rng::AbstractRNG, dims...) = (rand(rng, Float32, dims...) .- 0.5f0) .* sqrt(24.0f0 / sum(nfan(dims...)))
-glorot_uniform(dims...) = glorot_uniform(Random.GLOBAL_RNG, dims...)
-glorot_uniform(rng::AbstractRNG) = (dims...) -> glorot_uniform(rng, dims...)
-
 # taken from DiffEqFlux.jl
 abstract type FastLayer <: Function end
+
 struct FastDense{F,P} <: FastLayer
     in::Int
     out::Int
     σ::F
     initial_params::P
-    function FastDense(in::Integer, out::Integer, σ=identity; initW=glorot_uniform, initb=zeros)
+    function FastDense(in::Integer, out::Integer, σ=identity; initW=Flux.glorot_uniform, initb=Flux.zeros32)
         initial_params() = vcat(vec(initW(out,in)), initb(out))
         new{typeof(σ),typeof(initial_params)}(in,out,σ,initial_params)
     end
@@ -75,22 +67,17 @@ function lotkavolterra(u::AbstractMatrix,θ)
     [du₁ du₂]'
 end
 
-function forward_derivative(u,x::AbstractVector,ε::Vector,θ::Vector)
-    J(x) = ForwardDiff.jacobian(i->u(i,θ),x)
-    J(x) * ε
+function forward_derivative(u::FastLayer,x::AbstractVector,ε::AbstractVector,θ)
+    J = ForwardDiff.jacobian(i->u(i,θ),x)
+    J * ε
 end
-function forward_derivative(u,xs::AbstractMatrix,ε::Vector,θ::Vector)
-    gs = map(eachcol(xs)) do x
-        forward_derivative(u,x,ε,θ)
-    end
-    reduce(hcat, gs)
+function forward_derivative(u::FastLayer,xs::AbstractMatrix,ε::AbstractVector,θ)
+    mapreduce(x->forward_derivative(u,x,ε,θ), hcat, eachcol(xs))
 end
-function get_v(dim, der_num)
-    map(1:dim) do i
-        i==der_num ? 1 : 0
-    end
+function forward_derivative(u::FastLayer,x::AbstractArray,v::Int,θ)
+    ε = Flux.onehot(v,1:size(x,1))
+    forward_derivative(u,x,ε,θ)
 end
-forward_derivative(u,x::AbstractArray,v::Int,θ::Vector) = forward_derivative(u,x,get_v(size(x,1),v),θ)
 function get_ε(dim, der_num)
     epsilon = cbrt(eps(Float32))
     e = map(1:dim) do i
@@ -120,16 +107,10 @@ function internal_loss(m::PINN, x::AbstractArray, θ::AbstractVector)
     u = m.u
     mean(abs2, m.lhs(u,x,θ) - m.rhs(u,x,θ))
 end
+testloss(θ) = internal(pinn, rand(1,10), θ)
 
 function data_loss(m::PINN, x::AbstractArray, y::AbstractArray, θ::AbstractVector)
     mean(abs2, m.u(x,θ) - y)
-end
-
-lhs(u,x,θ) = forward_derivative(u,x,1,θ)
-#lhs(u,x,θ) = numeric_derivative(u,x,get_ε(1,1),1,θ)
-function rhs(u,x,θ)
-    p = [0.1, 0.2, 0.3, 0.2]
-    lotkavolterra(u(x,θ),p)
 end
 
 hdim = 10
@@ -138,37 +119,45 @@ m = FastChain(
     FastDense(hdim,hdim,tanh),
     FastDense(hdim,2))
 θ = initial_params(m)
+
+lhs(u,x,θ) = forward_derivative(u,x,1,θ)
+lotka_params = [0.1f0, 0.2f0, 0.3f0, 0.2f0]
+rhs(u,x,θ) = lotkavolterra(u(x,θ), lotka_params)
 pinn = PINN(m,lhs,rhs)
+
 using JLD2
 data = load("../../lecture_12/lotkadata.jld2")
 dx = 100
-de = 0.5
-xs = reshape(data["t"],1,:)[:,1:dx:round(Int,end*de)]
-ys = data["u"][:,1:dx:round(Int,end*de)]
+de = 0.5f0
+xs = Float32.(reshape(data["t"],1,:)[:,1:dx:round(Int,end*de)])
+ys = Float32.(data["u"][:,1:dx:round(Int,end*de)])
+#xs = Float32.(reshape([data["t"][1]],1,1))
+#ys = Float32.(reshape(data["u"][:,1],:,1))
 
-_xs = reshape(collect(0.0:2.0:100.0*de),1,:)
-function plotprogress(pinn,θ,xs,ys)
+_xs = reshape(collect(0.0f0:2.0f0:100.0f0*de),1,:)
+function plotprogress(θ)
     t = vec(xs)
-    p1 = scatter(t, ys[1,:], label="x")
-    scatter!(p1, t, ys[2,:], label="x")
-    plot!(p1, data["t"], data["u"][1,:], label=false, lw=3, c=:gray)
-    plot!(p1, data["t"], data["u"][2,:], label=false, lw=3, c=:gray)
+    p1 = scatter(t, ys[1,:], label="Data x", ms=7)
+    scatter!(p1, t, ys[2,:], label="Data y", ms=7)
+    t = data["t"]
+    plot!(p1, t, data["u"][1,:], label=false, lw=3, c=:gray)
+    plot!(p1, t, data["u"][2,:], label=false, lw=3, c=:gray)
 
-    us = pinn.u(_xs,θ)
-    plot!(p1, vec(_xs), us[1,:], label="fit x", lw=3)
-    plot!(p1, vec(_xs), us[2,:], label="fit y", lw=3)
+    us = pinn.u(reshape(t,1,:),θ)
+    plot!(p1, t, us[1,:], label="PINN x", lw=3, c=1)
+    plot!(p1, t, us[2,:], label="PINN y", lw=3, c=2)
     plot!(p1, xlim=(_xs[1],_xs[end]))
 end
 
 function loss(θ,p=nothing)
-    l1 = internal_loss(pinn, _xs, θ) * 1e0
+    l1 = internal_loss(pinn, _xs, θ)
     l2 = data_loss(pinn, xs, ys, θ)
     l1+l2, (l1,l2)
 end
 
 function callback(θ,l,ls)
     (internal, dataloss) = ls
-    plotprogress(pinn,θ,xs,ys) |> display
+    plotprogress(θ) |> display
     @info l internal dataloss
     false
 end
@@ -180,4 +169,5 @@ func = OptimizationFunction(loss, GalacticOptim.AutoForwardDiff())
 prob = OptimizationProblem(func, θ)
 opt  = LBFGS()
 
-@time solve(prob, opt, maxiters=8000, cb=Flux.throttle(callback,1), progress=true)
+@time res = solve(prob, opt, maxiters=10_000, cb=Flux.throttle(callback,1), progress=true)
+p = plotprogress(res.minimizer)

@@ -60,6 +60,38 @@ function (s::GaussODESolver)(prob::GaussODEProblem, Xp, t)
     Xp, t+s.solver.dt
 end
 
+function filter(prob::GaussODEProblem, solver::GaussODESolver, data, σy)
+    t = prob.tspan[1]; u = prob.u0
+    us = [u]; ts = [t]
+
+    for (ty, y) in data
+        while t <= ty
+            (u,t) = solver(prob, u, t)
+            push!(us,u)
+            push!(ts,t)
+        end
+
+        yp = u[1,:] # measure only the first variable
+        μyp = mean(yp)
+        μu = mean(u, dims=2)
+
+        Syp = cov(yp, corrected=false) + σy
+        Su  = cov(u, dims=2, corrected=false)
+
+        Suy = cov(u, yp, dims=2, corrected=false)
+        G = Suy*inv(Syp)
+
+        μ = vec(μu + G*(y .- μyp))
+        Σ = Hermitian(Su - G*Suy')
+
+        d = size(prob)
+        Qp = sqrt(d)*[I(d) -I(d)]
+        u = μ .+ cholesky(Σ).L * Qp
+    end
+    ts, us
+end
+
+
 function lotkavolterra(x,θ)
     α, β, γ, δ = θ
     x₁, x₂ = x
@@ -71,12 +103,20 @@ function lotkavolterra(x,θ)
 end
 
 θ = [0.1±0.01, 0.2, 0.3, 0.2]
-u0 = [1.0±0.1, 1.0±0.1]
+u0 = [1.0±0.2, 1.0±0.2]
 tspan = (0., 100.)
 prob = GaussODEProblem(lotkavolterra,tspan,u0,θ)
 solver = GaussODESolver(RK2(0.1))
-t, us = solve(prob,solver)
 
+
+
+using JLD2
+raw_data = load("../../lecture_12/lotkadata.jld2")
+ts = Float32.(raw_data["t"][1:100:end])
+ys = Float32.(raw_data["u"][:,1:100:end])
+data = [(t,y[1]) for (t,y) in zip(ts,eachcol(ys))]
+#t, us = solve(prob,solver)
+t, us = filter(prob, solver, data, 0.01)
 
 gus = map(us) do u
     u = u[1:statesize(prob),:]
@@ -86,7 +126,9 @@ gus = map(us) do u
 end
 gus = reduce(hcat,gus)
 p1 = plot(t, gus[1,:], lw=3)
-plot!(p1, t, gus[2,:], lw=3) |> display
+plot!(p1, t, gus[2,:], lw=3)
+plot!(p1, raw_data["t"], raw_data["u"][1,:], lw=3, alpha=0.5) |> display
+error()
 
 
 solver = RK2(0.1)
