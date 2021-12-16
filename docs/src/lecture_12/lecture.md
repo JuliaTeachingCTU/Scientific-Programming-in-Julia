@@ -1,4 +1,4 @@
-# Uncertainty Propagation in Ordinary Differential Equations
+# [Uncertainty Propagation in Ordinary Differential Equations](@id lec12)
 
 Differential equations are commonly used in science to describe many aspects of the physical world, ranging from dynamical systems and curves in space to complex multi-physics phenomena. 
 
