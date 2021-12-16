@@ -1,111 +1,111 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" width="777" height="555" viewBox="0 0 777 555"
-     xmlns="http://www.w3.org/2000/svg" id="fig-aa2e5fe54a5c4d7896730214546b2f1a">
+     xmlns="http://www.w3.org/2000/svg" id="fig-0f20960c4676443a93b4b405cab151d5">
 <defs>
-    <clipPath id="fig-aa2e5fe54a5c4d7896730214546b2f1a-clip">
+    <clipPath id="fig-0f20960c4676443a93b4b405cab151d5-clip">
         <rect x="0" y="0" width="777" height="555"/>
     </clipPath>
 </defs>
 <style type="text/css">
-    #fig-aa2e5fe54a5c4d7896730214546b2f1a text {
+    #fig-0f20960c4676443a93b4b405cab151d5 text {
         pointer-events: none;
         font-family: inherit;
         font-size: 12px;
         fill: #000000;
     }
-    text#fig-aa2e5fe54a5c4d7896730214546b2f1a-caption {
+    text#fig-0f20960c4676443a93b4b405cab151d5-caption {
         font-size: 16.8px;
         fill: #000000;
         text-anchor: middle;
     }
-    #fig-aa2e5fe54a5c4d7896730214546b2f1a-bg {
+    #fig-0f20960c4676443a93b4b405cab151d5-bg {
         fill: #FFFFFF;
     }
-    #fig-aa2e5fe54a5c4d7896730214546b2f1a-viewport rect, #fig-aa2e5fe54a5c4d7896730214546b2f1a-viewport path {
+    #fig-0f20960c4676443a93b4b405cab151d5-viewport rect, #fig-0f20960c4676443a93b4b405cab151d5-viewport path {
         vector-effect: non-scaling-stroke;
         fill-opacity: 1;
     }
-    #fig-aa2e5fe54a5c4d7896730214546b2f1a-viewport text {
+    #fig-0f20960c4676443a93b4b405cab151d5-viewport text {
         stroke: #000000;
         stroke-width: 0;
         stroke-opacity: 0.35;
     }
-    #fig-aa2e5fe54a5c4d7896730214546b2f1a-viewport rect:hover, #fig-aa2e5fe54a5c4d7896730214546b2f1a-viewport path:hover {
+    #fig-0f20960c4676443a93b4b405cab151d5-viewport rect:hover, #fig-0f20960c4676443a93b4b405cab151d5-viewport path:hover {
         fill-opacity: 0.75;
         stroke: #000000;
         stroke-width: 0.5;
     }
-    #fig-aa2e5fe54a5c4d7896730214546b2f1a-viewport + rect {
+    #fig-0f20960c4676443a93b4b405cab151d5-viewport + rect {
         fill: #FFFFFF;
         opacity: 0.8;
     }
-    text#fig-aa2e5fe54a5c4d7896730214546b2f1a-details{
+    text#fig-0f20960c4676443a93b4b405cab151d5-details{
         fill: #000000;
     }
 </style>
-<g id="fig-aa2e5fe54a5c4d7896730214546b2f1a-frame" clip-path="url(#fig-aa2e5fe54a5c4d7896730214546b2f1a-clip)">
-<rect id="fig-aa2e5fe54a5c4d7896730214546b2f1a-bg" x="0" y="0" width="777" height="555"/>
-<text id="fig-aa2e5fe54a5c4d7896730214546b2f1a-caption" x="388.5" y="24">Profile results</text>
-<g id="fig-aa2e5fe54a5c4d7896730214546b2f1a-viewport" transform="scale(1)">
-<rect x="8" y="504" width="760.44" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
+<g id="fig-0f20960c4676443a93b4b405cab151d5-frame" clip-path="url(#fig-0f20960c4676443a93b4b405cab151d5-clip)">
+<rect id="fig-0f20960c4676443a93b4b405cab151d5-bg" x="0" y="0" width="777" height="555"/>
+<text id="fig-0f20960c4676443a93b4b405cab151d5-caption" x="388.5" y="24">Profile results</text>
+<g id="fig-0f20960c4676443a93b4b405cab151d5-viewport" transform="scale(1)">
+<rect x="8" y="504" width="761.88" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
 <text x="8" dx="4" y="515.25"> in :-1</text>
-<rect x="33.78" y="489" width="734.66" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="33.78" dx="4" y="500.25">_start in client.jl:495</text>
-<rect x="33.78" y="474" width="734.66" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="33.78" dx="4" y="485.25">exec_options in client.jl:292</text>
-<rect x="33.78" y="459" width="734.66" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="33.78" dx="4" y="470.25">include in Base.jl:418</text>
-<rect x="33.78" y="444" width="734.66" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="33.78" dx="4" y="455.25">_include in loading.jl:1253</text>
-<rect x="33.78" y="429" width="734.66" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="33.78" dx="4" y="440.25">include_string in loading.jl:1196</text>
-<rect x="33.78" y="414" width="734.66" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="33.78" dx="4" y="425.25">eval in boot.jl:373</text>
-<rect x="33.78" y="399" width="734.66" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="33.78" dx="4" y="410.25">makedocs##kw in Documenter.jl:260</text>
-<rect x="33.78" y="384" width="734.66" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="33.78" dx="4" y="395.25">#makedocs#1 in Documenter.jl:265</text>
-<rect x="33.78" y="369" width="734.66" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="33.78" dx="4" y="380.25">cd in file.jl:110</text>
-<rect x="33.78" y="354" width="734.66" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="33.78" dx="4" y="365.25">#2 in Documenter.jl:266</text>
-<rect x="33.78" y="339" width="734.66" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
-<text x="33.78" dx="4" y="350.25">dispatch in Selectors.jl:170</text>
-<rect x="33.78" y="324" width="734.66" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="33.78" dx="4" y="335.25">runner in Builder.jl:226</text>
-<rect x="33.78" y="309" width="734.66" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="33.78" dx="4" y="320.25">expand in Expanders.jl:42</text>
-<rect x="33.78" y="294" width="734.66" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
-<text x="33.78" dx="4" y="305.25">dispatch in Selectors.jl:170</text>
-<rect x="33.78" y="279" width="734.66" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="33.78" dx="4" y="290.25">runner in Expanders.jl:665</text>
-<rect x="33.78" y="264" width="734.66" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="33.78" dx="4" y="275.25">capture##kw in IOCapture.jl:75</text>
-<rect x="33.78" y="249" width="734.66" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="33.78" dx="4" y="260.25">#capture#1 in IOCapture.jl:116</text>
-<rect x="33.78" y="234" width="734.66" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="33.78" dx="4" y="245.25">with_logger in logging.jl:623</text>
-<rect x="33.78" y="219" width="734.66" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
-<text x="33.78" dx="4" y="230.25">with_logstate in logging.jl:511</text>
-<rect x="33.78" y="204" width="734.66" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
-<text x="33.78" dx="4" y="215.25">#3 in IOCapture.jl:118</text>
-<rect x="33.78" y="189" width="734.66" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="33.78" dx="4" y="200.25">#19 in Expanders.jl:666</text>
-<rect x="33.78" y="174" width="734.66" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="33.78" dx="4" y="185.25">cd in file.jl:110</text>
-<rect x="33.78" y="159" width="734.66" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
-<text x="33.78" dx="4" y="170.25">#20 in Expanders.jl:667</text>
-<rect x="33.78" y="144" width="734.66" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
-<text x="33.78" dx="4" y="155.25">eval in boot.jl:373</text>
-<rect x="33.78" y="129" width="734.66" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="33.78" dx="4" y="140.25">run_polynomial_stable in REPL[1]:3</text>
-<rect x="33.78" y="114" width="734.66" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="33.78" dx="4" y="125.25">polynomial_stable in REPL[1]:4</text>
-<rect x="33.78" y="99" width="12.89" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="33.78" dx="4" y="110.25">+ in float.jl:399</text>
-<rect x="46.67" y="99" width="721.77" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="46.67" dx="4" y="110.25">^ in math.jl:928</text>
+<rect x="22.38" y="489" width="733.12" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="22.38" dx="4" y="500.25">_start in client.jl:495</text>
+<rect x="22.38" y="474" width="733.12" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="22.38" dx="4" y="485.25">exec_options in client.jl:292</text>
+<rect x="22.38" y="459" width="733.12" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="22.38" dx="4" y="470.25">include in Base.jl:418</text>
+<rect x="22.38" y="444" width="733.12" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="22.38" dx="4" y="455.25">_include in loading.jl:1253</text>
+<rect x="22.38" y="429" width="733.12" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="22.38" dx="4" y="440.25">include_string in loading.jl:1196</text>
+<rect x="22.38" y="414" width="733.12" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="22.38" dx="4" y="425.25">eval in boot.jl:373</text>
+<rect x="22.38" y="399" width="733.12" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="22.38" dx="4" y="410.25">makedocs##kw in Documenter.jl:260</text>
+<rect x="22.38" y="384" width="733.12" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="22.38" dx="4" y="395.25">#makedocs#1 in Documenter.jl:265</text>
+<rect x="22.38" y="369" width="733.12" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="22.38" dx="4" y="380.25">cd in file.jl:110</text>
+<rect x="22.38" y="354" width="733.12" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="22.38" dx="4" y="365.25">#2 in Documenter.jl:266</text>
+<rect x="22.38" y="339" width="733.12" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
+<text x="22.38" dx="4" y="350.25">dispatch in Selectors.jl:170</text>
+<rect x="22.38" y="324" width="733.12" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="22.38" dx="4" y="335.25">runner in Builder.jl:226</text>
+<rect x="22.38" y="309" width="733.12" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="22.38" dx="4" y="320.25">expand in Expanders.jl:42</text>
+<rect x="22.38" y="294" width="733.12" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/Utilities/"/>
+<text x="22.38" dx="4" y="305.25">dispatch in Selectors.jl:170</text>
+<rect x="22.38" y="279" width="733.12" height="15" rx="2" fill="#D42137" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="22.38" dx="4" y="290.25">runner in Expanders.jl:665</text>
+<rect x="22.38" y="264" width="733.12" height="15" rx="2" fill="#F3004D" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
+<text x="22.38" dx="4" y="275.25">capture##kw in IOCapture.jl:75</text>
+<rect x="22.38" y="249" width="733.12" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
+<text x="22.38" dx="4" y="260.25">#capture#1 in IOCapture.jl:116</text>
+<rect x="22.38" y="234" width="733.12" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="22.38" dx="4" y="245.25">with_logger in logging.jl:623</text>
+<rect x="22.38" y="219" width="733.12" height="15" rx="2" fill="#D42137" data-dinfo="./"/>
+<text x="22.38" dx="4" y="230.25">with_logstate in logging.jl:511</text>
+<rect x="22.38" y="204" width="733.12" height="15" rx="2" fill="#E1B2FF" data-dinfo="/home/runner/.julia/packages/IOCapture/sXY71/src/"/>
+<text x="22.38" dx="4" y="215.25">#3 in IOCapture.jl:118</text>
+<rect x="22.38" y="189" width="733.12" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="22.38" dx="4" y="200.25">#19 in Expanders.jl:666</text>
+<rect x="22.38" y="174" width="733.12" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="22.38" dx="4" y="185.25">cd in file.jl:110</text>
+<rect x="22.38" y="159" width="733.12" height="15" rx="2" fill="#00B58B" data-dinfo="/home/runner/.julia/packages/Documenter/qdbx6/src/"/>
+<text x="22.38" dx="4" y="170.25">#20 in Expanders.jl:667</text>
+<rect x="22.38" y="144" width="733.12" height="15" rx="2" fill="#F3004D" data-dinfo="./"/>
+<text x="22.38" dx="4" y="155.25">eval in boot.jl:373</text>
+<rect x="22.38" y="129" width="733.12" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="22.38" dx="4" y="140.25">run_polynomial_stable in REPL[1]:3</text>
+<rect x="22.38" y="114" width="733.12" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="22.38" dx="4" y="125.25">polynomial_stable in REPL[1]:4</text>
+<rect x="22.38" y="99" width="733.12" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="22.38" dx="4" y="110.25">^ in math.jl:928</text>
+<rect x="22.38" y="84" width="14.37" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="22.38" dx="4" y="95.25">Float64 in float.jl:146</text>
 </g></g>
 <script><![CDATA[
 // Snap.svg 0.3.0
@@ -500,10 +500,10 @@ f+=g+"]",i[b]=f}return Function("val","return Snap.path.toString.call(["+i+"])")
 <script><![CDATA[
 if (typeof require === 'function' && define.amd) {
     require(['ProfileSVG'], function (ProfileSVG) {
-        ProfileSVG.initialize("fig-aa2e5fe54a5c4d7896730214546b2f1a");
+        ProfileSVG.initialize("fig-0f20960c4676443a93b4b405cab151d5");
     });
 } else {
-    ProfileSVG.initialize("fig-aa2e5fe54a5c4d7896730214546b2f1a");
+    ProfileSVG.initialize("fig-0f20960c4676443a93b4b405cab151d5");
 }
 ]]></script>
 </svg>
