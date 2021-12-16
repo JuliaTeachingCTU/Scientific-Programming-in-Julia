@@ -56,11 +56,11 @@ prob = ODEProblem(f,tspan,u0,θ)
 
 t,X=solve(prob, RK2(0.2))
 
-using Plots
-p1 = plot(t, X[1,:], label="x", lw=3)
-plot!(p1, t, X[2,:], label="y", lw=3)
+# using Plots
+# p1 = plot(t, X[1,:], label="x", lw=3)
+# plot!(p1, t, X[2,:], label="y", lw=3)
 
-display(p1)
+# display(p1)
 
 #
 θ = [0.2,0.2,0.3,0.2]
@@ -107,9 +107,9 @@ proby = ODEProblem(fy,tspan,u0,θy)
 
 t,Xy=solve(proby, RK2(0.2))
 
-py = plot(t, Xy[1,:], label="x", lw=3)
-plot!(py, t, Xy[2,:], label="y", lw=3)
-savefig("LV_omega.svg")
+# py = plot(t, Xy[1,:], label="x", lw=3)
+# plot!(py, t, Xy[2,:], label="y", lw=3)
+# savefig("LV_omega.svg")
 
 function fnn(x,θ)
     α, β, γ, δ = θ[1:4]
@@ -125,4 +125,4 @@ end
 probnn = ODEProblem(fnn,tspan,u0,θnn)
 
 θopt = copy(θnn)
-O=Optim.optimize(θ->loss(θ,probnn,Xy),θopt)
+O=Optim.optimize(θ->loss(θ,probnn,Xy),θopt,Optim.Options(iterations=10000))

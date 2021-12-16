@@ -116,7 +116,16 @@ p(\mathbf{x}|\mathbf{y}) & =\mathcal{N}(\mu_{x}+\Sigma_{xy}\Sigma_{yy}^{-1}(\mat
 \begin_inset Formula 
 \begin{align*}
 \mu_{x|y} & =\mu_{x}+K(\mathbf{y}-\mu_{y}),\,\,\,\,K=\Sigma_{xy}\Sigma_{yy}^{-1},\\
-\Sigma_{x|y} & =\Sigma_{xx}-K\Sigma_{yy}K'
+\Sigma_{x|y} & =\Sigma_{xx}-K\Sigma_{yx},
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+p(\mathbf{x},\mathbf{y}) & =p(\mathbf{y}|\mathbf{x})p(\mathbf{x})=p(\mathbf{x}|\mathbf{y})p(\mathbf{y})\\
+p(\mathbf{x}|\mathbf{y}) & =\frac{p(\mathbf{y}|\mathbf{x})p(\mathbf{x})}{p(\mathbf{y})}=\frac{p(\mathbf{y}|\mathbf{x})p(\mathbf{x})}{\int p(\mathbf{y}|\mathbf{x})p(\mathbf{x})d\mathbf{x}}
 \end{align*}
 
 \end_inset
