@@ -1,8 +1,8 @@
 # Lab 13 - Data-driven Differential Equations
 
 In this lab you will implement your own _*Physics Informed Neural Network*_ (PINN)
-(discussed in [lecture 13](@ref lec13) and an improved uncertainty propagation
-based on the cubature rules from [lecture 12](@ref lec13).
+(discussed in this weeks lecture) and an improved uncertainty propagation
+based on the cubature rules from [lecture 12](@ref lec12).
 
 _*Before your start*_: Please, install the necessary packages for this lab and
 let them precompile while you familiarize yourself with the PINN implementation.
@@ -10,11 +10,14 @@ let them precompile while you familiarize yourself with the PINN implementation.
 (@1.6) pkg> add Flux ForwardDiff Optim GalacticOptim Plots
 ```
 
-## Physics Informed Neural Networks
+## I. Physics Informed Neural Networks
 
 You have already seen in the lecture that PINNs are implemented with a loss
 function that contains two terms: the physics loss $\mathcal L_P$ and the data
 loss $\mathcal L_D$ (which can also be used to define boundary conditions).
+```math
+\mathcal L = \mathcal L_P + \mathcal L_D
+```
 In this part of the lab we will implement both these loss terms step by step,
 starting with the definition of the underlying neural network itself.
 
@@ -80,22 +83,21 @@ u(rand(1,5),θ)
 
 PINNs can be used to solve differential equations (DE) by satisfying a
 two-component loss function. The *physics loss* encourages the underlying
-neural network to satisfy the given differential equation $F$
+neural network to satisfy the given differential equation which is split into
+a *left-hand side* $\text{LHS}$ and a *right-hand side* $\text{RHS}$:
 ```math
 \mathcal L_P = \sum_{i=1}^N ||\text{LHS}(\hat x_i, \hat y_i, t_i) - \text{RHS}(\hat x_i, \hat y_i, t_i)||_2,
 ```
-where LHS and RHS are left-hand sides and right-hand sides of a DE, for
-example, the Lotka-Volterra equations
+The symbols $\hat x$ and $\hat y$ denote the approximate solution of the DE
+that comes from the neural network $u: \mathbb R \rightarrow \mathbb R^2$
+which has one input (time $t$) and two outputs (DE variables $\hat x$ and $\hat
+y$). In the Lotka-Volterra equations the LHS is just the first time derivative:
 ```math
 \begin{align*}
   \dot x &= \alpha x - \beta xy,\\
   \dot y &= -\delta y + \gamma xy.
 \end{align*}
 ```
-The symbols $\hat x$ and $\hat y$ denote the approximate solution of the DE
-that comes from the neural network $u: \mathbb R \rightarrow \mathbb R^2$
-which has one input (time $t$) and two outputs (DE variables $\hat x$ and $\hat
-y$).
 
 Note that already inside $\mathcal L_P$ we have to compute a derivative of $u$
 w.r.t to its input $t$. Hence, in order to perform gradient descent on the NN
@@ -278,6 +280,7 @@ data_loss(m::PINN, x::AbstractArray, y::AbstractArray, θ::AbstractVector)
 function data_loss(m::PINN, x::AbstractArray, y::AbstractArray, θ::AbstractVector)
     mean(abs2, m.u(x,θ) - y)
 end
+nothing # hide
 ```
 ```@raw html
 </p></details>
@@ -355,12 +358,12 @@ plotprogress(θ)
 <div class="admonition-body">
 ```
 To optimize our PINN we will use `GalacticOptim.solve`, which expects a loss
-function with the API `loss(θ,p=nothing)` which returns a tuple `(l, ls)` with
-the final loss value `l` and a tuple `ls` that contains optional diagnostic
+function with the API `loss(θ,p=nothing)` and returns a tuple `(l, ls)` with
+the final loss value `l`, and another tuple `ls` that contains optional diagnostic
 values. We will stick our individual data/physics loss values in there.
 
 Additionally, we can define a `callback(l,ls,θ)` which prints/plots our
-training progress. `l` is the final loss, `ls` the diagnostics, and `θ` our
+training progress. `l` is the final loss, `ls` the diagnostics, and `θ` our current
 optimization parameters. The callback should always return `false` (this can
 be used for early stopping).
 
@@ -401,23 +404,288 @@ solve(prob, opt, maxiters=10_000, cb=Flux.throttle(callback,1))
 ![pinn](pinn.png)
 
 
+## II. Uncertainy Prop. With Cubature Rules
+
+In [lecture 12](@ref lec12) we have introduced an advanced uncertainty propagation
+based on cubature rules. In order to implement the cubature rules we only need
+to solve our ODE for the set of $\sigma$-points `Xp`. If we construct a new
+`GaussODEProblem` we can make use of our already implemented ODE solvers
+(which you can find
+[here](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_13/lab/ode-solver.jl)),
+and for plotting our `GaussNum`s
+([here](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_13/lab/gaussnum.jl)).
+
+Each $\sigma$-point will contain uncertain initial conditions, and uncertain
+parameters. So if we define the inputs to a `GaussODEProblem` as below
+```@example cub
+include("lab/gaussnum.jl")
+# there are two tiny changes since the last lab in here. take a look a the
+# "NOTE"s in the file below if you like.
+include("lab/ode-solver.jl")
+
+function lotkavolterra(x,θ)
+    α, β, γ, δ = θ
+    x₁, x₂ = x
+
+    dx₁ = α*x₁ - β*x₁*x₂
+    dx₂ = δ*x₁*x₂ - γ*x₂
+
+    [dx₁, dx₂]
+end
+
+θ = [0.1±0.01, 0.2, 0.3, 0.2]
+u0 = [1.0±0.2, 1.0±0.2]
+tspan = (0., 100.)
+nothing # hide
+```
+we want a set of 6 $\sigma$-points (2 for each of the 3 uncertain parameters).
+The initial $\sigma$-points will be stored (as a matrix) in the `u0` field of
+our new `GaussODEProblem`:
+
+```@example cub
+struct GaussODEProblem{F,T<:Tuple{Number,Number},U<:AbstractMatrix,P<:AbstractVector,I} <: AbstractODEProblem
+    f::F      # RHS of ODE
+    tspan::T
+    u0::U     # initial σ-points
+    θ::P      # ODE parameters (will be mutated)
+    θ_idx::I  # indices of uncertain parameters
+    size::Int # state size of the ODE
+end
+Base.size(prob::GaussODEProblem) = size(prob.u0,1)
+statesize(prob::GaussODEProblem) = prob.size
+nothing # hide
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Implement a constructor for `GaussODEProblem` with the following type signature
+```julia
+GaussODEProblem(f,tspan,u0::V,θ::V) where V<:AbstractVector{<:GaussNum}
+```
+which computes the $\sigma$-points, saves the indices of the uncertain ODE parameters
+as well as the state size of the ODE.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```@example cub
+using LinearAlgebra
+
+function GaussODEProblem(f,tspan,u0::V,θ::V) where V<:AbstractVector{<:GaussNum}
+    θ_idx = findall(isuncertain, θ)
+
+    μ = vcat(mean.(u0), mean.(θ[θ_idx]))
+    d = length(μ)
+    Σ = vcat(var.(u0), var.(θ[θ_idx])) |> diagm
+    Σ½ = cholesky(Σ).L
+    Qp = sqrt(d)*[I(d) -I(d)]
+    Xp = μ .+ Σ½*Qp
+
+    GaussODEProblem(f,tspan,Xp,mean.(θ),θ_idx,length(u0))
+end
+nothing # hide
+```
+```@raw html
+</p></details>
+```
+You should be able to construct the `GaussODEProblem` as follows
+```@repl cub
+prob = GaussODEProblem(lotkavolterra,tspan,u0,θ)
+prob.u0
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Implement the call method of a new `GaussODESolver`
+```@example cub
+struct GaussODESolver{S<:ODESolver} <: ODESolver
+    solver::S
+end
+nothing # hide
+```
+which, in every call, iterates over the $\sigma$-points and returns updated
+$\sigma$-points and an updated time step.  While you compute new
+$\sigma$-points you can make use of the classical solver inside `GaussODESolver`.
+The only thing you need to do is set the uncertain ODE parameters to the correct
+values from your current $\sigma$-point.
+
+_*Hint*_:
+You can implement a function `setmean!(prob::GaussODEProblem,xi)` which takes
+a $\sigma$-point `xi`, mutates `prob.θ`, and returns only the part of `xi` that
+describes the ODE state.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```@example cub
+function setmean!(prob::GaussODEProblem,xi)
+    prob.θ[prob.θ_idx] .= xi[(statesize(prob)+1):end]
+    xi[1:statesize(prob)]
+end
+
+function (s::GaussODESolver)(prob::GaussODEProblem, Xp, t)
+    Xp = reduce(hcat, map(eachcol(Xp)) do xi
+        ui = setmean!(prob, xi)
+        ui = s.solver(prob, ui, t)[1]
+        xi[1:statesize(prob)] .= ui
+        xi
+    end)
+    Xp, t+s.solver.dt
+end
+```
+```@raw html
+</p></details>
+```
+Your solver should now work like this:
+```@repl cub
+solver = GaussODESolver(RK2(0.2))
+solver(prob, prob.u0, 0.)[1]
+```
+To compare with the MC result we can now solve our `GaussODEProblem` and
+a few samples of a normal `ODEProblem` and compare them.
+```@example cub
+using JLD2
+raw_data = load("../lecture_12/lotkadata.jld2")
+
+t, us = solve(prob,solver)
+
+# compute GaussNums and plot them
+gus = map(us) do u
+    u = u[1:statesize(prob),:]
+    μ = mean(u,dims=2) |> vec
+    σ = std(u,dims=2) |> vec
+    GaussNum.(μ,σ)
+end
+gus = reduce(hcat,gus)
+p1 = plot(raw_data["t"], raw_data["u"][1,:], c=3, lw=3, alpha=0.7, label="correct")
+plot!(p1, raw_data["t"], raw_data["u"][2,:], c=3, lw=3, alpha=0.7, label=false)
+plot!(p1, t, gus[1,:], c=1, lw=3, label="x")
+plot!(p1, t, gus[2,:], c=2, lw=3, label="y")
+
+
+# define ODEProblem sampling
+function Base.rand(x::AbstractVector{<:GaussNum{T}}) where T
+    mean.(x) .+ std.(x) .* randn(T,length(x))
+end
+Base.rand(prob::ODEProblem) = ODEProblem(prob.f, prob.tspan, rand(prob.u0), rand(prob.θ))
+
+# compute & plot MC samples
+prob = ODEProblem(lotkavolterra,tspan,u0,θ)
+p2 = plot(raw_data["t"], raw_data["u"][1,:], c=3, lw=3, alpha=0.7, label="correct")
+plot!(p2, raw_data["t"], raw_data["u"][2,:], c=3, lw=3, alpha=0.7, label=false)
+Us = map(1:200) do i
+    t, us = solve(rand(prob),solver.solver)
+    us = reduce(hcat,us)
+    plot!(p2, t, us[1,:], c=1, alpha=0.1, label=false)
+    plot!(p2, t, us[2,:], c=2, alpha=0.1, label=false)
+    us
+end
+plot!(p2, t, GaussNum.(mean(Us)[1,:],std(Us)[1,:]), c=1, lw=3, label="x")
+plot!(p2, t, GaussNum.(mean(Us)[2,:],std(Us)[2,:]), c=2, lw=3, label="y")
+plot(p1,p2,size=(800,300))
+```
+You can see that the cubature rules come quite close to the "correct" MC
+solution.  However, in both cases the mean starts to deviate quite significatly
+from the expected behaviour (and will approach an average for $x$ and $y$ for
+longer times).
+
 
 ## Data Assimilation in Uncertain ODEs
 
+If we have a few measurements available (say every 100 steps) we can make use
+of them by reprojecting our current $\sigma$-points with the help of a
+measurement. This can be implemented via *Bayesian Filtering* as discussed in the
+lecture.
 
----
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Implement a function `filter(prob::GaussODEProblem, solver::GaussODESolver,
+data, σy::Real)` which performs Baysian filtering.  The `data` are assumed to
+be tuples of timestamps and measurements `(ty::Real,y::Real)`.  Iterate over
+the data, perform `solver` steps until you reach the timestamp `ty` and then
+apply the filtering equations from the lecture.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```@example cub
+function filter(prob::GaussODEProblem, solver::GaussODESolver, data, σy)
+    t = prob.tspan[1]; u = prob.u0
+    us = [u]; ts = [t]
 
-changes to last labs code:
-* no `reduce(hcat,us)` in `solve`
-* need an `AbstractODEProblem`...
+    for (ty, y) in data
+        while t <= ty
+            (u,t) = solver(prob, u, t)
+            push!(us,u)
+            push!(ts,t)
+        end
 
-# assimilation
+        yₚ = u[1,:] # prediction. we measure only the first variable
+        μᵧ = mean(yₚ)
+        μᵤ = mean(u, dims=2)
 
-* project mean to measurement at `(t,y)`
+        Σᵧᵧ = cov(yₚ, corrected=false) + σy
+        Σᵤᵤ = cov(u, dims=2, corrected=false)
 
+        Σᵤᵧ = cov(u, yₚ, dims=2, corrected=false)
+        K   = Σᵤᵧ*inv(Σᵧᵧ)
 
-# second part of lab
+        μ = vec(μᵤ + K*(y .- μᵧ))
+        Σ = Hermitian(Σᵤᵤ - K*Σᵤᵧ')
 
-* learn ODE params from data
-* how to optimize through `solve`???
-* how are PINNs doing  higher order AD
+        d = size(prob)
+        Qp = sqrt(d)*[I(d) -I(d)]
+        u = μ .+ cholesky(Σ).L * Qp
+    end
+    ts, us
+end
+nothing # hide
+```
+```@raw html
+</p></details>
+```
+Now you can use `filter` instead of `solve` to incoorporate some data points
+every 100 steps.
+```@example cub
+# define ODE problem
+θ = [0.1±0.01, 0.2, 0.3, 0.2]
+u0 = [1.0±0.2, 1.0±0.2]
+tspan = (0., 100.)
+prob = GaussODEProblem(lotkavolterra,tspan,u0,θ)
+solver = GaussODESolver(RK2(0.1))
+
+# collect data
+using JLD2
+raw_data = load("../lecture_12/lotkadata.jld2")
+ts = Float32.(raw_data["t"][1:100:end])
+ys = Float32.(raw_data["u"][:,1:100:end])
+data = [(t,y[1]) for (t,y) in zip(ts,eachcol(ys))]
+t, us = filter(prob, solver, data, 0.01)
+
+# plot results
+gus = map(us) do u
+    u = u[1:statesize(prob),:]
+    μ = mean(u,dims=2) |> vec
+    σ = std(u,dims=2) |> vec
+    GaussNum.(μ,σ)
+end
+gus = reduce(hcat,gus)
+p1 = plot(t, gus[1,:], lw=3, label="x")
+plot!(p1, t, gus[2,:], lw=3, label="y")
+plot!(p1, raw_data["t"], raw_data["u"][1,:], c=3, lw=3, alpha=0.6, label="correct")
+plot!(p1, raw_data["t"], raw_data["u"][2,:], c=3, lw=3, alpha=0.6, label=false)
+```
+You can see that the mean and the variance is reprojected every 100 steps and
+we stay much closer to our perfect solution.

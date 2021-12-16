@@ -1,6 +1,4 @@
 using LinearAlgebra
-using StatsBase
-using Distributions
 
 include("gaussnum.jl")
 include("ode-solver.jl")
@@ -71,18 +69,18 @@ function filter(prob::GaussODEProblem, solver::GaussODESolver, data, σy)
             push!(ts,t)
         end
 
-        yp = u[1,:] # measure only the first variable
-        μyp = mean(yp)
-        μu = mean(u, dims=2)
+        yₚ = u[1,:] # prediction. we measure only the first variable
+        μᵧ = mean(yₚ)
+        μᵤ = mean(u, dims=2)
 
-        Syp = cov(yp, corrected=false) + σy
-        Su  = cov(u, dims=2, corrected=false)
+        Σᵧᵧ = cov(yₚ, corrected=false) + σy
+        Σᵤᵤ = cov(u, dims=2, corrected=false)
 
-        Suy = cov(u, yp, dims=2, corrected=false)
-        G = Suy*inv(Syp)
+        Σᵤᵧ = cov(u, yₚ, dims=2, corrected=false)
+        K   = Σᵤᵧ*inv(Σᵧᵧ)
 
-        μ = vec(μu + G*(y .- μyp))
-        Σ = Hermitian(Su - G*Suy')
+        μ = vec(μᵤ + K*(y .- μᵧ))
+        Σ = Hermitian(Σᵤᵤ - K*Σᵤᵧ')
 
         d = size(prob)
         Qp = sqrt(d)*[I(d) -I(d)]
@@ -108,14 +106,12 @@ tspan = (0., 100.)
 prob = GaussODEProblem(lotkavolterra,tspan,u0,θ)
 solver = GaussODESolver(RK2(0.1))
 
-
-
 using JLD2
 raw_data = load("../../lecture_12/lotkadata.jld2")
 ts = Float32.(raw_data["t"][1:100:end])
 ys = Float32.(raw_data["u"][:,1:100:end])
 data = [(t,y[1]) for (t,y) in zip(ts,eachcol(ys))]
-#t, us = solve(prob,solver)
+t, us = solve(prob,solver)
 t, us = filter(prob, solver, data, 0.01)
 
 gus = map(us) do u
@@ -128,7 +124,6 @@ gus = reduce(hcat,gus)
 p1 = plot(t, gus[1,:], lw=3)
 plot!(p1, t, gus[2,:], lw=3)
 plot!(p1, raw_data["t"], raw_data["u"][1,:], lw=3, alpha=0.5) |> display
-error()
 
 
 solver = RK2(0.1)
@@ -140,14 +135,9 @@ end
 Base.rand(prob::ODEProblem) = ODEProblem(prob.f, prob.tspan, rand(prob.u0), rand(prob.θ))
 
 p2 = plot()
-Us = []
-Ss = []
-for _ in 1:200
-    t, us = solve(rand(prob),solver)
+Us = map(1:200) do i
+    t, us = solve(rand(prob),solver.solver)
     us = reduce(hcat,us)
-    push!(Us,us)
-    #plot!(p2, t, us[1,:], c=1, alpha=0.5, label=false)
-    #plot!(p2, t, us[2,:], c=2, alpha=0.5, label=false)
 end
 
 plot!(p2, t, GaussNum.(mean(Us)[1,:],std(Us)[1,:]), lw=3)

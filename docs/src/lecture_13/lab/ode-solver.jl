@@ -1,3 +1,4 @@
+# NOTE: we now have an AbstractODEProblem
 abstract type AbstractODEProblem end
 
 struct ODEProblem{F,T<:Tuple{Number,Number},U<:AbstractVector,P<:AbstractVector} <: AbstractODEProblem
@@ -37,5 +38,6 @@ function solve(prob::AbstractODEProblem, solver::ODESolver)
         push!(us,u)
         push!(ts,t)
     end
+    # NOTE: we are not `reduce(hcat,us)`ing any more
     ts, us
 end

@@ -1,4 +1,4 @@
-# Lab 12 - Differential Equations
+# [Lab 12 - Differential Equations](@id lab12)
 
 In this lab you will implement a simple solver for *ordinary differential
 equations* (ODE) as well as a less verbose version of the `GaussNum`s that were
