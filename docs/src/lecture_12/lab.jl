@@ -92,7 +92,7 @@ display(@uncertain x1*x2)
 display(x1-x2)
 display(x1+x2)
 display(f(x1,x2))
-error()
+#error()
 
 
 using Plots
