@@ -99,6 +99,7 @@ lecture_10 = [
 ]
 
 lecture_11 = [
+    "Lecture" => "./lecture_11/lecture.md"
 ]
 
 lecture_12 = [
