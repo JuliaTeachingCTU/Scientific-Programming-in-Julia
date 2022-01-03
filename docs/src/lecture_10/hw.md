@@ -1,4 +1,4 @@
-# [Homework 9: Something parallel](@id hw09)
+# [Homework 9: Accelerating 1D convolution with threads](@id hw09)
 
 ## How to submit
 Put all the code of inside `hw.jl`. Zip only this file (not its parent folder) and upload it to BRUTE. You should not not import anything but `Base.Threads` or just `Threads`. 
