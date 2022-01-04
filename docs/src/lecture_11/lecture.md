@@ -19,7 +19,7 @@ Notable functionalities / blocks are
 
 * **Memory management unit** is not shown but takes care of translation of virtual addresses to physical, checking the security bits of pages, etc.
 
-* **Caches** (three levels) thrive to provide instuctions with data from cache, such that it does not have to wait for the load. Caches are transparent to the user, he does not control, what will stay in cache.
+* **Caches** (three levels) thrive to provide instuctions with data from cache, such that it does not have to wait for the load. Caches are opaque to the user, he does not control, what will stay in cache.
 
 * **L1 Cache synchronization** If the processor contains many cores, their L1 cache is atomically synchronized.
 
@@ -36,7 +36,7 @@ end
 and the computation of intensities `compute_insity(i, j)` does not contain many branches. Therefore the GPU goes for massive parallelism while simplifying each Core the the bare minimum leaving all difficulties up to the programmer / compiler. Below we see a high-level view on Nvidia's GPU.
 ![nvidia-gpu](nvidia-gpu.jpg)
 ![nvidia-gpu](nvidia-kepler.jpg)
-1. The chip contains many streaming multi-processors (SM). Normally, each streamming processor would be called core, as it is an indivisible unit, but NVidia decided to call "a core" something which in normal CPU would be called arithmetic unit (which certainly helps the marketting).
+1. The chip contains many streaming multi-processors (SM). Normally, each streamming processor would be called core, as it is an indivisible unit, but NVidia decided to call "a core" a unit inside the streaming multi-processor performing stream of operations over a set of 32 registers.
 2. Each streaming multi-processor contains (possibly multiple blocks of) 32-way (32-wide) SIMT units (Nvidia calls that *CUDA Core*), shared memory (managed cache) and register file (16k registers, but shared between all threads). Therefore a pascal P-100 can have up to 64×4×32 = 8192 cores, which certainly sounds cool in comparison to for example 24 cores of normal processors, but.
 3. Each streaming multi-processors (SM) has one instruction fetch and decode unit, which means that *all* CUDA cores of that SM *has to* execute the same instruction at a given cycle. This simplifies the design. The execution model therefore roughly corresponds to vector (SIMD) registers in normal CPU, but CUDA cores are not as restricted as SIMD registers. NVidia therefore calls this computation model single instruction mulptiple threads (SIMT). Main differences:
     1. SIMD requires the memory to be continuous while SIMT does not. 
@@ -44,12 +44,11 @@ and the computation of intensities `compute_insity(i, j)` does not contain many 
 32 CUDA cores each operating over 32 bit registers would be equal to 1024 long vector (SIMD) registers. Modern Intel XEON processors has 256 / 512 long registers, which seems similar, as said above in order to use them the data has to be aligned in memory and sometimes they has to be on a particular offset, which might be difficult to achieve in practice (but to be fair, if the data are not aligned in GPU, the loading of data is very inefficcient).
 4. 16k registers per SM might seem like a lot, but they are shared between all threads. In modern GPUs, each SM supports up to 2048 threads, which means there might be just 4 32-bit registers per thread.
 5. GPUs do not have virtual memory, interrupts, and cannot address external devices like keyboard and mouse.
-6. GPUs can switch execution contexts of "set of threads" at no cost. In comparison the context switch in CPU is relatively expensive (we need to at least save the content of registers, which is usually sped by having two sets of registers). This helps to hide latencies, as when a set of threads is stalled, other set of threads are available.
+6. GPUs can switch execution contexts of "set of threads" at no cost. In comparison the context switch in CPU is relatively expensive (we need to at least save the content of registers, which is usually sped by having two sets of registers). This helps to hide latencies, when a set of threads are stalled (they wait for memory access, synchronizing with others).
 7. The programmer deal with "raw" storage hierarchy. This means that the programmer has to manage what will be and what will not be in cache by itself, on GPU, they are exposed and you decide what will be loaded into the cache. 
 8. Caches are synchronized only within a single SM, this is unlike in CPU, where L1 caches are synchronized across cores, according to some leading in bottleneck in having more cores.
 9. SM has relatively low frequency clocks, which helps to deal with thermal problems.
-10. The memory in SM is divided into 16 banks, write operations to a bank is sequential. If two threads are writing to the same bank, they can be stalled.
-
+10. The memory in SM is divided into 16 banks, write operations to a bank is sequential. If two threads are writing to the same bank, this write is sequential, therefore one thread(s) has to wait while the other finishes (stalling).
 
 ### Programming / Execution model
 The GPU works in an asynchronous mode. If we want to execute something on GPU, we need to 
@@ -64,10 +63,10 @@ Let's now look at point 4. in more detail.
 Recall that GPU is designed for processing data in parallel, something we can abstract as 
 ```julia
 for i in 1:N
-	kernel!(i)
+	kernel!(result, i)
 end
 ``` 
-where `kernel!(i)` means compute the `i`-th item of the data using function `kernel!`, which is modifying as it does not have a return value, but has to put all results to the preallocated array. `i`-th part of the data usually corresponds to one float number (usually `Float32`). Here, we can see that SIMT has a scalar notation, we refer to individual numbers inside arrays.
+where `kernel!(result, i)` means compute the `i`-th item of the data using function `kernel!`, which is modifying as kernel function cannot return value, but has to put all results to the preallocated array. `i`-th part of the data usually corresponds to one float number (usually `Float32`). Here, we can see that SIMT has a scalar notation, we refer to individual numbers inside arrays.
 
 Each item, `kernel!(i)`, is executed on a single *thread*. GPU *always* execute 32 threads at once on a single SM. This group of 32 threads is called **warp**. These 32 threads within warp can very effectively communicate with each other using atomic instructions. A user has to group threads into **group**. Each group is executed on a single SM, which means that all threads within this group has access to fast SM local memory. All blocks of single job are called **grid**.
 * From the above we can already see that the number of threads has to be multiple of 32 (given by the requirement on warps).
@@ -75,7 +74,7 @@ Each item, `kernel!(i)`, is executed on a single *thread*. GPU *always* execute 
     * those threads needs to access the same memory (for example in Stencil operations), which can be put to the local cache and 
     * each thread reads data from memory (which are no co-allesced) and the SM can run different thread while other is stalling (mostly due to waiting for finishing loading data from memory). 
 On the other hand large number of threads per group might stall due to insufficient number of registers and / or other threads being busy.
-* The total number of issued threads  has to be multiple of 32 and of the number of threads per block, hence *there will always be threads that does not do anything*.
+* The total number of issued threads  has to be multiple of 32 and of the number of threads per block, hence *there will almost always be threads that does not do anything*.
 * The division of a total number of items to be processed `N` into blocks is therefore part of the problem and it can be specific to a version of GPU.
 * For some operations (e.g. reduction seen below) to get the highest performance, you need to write the same algorithm for three levels of sets of threads  --- warp, groups, and grid. This is the price paid for exposed cache levels (we will se an example below on reduction).
 
