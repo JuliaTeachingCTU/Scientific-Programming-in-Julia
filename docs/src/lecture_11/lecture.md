@@ -149,14 +149,18 @@ end
 n = Int32(1000);
 is = collect(Int32, 1:n)';
 js = collect(Int32, 1:n);
-img = juliaset_pixel.(is, js, n);
+@btime img = juliaset_pixel.(is, js, n);
 
 cis = CuArray(is);
 cjs = CuArray(js);
 img = juliaset_pixel.(cis, cjs, n);
 @btime CUDA.@sync juliaset_pixel.(cis, cjs, n);
 ```
-We see that CPU version is slightly faster then the GPU one. Why is that? My suspect is that the kernel needs to execute all 255 iterations of the while for each pixel, which is very wasteful, especially considering that many / most pixels require one iteration. Hence, we see the effect of thread divergence in practice (recall that all threads within the block has to execute all instructions, even though some of them are masked.)
+We see that CPU version takes around 50ms with the GPU version takes about 64μs, which is **three** order of magnited faster. Notice that we have obtained this speedup almost for free without writing anything that would be GPU specific. Our `juliset_pixel` is the same function working the same on CPU and on GPU. If we take into the account moving the memory
+```
+@btime Matrix(juliaset_pixel.(CuArray(is), CuArray(js), n))
+```
+is about `315` μs, which still 160x faster.
 
 !!! info 
 	### Profiler
