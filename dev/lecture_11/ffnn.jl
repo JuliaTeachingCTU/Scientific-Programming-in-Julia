@@ -1,3 +1,4 @@
+using GLMakie
 function flower(n; npetals = 8)
     n = div(n, npetals)
     x = mapreduce(hcat, (1:npetals) .* (2π/npetals)) do θ
@@ -13,9 +14,12 @@ function flower(n; npetals = 8)
     end
     _y = mapreduce(i -> fill(i, n), vcat, 1:npetals)
     y = zeros(npetals, length(_y))
-    foreach(i -> y[_y[i], i] = 1, _y)
+    foreach(i -> y[_y[i], i] = 1, 1:length(_y))
     Float32.(x), Float32.(y)
 end
+
+x, y = flower(900)
+scatter(x[1,:], x[2,:], color = mapslices(argmax, y, dims = 1)[:])
 
 #######
 #   Define a Tracked Array for operator overloading AD
@@ -33,6 +37,7 @@ Base.size(a::TrackedArray) = size(a.value)
 Base.show(io::IO, ::MIME"text/plain", a::TrackedArray) = show(io, a)
 Base.show(io::IO, a::TrackedArray) = print(io, "TrackedArray($(size(a.value)))")
 value(A::TrackedArray) = A.value
+resetgrad!(A::TrackedArray) = (A.deriv .= 0; empty!(A.tape))
 value(A) = A
 track(A) = TrackedArray(A)
 track(a::Number) = TrackedArray(reshape([a], 1, 1))
@@ -64,7 +69,6 @@ function *(A::TrackedMatrix, B::AbstractMatrix)
     C
 end
 
-
 function broadcasted(::typeof(+), A::TrackedMatrix, B::TrackedVector)
     C = track(value(A) .+ value(B))
     push!(A.tape, (C, Δ -> Δ))
@@ -72,29 +76,32 @@ function broadcasted(::typeof(+), A::TrackedMatrix, B::TrackedVector)
     C
 end
 
-relu(x::Real) = max(0,x)
-
-function broadcasted(::typeof(identity), A::TrackedArray)
-    C = track(value(A))
-    push!(A.tape, (C, Δ -> Δ))
-    C
+function σ(x::Real) 
+    t = @fastmath exp(-abs(x))
+    y = ifelse(x ≥ 0, inv(1 + t), t / (1 + t))
+    ifelse(x > 40, one(y), ifelse(x < -80, zero(y), y))
 end
 
-function broadcasted(::typeof(relu), A::TrackedArray)
-    C = track(relu.(value(A)))
-    push!(A.tape, (C, Δ -> Δ .* value(A) .> 0))
+broadcasted(::typeof(identity), A::TrackedArray) = A
+
+function broadcasted(::typeof(σ), A::TrackedArray)
+    Ω = σ.(value(A))
+    C = track(Ω)
+    push!(A.tape, (C, Δ -> Δ .* Ω .* (1 .- Ω)))
     C
 end
 
 function mse(A::TrackedMatrix, B::AbstractMatrix)
-    n = size(A, 1)
+    n = size(A, 2)
     a = value(A)
-    C = track(sum((a .- B).^2)/2)
-    push!(A.tape, (C, Δ -> (a .- B)))
+    c = similar(a, 1, 1)
+    c .= sum((a .- B).^2)/2n
+    C = track(c)
+    push!(A.tape, (C, Δ -> Δ .* (a .- B) ./ n))
     C
 end
 
-mse(x::AbstractMatrix, y::AbstractMatrix) = sum((x - y).^2) / (2n)
+mse(x::AbstractMatrix, y::AbstractMatrix) = sum((x - y).^2) / (2*size(x,2))
 
 #######
 #   Define a Dense layer
@@ -110,36 +117,88 @@ Dense(i::Int, o::Int, σ = identity) = Dense(σ, randn(Float32, o, i), randn(Flo
 track(m::Dense) = Dense(m.σ, track(m.w), track(m.b))
 track(m::ComposedFunction) = track(m.outer) ∘ track(m.inner)
 (m::Dense)(x) = m.σ.(m.w * x .+ m.b)
+params(m::ComposedFunction) = vcat(params(m.outer), params(m.inner))
+params(m::Dense) = [m.w, m.b]
 
 #######
 #   Let's try to actually train a model
 #######
 x, y = flower(900)
-m₁ = track(Dense(2, 20, relu))
-m₂ = track(Dense(20, 20, relu))
-m₃ = track(Dense(20, size(y,1)))
-m = m₃ ∘ m₂ ∘ m₁
+function initmodel()
+    m₁ = track(Dense(2, 20, σ))
+    m₂ = track(Dense(20, 20, σ))
+    m₃ = track(Dense(20, size(y,1)))
+    m = m₃ ∘ m₂ ∘ m₁
+end
+m = initmodel()
 m(x) |> value 
 
 ######
 #   Let's try to learn the parameters
 ######
-α = 0.001
-ps = [m₃.w, m₃.b, m₂.w, m₂.b, m₁.w, m₁.b]
-for i in 1:1000
+α = 0.01
+ps = params(m)
+@elapsed for i in 1:10000
+    foreach(resetgrad!, ps)
     loss = mse(m(x), y)
     fill!(loss.deriv, 1)
     foreach(accum!, ps)
     foreach(x -> x.value .-= α .* x.deriv, ps)
-    foreach(x -> x.deriv .= 0, ps)
-    mod(i,100) == 0 && println("loss after $(i) iterations = ", value(loss)[])
+    mod(i,250) == 0 && println("loss after $(i) iterations = ", sum(value(loss)))
 end
 
+all(mapslices(argmax, value(m(x)), dims = 1)[:] .== mapslices(argmax, y, dims = 1)[:])
+scatter(x[1,:], x[2,:], color = mapslices(argmax, value(m(x)), dims = 1)[:])
+
+######
+#   Let's try to move the computation to GPU
+######
 using CUDA
 gpu(x::AbstractArray) = CuArray(x)
 gpu(x::TrackedArray) = TrackedArray(CuArray(value(x)))
 gpu(m::Dense) = Dense(m.σ, gpu(m.w), gpu(m.b))
+gpu(m::ComposedFunction) = gpu(m.outer) ∘ gpu(m.inner)
 
-gpu(m)(gpu(x))
+gx, gy = gpu(x), gpu(y)
+m = gpu(m)
+ps = params(m)
+@elapsed for i in 1:10000
+    foreach(resetgrad!, ps)
+    loss = mse(m(gx), gy)
+    fill!(loss.deriv, 1)
+    foreach(accum!, ps)
+    foreach(x -> x.value .-= α .* x.deriv, ps)
+    mod(i,250) == 0 && println("loss after $(i) iterations = ", sum(value(loss)))
+end
+
+#######
+#   Why we see a small speed-up? The problem is small
+#######
+using BenchmarkTools
+p = randn(Float32, 20, 2)
+@benchmark $(p) * $(x)
+gp = gpu(p)
+@benchmark $(gp) * $(gx)
+
+
+######
+#   Let's verify the gradients
+######
+using FiniteDifferences
+ps = [m₃.w, m₃.b, m₂.w, m₂.b, m₁.w, m₁.b]
+map(ps) do p 
+    foreach(resetgrad!, ps)
+    loss = mse(m(x), y)
+    fill!(loss.deriv, 1)
+    foreach(accum!, ps)
+    accum!(p)
+    θ = deepcopy(value(p))
+    Δθ = deepcopy(p.deriv)
+    f = θ -> begin
+        p.value .= θ
+        value(mse(m(x), y))
+    end
+    sum(abs2.(grad(central_fdm(5, 1), f, θ)[1] - Δθ))
+end
 
 
