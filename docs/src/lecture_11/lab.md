@@ -49,7 +49,7 @@ Toolchain:
 
 	[^1]: Disclaimer on `CUDA.jl`'s GitHub page: [url](https://github.com/JuliaGPU/CUDA.jl)
 
-As we have already seen in the lecture *TODO LINK*, we can simply import `CUDA.jl` define some arrays, move them to the GPU and do some computation. In the following code we define two matrices `1000x1000` filled with random numbers and multiply them using usuall `x * y` syntax.
+As we have already seen in the [lecture](@ref gpu_lecture_no_kernel), we can simply import `CUDA.jl` define some arrays, move them to the GPU and do some computation. In the following code we define two matrices `1000x1000` filled with random numbers and multiply them using usual `x * y` syntax.
 ```julia
 x = randn(Float32, 60, 60)
 y = randn(Float32, 60, 60)
@@ -241,7 +241,7 @@ Programming GPUs in this way is akin to using NumPy, MATLAB and other array base
 
 Note also that Julia's `CUDA.jl` is not a tensor compiler. With the exception of broadcast fusion, which is easily transferable to GPUs, there is no optimization between different kernels from the compiler point of view. Furthermore, memory allocations on GPU are handled by Julia's GC, which is single threaded and often not as aggressive, therefore similar application code can have different memory footprints on the GPU.
 
-Nowadays there is a big push towards simplifying programming of GPUs, mainly in the machine learning community, which often requires switching between running on GPU/CPU to be a one click deal. However this may not always yield the required results, because the GPU's computation model is different from the CPU, see lecture *TODO LINK*. This being said Julia's `Flux.jl` framework does offer such capabilities [^2]
+Nowadays there is a big push towards simplifying programming of GPUs, mainly in the machine learning community, which often requires switching between running on GPU/CPU to be a one click deal. However this may not always yield the required results, because the GPU's computation model is different from the CPU, see [lecture](@ref gpu_lecture). This being said Julia's `Flux.jl` framework does offer such capabilities [^2]
 
 ```julia
 using Flux, CUDA
@@ -258,7 +258,7 @@ There are two paths that lead to the necessity of programming GPUs more directly
 1. We cannot express our algorithm in terms of array operations.
 2. We want to get more out of the code,
 
-Note that the ability to write kernels in the language of your choice is not granted, as this club includes a limited amount of members - C, C++, Fortran and Julia [^3]. Consider then the following comparison between `CUDA C` and `CUDA.jl` implementation of a simple vector addition kernels as seen in the [lecture]() *ADD LINK*. Which one would you choose?
+Note that the ability to write kernels in the language of your choice is not granted, as this club includes a limited amount of members - C, C++, Fortran and Julia [^3]. Consider then the following comparison between `CUDA C` and `CUDA.jl` implementation of a simple vector addition kernels as seen in the [lecture](@ref gpu_lecture_yes_kernel). Which one would you choose?
 
 [^3]: There may be more of them, however these are the main ones.
 ```c
