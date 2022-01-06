@@ -1,4 +1,4 @@
-# GPU programming
+# [GPU programming](@id gpu_lecture)
 ## How GPU differs from CPU
 ### Hardware perspective
 **CPU** was originally created for maximal throughput of a single threadded program. Therefore the modern CPU has many parts which are not devoted to the actual computation, but to maximize the utilization of a computing resource (ALU), which now occupies relatively small part of the die. Below is the picture of a processor of Intel's Core architecture (one of the earliest in the series).
@@ -88,7 +88,7 @@ A thread can stall, because the instruction it depends on has not finished yet, 
 ![latency hiding](latency-hiding.jpg)
 [image taken from](https://iq.opengenus.org/key-ideas-that-makes-graphics-processing-unit-gpu-so-fast/)
 
-## using GPU without writing kernels
+## [using GPU without writing kernels](@id gpu_lecture_no_kernel)
 Julia, as many other languages, allows to perform certain operations on GPU as you would do on CPU. Thanks to Julia's multiple dispatch, this is almost invisible and it is sufficient to convert the `Array` to `CuArray` to notify the system that array is in GPU's memory.
 
 For many widely used operations, we have available kernels, for example below, we use multiplication.
@@ -218,7 +218,7 @@ naive(cx, bags, cz);
 @btime CUDA.@sync CuArray(builtin(Array(cx), bags, Array(cz)));
 ```
 
-## Writing own CUDA kernels
+## [Writing own CUDA kernels](@id gpu_lecture_yes_kernel)
 Before diving into details, let's recall some basic from the above HW section:
 * In CUDA programming model, you usually write *kernels*, which is the *body* of the loop.
 * `N` iterations of the loop is divided into *block*s and each block into *warp*s. Single warp consists of 32 threads and these threads are executed simultaneously. All threads in the block are executed in the same SM, having access to the share memory.
