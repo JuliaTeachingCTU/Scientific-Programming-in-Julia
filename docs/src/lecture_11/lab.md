@@ -448,7 +448,61 @@ The launch configuration depends heavily on user's hardware and the actual compu
 
 
 ### Image processing with kernels
+Following up on exercise with image processing let's use kernels for some functions that cannot be easily expressed as array operations.
 
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Implement `translate_kernel!(output, input, translation)`, which translates an image `input` in the direction of `translation` tuple (values given in pixels). The resulting image should be stored in `output`. Fill in the empty space with zeros.
+
+**HINTS**:
+- use 2D grid of threads and blocks to simplify indexing
+- check all sides of an image for out of bounds accesses
+
+**BONUS**: In a similar fashion you can create `scale_kernel!`, `rotate_kernel!` for scaling and rotation of an image.
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+
+```julia
+using CUDA
+function translate_kernel!(output, input, translation)
+    x_idx = (blockIdx().x-1) * blockDim().x + threadIdx().x
+    y_idx = (blockIdx().y-1) * blockDim().y + threadIdx().y
+
+    x_outidx = x_idx + translation[1]
+    y_outidx = y_idx + translation[2]
+
+    if (1 <= x_outidx <= size(output,1)) && 
+        (1 <= y_outidx <= size(output,2)) && 
+        (x_idx <= size(output,1)) && (y_idx <= size(output,2))
+        output[x_outidx, y_outidx] = input[x_idx, y_idx]
+    end
+
+    return
+end
+
+using FileIO, ImageMagick, ImageShow, ColorTypes
+rgb_img = FileIO.load("image.jpg");
+gray_img = Float32.(Gray.(rgb_img));
+cgray_img = CuArray(gray_img);
+cgray_img_moved = CUDA.fill(0.0f0, size(cgray_img));
+
+blocks = cld.((size(cgray_img,1), size(cgray_img,2)), 32)
+@cuda threads=(32, 32) blocks=blocks translate_kernel!(cgray_img_moved, cgray_img, (100, -100))
+Gray.(Array(cgray_img_moved))
+
+#@cuda threads=(64, 64) blocks=(1,1) translate_kernel!(cgray_img_moved, cgray_img, (-500, 500)) # too many threads per block (fails on some weird exception) - CUDA error: invalid argument (code 1, ERROR_INVALID_VALUE)
+```
+
+```@raw html
+</p></details>
+```
 
 ### Profiling
 
@@ -479,7 +533,7 @@ blocks = ceil.(Int, (size(C,1), size(C,2)) ./ threads)
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-Adapted from the `CuArrays.jl` source [code](https://github.com/JuliaGPU/CuArrays.jl/blob/cee6253edeca2029d8d0522a46e2cdbb638e0a50/src/matmul.jl#L4-L50).
+Adapted from the `CUDA.jl` source [code](https://github.com/JuliaGPU/CuArrays.jl/blob/cee6253edeca2029d8d0522a46e2cdbb638e0a50/src/matmul.jl#L4-L50).
 
 ```julia
 function generic_matmatmul!(C, A, B)
