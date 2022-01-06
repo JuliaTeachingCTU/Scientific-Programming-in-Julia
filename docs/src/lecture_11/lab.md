@@ -254,11 +254,13 @@ y |> cpu
 [^2]: Taken from `Flux.jl` [documentation](https://fluxml.ai/Flux.jl/stable/gpu/#GPU-Support)
 
 ## We DO want to get our hands dirty
+There are two paths that lead to the necessity of programming GPUs more directly via kernels
+1. We cannot express our algorithm in terms of array operations.
+2. We want to get more out of the code,
 
+Note that the ability to write kernels in the language of your choice is not granted, as this club includes a limited amount of members - C, C++, Fortran and Julia [^3]. Consider then the following comparison between `CUDA C` and `CUDA.jl` implementation of a simple vector addition kernels as seen in the [lecture]() *ADD LINK*. Which one would you choose?
 
-
-### Comparison between `CUDA C` and `CUDA.jl`
-Compared to CUDA C there is far less bloat, while having the same functionality
+[^3]: There may be more of them, however these are the main ones.
 ```c
 #define cudaCall(err) // check return code for error
 #define frand() (float)rand() / (float)(RAND_MAX)
@@ -295,7 +297,7 @@ int main() {
 	return 0;
 }
 ```
-same code in Julia with `CUDA.jl`
+Compared to CUDA C the code is less bloated, while having the same functionality.[^4]
 ```julia
 function vadd(a, b, c)
 	i = (blockIdx().x-1) * blockDim().x + threadIdx().x
@@ -313,10 +315,137 @@ d_c = similar(d_a)
 c = Array(d_c)
 ```
 
-### Writing our first kernel
-- Continue with examples from lecture
-- Go deeper into the indexing
-- Show that if we run less threads the result is not correct
+[^4]: This comparison is not fair to `CUDA C`, where memory management is left to the user and all the types have to be specified. However at the end of the day the choice of a high level language makes more sense as it offers the same functionality and is far more approachable.
+
+### CUDA programming model
+Recalling from the lecture, in CUDA programming model, you usually write kernels, which represent the body of some parallel for loop. 
+- A kernel is executed on multiple threads, which are grouped into thread blocks. 
+- All threads in a block are executed in the same Streaming Multi-processor (SM), having access to some shared pool of memory. 
+- The number of threads launched is always a multiple of 32 (32 threads = 1 warp, therefore length of a thread block should be divisible by 32). 
+- All threads in a single warps are executed simultaneously. 
+- We have to take care of how many threads will be launched in order to complete the task at hand, i.e. if there are insufficiently many threads/blocks spawned we may end up doing only part of the task. 
+- We can spawn threads/thread blocks in both in 1D, 2D or 3D blocks, which may ease the indexing inside the kernel when dealing with higher dimensional data.
+
+
+#### Thread indexing
+Stopping for a moment here to illustrate the last point with a visual aid[^5]
+![grid_block_thread](./grid_block_thread.png)
+
+[^5]: The number of blocks to be run are given by the grid dimension. Image taken from http://tdesell.cs.und.edu/lectures/cuda_2.pdf
+
+This explains the indexing into a linear array from above
+```julia
+i = (blockIdx().x-1) * blockDim().x + threadIdx().x
+```
+which is similar to the computation a linear index of multidimensional (in our case 2D array row ~ `blockIdx` and column `threadIdx`). Again let's use a visual help for this 1D vector[^6]
+![thread_indexing](./thread_index.png)
+
+[^6]: Taken from [https://developer-blogs.nvidia.com/wp-content/uploads/2017/01/cuda\_indexing-1024x463.png](https://developer-blogs.nvidia.com/wp-content/uploads/2017/01/cuda_indexing-1024x463.png)
+
+#### Launching a kernel
+
+Let's now dig into what is happening during execution of the line `@cuda threads = (1, len) vadd(d_a, d_b, d_c)`:
+1. Compile the `vadd` kernel to GPU code (via LLVM and it's [NVPTX backend](https://www.llvm.org/docs/NVPTXUsage.html))
+2. Parse and construct launch configuration of the kernel. Here we are creating `1` thread block with `1x100` threads (in reality 128 threads may be launched).
+3. Schedule to run `vadd` kernel with constructed launch configuration and arguments.
+4. Return the task status.
+
+It's important to stress that we only schedule the kernel to run, however in order to get the result we have to first wait for the completion. This can be done either via
+- `CUDA.@sync`, which we have already seen earlier
+- or a command to copy result to host (`Array(c)`), which always synchronizes kernels beforehand
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Fix the `vadd` kernel such that it can work with different launch configurations, such as
+```julia
+@cuda threads=64 blocks=2 vadd(d_a, d_b, d_c)
+@cuda threads=32 blocks=4 vadd(d_a, d_b, d_c)
+```
+Is there some performance difference? Try increasing the size and corresponding number of blocks to cover the larger arrays.
+
+What happens if we launch the kernel in the following way?
+```julia
+@cuda threads=32 blocks=2 vadd(d_a, d_b, d_c)
+```
+
+Write a wrapper function `vadd_wrap(a::CuArray, b::CuArray)` for `vadd` kernel, such that it spawns the right amount of threads and returns only when the kernels has finished.
+
+!!! note "Wrapping kernels"
+	A usual patter that you will see in GPU related code is that the kernel is written inside a function
+	```julia
+	function do_something(a,b)
+		function do_something_kernel!(c,a,b)
+			...
+		end
+
+		# handle allocation
+		# handle launch configuration
+		@cuda ... do_something_kernel!(c,a,b)
+	end
+	```
+	Note that there are hardware limitations as to how many threads can be scheduled on a GPU. You can check it with the following code
+	```julia
+	k = @cuda vadd(d_a, d_b, d_c)
+	CUDA.maxthreads(k)
+	```
+
+**HINTS**:
+- if you don't know what is wrong with the current implementation just try it, but be warned that you might need to restart Julia after that
+- don't forget to use `CUDA.@sync` when benchmarking
+- you can inspect the kernel with analogs of `@code_warntype` ~ `@device_code_warntype @cuda vadd(d_a, d_b, d_c)`
+- lookup `cld` function for computing the number of blocks when launching kernels on variable sized input
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+In order to fix the out of bounds accesses we need to add manual bounds check, otherwise we may run into some nice Julia crashes.
+```julia
+function vadd(a, b, c)
+	i = (blockIdx().x-1) * blockDim().x + threadIdx().x
+    if i <= length(c)
+	    c[i] = a[i] + b[i]
+    end
+	return
+end
+```
+
+Launching kernel with insufficient number of threads leads to only partial results.
+```julia
+d_c = similar(d_a)
+@cuda threads=32 blocks=2 vadd(d_a, d_b, d_c) # insufficient number of threads
+Array(d_c)
+```
+
+Benchmarking different implementation shows that in this case running more threads per block may be beneficial, however only up to some point.
+```julia
+len = 10_000
+a = rand(Float32, len)
+b = rand(Float32, len)
+d_a = CuArray(a)
+d_b = CuArray(b)
+d_c = similar(d_a)
+
+julia> @btime CUDA.@sync @cuda threads=256 blocks=cld(len, 256) vadd($d_a, $d_b, $d_c)
+       @btime CUDA.@sync @cuda threads=128 blocks=cld(len, 128) vadd($d_a, $d_b, $d_c)
+       @btime CUDA.@sync @cuda threads=64 blocks=cld(len, 64) vadd($d_a, $d_b, $d_c)
+       @btime CUDA.@sync @cuda threads=32 blocks=cld(len, 32) vadd($d_a, $d_b, $d_c)
+  8.447 μs (24 allocations: 1.22 KiB)
+  8.433 μs (24 allocations: 1.22 KiB)
+  8.550 μs (24 allocations: 1.22 KiB)
+  8.634 μs (24 allocations: 1.22 KiB)
+```
+
+```@raw html
+</p></details>
+```
+
+The launch configuration depends heavily on user's hardware and the actual computation in the kernel, where in some cases having more threads in a block is better (up to some point).
+
 
 ### Image processing with kernels
 
@@ -324,8 +453,83 @@ c = Array(d_c)
 ### Profiling
 
 
-### BONUS: Matrix multiplication
+### Matrix multiplication
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Write a generic matrix multiplication `generic_matmatmul!(C, A, B)`, which wraps a GPU kernel inside. For simplicity assume that both `A` and `B` input matrices have only `Float32` elements. Benchmark your implementation against `CuBLAS`'s `mul!(C,A,B)`.
+
+**HINTS**:
+- use 2D blocks for easier indexing
+- import `LinearAlgebra` to be able to directly call `mul!`
+- in order to avoid a headache with the choice of launch config use the following code
+```julia
+max_threads = 256
+threads_x = min(max_threads, size(C,1))
+threads_y = min(max_threads ÷ threads_x, size(C,2))
+threads = (threads_x, threads_y)
+blocks = ceil.(Int, (size(C,1), size(C,2)) ./ threads)
+```
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+Adapted from the `CuArrays.jl` source [code](https://github.com/JuliaGPU/CuArrays.jl/blob/cee6253edeca2029d8d0522a46e2cdbb638e0a50/src/matmul.jl#L4-L50).
+
+```julia
+function generic_matmatmul!(C, A, B)
+    function kernel(C, A, B)
+        i = (blockIdx().x-1) * blockDim().x + threadIdx().x
+        j = (blockIdx().y-1) * blockDim().y + threadIdx().y
+
+        if i <= size(A,1) && j <= size(B,2)
+            Ctmp = 0.0f0
+            for k in 1:size(A,2)
+                Ctmp += A[i, k]*B[k, j]
+            end
+            C[i,j] = Ctmp
+        end
+
+        return
+    end
+
+    max_threads = 256
+    threads_x = min(max_threads, size(C,1))
+    threads_y = min(max_threads ÷ threads_x, size(C,2))
+    threads = (threads_x, threads_y)
+    blocks = ceil.(Int, (size(C,1), size(C,2)) ./ threads)
+
+    @cuda threads=threads blocks=blocks kernel(C, A, B)
+
+    C
+end
+
+K, L, M = 10 .* (200, 100, 50)
+A = CuArray(randn(K, L));
+B = CuArray(randn(L, M));
+C = similar(A, K, M);
+
+generic_matmatmul!(C, A, B)
+
+using LinearAlgebra
+CC = similar(A, K, M)
+mul!(CC, A, B)
+
+
+using BenchmarkTools
+@btime CUDA.@sync generic_matmatmul!(C, A, B);
+@btime CUDA.@sync mul!(CC, A, B);
+```
+
+```@raw html
+</p></details>
+```
 
 
 ## GPU vendor agnostic code
-There is an interesting direction that is allowed with the high level abstraction of Julia - `KernelAbstractions.jl`, which offer an overarching API over CUDA, AMD ROCM and Intel oneAPI frameworks.
+There is an interesting direction that is allowed with the high level abstraction of Julia - [`KernelAbstractions.jl`](https://github.com/JuliaGPU/KernelAbstractions.jl), which offer an overarching API over CUDA, AMD ROCM and Intel oneAPI frameworks.
