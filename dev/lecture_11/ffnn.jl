@@ -26,7 +26,7 @@ scatter(x[1,:], x[2,:], color = mapslices(argmax, y, dims = 1)[:])
 #######
 struct TrackedArray{T,N,V<:AbstractArray{T,N}} <: AbstractArray{T,N}
     value::V
-    deriv::Union{Nothing,V}
+    grad::Union{Nothing,V}
     tape::Vector{Any}
 end
 
@@ -37,16 +37,16 @@ Base.size(a::TrackedArray) = size(a.value)
 Base.show(io::IO, ::MIME"text/plain", a::TrackedArray) = show(io, a)
 Base.show(io::IO, a::TrackedArray) = print(io, "TrackedArray($(size(a.value)))")
 value(A::TrackedArray) = A.value
-resetgrad!(A::TrackedArray) = (A.deriv .= 0; empty!(A.tape))
+resetgrad!(A::TrackedArray) = (A.grad .= 0; empty!(A.tape))
 value(A) = A
 track(A) = TrackedArray(A)
 track(a::Number) = TrackedArray(reshape([a], 1, 1))
 
 function accum!(A::TrackedArray)
-    isempty(A.tape) && return(A.deriv)
-    A.deriv .= sum(g(accum!(r)) for (r, g) in A.tape)
+    isempty(A.tape) && return(A.grad)
+    A.grad .= sum(g(accum!(r)) for (r, g) in A.tape)
     empty!(A.tape)
-    A.deriv
+    A.grad
 end
 
 #######
@@ -141,9 +141,9 @@ ps = params(m)
 @elapsed for i in 1:10000
     foreach(resetgrad!, ps)
     loss = mse(m(x), y)
-    fill!(loss.deriv, 1)
+    fill!(loss.grad, 1)
     foreach(accum!, ps)
-    foreach(x -> x.value .-= α .* x.deriv, ps)
+    foreach(x -> x.value .-= α .* x.grad, ps)
     mod(i,250) == 0 && println("loss after $(i) iterations = ", sum(value(loss)))
 end
 
@@ -165,9 +165,9 @@ ps = params(m)
 @elapsed for i in 1:10000
     foreach(resetgrad!, ps)
     loss = mse(m(gx), gy)
-    fill!(loss.deriv, 1)
+    fill!(loss.grad, 1)
     foreach(accum!, ps)
-    foreach(x -> x.value .-= α .* x.deriv, ps)
+    foreach(x -> x.value .-= α .* x.grad, ps)
     mod(i,250) == 0 && println("loss after $(i) iterations = ", sum(value(loss)))
 end
 
@@ -189,11 +189,11 @@ ps = [m₃.w, m₃.b, m₂.w, m₂.b, m₁.w, m₁.b]
 map(ps) do p 
     foreach(resetgrad!, ps)
     loss = mse(m(x), y)
-    fill!(loss.deriv, 1)
+    fill!(loss.grad, 1)
     foreach(accum!, ps)
     accum!(p)
     θ = deepcopy(value(p))
-    Δθ = deepcopy(p.deriv)
+    Δθ = deepcopy(p.grad)
     f = θ -> begin
         p.value .= θ
         value(mse(m(x), y))
