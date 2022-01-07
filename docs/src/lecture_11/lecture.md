@@ -15,7 +15,7 @@ Notable functionalities / blocks are
 
 * **Branch prediction** predicts which branch will be taken and execute instructions in that branch. Misses are costly, as the processor needs to roll back emptying the instruction pipeline. The processor state is nor fully restored, which leads to side-channel attacks.
 
-* **speculative prefetching** load instruction / data from memory to caches in the branch that is expected to be taken advance in the hope they will be executed (depends on branch predictions)
+* **speculative prefetching** load instruction / data from memory to processor along the branch that is expected to be taken advance in the hope they will be executed (depends on branch predictions)
 
 * **Memory management unit** is not shown but takes care of translation of virtual addresses to physical, checking the security bits of pages, etc.
 
@@ -36,13 +36,13 @@ end
 and the computation of intensities `compute_insity(i, j)` does not contain many branches. Therefore the GPU goes for massive parallelism while simplifying each Core the the bare minimum leaving all difficulties up to the programmer / compiler. Below we see a high-level view on Nvidia's GPU.
 ![nvidia-gpu](nvidia-gpu.jpg)
 ![nvidia-gpu](nvidia-kepler.jpg)
-1. The chip contains many streaming multi-processors (SM). Normally, each streamming processor would be called core, as it is an indivisible unit, but NVidia decided to call "a core" a unit inside the streaming multi-processor performing stream of operations over a set of 32 registers.
+1. The chip contains many streaming multi-processors (SM). Normally, each streamming processor would be called core, as it is an indivisible unit, but NVidia decided to call "a core" a unit inside the streaming multi-processor performing stream of operations over a set of 32bit registers.
 2. Each streaming multi-processor contains (possibly multiple blocks of) 32-way (32-wide) SIMT units (Nvidia calls that *CUDA Core*), shared memory (managed cache) and register file (16k registers, but shared between all threads). Therefore a pascal P-100 can have up to 64×4×32 = 8192 cores, which certainly sounds cool in comparison to for example 24 cores of normal processors, but.
 3. Each streaming multi-processors (SM) has one instruction fetch and decode unit, which means that *all* CUDA cores of that SM *has to* execute the same instruction at a given cycle. This simplifies the design. The execution model therefore roughly corresponds to vector (SIMD) registers in normal CPU, but CUDA cores are not as restricted as SIMD registers. NVidia therefore calls this computation model single instruction mulptiple threads (SIMT). Main differences:
     1. SIMD requires the memory to be continuous while SIMT does not. 
-    2. SIMT is explicitly scalar while SIMD is explicitly vector. 
+    2. The programming mdel of SIMT is explicitly scalar while that of SIMD is explicitly vector. 
 32 CUDA cores each operating over 32 bit registers would be equal to 1024 long vector (SIMD) registers. Modern Intel XEON processors has 256 / 512 long registers, which seems similar, as said above in order to use them the data has to be aligned in memory and sometimes they has to be on a particular offset, which might be difficult to achieve in practice (but to be fair, if the data are not aligned in GPU, the loading of data is very inefficcient).
-4. 16k registers per SM might seem like a lot, but they are shared between all threads. In modern GPUs, each SM supports up to 2048 threads, which means there might be just 4 32-bit registers per thread.
+4. 16k registers per SM might seem like a lot, but they are shared between all threads. In modern GPUs, each SM supports up to 2048 threads, which means there might be just 8 32-bit registers per thread.
 5. GPUs do not have virtual memory, interrupts, and cannot address external devices like keyboard and mouse.
 6. GPUs can switch execution contexts of "set of threads" at no cost. In comparison the context switch in CPU is relatively expensive (we need to at least save the content of registers, which is usually sped by having two sets of registers). This helps to hide latencies, when a set of threads are stalled (they wait for memory access, synchronizing with others).
 7. The programmer deal with "raw" storage hierarchy. This means that the programmer has to manage what will be and what will not be in cache by itself, on GPU, they are exposed and you decide what will be loaded into the cache. 
@@ -57,7 +57,7 @@ The GPU works in an asynchronous mode. If we want to execute something on GPU, w
 3. Upload the kernel code to GPU
 4. Request the computation of the kernel (more on this below). GPU will put the request for the computation to its queue of works to be performed and once resources are free, it will do the compuation.
 5. The control is immediately returned, which means that CPU can continue doing its job. 
-6. CPU can issue a blocking wait till the computation is done, for example fetching the results.
+6. CPU can issue a blocking wait till the computation is done, for example fetching the results, sychronizing with other threads in the block.
 
 Let's now look at point 4. in more detail.
 Recall that GPU is designed for processing data in parallel, something we can abstract as 
@@ -84,7 +84,7 @@ As has been mentioned above, all CUDA cores in one SM are processing the same in
 which can significantly decrease the throughput.
 
 **Latency hiding** 
-A thread can stall, because the instruction it depends on has not finished yet, for example due to loading data from memory, which can be very time consuming (recall that unlike SIMD, SIMT can read data from non-coallesced memory location at the price of increased latency). Instead of waiting, SM will switch to execute different set of threads, which can be executed. This context switch is does not incur any overhead, hence it can occur at single instruction granularity. It keeps SM busy effective hiding latency of expensive operations.
+A thread can stall, because the instruction it depends on has not finished yet, for example due to loading data from memory, which can be very time consuming (recall that unlike SIMD, SIMT can read data from non-coallesced memory location at the price of increased latency). Instead of waiting, SM will switch to execute different set of threads, which can be executed. This context switch does not incur any overhead, hence it can occur at single instruction granularity. It keeps SM busy effective hiding latency of expensive operations.
 ![latency hiding](latency-hiding.jpg)
 [image taken from](https://iq.opengenus.org/key-ideas-that-makes-graphics-processing-unit-gpu-so-fast/)
 
@@ -111,8 +111,11 @@ julia> @btime cx * cy;
 
 julia> @btime CUDA.@sync cx * cy;
   173.704 μs (32 allocations: 624 bytes)
+
+julia> @btime Matrix(CuArray(x) * CuArray(y));
+  1.651 ms (47 allocations: 3.82 MiB)
 ```
-The matrix multiplication on GPU is about 33x faster, which is likely caused by being optimized by directly NVidia, as `cx * cy` calls `CuBlas` library.
+The matrix multiplication on GPU is about 33x faster, which is likely caused by being optimized by directly NVidia, as `cx * cy` calls `CuBlas` library. If we add the cost of sending and retrieving data from the memory, we have 3.5x speedup, but that is not fair. The goal is to compute everything on GPU.
 
 How much does it cost to send the matrix to GPU's memory? Let's measure the time of the roundtrip
 ```julia
@@ -127,7 +130,7 @@ map(x -> sin(x)^2 + cos(x)^2, cx)
 reduce(max, cx)
 reduce(max, cx, dims = 1)
 ```
-Notice that in case, the function in `map` is essentially a custom kernel. As such, the code within has to still obey (not precisely specified) rules on what can be executed as kernel. Also needless to say, that the generic `map` over `CuArray` will try to find good launch configuration (number of threads and number of blocks), which might not be an ideal for your application.
+Notice that in case, the function in `map` and in broadcasting is essentially a custom kernel. As such, the code within has to still obey (not precisely specified) rules on what can be executed as kernel. Also needless to say, that the generic `map` over `CuArray` will try to find good launch configuration (number of threads and number of blocks), which might not be an ideal for your application.
 
 Let's now try to use CUDA on computation of Julia set, which should benefit a lot from CUDA's paralelization, as we can dispatch each pixel to each thread --- something GPUs were originally designed for. 
 
@@ -251,7 +254,7 @@ where
 * If `N` is not divisible by `blockDim`, then there will be **always** threads not doing anything, therefore we need to have the `if` statement that we are within bounds.
 * The `blockDim` has to be divisible by 32, which is the size of the warp.
 
-While the `vadd` example is nice, it is trivial and can be achieved by `map` as shown above. A simple operation that is everything but trivial to impement is *reduction*, since it ends up in a single operation. It also allows to demonstrate, why efficient kernels needs to be written at three levels: warp, block, and grid. The exposition below is based on [JuliaCon tutorial on GPU programming](https://github.com/maleadt/juliacon21-gpu_workshop/blob/main/deep_dive/CUDA.ipynb).
+While the `vadd` example is nice, it is trivial and can be achieved by `map` as shown above. A simple operation that is everything but trivial to implement is *reduction*, since it ends up in a single operation. It also allows to demonstrate, why efficient kernels needs to be written at three levels: warp, block, and grid. The exposition below is based on [JuliaCon tutorial on GPU programming](https://github.com/maleadt/juliacon21-gpu_workshop/blob/main/deep_dive/CUDA.ipynb).
 
 The first naive implementation might looks like
 ```julia
