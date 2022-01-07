@@ -214,6 +214,7 @@ builtin(x, bags, z) ≈ naive(x, bags, z)
 @btime builtin(x, bags, z);
 @btime naive(x, bags, z);
 
+
 cx = CuArray(x);
 cz = CuArray(z);
 naive(cx, bags, cz);
@@ -233,7 +234,7 @@ where `threadIdx().x` is the index of the thread within the block, `blockDim().x
 
 The most trivial example of a kernel is addition as 
 ```julia
-function vadd(c, a, b, n)
+function vadd!(c, a, b, n)
     i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
     if i <= n
 	    c[i] = a[i] + b[i]
@@ -241,10 +242,10 @@ function vadd(c, a, b, n)
     return
 end
 
-a = CuArray(1:10000)
-b = CuArray(2:2:20000)
+a = CuArray(Float32.(1:10000))
+b = CuArray(Float32.(2:2:20000))
 c = similar(a)
-@cuda threads=1024 blocks=cld(length(a), 1024) vadd(c, a, b, length(a))
+@cuda threads=1024 blocks=cld(length(a), 1024) vadd!(c, a, b, length(a))
 c
 ```
 where
@@ -274,7 +275,7 @@ sum(x)
 ```
 and it is pretty terrible, because all the hard work is done by a single thread. The result of the kernel is different from that of `sum` operation. Why is that? This discrepancy is caused by the order of the arithmetic operations, which can be verified by computing the sum as in the kernel as
 ```julia 
-foldl((a,b) -> a + b, x, init=0f0)
+foldl(+, x, init=0f0)
 ```
 For the sake of completness, we benchmark the speed of the kernel for comparison later on
 ```julia
@@ -336,6 +337,7 @@ a = CuArray(1:16);
 b = CuArray([0]);
 @cuda threads=cld(length(a),2) reduce_block(+, a, b);
 CUDA.@allowscalar b[]
+
 ```
 * The while loop iterates over the levels of the reduction, performing $$2^{\log(\textrm{blockDim}) - d + 1})$$ reductions.
 * We need to sychronize threads by `sync_threads`, such that all reductions on the level below are finished
