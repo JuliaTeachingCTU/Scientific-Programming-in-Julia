@@ -82,8 +82,7 @@ Let's now explore what the we can do with this array programming paradigm on few
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-*we can use test images*
-Load a sufficiently large image to the GPU such as this [one]()*TODO LINK* and manipulate it in the following ways:
+Load a sufficiently large image to the GPU such as the one provided in the lab (anything >1Mpx should be enough) and manipulate it in the following ways:
 - create a negative
 - half the pixel brightness
 - find the brightest pixels
@@ -505,7 +504,76 @@ Gray.(Array(cgray_img_moved))
 ```
 
 ### Profiling
+CUDA framework offers a wide variety of developer tooling for debugging and profiling our own kernels. In this section we will focus profiling using the Nsight Systems software that you can download after registering [here](https://developer.nvidia.com/nsight-systems). It contains both `nsys` profiler as well as `nsys-ui`GUI application for viewing the results. First we have to run `julia` using `nsys` application.
+- on Windows with PowerShell (available on the lab computers)
+```ps
+& "C:\Program Files\NVIDIA Corporation\Nsight Systems 2021.2.4\target-windows-x64\nsys.exe" launch --trace=cuda,nvtx H:/Downloads/julia-1.6.3/bin/julia.exe --color=yes --color=yes --project=$((Get-Item .).FullName)
+```
+- on Linux
+```bash
+/full/path/to/nsys launch --trace=cuda,nvtx /home/honza/Apps/julia-1.6.5/bin/julia --color=yes --project=.
+```
+Once `julia` starts we have to additionally (on the lab computers, where we cannot modify env path) instruct `CUDA.jl`, where `nsys.exe` is located.
+```julia
+ENV["JULIA_CUDA_NSYS"] = "C:\\Program Files\\NVIDIA Corporation\\Nsight Systems 2021.2.4\\target-windows-x64\\nsys.exe"
+```
+Now we should be ready to start profiling our kernels.
 
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+Choose a function/kernel out of previous exercises, in order to profile it. Use the `CUDA.@profile` macro the following patter to launch profiling of a block of code with `CUDA.jl`
+```julia
+CUDA.@profile CUDA.@sync begin 
+    NVTX.@range "something" begin
+    		# run some kernel
+    end 
+
+    NVTX.@range "something" begin
+    		# run some kernel
+    end 
+end
+```
+where `NVTX.@range "something"` is part of `CUDA.jl` as well and serves us to mark a piece of execution for better readability later. Inspect the result in `NSight Systems`.
+
+!!! note "Profiling overhead"
+	It is recommended to run the code twice as shown above, because the first execution with profiler almost always takes longer, even after compilation of the kernel itself. 
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+In order to show multiple kernels running let's demonstrate profiling of the first image processing exercise
+```julia
+CUDA.@profile CUDA.@sync begin
+    NVTX.@range "copy H2D" begin
+        rgb_img = FileIO.load("image.jpg");
+        gray_img = Float32.(Gray.(rgb_img));
+        cgray_img = CuArray(gray_img);
+    end
+
+    NVTX.@range "negative" begin 
+        negative(cgray_img);
+    end
+    NVTX.@range "darken" begin 
+        darken(cgray_img);
+    end
+    NVTX.@range "fourier" begin 
+        fourier(cgray_img);
+    end
+    NVTX.@range "brightest" begin 
+        brightest(cgray_img);
+    end
+end
+```
+Running this code should create a report in the current directory with the name `report-**.***`, which we can examine in `NSight Systems`.
+
+```@raw html
+</p></details>
+```
 
 ### Matrix multiplication
 
