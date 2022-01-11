@@ -1,7 +1,7 @@
 # [GPU programming](@id gpu_lecture)
 ## How GPU differs from CPU
 ### Hardware perspective
-**CPU** was originally created for maximal throughput of a single threadded program. Therefore the modern CPU has many parts which are not devoted to the actual computation, but to maximize the utilization of a computing resource (ALU), which now occupies relatively small part of the die. Below is the picture of a processor of Intel's Core architecture (one of the earliest in the series).
+**CPU** was originally created for maximal throughput of a single threaded program. Therefore modern CPUs devote much of it's real estate towards maximizing utilization of a computing resource (arithmetic logic unit - ALU), which now occupies relatively small part of the die. Below is the picture of a processor of Intel's Core architecture (one of the earliest in the series).
 ![cpu](Intel_Core2.png)
 ![cpu die](skylake_core_die.png)
 
@@ -13,40 +13,42 @@ Notable functionalities / blocks are
 
 * **Register renaming** renames registers, such that two non-interfering instructions operating over the same register can be executed together.
 
-* **Branch prediction** predicts which branch will be taken and execute instructions in that branch. Misses are costly, as the processor needs to roll back emptying the instruction pipeline. The processor state is nor fully restored, which leads to side-channel attacks.
+* **Branch prediction** predicts which branch will be taken and execute instructions in that branch. Misses are costly, as the processor needs to roll back emptying the instruction pipeline. The processor state is not fully restored, which may lead to side-channel attacks such as Spectre[^1].
 
 * **speculative prefetching** load instruction / data from memory to processor along the branch that is expected to be taken advance in the hope they will be executed (depends on branch predictions)
 
 * **Memory management unit** is not shown but takes care of translation of virtual addresses to physical, checking the security bits of pages, etc.
 
-* **Caches** (three levels) thrive to provide instuctions with data from cache, such that it does not have to wait for the load. Caches are opaque to the user, he does not control, what will stay in cache.
+* **Caches** (three levels) thrive to provide instructions with data from cache, such that it does not have to wait for the load. Caches are opaque to the user, he does not control, what will stay in cache.
 
-* **L1 Cache synchronization** If the processor contains many cores, their L1 cache is atomically synchronized.
+* **L1 Cache synchronization** If the processor contains many cores, their L1 caches are atomically synchronized.
 
 * **Buffers** are used to cache for example mapping of virtual to physical addresses, partial computations to allow rollbacks.
 
 * **Interrupt management** CPU can interrupt its execution and transfer the execution to a different location, changing security levels.
 
-**GPU** was from the very beginning designed for maximal throughput achieved by parallelism. The reason for this is simple. Imagine that you need to render a 4K image (resolution 3840 × 2160 = 8 294 400 pixels) with refresh rate 60fps in the first person shooter game. This means that you need to compute intensities of 0.5G pixels per second. But, the program computing the intensity of a pixel is the same, as what you do is a something like
+[^1]: Spectre side channel attack on wikipedia. [Url]https://en.wikipedia.org/wiki/Spectre_(security_vulnerability))
+
+**GPU** was from the very beginning designed for maximal throughput, primarily achieved by parallelism. The reason for this is simple. Imagine that you need to render a 4K image (resolution 3840 × 2160 = 8 294 400 pixels) with refresh rate 60fps in a first person shooter game. This means that you need to compute intensities of 0.5G pixels per second. Leaving our some details, this program for computing the intensity of a pixel may look something like this
 ```julia
 for (i,j) in Itertors.Product(1:2160, 1:3840)
 	image[i,j] = compute_insity(i, j)
 end
 ```
-and the computation of intensities `compute_insity(i, j)` does not contain many branches. Therefore the GPU goes for massive parallelism while simplifying each Core the the bare minimum leaving all difficulties up to the programmer / compiler. Below we see a high-level view on Nvidia's GPU.
+, where the computation of intensities `compute_insity(i, j)` does not contain many branches. As a result GPUs have been designed for massive parallelism with each core being as simple as possible, leaving all difficulties up to the programmer / compiler. An illustration of a modern gpu architecture is show on the example of NVidia's GPU.
 ![nvidia-gpu](nvidia-gpu.jpg)
 ![nvidia-gpu](nvidia-kepler.jpg)
-1. The chip contains many streaming multi-processors (SM). Normally, each streamming processor would be called core, as it is an indivisible unit, but NVidia decided to call "a core" a unit inside the streaming multi-processor performing stream of operations over a set of 32bit registers.
-2. Each streaming multi-processor contains (possibly multiple blocks of) 32-way (32-wide) SIMT units (Nvidia calls that *CUDA Core*), shared memory (managed cache) and register file (16k registers, but shared between all threads). Therefore a pascal P-100 can have up to 64×4×32 = 8192 cores, which certainly sounds cool in comparison to for example 24 cores of normal processors, but.
-3. Each streaming multi-processors (SM) has one instruction fetch and decode unit, which means that *all* CUDA cores of that SM *has to* execute the same instruction at a given cycle. This simplifies the design. The execution model therefore roughly corresponds to vector (SIMD) registers in normal CPU, but CUDA cores are not as restricted as SIMD registers. NVidia therefore calls this computation model single instruction mulptiple threads (SIMT). Main differences:
+1. The chip contains many streaming multi-processors (SM). Normally, each streaming processor would be called core, as it is an indivisible unit, but NVidia decided to call "a core" a unit inside the streaming multi-processor performing stream of operations over a set of 32bit registers.
+2. Each streaming multi-processor contains (possibly multiple blocks of) 32-way (32-wide) SIMT units (NVidia calls that *CUDA Core*), shared memory (managed cache) and register file (16k registers, but shared among all threads). Therefore a pascal P-100 can have up to 64×4×32 = 8192 cores, which certainly sounds cool in comparison to for example 24 cores of normal processors, but given the architecture limitation we cannot expect proportional speedup.
+3. Each streaming multi-processors (SM) has one instruction fetch and decode unit, which means that *all* CUDA cores of that SM *has to* execute the same instruction at a given cycle. This simplifies the design. The execution model therefore roughly corresponds to vector (SIMD) registers in normal CPU, but CUDA cores are not as restricted as SIMD registers. NVidia therefore calls this computation model single instruction multiple threads (SIMT). Main differences:
     1. SIMD requires the memory to be continuous while SIMT does not. 
     2. The programming mdel of SIMT is explicitly scalar while that of SIMD is explicitly vector. 
-32 CUDA cores each operating over 32 bit registers would be equal to 1024 long vector (SIMD) registers. Modern Intel XEON processors has 256 / 512 long registers, which seems similar, as said above in order to use them the data has to be aligned in memory and sometimes they has to be on a particular offset, which might be difficult to achieve in practice (but to be fair, if the data are not aligned in GPU, the loading of data is very inefficcient).
+32 CUDA cores each operating over 32bit registers would be equal to 1024bit long vector (SIMD) registers. Modern Intel XEON processors has 256 bit / 512 bit long registers, which seems similar, as said above in order to use them the data has to be aligned in memory and sometimes they has to be on a particular offset, which might be difficult to achieve in practice (but to be fair, if the data are not aligned in GPU, the loading of data is very inefficient).
 4. 16k registers per SM might seem like a lot, but they are shared between all threads. In modern GPUs, each SM supports up to 2048 threads, which means there might be just 8 32-bit registers per thread.
 5. GPUs do not have virtual memory, interrupts, and cannot address external devices like keyboard and mouse.
-6. GPUs can switch execution contexts of "set of threads" at no cost. In comparison the context switch in CPU is relatively expensive (we need to at least save the content of registers, which is usually sped by having two sets of registers). This helps to hide latencies, when a set of threads are stalled (they wait for memory access, synchronizing with others).
-7. The programmer deal with "raw" storage hierarchy. This means that the programmer has to manage what will be and what will not be in cache by itself, on GPU, they are exposed and you decide what will be loaded into the cache. 
-8. Caches are synchronized only within a single SM, this is unlike in CPU, where L1 caches are synchronized across cores, according to some leading in bottleneck in having more cores.
+6. GPUs can switch execution contexts of "set of threads" at no cost. In comparison the context switch in CPU is relatively expensive (we need to at least save the content of registers, which is usually sped up by having two sets of registers). This helps to hide latencies, when a set of threads is stalled (they wait for memory access, synchronizing with others).
+7. The programmer deals with "raw" storage hierarchy. This means that we have to manage what will be and what will not be in cache, on GPU. 
+8. Caches are synchronized only within a single SM, this much simpler in comparison with CPU, where L1 caches are synchronized across cores, which according to some researchers may presents a bottleneck with increasing number of CPU cores.
 9. SM has relatively low frequency clocks, which helps to deal with thermal problems.
 10. The memory in SM is divided into 16 banks, write operations to a bank is sequential. If two threads are writing to the same bank, this write is sequential, therefore one thread(s) has to wait while the other finishes (stalling).
 
@@ -68,22 +70,23 @@ end
 ``` 
 where `kernel!(result, i)` means compute the `i`-th item of the data using function `kernel!`, which is modifying as kernel function cannot return value, but has to put all results to the preallocated array. `i`-th part of the data usually corresponds to one float number (usually `Float32`). Here, we can see that SIMT has a scalar notation, we refer to individual numbers inside arrays.
 
-Each item, `kernel!(i)`, is executed on a single *thread*. GPU *always* execute 32 threads at once on a single SM. This group of 32 threads is called **warp**. These 32 threads within warp can very effectively communicate with each other using atomic instructions. A user has to group threads into **group**. Each group is executed on a single SM, which means that all threads within this group has access to fast SM local memory. All blocks of single job are called **grid**.
+Each item, `kernel!(result, i)`, is executed on a single *thread*. GPU *always* execute 32 threads at once on a single SM. This group of 32 threads is called **warp**. These 32 threads within warp can very effectively communicate with each other using atomic instructions. A user has to group threads into **thread blocks**. Each block is executed on a single SM, which means that all threads within this group have access to fast SM local memory. All blocks of single job are called **grid**.
 * From the above we can already see that the number of threads has to be multiple of 32 (given by the requirement on warps).
 * Each block can have up to 2048 threads, which are executed on a single SM. Large number of threads in a single block is good if 
     * those threads needs to access the same memory (for example in Stencil operations), which can be put to the local cache and 
-    * each thread reads data from memory (which are no co-allesced) and the SM can run different thread while other is stalling (mostly due to waiting for finishing loading data from memory). 
+    * each thread reads data from memory (which are not coalesced) and the SM can run different thread while other is stalling (mostly due to waiting for finishing loading data from memory). 
 On the other hand large number of threads per group might stall due to insufficient number of registers and / or other threads being busy.
-* The total number of issued threads  has to be multiple of 32 and of the number of threads per block, hence *there will almost always be threads that does not do anything*.
+* The total number of issued threads  has to be multiple of 32 and of the number of threads per block, hence *there will almost always be threads that does not do anything* (unless the size of the job is aligned with the number of threads spawned.
 * The division of a total number of items to be processed `N` into blocks is therefore part of the problem and it can be specific to a version of GPU.
 * For some operations (e.g. reduction seen below) to get the highest performance, you need to write the same algorithm for three levels of sets of threads  --- warp, groups, and grid. This is the price paid for exposed cache levels (we will se an example below on reduction).
 
 As has been mentioned above, all CUDA cores in one SM are processing the same instruction. therefore if the processed kernel contains conditional statements `if / else` blocks, both blocks will be processed in sequential order as illustrated below,
+
 ![simt](simt-divergence.png)
 
 which can significantly decrease the throughput.
 
-**Latency hiding** 
+### Latency hiding
 A thread can stall, because the instruction it depends on has not finished yet, for example due to loading data from memory, which can be very time consuming (recall that unlike SIMD, SIMT can read data from non-coallesced memory location at the price of increased latency). Instead of waiting, SM will switch to execute different set of threads, which can be executed. This context switch does not incur any overhead, hence it can occur at single instruction granularity. It keeps SM busy effective hiding latency of expensive operations.
 ![latency hiding](latency-hiding.jpg)
 [image taken from](https://iq.opengenus.org/key-ideas-that-makes-graphics-processing-unit-gpu-so-fast/)
@@ -167,7 +170,7 @@ is about `315` μs, which still 160x faster.
 
 !!! info 
 	### Profiler
-    Cuda offers a two sampling profilers: NVIDIA Nsight Systems and  NVIDIA Nsight Compute. The first is good to optimize the overall execution of your application, observing when the kernel is launched, delays in kernel launch, utilization of CPU and GPU, etc. The second is good for optimizing the single kernel. Profilers are not shippend with `CUDA.jl` and you need to download them from NVidia's resources for developers after you create an account for free.
+    Cuda offers a two sampling profilers: NVIDIA Nsight Systems and  NVIDIA Nsight Compute. The first is good to optimize the overall execution of your application, observing when the kernel is launched, delays in kernel launch, utilization of CPU and GPU, etc. The second is good for optimizing the single kernel. Profilers are not shipped with `CUDA.jl` and you need to download them from NVidia's resources for developers [here](https://developer.nvidia.com/) after you create an account for free.
 
     To use the profiler, we need to launch julia within the profiler as for example `/opt/nvidia/nsight-systems/2021.5.1/bin/nsys launch --trace=cuda /home/pevnak/julia-1.7.1/bin/julia  --color=yes`.
     and then, we can profile the code using the usual `@profile` macro this time sourced from `CUDA` as
@@ -181,7 +184,8 @@ is about `315` μs, which still 160x faster.
 	    NVTX.@range "julia set" juliaset_pixel.(cis, cjs, n);
     end
     ```
-    for better orientation in the code.
+    for better orientation in the code. Note that if nvtx information does not show up in the trace we have to add it to the tracing running the profiler with `--trace=cuda,nvtx`.
+    Lastly it is recommended to run a kernel twice in a profile trace as the first execution of the kernel in a profiler incurs some overhead, even though the code has been already compiled.    
 
 In the output of the profiler we see that there is a lot of overhead caused by launching the kernel itself and then, the execution is relatively fast. 
 
@@ -224,8 +228,8 @@ naive(cx, bags, cz);
 
 ## [Writing own CUDA kernels](@id gpu_lecture_yes_kernel)
 Before diving into details, let's recall some basic from the above HW section:
-* In CUDA programming model, you usually write *kernels*, which is the *body* of the loop.
-* `N` iterations of the loop is divided into *block*s and each block into *warp*s. Single warp consists of 32 threads and these threads are executed simultaneously. All threads in the block are executed in the same SM, having access to the share memory.
+* In CUDA programming model, you usually write *kernels*, which represent *body* of a for loop.
+* `N` iterations of the loop is divided into *block*s and each block into *warp*s. Single warp consists of 32 threads and these threads are executed simultaneously. All threads in the block are executed in the same SM, having access to the shared memory.
 * Each thread executes the kernel for one iteration of the for loop. This means that inside the kernel, you need to determine the index of the iteration. Therefore you will see in kernels statements like 
 ```julia
  i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
@@ -251,9 +255,9 @@ c
 where
 * we have defined a kernel function `vadd` which looks more or less like normal Julia function, except it returns nothing and it contains identification of an item within loop `i = threadIdx().x + (blockIdx().x - 1) * blockDim().x`.
 * we have pre-allocated space to store results for `vadd` in `c`
-* `@cuda` is the launch macro, where we have to specify the number of threads per block (the `threads` keyword) and the number of blocks `blocks`. The macro returns an execution context, not the actual value, which is stored in `c`. You can think about the `@cuda` as moral equivalent of parallel loop.
+* `@cuda` is the launch macro, where we have to specify the number of threads per block (the `threads` keyword) and the number of blocks `blocks`. The macro returns an execution context, not the actual value, which is in this case stored in `c`. You can think about the `@cuda` as moral equivalent of parallel loop.
 * If `N` is not divisible by `blockDim`, then there will be **always** threads not doing anything, therefore we need to have the `if` statement that we are within bounds.
-* The `blockDim` has to be divisible by 32, which is the size of the warp.
+* The `blockDim` (number of threads in a block) has to be divisible by 32, which is the size of the warp.
 
 While the `vadd` example is nice, it is trivial and can be achieved by `map` as shown above. A simple operation that is everything but trivial to implement is *reduction*, since it ends up in a single operation. It also allows to demonstrate, why efficient kernels needs to be written at three levels: warp, block, and grid. The exposition below is based on [JuliaCon tutorial on GPU programming](https://github.com/maleadt/juliacon21-gpu_workshop/blob/main/deep_dive/CUDA.ipynb).
 
@@ -303,8 +307,10 @@ sum(x)
 ```
 This solution is better then the single-threadded version, but still very poor.
 
-Let's take the problem seriously. If we want to use paralelism in reduction, we need to perform parallel reduction as shown in the figure below
+Let's take the problem seriously. If we want to use paralelism in reduction, we need to perform parallel reduction as shown in the figure below[^2]
 ![parallel reduction](parallel_reduction.png)
+
+[^2]: Taken from [url](https://riptutorial.com/cuda/topic/6566/parallel-reduction--e-g--how-to-sum-an-array-)
 
 The parallel reduction is tricky. **Let's assume that we are allowed to overwrite the first argument a**. This is relatively safe assumption, since we can always create a copy of `a` before launching the kernel.
 
@@ -573,6 +579,5 @@ When we wish to launch kernel using `@cuda (config...) function(args...)`, the j
 * https://juliagpu.org/post/2020-11-05-oneapi_0.1/
 * https://www.youtube.com/watch?v=aKRv-W9Eg8g
 
-[^bpf] https://ebpf.io/
-
-[^bessard18] Besard, Tim, Christophe Foket, and Bjorn De Sutter. "Effective extensible programming: unleashing Julia on GPUs." IEEE Transactions on Parallel and Distributed Systems 30.4 (2018): 827-841.
+[^bpf]: https://ebpf.io/
+[^bessard18]: Besard, Tim, Christophe Foket, and Bjorn De Sutter. "Effective extensible programming: unleashing Julia on GPUs." IEEE Transactions on Parallel and Distributed Systems 30.4 (2018): 827-841.
