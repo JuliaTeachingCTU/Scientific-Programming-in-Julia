@@ -96,10 +96,10 @@ The first thing that we will look at is `README.md`, which should warn us if the
 
 Only after all this we may look at the extent of the project and it's difficulty, which may help us in deciding between grades. 
 
-Nice to have things, which are not strictly required
+Nice to have things, which are not strictly required but obviously improves the score.
 - Ideally the project should be hosted on GitHub, which could have the continuous integration/testing set up.
 - Include some benchmark and profiling code in your examples, which can show us how well you have dealt with the question of performance.
-- Some parallelization attempts.
+- Some parallelization attempts either by multi-processing, multi-threadding, or CUDA. Do not forget to show the improvement.
 - Documentation with a webpage using Documenter.jl.
 
 Here are some examples of how the project could look like:
