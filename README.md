@@ -13,3 +13,8 @@ This repository contains all the course materials for the master course
 _**Scientific Programming in Julia**_ taught at the Czech Techincal University
 in Prague. You can find more information on the official
 [course website](https://juliateachingctu.github.io/Scientific-Programming-in-Julia/stable).
+
+
+
+Various educational resources of interest
+* [juliadatascience.io](https://juliadatascience.io) contains an excellent introduction to plotting with Makie
