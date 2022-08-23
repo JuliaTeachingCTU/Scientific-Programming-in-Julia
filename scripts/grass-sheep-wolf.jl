@@ -1,18 +1,18 @@
 using Scientific_Programming_in_Julia
 using EcosystemCore
 using Random
-Random.seed!(2)
+Random.seed!(1)
 
-n_grass  = 200
+n_grass  = 2000
 max_size = 10
 
-n_sheep         = 10
+n_sheep         = 100
 Δenergy_sheep   = 0.2
 energy_sheep    = 4.0
 sheep_reproduce = 0.8
 sheep_foodprob  = 0.6
 
-n_wolves       = 2
+n_wolves       = 5
 Δenergy_wolf   = 8.0
 energy_wolf    = 10.0
 wolf_reproduce = 0.1
@@ -36,17 +36,17 @@ function _save(w::World)
     end
 end
 
-logcb = every_nth(w->(@info w), 1)
+logcb = every_nth(w->(@info agent_count(w)), 1)
 savecb = every_nth(_save, 1)
 cbs = [logcb, savecb]
 
-simulate!(w, 200, callbacks=cbs)
+simulate!(w, 1000, callbacks=cbs)
 
 using Plots
 plt = plot()
 for (n,c) in counts
     plot!(plt, c, label="$n", lw=2)
 end
-savefig(plt, "docs/src/lecture_02/pred-prey.png")
+# savefig(plt, "docs/src/lecture_02/pred-prey.png")
 # savefig(plt, "docs/src/lecture_03/pred-prey.png")
 display(plt)
