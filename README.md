@@ -17,5 +17,5 @@ in Prague. You can find more information on the official
 
 
 Various educational resources of interest:
-* [Justin Krumbiel's](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/} excellent introduction to package manager
+* [Justin Krumbiel's](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/) excellent introduction to package manager
 * [juliadatascience.io](https://juliadatascience.io) contains an excellent introduction to plotting with Makie
