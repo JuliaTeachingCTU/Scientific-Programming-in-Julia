@@ -63,7 +63,7 @@ plot(sol)
 
 Flux: toolkit for modelling Neural Networks. Neural network is a function.
   - integration with Measurements,
-  - Integration with ODE (think of NN as aprt of the ODE)
+  - Integration with ODE (think of NN as part of the ODE)
 
 Turing: Probabilistic modelling toolkit
   - integration with FLux (NN)

@@ -5,6 +5,14 @@ Therefore you can choose your final, graded project very freely.
 We will discuss your ideas with you individually and come up with a sufficiently
 extensive project together.
 
+In general, we can distinguish project depending on the beneficiary:
+ - You: try new language for a problem well known to you,
+ - Our group: wort with your tutors on a topic researched in the AIC group 
+ - Julia community: choose an issue in a registered Julia project you like and fix it (including documentation issues)
+
+ The project should be of sufficient complexity that verify your skill of the language (to be agreed individually)
+
+
 For you inspiration of what such a project could look like we have four
 suggestions for you (which you can of course choose to work on as well).
 

@@ -40,7 +40,7 @@ including lecture notes, lab instructions, and homeworks. The official format
 of the course is 2+2 (2h lectures/2h labs per week) for 4 credits.
 
 The official course code is: **B0M36SPJ** and the timetable for the winter semester
-2021 can be found [here](https://fel.cvut.cz/cz/education/rozvrhy-ng.B211/public/html/predmety/69/85/p6985906.html).
+2021 can be found [here](https://fel.cvut.cz/cz/education/rozvrhy-ng.B221/public/html/predmety/69/85/p6985906.html).
 
 The course will be graded based on points from your homework (**max. 20 points**)
 and points from a [final project](@ref final_project) (**max. 30 points**).
@@ -78,7 +78,7 @@ the standard grading scale below.
 | :--         | :--                                                        | :--      | :--            |
 | Tomáš Pevný | [pevnak@protonmail.ch](mailto:pevnak@protonmail.ch)        | KN:E-406 | Lecturer       |
 | Vašek Šmídl | [smidlva1@fjfi.cvut.cz](mailto:smidlva1@fjfi.cvut.cz)      | KN:E-333 | Lecturer       |
-| Jan Franců  | [francja5@fel.cvut.cz](mailto:francja5@fel.cvut.cz)       | KN:E-333 | Lab Instructor |
+| Matěj Zorek  | [zorekmat@fel.cvut.cz](mailto:zorekmat@fel.cvut.cz)       | KN:E-333 | Lab Instructor |
 | Niklas Heim | [heimnikl@fel.cvut.cz](mailto:heimnikl@fel.cvut.cz)        | KN:E-333 | Lab Instructor |
 
 
