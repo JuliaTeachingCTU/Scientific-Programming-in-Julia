@@ -1,8 +1,4 @@
-using StatsBase
-
 abstract type Species end
-abstract type Agent{S<:Species} end
-
 abstract type PlantSpecies <: Species end
 abstract type Grass <: PlantSpecies end
 
@@ -14,69 +10,10 @@ abstract type Sex end
 abstract type Male <: Sex end
 abstract type Female <: Sex end
 
-id(a::Agent) = a.id
+abstract type Agent{S<:Species} end
 
 
-##########  World Definition  ##################################################
-
-mutable struct World{A<:Agent}
-    agents::Dict{Int,A}
-    max_id::Int
-end
-
-function World(agents::Vector{<:Agent})
-    ids = id.(agents)
-    length(unique(ids)) == length(agents) || error("Not all agents have unique IDs!")
-    World(Dict(id(a)=>a for a in agents), maximum(ids))
-end
-
-function world_step!(world::World)
-    for id in deepcopy(keys(world.agents))
-        !haskey(world.agents,id) && continue
-        a = world.agents[id]
-        agent_step!(a,world)
-    end
-end
-
-function Base.show(io::IO, w::World)
-    println(io, typeof(w))
-    for (_,a) in w.agents
-        println(io,"  $a")
-    end
-end
-
-
-##########  Plant Definition  ##################################################
-
-mutable struct Plant{P<:PlantSpecies} <: Agent{P}
-    id::Int
-    size::Int
-    max_size::Int
-end
-
-Base.size(a::Plant) = a.size
-max_size(a::Plant) = a.max_size
-grow!(a::Plant) = a.size += 1
-
-# constructor for all Plant{<:PlantSpecies} callable as PlantSpecies(...)
-(A::Type{<:PlantSpecies})(id, s, m) = Plant{A}(id,s,m)
-(A::Type{<:PlantSpecies})(id, m) = (A::Type{<:PlantSpecies})(id,rand(1:m),m)
-
-function agent_step!(a::Plant, w::World)
-    if size(a) != max_size(a)
-        grow!(a)
-    end
-end
-
-function Base.show(io::IO, p::Plant{P}) where P
-    x = size(p)/max_size(p) * 100
-    print(io,"$P  #$(id(p)) $(round(Int,x))% grown")
-end
-
-Base.show(io::IO, ::Type{Grass}) = print(io,"🌿")
-
-
-##########  Animal Definition  #################################################
+##########  Animals  ###########################################################
 
 mutable struct Animal{A<:AnimalSpecies,S<:Sex} <: Agent{A}
     id::Int
@@ -86,87 +23,130 @@ mutable struct Animal{A<:AnimalSpecies,S<:Sex} <: Agent{A}
     foodprob::Float64
 end
 
-energy(a::Animal) = a.energy
-Δenergy(a::Animal) = a.Δenergy
-reprprob(a::Animal) = a.reprprob
-foodprob(a::Animal) = a.foodprob
-energy!(a::Animal, e) = a.energy = e
-incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
-
-function (A::Type{<:AnimalSpecies})(id::Int, E, ΔE, pr, pf, S=rand(Bool) ? Female : Male)
+function (A::Type{<:AnimalSpecies})(id::Int,E::T,ΔE::T,pr::T,pf::T) where T
+    S = rand(Bool) ? Female : Male
     Animal{A,S}(id,E,ΔE,pr,pf)
 end
 
-function agent_step!(a::Animal, w::World)
-    incr_energy!(a,-1)
-    if rand() <= foodprob(a)
-        dinner = find_food(a,w)
-        eat!(a, dinner, w)
-    end
-    if energy(a) <= 0
-        kill_agent!(a,w)
-        return
-    end
-    if rand() <= reprprob(a)
-        reproduce!(a,w)
-    end
-    return a
+# get the per species defaults back
+Sheep(id; E=4.0, ΔE=0.2, pr=0.8, pf=0.6) = Sheep(id, E, ΔE, pr, pf)
+Wolf(id; E=10.0, ΔE=8.0, pr=0.1, pf=0.2) = Wolf(id, E, ΔE, pr, pf)
+
+
+function Base.show(io::IO, a::Animal{A,S}) where {A<:AnimalSpecies,S<:Sex}
+    e = a.energy
+    d = a.Δenergy
+    pr = a.reprprob
+    pf = a.foodprob
+    print(io, "$A$S #$(a.id) E=$e ΔE=$d pr=$pr pf=$pf")
 end
 
-function find_rand(f, w::World)
-    xs = filter(f, w.agents |> values |> collect)
-    isempty(xs) ? nothing : sample(xs)
-end
-
-find_food(a::Animal, w::World) = find_rand(x->eats(a,x),w)
-
-eats(::Animal{Sheep},p::Plant{Grass}) = size(p)>0
-eats(::Animal{Wolf},::Animal{Sheep}) = true
-eats(::Agent,::Agent) = false
-
-function eat!(a::Animal{Wolf}, b::Animal{Sheep}, w::World)
-    incr_energy!(a, energy(b)*Δenergy(a))
-    kill_agent!(b,w)
-end
-function eat!(a::Animal{Sheep}, b::Plant{Grass}, w::World)
-    incr_energy!(a, size(b)*Δenergy(a))
-    b.size = 0
-end
-eat!(::Animal,::Nothing,::World) = nothing
-
-function reproduce!(a::A, w::World) where A<:Animal
-    b = find_mate(a,w)
-    if !isnothing(b)
-        energy!(a, energy(a)/2)
-        a_vals = [getproperty(a,n) for n in fieldnames(A) if n!=:id]
-        new_id = w.max_id + 1
-        â = A(new_id, a_vals...)
-        w.agents[id(â)] = â
-        w.max_id = new_id
-    end
-end
-
-find_mate(a::Animal, w::World) = find_rand(x->mates(a,x),w)
-
-function mates(a,b)
-    error("""You have to specify the mating behaviour of your agents by overloading `mates` e.g. like this:
-
-        mates(a::Animal{S,Female}, b::Animal{S,Male}) where S<:Species = true
-        mates(a::Animal{S,Male}, b::Animal{S,Female}) where S<:Species = true
-        mates(a::Agent, b::Agent) = false
-    """)
-end
-
-kill_agent!(a::Animal, w::World) = delete!(w.agents, id(a))
-
+# note that for new species/sexes we will only have to overload `show` on the
+# abstract species/sex types like below!
 Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
 Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
 Base.show(io::IO, ::Type{Male}) = print(io,"♂")
 Base.show(io::IO, ::Type{Female}) = print(io,"♀")
-function Base.show(io::IO, a::Animal{A,S}) where {A,S}
-    e = energy(a)
-    d = Δenergy(a)
-    pr = reprprob(a)
-    pf = foodprob(a)
-    print(io,"$A$S #$(id(a)) E=$e ΔE=$d pr=$pr pf=$pf")
+
+
+##########  Plants  #############################################################
+
+mutable struct Plant{P<:PlantSpecies} <: Agent{P}
+    id::Int
+    size::Int
+    max_size::Int
+end
+
+# constructor for all Plant{<:PlantSpecies} callable as PlantSpecies(...)
+(A::Type{<:PlantSpecies})(id, s, m) = Plant{A}(id,s,m)
+(A::Type{<:PlantSpecies})(id, m) = (A::Type{<:PlantSpecies})(id,rand(1:m),m)
+
+# default specific for Grass
+Grass(id; max_size=10) = Grass(id, rand(1:max_size), max_size)
+
+function Base.show(io::IO, p::Plant{P}) where P
+    x = p.size/p.max_size * 100
+    print(io,"$P  #$(p.id) $(round(Int,x))% grown")
+end
+
+Base.show(io::IO, ::Type{Grass}) = print(io,"🌿")
+
+function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, w::World)
+    sheep.energy += grass.size * sheep.Δenergy
+    grass.size = 0
+end
+
+##########  World  #############################################################
+
+mutable struct World{A<:Agent}
+    agents::Dict{Int,A}
+    max_id::Int
+end
+
+function World(agents::Vector{<:Agent})
+    max_id = maximum(a.id for a in agents)
+    World(Dict(a.id=>a for a in agents), max_id)
+end
+
+# optional: overload Base.show
+function Base.show(io::IO, w::World)
+    println(io, typeof(w))
+    for (_,a) in w.agents
+        println(io,"  $a")
+    end
+end
+
+########## Eating / Dying / Reproducing  ########################################
+
+function eat!(sheep::Animal{Sheep}, grass::Animal{Grass}, w::World)
+    sheep.energy += grass.size * sheep.Δenergy
+    grass.size = 0
+end
+function eat!(wolf::Animal{Wolf}, sheep::Animal{Sheep}, w::World)
+    wolf.energy += sheep.energy * wolf.Δenergy
+    kill_agent!(sheep,w)
+end
+eat!(::Animal, ::Nothing, ::World) = nothing
+
+kill_agent!(a::Agent, w::World) = delete!(w.agents, a.id)
+
+mates(a::Animal{A,Female}, b::Animal{A,Male}) where A<:AbstracSpecies = true
+mates(a::Animal{A,Male}, b::Animal{A,Female}) where A<:AbstracSpecies = true
+mates(::Agent, ::Agent) = false
+
+function find_mate(a::Animal, w::World)
+    ms = filter(x->mates(x,a), w.agents |> values |> collect)
+    isempty(ms) ? nothing : sample(ms)
+end
+
+function reproduce!(a::Animal{A,S}, w::World) where {A,S}
+    m = find_mate(a,w)
+    if !isnothing(m)
+        a.energy = a.energy / 2
+        vals = [getproperty(a,n) for n in fieldnames(Animal) if n!=:id]
+        new_id = w.max_id + 1
+        ŝ = Animal{A,S}(new_id, vals...)
+        w.agents[ŝ.id] = ŝ
+        w.max_id = new_id
+    end
+end
+
+
+##########  Counting agents  ####################################################
+
+agent_count(p::Plant) = p.size / p.max_size
+agent_count(::Animal) = 1
+agent_count(as::Vector{<:Agent}) = sum(agent_count,as)
+
+function agent_count(w::World)
+    function op(d::Dict,a::A) where A<:Agent
+        n = nameof(A)
+        if n in keys(d)
+            d[n] += agent_count(a)
+        else
+            d[n] = agent_count(a)
+        end
+        return d
+    end
+    foldl(op, w.agents |> values |> collect, init=Dict{Symbol,Real}())
 end

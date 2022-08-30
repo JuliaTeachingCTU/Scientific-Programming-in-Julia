@@ -1,5 +1,10 @@
 # [Lab 3: Predator-Prey Agents](@id lab03)
 
+```@setup forward
+projdir = dirname(Base.active_project())
+include(joinpath(projdir,"src","lecture_02","Lab02Ecosystem.jl"))
+```
+
 In this lab we will look at two different ways of extending our agent
 simulation to take into account that animals can have two different sexes:
 *female* and *male*.
@@ -29,52 +34,38 @@ unfortunate type tree design and should be avoided, but if you want to extend a
 code base by an unforeseen type this forwarding of methods is a nice
 work-around.  Our `⚥Sheep` type will simply contain a classic `sheep` and a
 `sex` field
-```@example lab03-nonparametric
-include("../lecture_02/Lab02Ecosystem.jl") # hide
+```@example forward
 struct ⚥Sheep <: Animal
     sheep::Sheep
     sex::Symbol
 end
-⚥Sheep(id,E,ΔE,pr,pf,sex) = ⚥Sheep(Sheep(id,E,ΔE,pr,pf),sex)
+⚥Sheep(id, e=4.0, Δe=0.2, pr=0.8, pf=0.6, sex=rand(Bool) ? :female : :male) = ⚥Sheep(Sheep(id,e,Δe,pr,pf),sex)
 nothing # hide
 ```
 
-```@repl lab03-nonparametric
-⚥Sheep(1,1.0,1.0,1.0,1.0,:female)
+```@repl forward
+sheep = ⚥Sheep(1)
+sheep.sheep
+sheep.sex
 ```
 
-In our case, the methods that have to be forwarded are the accessors, as well as
-`eats` and `eat!`.  The custom reproduction behaviour will of
-course be taken care of by a `reproduce!` function that does not just
-forward but also contains specialized behaviour for the `⚥Sheep`.
+Instead of littering the whole code with custom getters/setters Julia allows us
+to overload the `sheep.field` behaviour by implementing custom
+`getproperty`/`setproperty!` methods.
 
 ```@raw html
 <div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
+<header class="admonition-header">Exercise:</header>
 <div class="admonition-body">
 ```
-Forward the accessors `energy`, `energy!`, `reprprob`, and `foodprob`,
-as well as our core methods `eats` and `eat!` to `Sheep`.
+Implement custom `getproperty`/`setproperty!` methods which allow to access the
+`Sheep` inside the `⚥Sheep` as if we would not be wrapping it.
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-```@example lab03-nonparametric
-id(g::⚥Sheep) = id(g.sheep)
-energy(g::⚥Sheep) = energy(g.sheep)
-energy!(g::⚥Sheep, ΔE) = energy!(g.sheep, ΔE)
-reprprob(g::⚥Sheep) = reprprob(g.sheep)
-foodprob(g::⚥Sheep) = foodprob(g.sheep)
-
-eats(::⚥Sheep, ::Grass) = true
-eat!(s::⚥Sheep, g::Plant, world::World) = eat!(s.sheep, g, world)
-eat!(w::Wolf, s::⚥Sheep, world::World) = eat!(w, s.sheep, world)
-nothing # hide
-```
-For the ones that don't like accessors: You can also overload the `Base` methods
-`getproperty` and `setproperty!` to make something like `⚥sheep.energy += 1` work:
-```julia
+```@example forward
 function Base.getproperty(s::⚥Sheep, name::Symbol)
     if name in fieldnames(Sheep)
         getfield(s.sheep,name)
@@ -94,63 +85,32 @@ end
 ```@raw html
 </p></details>
 ```
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Implement the `reproduce!` method for the `⚥Sheep`.  Note that you first
-have to find another sheep of opposite sex in your `World`, and only if you
-can find one you can reproduce.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@example lab03-nonparametric
-mates(a::Plant, ::⚥Sheep) = false
-mates(a::Animal, ::⚥Sheep) = false
-mates(g1::⚥Sheep, g2::⚥Sheep) = g1.sex != g2.sex
-function find_mate(g::⚥Sheep, w::World)
-    ms = filter(a->mates(a,g), w.agents |> values |> collect)
-    isempty(ms) ? nothing : sample(ms)
-end
-
-function reproduce!(s::⚥Sheep, w::World)
-    m = find_mate(s,w)
-    if !isnothing(m)
-        energy!(s, energy(s)/2)
-        vals = [getproperty(s.sheep,n) for n in fieldnames(Sheep) if n!=:id]
-        new_id = w.max_id + 1
-        ŝ = ⚥Sheep(new_id, vals..., rand(Bool) ? :female : :male)
-        w.agents[id(ŝ)] = ŝ
-        w.max_id = new_id
-    end
-end
-nothing # hide
-```
-```@raw html
-</p></details>
+You should be able to do the following with your overloads now
+```@repl forward
+sheep = ⚥Sheep(1)
+sheep.id
+sheep.sex
+sheep.energy += 1
+sheep
 ```
 
-```@example lab03-nonparametric
-f = ⚥Sheep(1,3.0,1.0,1.0,1.0,:female)
-m = ⚥Sheep(2,4.0,1.0,1.0,1.0,:male)
-w = World([f,m])
-
-for _ in 1:4
-    @show w
-    world_step!(w)
-end
+In order to make the `⚥Sheep` work with the rest of the code we only have
+to forward the `eat!` method
+```@repl forward
+eat!(s::⚥Sheep, food, world) = eat!(s.sheep, food, world);
+sheep = ⚥Sheep(1);
+grass = Grass(2);
+world = World([sheep,grass])
+eat!(sheep, grass, world)
 ```
+and implement a custom `reproduce!` method with the behaviour that we want.
+
+However, the extension of `Sheep` to `⚥Sheep` is a very object-oriented approach.
+With a little bit of rethinking, we can build a much more elegant solution that
+makes use of Julia's powerful parametric types.
 
 
 ## Part II: A new, parametric type hierarchy
-
-The extension of `Sheep` to `⚥Sheep` is a very object-oriented approach.
-With a little bit of rethinking, we can build a much more elegant solution that
-makes use of Julia's powerful parametric types.
 
 First, let us note that there are two fundamentally different types of agents
 in our world: animals and plants. All species such as grass, sheep, wolves,
@@ -162,7 +122,7 @@ let's try to redesign the type hiearchy using parametric types to reflect this.
 The goal will be an `Animal` type with two parametric types: A `Species` type and
 a `Sex` type. The type of a female wolf would then be `Animal{Wolf,Female}`.
 The new type hiearchy can then look like this:
-```@example lab03
+```@example parametric
 abstract type Species end
 abstract type PlantSpecies <: Species end
 abstract type Grass <: PlantSpecies end
@@ -177,9 +137,31 @@ abstract type Female <: Sex end
 
 abstract type Agent{S<:Species} end
 ```
+```@setup parametric
+using StatsBase  # for sample
+
+mutable struct World{A<:Agent}
+    agents::Dict{Int,A}
+    max_id::Int
+end
+
+function World(agents::Vector{<:Agent})
+    max_id = maximum(a.id for a in agents)
+    World(Dict(a.id=>a for a in agents), max_id)
+end
+
+# optional: overload Base.show
+function Base.show(io::IO, w::World)
+    println(io, typeof(w))
+    for (_,a) in w.agents
+        println(io,"  $a")
+    end
+end
+```
+
 Now we can create a *concrete* type `Animal` with the two parametric types
 and the fields that we already know from lab 2.
-```@example lab03
+```@example parametric
 mutable struct Animal{A<:AnimalSpecies,S<:Sex} <: Agent{A}
     id::Int
     energy::Float64
@@ -187,32 +169,36 @@ mutable struct Animal{A<:AnimalSpecies,S<:Sex} <: Agent{A}
     reprprob::Float64
     foodprob::Float64
 end
-
-# the accessors from lab 2 stay the same
-id(a::Agent) = a.id
-energy(a::Animal) = a.energy
-Δenergy(a::Animal) = a.Δenergy
-reprprob(a::Animal) = a.reprprob
-foodprob(a::Animal) = a.foodprob
-energy!(a::Animal, e) = a.energy = e
-incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
-nothing # hide
 ```
 To create an instance of `Animal` we have to specify the parametric type
 while constructing it
-```@example lab03
+```@repl parametric
 Animal{Wolf,Female}(1,5,5,1,1)
 ```
 Note that we now automatically have animals of any sex without additional work.
-Our little side project of overloading Julia's `show` method of our shiny new
-parametric type already looks much more elegant than before:
-```@example lab03
-function Base.show(io::IO, a::Animal{A,S}) where {A,S}
-    e = energy(a)
-    d = Δenergy(a)
-    pr = reprprob(a)
-    pf = foodprob(a)
-    print(io,"$A$S #$(id(a)) E=$e ΔE=$d pr=$pr pf=$pf")
+Starting with the overload of the `show` method we can already see that we can
+abstract away a lot of repetitive work into the type system. We can implement
+*one single* `show` method for all animal species/sexes.
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body">
+```
+Implement `Base.show(io::IO, a::Animal)` with a single method for all `Animal`s.
+You can get the pretty (unicode) printing of the `Sex` and `Species` types with
+another overload like this: `Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")`
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```@example parametric
+function Base.show(io::IO, a::Animal{A,S}) where {A<:AnimalSpecies,S<:Sex}
+    e = a.energy
+    d = a.Δenergy
+    pr = a.reprprob
+    pf = a.foodprob
+    print(io, "$A$S #$(a.id) E=$e ΔE=$d pr=$pr pf=$pf")
 end
 
 # note that for new species/sexes we will only have to overload `show` on the
@@ -221,10 +207,11 @@ Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
 Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
 Base.show(io::IO, ::Type{Male}) = print(io,"♂")
 Base.show(io::IO, ::Type{Female}) = print(io,"♀")
-
-
-[Animal{Sheep,Male}(2,2,2,1,1),Animal{Wolf,Female}(1,5,5,1,1)]
 ```
+```@raw html
+</p></details>
+```
+
 Unfortunately we have lost the convenience of creating plants and animals
 by simply calling their species constructor. For example, `Sheep` is just an
 abstract type that we cannot instantiate. However, we can manually define
@@ -236,33 +223,170 @@ Sheep(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male) = Animal{Sheep,S}(id,E,ΔE,pr
 Ok, so we have a constructor for `Sheep` now. But what about all the other
 billions of species that you want to define in your huge master thesis project of
 ecosystem simulations?  Do you have to write them all by hand? *Do not
-despair!* Julia has you covered:
-```@example lab03
-function (A::Type{<:AnimalSpecies})(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male)
-    Animal{A,S}(id,E,ΔE,pr,pf)
-end
-
-[Sheep(2,2,2,1,1),Wolf(1,5,5,1,1)]
-```
-
+despair!* Julia has you covered.
 ```@raw html
 <div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
+<header class="admonition-header">Exercise:</header>
 <div class="admonition-body">
 ```
-Adapt the code from lab 2 to work with our new parametric type hierarchy.
-For this you will have to define a concrete `Plant` type in a similar fashion
-as the new `Animal` type. Additionally you need to adapt at least the methods
-`eat!`, `eats`, `mates`, and `reproduce!`.
+Overload all `AnimalSpecies` types with a constructor.
+You already know how to write constructors for specific types such as `Sheep`.
+Can you manage to sneak in a type variable? Maybe with `Type`?
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-The full solution can be found on Github for the
-[`World`](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/world.jl),
-[`Plant`s](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/plant.jl), and
-[`Animal`s](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/main/src/animal.jl).
+```julia
+```
+```@example parametric
+function (A::Type{<:AnimalSpecies})(id::Int,E::T,ΔE::T,pr::T,pf::T,S::Type{<:Sex}) where T
+    Animal{A,S}(id,E,ΔE,pr,pf)
+end
+
+# get the per species defaults back
+randsex() = rand(Bool) ? Female : Male
+Sheep(id; E=4.0, ΔE=0.2, pr=0.8, pf=0.6, S=randsex()) = Sheep(id, E, ΔE, pr, pf, S)
+Wolf(id; E=10.0, ΔE=8.0, pr=0.1, pf=0.2, S=randsex()) = Wolf(id, E, ΔE, pr, pf, S)
+nothing # hide
+```
 ```@raw html
 </p></details>
+```
+We have our convenient, high-level behaviour back!
+```@repl parametric
+Sheep(1)
+Wolf(2)
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body">
+```
+Check the methods for `eat!` and `kill_agent!` which involve `Animal`s and update
+their type signatures such that they work for the new type hiearchy.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```@example parametric
+function eat!(wolf::Animal{Wolf}, sheep::Animal{Sheep}, w::World)
+    wolf.energy += sheep.energy * wolf.Δenergy
+    kill_agent!(sheep,w)
+end
+
+# let's add this later when we have `Plant`s
+# function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, w::World)
+#     sheep.energy += grass.size * sheep.Δenergy
+#     grass.size = 0
+# end
+
+# no change
+# eat!(::Animal, ::Nothing, ::World) = nothing
+
+# no change
+# kill_agent!(a::Agent, w::World) = delete!(w.agents, a.id)
+```
+
+
+```@raw html
+</p></details>
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body">
+```
+Finally, we can implement the new behaviour for `reproduce!` which we wanted.
+Build a function which first finds an animal species of opposite sex and then
+lets the two reproduce (same behaviour as before).
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```@example parametric
+mates(a::Animal{A,Female}, b::Animal{A,Male}) where A<:AnimalSpecies = true
+mates(a::Animal{A,Male}, b::Animal{A,Female}) where A<:AnimalSpecies = true
+mates(::Agent, ::Agent) = false
+
+function find_mate(a::Animal, w::World)
+    ms = filter(x->mates(x,a), w.agents |> values |> collect)
+    isempty(ms) ? nothing : sample(ms)
+end
+
+function reproduce!(a::Animal{A,S}, w::World) where {A,S}
+    m = find_mate(a,w)
+    if !isnothing(m)
+        a.energy = a.energy / 2
+        vals = [getproperty(a,n) for n in fieldnames(Animal) if n!=:id]
+        new_id = w.max_id + 1
+        ŝ = Animal{A,S}(new_id, vals...)
+        w.agents[ŝ.id] = ŝ
+        w.max_id = new_id
+    end
+end
+nothing # hide
+```
+```@raw html
+</p></details>
+```
+
+```@repl parametric
+s1 = Sheep(1, S=Female)
+s2 = Sheep(2, S=Male)
+w  = World([s1, s2])
+reproduce!(s1, w); w
+```
+
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body">
+```
+Implement the type hiearchy we designed for `Plant`s as well.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```@example parametric
+mutable struct Plant{P<:PlantSpecies} <: Agent{P}
+    id::Int
+    size::Int
+    max_size::Int
+end
+
+# constructor for all Plant{<:PlantSpecies} callable as PlantSpecies(...)
+(A::Type{<:PlantSpecies})(id, s, m) = Plant{A}(id,s,m)
+(A::Type{<:PlantSpecies})(id, m) = (A::Type{<:PlantSpecies})(id,rand(1:m),m)
+
+# default specific for Grass
+Grass(id; max_size=10) = Grass(id, rand(1:max_size), max_size)
+
+function Base.show(io::IO, p::Plant{P}) where P
+    x = p.size/p.max_size * 100
+    print(io,"$P  #$(p.id) $(round(Int,x))% grown")
+end
+
+Base.show(io::IO, ::Type{Grass}) = print(io,"🌿")
+
+function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, w::World)
+    sheep.energy += grass.size * sheep.Δenergy
+    grass.size = 0
+end
+```
+```@raw html
+</p></details>
+```
+
+```@repl parametric
+g = Grass(2)
+s = Sheep(3)
+w = World([g,s])
+eat!(s,g,w); w
 ```
