@@ -267,14 +267,6 @@ Hint: You can use `delete!` to remove agents from the dictionary in your world.
 <summary class = "solution-header">Solution:</summary><p>
 ```
 ```@example block
-mutable struct Wolf <: Animal
-    id::Int
-    energy::Float64
-    Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
-end
-
 function eat!(wolf::Wolf, sheep::Sheep, w::World)
     wolf.energy += sheep.energy * wolf.Δenergy
     kill_agent!(sheep,w)
