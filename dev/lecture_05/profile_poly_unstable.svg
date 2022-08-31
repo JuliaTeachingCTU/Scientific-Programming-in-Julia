@@ -1,53 +1,53 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" width="777" height="555" viewBox="0 0 777 555"
-     xmlns="http://www.w3.org/2000/svg" id="fig-ef921120d3284914a623b3b27d23483e">
+     xmlns="http://www.w3.org/2000/svg" id="fig-f98f8ce1b30b493e965f907510ae103d">
 <defs>
-    <clipPath id="fig-ef921120d3284914a623b3b27d23483e-clip">
+    <clipPath id="fig-f98f8ce1b30b493e965f907510ae103d-clip">
         <rect x="0" y="0" width="777" height="555"/>
     </clipPath>
 </defs>
 <style type="text/css">
-    #fig-ef921120d3284914a623b3b27d23483e text {
+    #fig-f98f8ce1b30b493e965f907510ae103d text {
         pointer-events: none;
         font-family: inherit;
         font-size: 12px;
         fill: #000000;
     }
-    text#fig-ef921120d3284914a623b3b27d23483e-caption {
+    text#fig-f98f8ce1b30b493e965f907510ae103d-caption {
         font-size: 16.8px;
         fill: #000000;
         text-anchor: middle;
     }
-    #fig-ef921120d3284914a623b3b27d23483e-bg {
+    #fig-f98f8ce1b30b493e965f907510ae103d-bg {
         fill: #FFFFFF;
     }
-    #fig-ef921120d3284914a623b3b27d23483e-viewport rect, #fig-ef921120d3284914a623b3b27d23483e-viewport path {
+    #fig-f98f8ce1b30b493e965f907510ae103d-viewport rect, #fig-f98f8ce1b30b493e965f907510ae103d-viewport path {
         vector-effect: non-scaling-stroke;
         fill-opacity: 1;
     }
-    #fig-ef921120d3284914a623b3b27d23483e-viewport text {
+    #fig-f98f8ce1b30b493e965f907510ae103d-viewport text {
         stroke: #000000;
         stroke-width: 0;
         stroke-opacity: 0.35;
     }
-    #fig-ef921120d3284914a623b3b27d23483e-viewport rect:hover, #fig-ef921120d3284914a623b3b27d23483e-viewport path:hover {
+    #fig-f98f8ce1b30b493e965f907510ae103d-viewport rect:hover, #fig-f98f8ce1b30b493e965f907510ae103d-viewport path:hover {
         fill-opacity: 0.75;
         stroke: #000000;
         stroke-width: 0.5;
     }
-    #fig-ef921120d3284914a623b3b27d23483e-viewport + rect {
+    #fig-f98f8ce1b30b493e965f907510ae103d-viewport + rect {
         fill: #FFFFFF;
         opacity: 0.8;
     }
-    text#fig-ef921120d3284914a623b3b27d23483e-details{
+    text#fig-f98f8ce1b30b493e965f907510ae103d-details{
         fill: #000000;
     }
 </style>
-<g id="fig-ef921120d3284914a623b3b27d23483e-frame" clip-path="url(#fig-ef921120d3284914a623b3b27d23483e-clip)">
-<rect id="fig-ef921120d3284914a623b3b27d23483e-bg" x="0" y="0" width="777" height="555"/>
-<text id="fig-ef921120d3284914a623b3b27d23483e-caption" x="388.5" y="24">Profile results</text>
-<g id="fig-ef921120d3284914a623b3b27d23483e-viewport" transform="scale(1)">
+<g id="fig-f98f8ce1b30b493e965f907510ae103d-frame" clip-path="url(#fig-f98f8ce1b30b493e965f907510ae103d-clip)">
+<rect id="fig-f98f8ce1b30b493e965f907510ae103d-bg" x="0" y="0" width="777" height="555"/>
+<text id="fig-f98f8ce1b30b493e965f907510ae103d-caption" x="388.5" y="24">Profile results</text>
+<g id="fig-f98f8ce1b30b493e965f907510ae103d-viewport" transform="scale(1)">
 <rect x="8" y="504" width="760" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
 <text x="8" dx="4" y="515.25"> in :-1</text>
 <rect x="8" y="489" width="760" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
@@ -100,32 +100,34 @@
 <text x="8" dx="4" y="155.25">eval in boot.jl:368</text>
 <rect x="8" y="129" width="760" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="8" dx="4" y="140.25">run_polynomial in REPL[1]:3</text>
-<rect x="8" y="114" width="95" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="8" dx="4" y="125.25">polynomial in REPL[1]:3</text>
+<rect x="8" y="114" width="665" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="8" dx="4" y="125.25">polynomial in REPL[1]:4</text>
 <rect x="8" y="99" width="95" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="110.25">iterate in range.jl:879</text>
-<rect x="103" y="114" width="475" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="103" dx="4" y="125.25">polynomial in REPL[1]:4</text>
-<rect x="103" y="99" width="380" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="8" dx="4" y="110.25">getindex in array.jl:924</text>
+<rect x="103" y="99" width="570" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
 <text x="103" dx="4" y="110.25">^ in math.jl:1037</text>
-<rect x="103" y="84" width="190" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<rect x="103" y="84" width="95" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
 <text x="103" dx="4" y="95.25">pow_body in math.jl:0</text>
-<rect x="293" y="84" width="95" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="293" dx="4" y="95.25">pow_body in math.jl:1054</text>
-<rect x="293" y="69" width="95" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="293" dx="4" y="80.25">two_mul in math.jl:47</text>
-<rect x="293" y="54" width="95" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="293" dx="4" y="65.25">* in float.jl:385</text>
-<rect x="388" y="84" width="95" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="388" dx="4" y="95.25">pow_body in math.jl:1063</text>
-<rect x="388" y="69" width="95" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="388" dx="4" y="80.25">* in float.jl:385</text>
-<rect x="578" y="114" width="190" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="578" dx="4" y="125.25">polynomial in REPL[1]:5</text>
-<rect x="578" y="99" width="190" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="578" dx="4" y="110.25">iterate in range.jl:883</text>
-<rect x="578" y="84" width="190" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="578" dx="4" y="95.25">== in promotion.jl:477</text>
+<rect x="198" y="84" width="95" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="198" dx="4" y="95.25">pow_body in math.jl:1051</text>
+<rect x="198" y="69" width="95" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="198" dx="4" y="80.25">&amp;gt; in operators.jl:382</text>
+<rect x="198" y="54" width="95" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="198" dx="4" y="65.25">&amp;lt; in int.jl:83</text>
+<rect x="293" y="84" width="95" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="293" dx="4" y="95.25">pow_body in math.jl:1055</text>
+<rect x="293" y="69" width="95" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="293" dx="4" y="80.25">+ in float.jl:383</text>
+<rect x="388" y="84" width="95" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="388" dx="4" y="95.25">pow_body in math.jl:1059</text>
+<rect x="388" y="69" width="95" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="388" dx="4" y="80.25">+ in float.jl:383</text>
+<rect x="673" y="114" width="95" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="673" dx="4" y="125.25">polynomial in REPL[1]:5</text>
+<rect x="673" y="99" width="95" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="673" dx="4" y="110.25">iterate in range.jl:883</text>
+<rect x="673" y="84" width="95" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="673" dx="4" y="95.25">== in promotion.jl:477</text>
 </g></g>
 <script><![CDATA[
 // Snap.svg 0.3.0
@@ -520,10 +522,10 @@ f+=g+"]",i[b]=f}return Function("val","return Snap.path.toString.call(["+i+"])")
 <script><![CDATA[
 if (typeof require === 'function' && define.amd) {
     require(['ProfileSVG'], function (ProfileSVG) {
-        ProfileSVG.initialize("fig-ef921120d3284914a623b3b27d23483e");
+        ProfileSVG.initialize("fig-f98f8ce1b30b493e965f907510ae103d");
     });
 } else {
-    ProfileSVG.initialize("fig-ef921120d3284914a623b3b27d23483e");
+    ProfileSVG.initialize("fig-f98f8ce1b30b493e965f907510ae103d");
 }
 ]]></script>
 </svg>

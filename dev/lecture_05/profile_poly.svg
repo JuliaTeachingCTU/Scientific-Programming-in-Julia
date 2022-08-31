@@ -1,53 +1,53 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" width="777" height="555" viewBox="0 0 777 555"
-     xmlns="http://www.w3.org/2000/svg" id="fig-c87d0880732e423fbab226c50a7e6bdd">
+     xmlns="http://www.w3.org/2000/svg" id="fig-f278ef6bb1e84aa7a384997f3a2bf4d4">
 <defs>
-    <clipPath id="fig-c87d0880732e423fbab226c50a7e6bdd-clip">
+    <clipPath id="fig-f278ef6bb1e84aa7a384997f3a2bf4d4-clip">
         <rect x="0" y="0" width="777" height="555"/>
     </clipPath>
 </defs>
 <style type="text/css">
-    #fig-c87d0880732e423fbab226c50a7e6bdd text {
+    #fig-f278ef6bb1e84aa7a384997f3a2bf4d4 text {
         pointer-events: none;
         font-family: inherit;
         font-size: 12px;
         fill: #000000;
     }
-    text#fig-c87d0880732e423fbab226c50a7e6bdd-caption {
+    text#fig-f278ef6bb1e84aa7a384997f3a2bf4d4-caption {
         font-size: 16.8px;
         fill: #000000;
         text-anchor: middle;
     }
-    #fig-c87d0880732e423fbab226c50a7e6bdd-bg {
+    #fig-f278ef6bb1e84aa7a384997f3a2bf4d4-bg {
         fill: #FFFFFF;
     }
-    #fig-c87d0880732e423fbab226c50a7e6bdd-viewport rect, #fig-c87d0880732e423fbab226c50a7e6bdd-viewport path {
+    #fig-f278ef6bb1e84aa7a384997f3a2bf4d4-viewport rect, #fig-f278ef6bb1e84aa7a384997f3a2bf4d4-viewport path {
         vector-effect: non-scaling-stroke;
         fill-opacity: 1;
     }
-    #fig-c87d0880732e423fbab226c50a7e6bdd-viewport text {
+    #fig-f278ef6bb1e84aa7a384997f3a2bf4d4-viewport text {
         stroke: #000000;
         stroke-width: 0;
         stroke-opacity: 0.35;
     }
-    #fig-c87d0880732e423fbab226c50a7e6bdd-viewport rect:hover, #fig-c87d0880732e423fbab226c50a7e6bdd-viewport path:hover {
+    #fig-f278ef6bb1e84aa7a384997f3a2bf4d4-viewport rect:hover, #fig-f278ef6bb1e84aa7a384997f3a2bf4d4-viewport path:hover {
         fill-opacity: 0.75;
         stroke: #000000;
         stroke-width: 0.5;
     }
-    #fig-c87d0880732e423fbab226c50a7e6bdd-viewport + rect {
+    #fig-f278ef6bb1e84aa7a384997f3a2bf4d4-viewport + rect {
         fill: #FFFFFF;
         opacity: 0.8;
     }
-    text#fig-c87d0880732e423fbab226c50a7e6bdd-details{
+    text#fig-f278ef6bb1e84aa7a384997f3a2bf4d4-details{
         fill: #000000;
     }
 </style>
-<g id="fig-c87d0880732e423fbab226c50a7e6bdd-frame" clip-path="url(#fig-c87d0880732e423fbab226c50a7e6bdd-clip)">
-<rect id="fig-c87d0880732e423fbab226c50a7e6bdd-bg" x="0" y="0" width="777" height="555"/>
-<text id="fig-c87d0880732e423fbab226c50a7e6bdd-caption" x="388.5" y="24">Profile results</text>
-<g id="fig-c87d0880732e423fbab226c50a7e6bdd-viewport" transform="scale(1)">
+<g id="fig-f278ef6bb1e84aa7a384997f3a2bf4d4-frame" clip-path="url(#fig-f278ef6bb1e84aa7a384997f3a2bf4d4-clip)">
+<rect id="fig-f278ef6bb1e84aa7a384997f3a2bf4d4-bg" x="0" y="0" width="777" height="555"/>
+<text id="fig-f278ef6bb1e84aa7a384997f3a2bf4d4-caption" x="388.5" y="24">Profile results</text>
+<g id="fig-f278ef6bb1e84aa7a384997f3a2bf4d4-viewport" transform="scale(1)">
 <rect x="8" y="504" width="760" height="15" rx="2" fill="#F3004D" data-dinfo=""/>
 <text x="8" dx="4" y="515.25"> in :-1</text>
 <rect x="8" y="489" width="760" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
@@ -100,38 +100,42 @@
 <text x="8" dx="4" y="155.25">eval in boot.jl:368</text>
 <rect x="8" y="129" width="760" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
 <text x="8" dx="4" y="140.25">run_polynomial_stable in REPL[1]:3</text>
-<rect x="8" y="114" width="760" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="8" dx="4" y="125.25">polynomial_stable in REPL[1]:4</text>
+<rect x="8" y="114" width="126.67" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="8" dx="4" y="125.25">polynomial_stable in REPL[1]:3</text>
 <rect x="8" y="99" width="126.67" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="8" dx="4" y="110.25">+ in float.jl:383</text>
-<rect x="134.67" y="99" width="633.33" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="134.67" dx="4" y="110.25">^ in math.jl:1037</text>
-<rect x="134.67" y="84" width="126.66" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="134.67" dx="4" y="95.25">pow_body in math.jl:1057</text>
-<rect x="134.67" y="69" width="126.66" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="134.67" dx="4" y="80.25">* in operators.jl:591</text>
-<rect x="134.67" y="54" width="126.66" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="134.67" dx="4" y="65.25">* in promotion.jl:389</text>
-<rect x="134.67" y="39" width="126.66" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="134.67" dx="4" y="50.25">* in float.jl:385</text>
-<rect x="261.33" y="84" width="126.67" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="261.33" dx="4" y="95.25">pow_body in math.jl:1059</text>
-<rect x="261.33" y="69" width="126.67" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="261.33" dx="4" y="80.25">+ in float.jl:383</text>
-<rect x="388" y="84" width="126.67" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
-<text x="388" dx="4" y="95.25">pow_body in math.jl:1062</text>
-<rect x="388" y="69" width="126.67" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="388" dx="4" y="80.25">isfinite in float.jl:499</text>
-<rect x="388" y="54" width="126.67" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="388" dx="4" y="65.25">== in float.jl:448</text>
-<rect x="388" y="39" width="126.67" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="388" dx="4" y="50.25">== in float.jl:410</text>
-<rect x="514.67" y="84" width="253.33" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
-<text x="514.67" dx="4" y="95.25">pow_body in math.jl:1063</text>
-<rect x="514.67" y="69" width="126.66" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
-<text x="514.67" dx="4" y="80.25">* in float.jl:385</text>
-<rect x="641.33" y="69" width="126.67" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
-<text x="641.33" dx="4" y="80.25">muladd in float.jl:388</text>
+<text x="8" dx="4" y="110.25">Colon in range.jl:22</text>
+<rect x="8" y="84" width="126.67" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="8" dx="4" y="95.25">_colon in range.jl:24</text>
+<rect x="8" y="69" width="126.67" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="8" dx="4" y="80.25">StepRange in range.jl:369</text>
+<rect x="8" y="54" width="126.67" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="8" dx="4" y="65.25">StepRange in range.jl:316</text>
+<rect x="8" y="39" width="126.67" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="8" dx="4" y="50.25">steprange_last in range.jl:334</text>
+<rect x="8" y="24" width="126.67" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="8" dx="4" y="35.25">&amp;gt; in operators.jl:382</text>
+<rect x="8" y="9" width="126.67" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="8" dx="4" y="20.25">&amp;lt; in int.jl:83</text>
+<rect x="134.67" y="114" width="633.33" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="134.67" dx="4" y="125.25">polynomial_stable in REPL[1]:4</text>
+<rect x="134.67" y="99" width="253.33" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="134.67" dx="4" y="110.25">+ in float.jl:383</text>
+<rect x="388" y="99" width="253.33" height="15" rx="2" fill="#00B58B" data-dinfo="./"/>
+<text x="388" dx="4" y="110.25">^ in math.jl:1037</text>
+<rect x="388" y="84" width="126.67" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="388" dx="4" y="95.25">pow_body in math.jl:0</text>
+<rect x="514.67" y="84" width="126.66" height="15" rx="2" fill="#E1B2FF" data-dinfo="./"/>
+<text x="514.67" dx="4" y="95.25">pow_body in math.jl:1062</text>
+<rect x="641.33" y="99" width="126.67" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="641.33" dx="4" y="110.25">* in promotion.jl:389</text>
+<rect x="641.33" y="84" width="126.67" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="641.33" dx="4" y="95.25">promote in promotion.jl:359</text>
+<rect x="641.33" y="69" width="126.67" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="641.33" dx="4" y="80.25">_promote in promotion.jl:336</text>
+<rect x="641.33" y="54" width="126.67" height="15" rx="2" fill="#6FDC91" data-dinfo="./"/>
+<text x="641.33" dx="4" y="65.25">convert in number.jl:7</text>
+<rect x="641.33" y="39" width="126.67" height="15" rx="2" fill="#2CA3FF" data-dinfo="./"/>
+<text x="641.33" dx="4" y="50.25">Float64 in float.jl:146</text>
 </g></g>
 <script><![CDATA[
 // Snap.svg 0.3.0
@@ -526,10 +530,10 @@ f+=g+"]",i[b]=f}return Function("val","return Snap.path.toString.call(["+i+"])")
 <script><![CDATA[
 if (typeof require === 'function' && define.amd) {
     require(['ProfileSVG'], function (ProfileSVG) {
-        ProfileSVG.initialize("fig-c87d0880732e423fbab226c50a7e6bdd");
+        ProfileSVG.initialize("fig-f278ef6bb1e84aa7a384997f3a2bf4d4");
     });
 } else {
-    ProfileSVG.initialize("fig-c87d0880732e423fbab226c50a7e6bdd");
+    ProfileSVG.initialize("fig-f278ef6bb1e84aa7a384997f3a2bf4d4");
 }
 ]]></script>
 </svg>
