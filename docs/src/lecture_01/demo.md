@@ -50,7 +50,7 @@ u0 = [1.0±0.1,1.0±0.01]
 
 prob = ODEProblem(lotka_volterra,u0,tspan,p)
 sol = solve(prob)
-plot(sol)
+plot(sol,denseplot=false)
 ```
 
 ![](10_ode_m.svg)
