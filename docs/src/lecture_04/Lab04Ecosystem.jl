@@ -1,3 +1,6 @@
+using StatsBase
+
+
 abstract type Species end
 abstract type PlantSpecies <: Species end
 abstract type Grass <: PlantSpecies end
@@ -25,7 +28,6 @@ function World(agents::Vector{<:Agent})
     World(Dict(a.id=>a for a in agents), max_id)
 end
 
-# optional: overload Base.show
 function Base.show(io::IO, w::World)
     println(io, typeof(w))
     for (_,a) in w.agents
@@ -44,15 +46,15 @@ mutable struct Animal{A<:AnimalSpecies,S<:Sex} <: Agent{A}
     foodprob::Float64
 end
 
-function (A::Type{<:AnimalSpecies})(id::Int,E::T,ΔE::T,pr::T,pf::T) where T
-    S = rand(Bool) ? Female : Male
+# AnimalSpecies constructors
+function (A::Type{<:AnimalSpecies})(id::Int,E::T,ΔE::T,pr::T,pf::T,S::Type{<:Sex}) where T
     Animal{A,S}(id,E,ΔE,pr,pf)
 end
 
 # get the per species defaults back
-Sheep(id; E=4.0, ΔE=0.2, pr=0.8, pf=0.6) = Sheep(id, E, ΔE, pr, pf)
-Wolf(id; E=10.0, ΔE=8.0, pr=0.1, pf=0.2) = Wolf(id, E, ΔE, pr, pf)
-
+randsex() = rand(Bool) ? Female : Male
+Sheep(id; E=4.0, ΔE=0.2, pr=0.6, pf=0.6, S=randsex()) = Sheep(id, E, ΔE, pr, pf, S)
+Wolf(id; E=10.0, ΔE=8.0, pr=0.1, pf=0.2, S=randsex()) = Wolf(id, E, ΔE, pr, pf, S)
 
 function Base.show(io::IO, a::Animal{A,S}) where {A<:AnimalSpecies,S<:Sex}
     e = a.energy
@@ -92,20 +94,16 @@ end
 
 Base.show(io::IO, ::Type{Grass}) = print(io,"🌿")
 
-function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, w::World)
-    sheep.energy += grass.size * sheep.Δenergy
-    grass.size = 0
-end
 
 ########## Eating / Dying / Reproducing  ########################################
 
-function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, ::World)
-    sheep.energy += grass.size * sheep.Δenergy
-    grass.size = 0
-end
 function eat!(wolf::Animal{Wolf}, sheep::Animal{Sheep}, w::World)
     wolf.energy += sheep.energy * wolf.Δenergy
     kill_agent!(sheep,w)
+end
+function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, ::World)
+    sheep.energy += grass.size * sheep.Δenergy
+    grass.size = 0
 end
 eat!(::Animal, ::Nothing, ::World) = nothing
 
@@ -114,7 +112,6 @@ kill_agent!(a::Agent, w::World) = delete!(w.agents, a.id)
 mates(a::Animal{A,Female}, b::Animal{A,Male}) where A<:AnimalSpecies = true
 mates(a::Animal{A,Male}, b::Animal{A,Female}) where A<:AnimalSpecies = true
 mates(::Agent, ::Agent) = false
-
 function find_mate(a::Animal, w::World)
     ms = filter(x->mates(x,a), w.agents |> values |> collect)
     isempty(ms) ? nothing : sample(ms)
@@ -126,9 +123,58 @@ function reproduce!(a::Animal{A,S}, w::World) where {A,S}
         a.energy = a.energy / 2
         vals = [getproperty(a,n) for n in fieldnames(Animal) if n!=:id]
         new_id = w.max_id + 1
-        ŝ = Animal{A,S}(new_id, vals...)
-        w.agents[ŝ.id] = ŝ
+        T = typeof(a)
+        ŝ = T(new_id, vals...)
+        w.agents[ŝ.id] = ŝ
         w.max_id = new_id
+    end
+end
+
+# finding food / who eats who
+function find_food(a::Animal, w::World)
+    as = filter(x -> eats(a,x), w.agents |> values |> collect)
+    isempty(as) ? nothing : sample(as)
+end
+eats(::Animal{Sheep},g::Plant{Grass}) = g.size > 0
+eats(::Animal{Wolf},::Animal{Sheep}) = true
+eats(::Agent,::Agent) = false
+
+
+##########  Stepping through time  #############################################
+
+function agent_step!(p::Plant, ::World)
+    if p.size < p.max_size
+        p.size += 1
+    end
+end
+function agent_step!(a::Animal, w::World)
+    a.energy -= 1
+    if rand() <= a.foodprob
+        dinner = find_food(a,w)
+        eat!(a, dinner, w)
+    end
+    if a.energy <= 0
+        kill_agent!(a,w)
+        return
+    end
+    if rand() <= a.reprprob
+        reproduce!(a,w)
+    end
+    return a
+end
+
+function world_step!(world::World)
+    # make sure that we only iterate over IDs that already exist in the
+    # current timestep this lets us safely add agents
+    ids = copy(keys(world.agents))
+
+    for id in ids
+        # agents can be killed by other agents, so make sure that we are
+        # not stepping dead agents forward
+        !haskey(world.agents,id) && continue
+
+        a = world.agents[id]
+        agent_step!(a,world)
     end
 end
 

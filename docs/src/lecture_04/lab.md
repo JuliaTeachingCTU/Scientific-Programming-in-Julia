@@ -1,335 +1,343 @@
-# Lab 4: Packages, Tests, Continuous Integration
+## Warmup
 
-In this lab you will practice common development workflows in Julia.
-At the end of the lab you will have
-- Your own package called `Ecosystem.jl` which you can conveniently install in any Julia REPL
-- Tests for the major functionality of your package
-- Set up continuous integration (CI) via Github Actions to automatically execute your tests
+```@setup block
+projdir = dirname(Base.active_project())
+include(joinpath(projdir,"src","lecture_03","Lab03Ecosystem.jl"))
+```
 
-## Separating core and extended functionality
-
-To practice working with multiple packages that build on top of each other we
-first separate the core functionality of our ecosystem into a package called
-`EcosystemCore.jl`. This core package [already
-exists](https://github.com/JuliaTeachingCTU/EcosystemCore.jl) and defines the
-interface to `Animal` and `Plant`. It also contains the three
-basic species types `Grass`, `Sheep`, and `Wolf`, as well as the most important
-functions: `eat!`, `agent_step!`, `find_food` and `reproduce!`, `model_step!`.
-
-Your task is to create your own package `Ecosystem.jl` which will contain the
-utitlity functions `simulate!`, `agent_count`, `every_nth` that we created,
-as well as the new species `Mushroom`.
+### Agents looking for food
 
 ```@raw html
 <div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
+<header class="admonition-header">Exercise:</header>
 <div class="admonition-body">
 ```
-1. Familiarize yourself with `EcosystemCore.jl`.
+Implement a method `find_food(a::Animal, w::World)` returns one randomly chosen
+agent from all `w.agents` that can be eaten by `a` or `nothing` if no food could
+be found. This means that if e.g. the animal is a `Wolf` you have to return one
+random `Sheep`, etc.
 
-2. Create a new package by starting a julia REPL, typing `]` to enter the `Pkg`
-   REPL and writing `generate Ecosystem`. This will create a new package called
-   `Ecosystem` with a `Project.toml` and one file `src/Ecosystem.jl`
-
-3. Navigate into the newly generated package folder via `;cd Ecosystem` and
-   activate the environment via `]activate .`.
-
-4. Add `EcosystemCore.jl` as a dependency by running
-   ```
-   ]add https://github.com/JuliaTeachingCTU/EcosystemCore.jl.git
-   ```
-
+*Hint*: You can write a general `find_food` method for all animals and move the
+parts that are specific to the concrete animal types to a separate function.
+E.g. you could define a function `eats(::Wolf, ::Sheep) = true`, etc.
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-You should now have only a single dependency in your new package:
-```julia
-(Ecosystem) pkg> st
-     Project Ecosystem v0.1.0
-      Status `~/Ecosystem/Project.toml`
-  [3e0d8730] EcosystemCore v0.1.0 `https://github.com/JuliaTeachingCTU/EcosystemCore.jl.git#main`
-```
-You can try if `using EcosystemCore` correctly loads the core package and use
-its exported functions and types as in the labs before.
-```@repl lab04
-using EcosystemCore
-grass = Grass(1,5);
-sheep = Sheep(2,10.0,5.0,0.1,0.1);
-world = World([grass, sheep])
-eat!(sheep,grass,world);
-world
+```@example block
+using StatsBase
+
+function find_food(a::Animal, w::World)
+    as = filter(x -> eats(a,x), w.agents |> values |> collect)
+    isempty(as) ? nothing : sample(as)
+end
+
+eats(::Animal{Sheep},g::Plant{Grass}) = g.size > 0
+eats(::Animal{Wolf},::Animal{Sheep}) = true
+eats(::Agent,::Agent) = false
+nothing # hide
 ```
 ```@raw html
 </p></details>
 ```
+```@repl block
+sheep = Sheep(1)
+world = World([Grass(2), sheep])
+find_food(sheep, world)
+```
 
+### Stepping through time
 
+We now have all necessary functions in place to make agents perform one step
+of our simulation.  At the beginning of each step an animal looses energy.
+Afterwards it tries to find some food, which it will subsequently eat. If the
+animal then has less than zero energy it dies and is removed from the world. If
+it has positive energy it will try to reproduce.
+
+Plants have a simpler life. They simply grow if they have not reached their maximal size.
 ```@raw html
 <div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
+<header class="admonition-header">Exercise:</header>
 <div class="admonition-body">
 ```
-1. Next, let's add the utility functions `simulate!`, `agent_count`, and
-   `every_nth`, as well as the new species `Mushroom` along with its necessary
-   method overloads to the `Ecosystem` module.
-
-   While you are adding functionality to your package you can make great use of
-   `Revise.jl`.  Loading `Revise.jl` before your `Ecosystem.jl` will automatically
-   recompile (and invalidate old methods!) while you develop.  You can install it
-   in your global environment and and create a `USERDIR/.config/startup.jl` which always loads
-   `Revise`. It can look like this:
-   ```julia
-   # try/catch block to make sure you can start julia if Revise should not be installed
-   try
-       using Revise
-   catch e
-       @warn(e.msg)
-   end
-   ```
-
-2. Note that you either have to `import` a method to overload it or
-   define your functions like `Ecosystem.function_name` e.g.:
-   ```julia
-   EcosystemCore.eats(::Animal{Sheep}, ::Plant{Mushroom}) = true
-   ```
-   which is often the preferred way of doing it.
-
-3. Export all types and functions that should be accessible from outside your
-   package.  This should include at least `agent_count`, `simulate!`,
-   `every_nth`, all species types, and the `World`.
+1. Implement a method `agent_step!(::Animal,::World)` which performs the following steps:
+    - Decrement $E$ of agent by `1.0`.
+    - With $p_f$, try find some food and eat it.
+    - If $E<0$, the animal dies.
+    - With $p_r$, try to reproduce.
+2. Implement a method `agent_step!(::Plant,::World)` which performs the following steps:
+    - If the size of the plant is smaller than `max_size`, increment the plant's size by one.
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-Now you can run one of your simulation scripts like below
-```julia
-# only load the Ecosystem package which depends on EcosystemCore
-using Ecosystem
+```@example block
+function agent_step!(p::Plant, w::World)
+    if p.size < p.max_size
+        p.size += 1
+    end
+end
 
-n_grass       = 500
-regrowth_time = 17.0
-# ...
+function agent_step!(a::Animal, w::World)
+    a.energy -= 1
+    if rand() <= a.foodprob
+        dinner = find_food(a,w)
+        eat!(a, dinner, w)
+    end
+    if a.energy < 0
+        kill_agent!(a,w)
+        return
+    end
+    if rand() <= a.reprprob
+        reproduce!(a,w)
+    end
+end
 
-world = World([...])
-
-# ...
-simulate!(world,100)
+# make it possible to eat nothing
+eat!(::Animal, ::Nothing, ::World) = nothing
+nothing # hide
 ```
-You can put your simulation scripts in the same package in a new folder called
-`scripts` or `examples` if you like. It often makes sense to have a separate
-`Project.toml` in this folder, because it forces you think about which
-functions you need to export and which additional packages are necessary e.g.
-for visualization of your results.
 ```@raw html
 </p></details>
 ```
+An `agent_step!` of a sheep in a world with a single grass should make it consume the grass,
+let it reproduce, and eventually die if there is no more food and its energy is at zero:
+```@repl block
+sheep = Sheep(1,2.0,2.0,1.0,1.0);
+grass = Grass(2,2,2);
+world = World([sheep, grass])
+agent_step!(sheep, world); world
+# NOTE: The second agent step leads to an error.
+# Can you figure out what is the problem here?
+agent_step!(sheep, world); world
+```
 
-## Testing the Ecosystem
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body">
+```
+Finally, lets implement a function `world_step!` which performs one
+`agent_step!` for each agent.  Note that simply iterating over all agents could
+lead to problems because we are mutating the agent dictionary.  One solution for
+this is to iterate over a copy of all agent IDs that are present when starting
+to iterate over agents.  Additionally, it could happen that an agent is killed
+by another one before we apply `agent_step!` to it. To solve this you can check
+if a given ID is currently present in the `World`.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```@example block
+function world_step!(world::World)
+    # make sure that we only iterate over IDs that already exist in the
+    # current timestep this lets us safely add agents
+    ids = copy(keys(world.agents))
 
-Every well maintained package should contain tests. In Julia the tests have to
-be located in the `test` folder in the package root. The `test` folder
-has to contain at least one file called `runtests.jl` which can `include` more
-files. A minimal package structure can look like below.
+    for id in ids
+        # agents can be killed by other agents, so make sure that we are
+        # not stepping dead agents forward
+        !haskey(world.agents,id) && continue
+
+        a = world.agents[id]
+        agent_step!(a,world)
+    end
+end
+```
+```@raw html
+</p></details>
+```
+```@repl block
+w = World([Sheep(1), Sheep(2), Wolf(3)])
+world_step!(w); w
+world_step!(w); w
+world_step!(w); w
+```
+
+Finally, lets run a few simulation steps and plot the solution
+```@example block
+n_grass  = 200
+n_sheep  = 10
+n_wolves = 2
+
+gs = [Grass(id) for id in 1:n_grass]
+ss = [Sheep(id) for id in (n_grass+1):(n_grass+n_sheep)]
+ws = [Wolf(id) for id in (n_grass+n_sheep+1):(n_grass+n_sheep+n_wolves)]
+w  = World(vcat(gs,ss,ws))
+
+counts = Dict(n=>[c] for (n,c) in agent_count(w))
+for _ in 1:100
+    world_step!(w)
+    for (n,c) in agent_count(w)
+        push!(counts[n],c)
+    end
+end
+
+using Plots
+plt = plot()
+tolabel(::Type{Animal{Sheep,Female}}) = "Sheep ♀"
+tolabel(::Type{Animal{Sheep,Male}}) = "Sheep ♂"
+tolabel(::Type{Animal{Wolf,Female}}) = "Wolf ♀"
+tolabel(::Type{Animal{Wolf,Male}}) = "Wolf ♂"
+tolabel(::Type{Plant{Grass}}) = "Grass"
+for (A,c) in counts
+    plot!(plt, c, label=tolabel(A), lw=2)
+end
+plt
+```
+
+
+## Package: `Ecosystem.jl`
+
+create your own package where you can organize the code that we have written so far
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body">
+```
+`]add PkgTemplates` to your global julia env and create a new package by running:
+```julia
+using PkgTemplates
+Template(interactive=true)("Ecosystem")
+```
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+This should have created a new folder `Ecosystem` which looks like below.
 ```
 .
+├── LICENSE
+├── Manifest.toml
 ├── Project.toml
 ├── README.md
-├── scripts
-│   └── run.jl
 ├── src
-│   └── Ecosystem.jl
+│   └── Ecosystem.jl
 └── test
     └── runtests.jl
 ```
-To start testing we need Julia's `Test` package which you can install via `]add Test`.
-We do not want `Test` in the dependencies of `Ecosystem.jl`, which we can achieve
-by creating new `[extras]` and `[target]` sections in the `Project.toml`:
+If you `]activate ~/path/to/Ecosystem` you should be able to run `]test` to run the autogenerated test (which is not doing anything)
+and get the following output:
 ```
-name = "Ecosystem"
-uuid = "some-uuid"
-authors = ["Your Name <yourname@email.com>"]
-version = "0.1.0"
-
-[deps]
-EcosystemCore = "3e0d8730-8ea0-4ee2-afe6-c85384c618a2"
-
-[extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test"]
-```
-Alternatively, you can create another `Project.toml` in your `test` folder.
-With `Test.jl` as an extra dependency you can start writing your `test/runtests.jl` file.
-```@example lab04
-using Scientific_Programming_in_Julia # hide
-using Test
-# using Ecosystem  # in your code this line as to be uncommented ;)
-
-@testset "agent_count" begin
-    @test agent_count(Mushroom(1,1,1)) == 1
-end
-nothing # hide
-```
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Create a `@testset` and fill it with tests for `agent_count` that cover all
-of its four methods.
-
-*Hint*: You can use `isapprox` or `≈` to test equaity of real numbers.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@example lab04
-@testset "agent_count" begin
-    grass1 = Grass(1,1,5)
-    grass2 = Grass(2,2,5)
-    sheep  = Sheep(3,1,1,1,1)
-    wolf   = Wolf(5,2,2,2,2)
-    world  = World([sheep,grass1,grass2,wolf])
-
-    @test agent_count(grass1) ≈ 0.2
-    @test agent_count(sheep) == 1
-    @test agent_count([grass2,grass1]) ≈ 0.6
-    res = agent_count(world)
-    tst = Dict(:Sheep=>1,:Wolf=>1,:Grass=>0.6)
-    for (k,_) in res
-        @test res[k] ≈ tst[k]
-    end
-end
-nothing # hide
+(Ecosystem) pkg> test
+     Testing Ecosystem
+      Status `/private/var/folders/6h/l9_skfms2v3dt8z3zfnd2jr00000gn/T/jl_zd5Uai/Project.toml`
+  [e77cd98c] Ecosystem v0.1.0 `~/repos/Ecosystem`
+  [8dfed614] Test `@stdlib/Test`
+      Status `/private/var/folders/6h/l9_skfms2v3dt8z3zfnd2jr00000gn/T/jl_zd5Uai/Manifest.toml`
+  [e77cd98c] Ecosystem v0.1.0 `~/repos/Ecosystem`
+  [2a0f44e3] Base64 `@stdlib/Base64`
+  [b77e0a4c] InteractiveUtils `@stdlib/InteractiveUtils`
+  [56ddb016] Logging `@stdlib/Logging`
+  [d6f4376e] Markdown `@stdlib/Markdown`
+  [9a3f8284] Random `@stdlib/Random`
+  [ea8e919c] SHA v0.7.0 `@stdlib/SHA`
+  [9e88b42a] Serialization `@stdlib/Serialization`
+  [8dfed614] Test `@stdlib/Test`
+     Testing Running tests...
+Test Summary: |Time
+Ecosystem.jl  | None  0.0s
+     Testing Ecosystem tests passed 
 ```
 ```@raw html
 </p></details>
 ```
 
-## Github & Continuous Integration
 
-Another good standard is to use a versioning tool like `git`. It will save you
-tons of headaches and you will never have to worry again that you could loose
-some of your work.
+!!! warning
+    From now on make sure that you **always** have the `Ecosystem` enviroment
+    enabled. Otherwise you will not end up with the correct dependencies in your
+    packages
+    
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body">
+```
+Next, let's add the types and functions we have defined so
+far. You can use `include("path/to/file.jl")` in the main module file at
+`src/Ecosystem.jl` to bring some structure in your code. An exemplary
+file structure could look like below.
+```
+.
+├── LICENSE
+├── Manifest.toml
+├── Project.toml
+├── README.md
+├── src
+│   ├── Ecosystem.jl
+│   ├── animal.jl
+│   ├── plant.jl
+│   └── world.jl
+└── test
+    └── runtests.jl
+```
+While you are adding functionality to your package you can make great use of
+`Revise.jl`.  Loading `Revise.jl` before your `Ecosystem.jl` will automatically
+recompile (and invalidate old methods!) while you develop.  You can install it
+in your global environment and and create a `$HOME/.config/startup.jl` which always loads
+`Revise`. It can look like this:
+```julia
+# try/catch block to make sure you can start julia if Revise should not be installed
+try
+    using Revise
+catch e
+    @warn(e.msg)
+end
+```
+```@raw html
+</div></div>
+```
+
+!!! warning
+    At some point along the way you should run into problems with the `sample`
+    functions or when trying `using StatsBase`. This is normal, because you have
+    not added the package to the `Ecosystem` environment yet. Adding it is as easy
+    as `]add StatsBase`. Your `Ecosystem` environment should now look like this:
+    ```
+    (Ecosystem) pkg> status
+    Project Ecosystem v0.1.0
+    Status `~/repos/Ecosystem/Project.toml`
+      [2913bbd2] StatsBase v0.33.21
+    ```
+
 
 ```@raw html
 <div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
+<header class="admonition-header">Exercise:</header>
 <div class="admonition-body">
 ```
-Create a new repository called `Ecosystem.jl` on Github (public or private,
-however you want). A good repo should also contain a `README.md` file which
-briefly describes what it is about.
+write tests
 
-If you have never used `git` before you can check out the
-[tutorial](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/installation/tutorial/)
-of our Bachelor Course on Julia.
+export stuff
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-You can turn a folder into a git repo by running `git init`. After you created
-a new repo on Github you can connect your local repo to the empty Github repo
-like below
-```
-# turn folder into git repo
-git init
-# point local repo to empty github repo
-git remote add origin https://github.com/username/Ecosystem.jl.git
-# rename master branch->main
-git branch -M main
-# create your initial commit
-git add .
-git commit -m "init commit"
-# push your contents
-git push -u origin main
-```
+
 ```@raw html
 </p></details>
 ```
 
-As a last step, we will add a *Github Action* to your repository, which will
-run your test on every commit to the `main` branch (or for every pull request).
 
 ```@raw html
 <div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
+<header class="admonition-header">Exercise:</header>
 <div class="admonition-body">
 ```
-Create a file (in a hidden subdirectory) `.github/workflows/RunTests.yml`
-with the contents below
-```julia
-name: Run tests
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-
-jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        julia-version: ['1.6']
-        julia-arch: [x64]
-        os: [ubuntu-latest]
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@v1
-        with:
-          version: ${{ matrix.julia-version }}
-      - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-runtest@v1
-```
-Pushing this file to your repository should result in Github automatically running
-your julia tests.
-
-You can add a status badge to your README by copying the status badge string
-from the Github Actions tab.
+CI Tests + Codecov
 ```@raw html
 </div></div>
-```
-
-## Code coverage
-
-If you still have time you can add code coverage reports to your repository.
-They will show you which parts of your repo have been covered by a test and which
-have not. To get coverage reports you have to give `codecov.io` access to your
-repository and add a few steps to your `RunTests.yml` that upload the coverage
-report during the Github Action.
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise (optional)</header>
-<div class="admonition-body">
-```
-1. Log into `codecov.io` with your Github user name and give codecov access to
-   your new repository.
-
-2. Add the codecov steps below to your `RunTests.yml`.  Note that **code coverage
-   does not mean that your code is properly tested**!  It is simply measuring
-   which lines have been hit during the execution of your tests, which does not
-   mean that your code (or your tests) are correct.
-
-3. Add the codecov status badge to your README.
-```julia
-steps:
-  - uses: julia-actions/julia-processcoverage@v1
-  - uses: codecov/codecov-action@v2
-    with:
-      file: lcov.info
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
 ```
 
 ```@raw html
-</div></div>
+</p></details>
 ```

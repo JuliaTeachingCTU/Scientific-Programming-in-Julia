@@ -1,4 +1,4 @@
-# Lab 2: Predator-Prey Agents
+# [Lab 2: Predator-Prey Agents](@id lab02)
 
 In the next labs you will implement your own *predator-prey model*.  The model
 will contain wolves, sheep, and - to feed your sheep - some grass.  The final
