@@ -1,15 +1,7 @@
 # Homework 3
 
-use create world closure as homework
-
-```@setup hw03
-using EcosystemCore
-using Scientific_Programming_in_Julia
-```
-
-In this homework we will add another species of plant to our simulation
-(*poisoned mushrooms*) and practice the use of closures with callback
-functions. The solution of lab 3 can be found
+In this homework we will implement a function `find_food` and practice the use of closures.
+The solution of lab 3 can be found
 [here](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_03/Lab03Ecosystem.jl). You can use this file and add the code that you write
 for the homework to it.
 
@@ -21,33 +13,67 @@ upload it to BRUTE.  Your file can contain one dependency `using StatsBase`,
 but no other packages are can to be used.  For example, having a `using Plots`
 in your code will cause the automatic evaluation to fail.
 
+```@setup block
+using StatsBase
+projdir = dirname(Base.active_project())
+include(joinpath(projdir,"src","lecture_03","Lab03Ecosystem.jl"))
+
+function find_food(a::Animal, w::World)
+    as = filter(x -> eats(a,x), w.agents |> values |> collect)
+    isempty(as) ? nothing : sample(as)
+end
+
+eats(::Sheep,g::Grass) = g.size > 0
+eats(::Wolf,::Sheep) = true
+eats(::Agent,::Agent) = false
+
+function every_nth(f::Function, n::Int)
+    i = 1
+    function callback(args...)
+        # display(i) # comment this out to see out the counter increases
+        if i == n
+            f(args...)
+            i = 1
+        else
+            i += 1
+        end
+    end
+end
+
+nothing # hide
+```
+
+
+## Agents looking for food
+
+```@raw html
+<div class="admonition is-category-homework">
+<header class="admonition-header">Homework:</header>
+<div class="admonition-body">
+```
+Implement a method `find_food(a::Animal, w::World)` returns one randomly chosen
+agent from all `w.agents` that can be eaten by `a` or `nothing` if no food could
+be found. This means that if e.g. the animal is a `Wolf` you have to return one
+random `Sheep`, etc.
+
+*Hint*: You can write a general `find_food` method for all animals and move the
+parts that are specific to the concrete animal types to a separate function.
+E.g. you could define a function `eats(::Wolf, ::Sheep) = true`, etc.
+
+```@repl block
+sheep = Sheep(1)
+world = World([Grass(2), sheep])
+find_food(sheep, world)
+```
+```@raw html
+</div></div>
+```
 
 ## Callbacks & Closures
 
-In many scientific frameworks we have to work with functions like `simulate!`
-(The `solve` function in
-[`Optim.jl`](https://github.com/JuliaNLSolvers/Optim.jl) is a good example)
-```@example hw03
-function simulate!(w::World, iters::Int, cb=()->())
-    for _ in 1:iters
-        # In our case this loop is trivial. In more involved simulations this
-        # will be more complicated ;)
-        world_step!(w)
-        cb()
-    end
-end
-nothing # hide
-```
-which allow custom functionality within a larger simulation function.
-For example, we might want to print out what the world looks like after
-every time step. This could be done by passing a lambda function `w->(@show w)`
-to `simulate!`.
-Often we want our callbacks to be executed only every `n` steps. This can be
-used to get less verbose logging or e.g. to write out checkpoints of your
-simulation.
 ```@raw html
 <div class="admonition is-category-homework">
-<header class="admonition-header">Homework (1 point)</header>
+<header class="admonition-header">Homework:</header>
 <div class="admonition-body">
 ```
 Implement a function `every_nth(f::Function,n::Int)` that takes an inner
@@ -62,11 +88,15 @@ arguments from the outer to the inner function.
 ```
 You can use `every_nth` to log (or save) the agent count only every couple of
 steps of your simulation. Using `every_nth` will look like this:
-```@repl hw03
+```@repl block
+w = World([Sheep(1), Grass(2), Wolf(3)])
 # `@info agent_count(w)` is executed only every 5th call to logcb(w)
 logcb = every_nth(w->(@info agent_count(w)), 3);
 
 logcb(w);  # x->(@info agent_count(w)) is not called
 logcb(w);  # x->(@info agent_count(w)) is not called
 logcb(w);  # x->(@info agent_count(w)) *is* called
+```
+```@raw html
+</div></div>
 ```

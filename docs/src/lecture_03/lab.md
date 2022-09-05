@@ -267,7 +267,7 @@ Wolf(2)
 <header class="admonition-header">Exercise:</header>
 <div class="admonition-body">
 ```
-Check the methods for `eat!` and `kill_agent!` which involve `Animal`s and update
+Check the methods for `eat!`, `kill_agent!`, and `find_food` which involve `Animal`s and update
 their type signatures such that they work for the new type hiearchy.
 ```@raw html
 </div></div>
@@ -291,6 +291,17 @@ end
 
 # no change
 # kill_agent!(a::Agent, w::World) = delete!(w.agents, a.id)
+
+
+# one possible solution to `find_food` yours from the homework may look different
+function find_food(a::Animal, w::World)
+    as = filter(x -> eats(a,x), w.agents |> values |> collect)
+    isempty(as) ? nothing : sample(as)
+end
+eats(::Animal{Wolf},::Animal{Sheep}) = true
+eats(::Agent,::Agent) = false
+# this one also needs to wait until we have `Plant`s
+# eats(::Animal{Sheep},g::Plant{Grass}) = g.size > 0
 
 nothing # hide
 ```
@@ -383,6 +394,8 @@ function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, w::World)
     sheep.energy += grass.size * sheep.Δenergy
     grass.size = 0
 end
+eats(::Animal{Sheep},g::Plant{Grass}) = g.size > 0
+
 nothing # hide
 ```
 ```@raw html

@@ -3,48 +3,14 @@
 ```@setup block
 projdir = dirname(Base.active_project())
 include(joinpath(projdir,"src","lecture_03","Lab03Ecosystem.jl"))
-```
-
-### Agents looking for food
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise:</header>
-<div class="admonition-body">
-```
-Implement a method `find_food(a::Animal, w::World)` returns one randomly chosen
-agent from all `w.agents` that can be eaten by `a` or `nothing` if no food could
-be found. This means that if e.g. the animal is a `Wolf` you have to return one
-random `Sheep`, etc.
-
-*Hint*: You can write a general `find_food` method for all animals and move the
-parts that are specific to the concrete animal types to a separate function.
-E.g. you could define a function `eats(::Wolf, ::Sheep) = true`, etc.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@example block
-using StatsBase
 
 function find_food(a::Animal, w::World)
     as = filter(x -> eats(a,x), w.agents |> values |> collect)
     isempty(as) ? nothing : sample(as)
 end
-
 eats(::Animal{Sheep},g::Plant{Grass}) = g.size > 0
 eats(::Animal{Wolf},::Animal{Sheep}) = true
 eats(::Agent,::Agent) = false
-nothing # hide
-```
-```@raw html
-</p></details>
-```
-```@repl block
-sheep = Sheep(1)
-world = World([Grass(2), sheep])
-find_food(sheep, world)
 ```
 
 ### Stepping through time
@@ -96,7 +62,7 @@ function agent_step!(a::Animal, w::World)
 end
 
 # make it possible to eat nothing
-eat!(::Animal, ::Nothing, ::World) = nothing
+# eat!(::Animal, ::Nothing, ::World) = nothing
 nothing # hide
 ```
 ```@raw html
@@ -105,7 +71,7 @@ nothing # hide
 An `agent_step!` of a sheep in a world with a single grass should make it consume the grass,
 let it reproduce, and eventually die if there is no more food and its energy is at zero:
 ```@repl block
-sheep = Sheep(1,2.0,2.0,1.0,1.0);
+sheep = Sheep(1,2.0,2.0,1.0,1.0,male);
 grass = Grass(2,2,2);
 world = World([sheep, grass])
 agent_step!(sheep, world); world

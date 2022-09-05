@@ -41,12 +41,12 @@ end
 ##########  Animals  ###########################################################
 
 mutable struct Animal{A<:AnimalSpecies} <: Agent{A}
-    id::Int
+    const id::Int
     energy::Float64
-    Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
-    sex::Sex
+    const Δenergy::Float64
+    const reprprob::Float64
+    const foodprob::Float64
+    const sex::Sex
 end
 
 function (A::Type{<:AnimalSpecies})(id::Int,E::T,ΔE::T,pr::T,pf::T,s::Sex) where T
@@ -77,9 +77,9 @@ Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
 ##########  Plants  #############################################################
 
 mutable struct Plant{P<:PlantSpecies} <: Agent{P}
-    id::Int
+    const id::Int
     size::Int
-    max_size::Int
+    const max_size::Int
 end
 
 # constructor for all Plant{<:PlantSpecies} callable as PlantSpecies(...)
@@ -115,13 +115,12 @@ eat!(::Animal, ::Nothing, ::World) = nothing
 
 kill_agent!(a::Agent, w::World) = delete!(w.agents, a.id)
 
-mates(a::Animal{A}, b::Animal{A}) where A<:AnimalSpecies = a.sex != b.sex
-mates(::Agent, ::Agent) = false
-
 function find_mate(a::Animal, w::World)
     ms = filter(x->mates(x,a), w.agents |> values |> collect)
     isempty(ms) ? nothing : sample(ms)
 end
+mates(a::Animal{A}, b::Animal{A}) where A<:AnimalSpecies = a.sex != b.sex
+mates(::Agent, ::Agent) = false
 
 function reproduce!(a::Animal{A}, w::World) where {A,S}
     m = find_mate(a,w)
@@ -153,9 +152,4 @@ function agent_count(w::World)
         return d
     end
     foldl(op, w.agents |> values |> collect, init=Dict())
-end
-
-function find_food(::Animal{Sheep}, w::World)
-    as = filter(x -> isa(x,Plant{Grass}), w.agents |> values |> collect)
-    isempty(as) ? nothing : sample(as)
 end

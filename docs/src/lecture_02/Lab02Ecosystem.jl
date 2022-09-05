@@ -4,9 +4,9 @@ abstract type Plant <: Agent end
 
 
 mutable struct Grass <: Plant
-    id::Int
+    const id::Int
     size::Int
-    max_size::Int
+    const max_size::Int
 end
 
 Grass(id,m=10) = Grass(id, rand(1:m), m)
@@ -20,11 +20,11 @@ end
 
 
 mutable struct Sheep <: Animal
-    id::Int
+    const id::Int
     energy::Float64
-    Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
+    const Δenergy::Float64
+    const reprprob::Float64
+    const foodprob::Float64
 end
 
 Sheep(id, e=4.0, Δe=0.2, pr=0.8, pf=0.6) = Sheep(id,e,Δe,pr,pf)

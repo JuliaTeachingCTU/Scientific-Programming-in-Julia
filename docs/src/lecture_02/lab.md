@@ -75,6 +75,9 @@ Base.show(io::IO, a::MyType) = print(io, "MyType $(a.x)")
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
+Since Julia 1.8 we can also declare some fields of `mutable` structs as `const`,
+which can be used both to prevent us from mutating immutable fields (such as the ID)
+but can also be used by the compiler in certain cases.
 ```@example block
 mutable struct Grass <: Plant
     const id::Int
@@ -98,7 +101,8 @@ end
 Creating a few `Grass` agents can then look like this:
 ```@repl block
 Grass(1,5)
-Grass(2)
+g = Grass(2)
+g.id = 5
 ```
 
 
@@ -148,11 +152,11 @@ end
 Solution for `Wolf`:
 ```@example block
 mutable struct Wolf <: Animal
-    id::Int
+    const id::Int
     energy::Float64
-    Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
+    const Δenergy::Float64
+    const reprprob::Float64
+    const foodprob::Float64
 end
 
 Wolf(id, e=10.0, Δe=8.0, pr=0.1, pf=0.2) = Wolf(id,e,Δe,pr,pf)

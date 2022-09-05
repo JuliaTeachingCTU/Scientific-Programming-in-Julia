@@ -41,12 +41,12 @@ end
 ##########  Animals  ###########################################################
 
 mutable struct Animal{A<:AnimalSpecies} <: Agent{A}
-    id::Int
+    const id::Int
     energy::Float64
-    Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
-    sex::Sex
+    const Δenergy::Float64
+    const reprprob::Float64
+    const foodprob::Float64
+    const sex::Sex
 end
 
 function (A::Type{<:AnimalSpecies})(id::Int,E::T,ΔE::T,pr::T,pf::T,s::Sex) where T
@@ -77,9 +77,9 @@ Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
 ##########  Plants  #############################################################
 
 mutable struct Plant{P<:PlantSpecies} <: Agent{P}
-    id::Int
+    const id::Int
     size::Int
-    max_size::Int
+    const max_size::Int
 end
 
 # constructor for all Plant{<:PlantSpecies} callable as PlantSpecies(...)
