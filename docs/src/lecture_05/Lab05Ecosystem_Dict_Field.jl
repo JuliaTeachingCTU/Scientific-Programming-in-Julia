@@ -25,8 +25,12 @@ mutable struct World{A<:Agent}
 end
 
 function World(agents::Vector{<:Agent})
-    max_id = maximum(a.id for a in agents)
-    World(Dict(a.id=>a for a in agents), max_id)
+    ids = [a.id for a in agents]
+    length(unique(ids)) == length(agents) || error("Not all agents have unique IDs!")
+
+    types = unique(typeof.(agents))
+    dict = Dict{Int,Union{types...}}(a.id => a for a in agents)
+    World(dict, maximum(ids))
 end
 
 # optional: overload Base.show

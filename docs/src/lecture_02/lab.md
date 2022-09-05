@@ -3,9 +3,26 @@
 In the next labs you will implement your own *predator-prey model*.  The model
 will contain wolves, sheep, and - to feed your sheep - some grass.  The final
 simulation will be turn-based and the agents will be able to eat each other,
-reproduce, and die in every iteration. Their world will be the simplest possible
-world with zero dimensions.  Running and plotting your final result could look
-something like the plot below.
+reproduce, and die in every iteration. 
+At every iteration of the simulation each agent will step forward in time
+via the `agent_step!` function. The steps for the `agent_step!` methods of
+animals and plants are written below in pseudocode.c
+```
+# for animals:
+agent_step!(animal, world)
+    decrement energy by 1
+    find & eat food (with probability pf)
+    die if no more energy
+    reproduce (with probability pr)
+
+# for plants:
+agent_step!(plant, world)
+    grow if not at maximum size
+```
+
+The `world` in which the agents live will be the simplest possible world with
+zero dimensions (i.e. a `Dict` of `ID=>Agent`). Running and plotting your final
+result could look something like the plot below.
 
 ![img](pred-prey.png)
 
@@ -25,6 +42,7 @@ abstract type Plant <: Agent end
 We will implement the `World` for our `Agent`s later, but it will essentially be
 implemented by a `Dict` which maps unique IDs to an `Agent`. Hence, every agent
 will need an ID.
+
 
 ## The `Grass` Agent
 
@@ -59,9 +77,9 @@ Base.show(io::IO, a::MyType) = print(io, "MyType $(a.x)")
 ```
 ```@example block
 mutable struct Grass <: Plant
-    id::Int
+    const id::Int
     size::Int
-    max_size::Int
+    const max_size::Int
 end
 
 Grass(id,m=10) = Grass(id, rand(1:m), m)
@@ -156,6 +174,7 @@ Sheep(4)
 Wolf(5)
 ```
 
+
 ## The `World`
 
 Before our agents can eat or reproduce we need to build them a `World`.
@@ -197,6 +216,7 @@ end
 ```@raw html
 </p></details>
 ```
+
 
 ## `Sheep` eats `Grass`
 
@@ -288,6 +308,7 @@ eat!(wolf,sheep,world);
 world
 ```
 The sheep is removed from the world and the wolf's energy increased by $\Delta E$.
+
 
 ## Reproduction
 Currently our animals can only eat. In our simulation we also want them to

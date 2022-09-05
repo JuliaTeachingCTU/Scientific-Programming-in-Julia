@@ -135,10 +135,10 @@ end
 find_agent(::Type{P}, w::World) where P<:PlantSpecies = find_agent(Plant{P}, w)
 
 function find_agent(::Type{A}, w::World) where A<:AnimalSpecies
-    df = get(w.agents, tosym(Animal{A,Female}), Animal{A,Female}[])
+    df = get(w.agents, tosym(Animal{A,Female}), Dict{Int,Animal{A,Female}}())
     af = df |> values |> collect
 
-    dm = get(w.agents, tosym(Animal{A,Male}), Animal{A,Male}[])
+    dm = get(w.agents, tosym(Animal{A,Male}), Dict{Int,Animal{A,Male}}())
     am = dm |> values |> collect
 
     nf = length(af)
@@ -173,6 +173,28 @@ function reproduce!(a::Animal{A,S}, w::World) where {A,S}
         w.max_id = new_id
     end
 end
+#function reproduce!(a::Animal{A,S}, w::World) where {A,S}
+#    m = find_mate(a,w)
+#    if !isnothing(m)
+#        E = (a.energy + m.energy)/3
+#        ΔE = a.Δenergy
+#        pr = a.reprprob
+#        pf = a.foodprob
+#        new_id = w.max_id + 1
+#        ŝ = Animal{A,S}(new_id, E, ΔE, pr, pf)
+#        # makes things type unstable but plots look better
+#        # ŝ = Animal{A,randsex()}(new_id, E, ΔE, pr, pf)
+#        getfield(w.agents, tosym(ŝ))[ŝ.id] = ŝ
+#
+#        a.energy = a.energy * 2/3
+#        m.energy = m.energy * 2/3
+#        w.max_id = new_id
+#        return ŝ
+#    else
+#        nothing
+#    end
+#end
+
 
 
 ##########  Stepping through time  #############################################
@@ -226,6 +248,8 @@ agent_count(w::World) = Dict(eltype(as |> values)=>agent_count(as) for as in w.a
 
 
 # for accessing NamedTuple in World
-tosym(::T) where T<:Animal = tosym(T)
-tosym(::Type{<:Animal{A,S}}) where {A,S} = Symbol("$A$S")
-tosym(::Type{<:Plant{P}}) where P = Symbol("$P")
+tosym(::Type{Animal{Wolf,Female}}) = Symbol("WolfFemale")
+tosym(::Type{Animal{Wolf,Male}}) = Symbol("WolfMale")
+tosym(::Type{Animal{Sheep,Female}}) = Symbol("SheepFemale")
+tosym(::Type{Animal{Sheep,Male}}) = Symbol("SheepMale")
+tosym(::Type{Plant{Grass}}) = Symbol("Grass")

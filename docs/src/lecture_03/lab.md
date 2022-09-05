@@ -14,6 +14,7 @@ and create a new type of sheep (`⚥Sheep`) which has an additional field *sex*.
 In the second part you will redesign the type hierarchy from scratch using
 parametric types to make this agent system much more flexible and *julian*.
 
+
 ## Part I: Female & Male Sheep
 
 The code from lab 2 that you will need in the first part of this lab can be
@@ -112,18 +113,18 @@ makes use of Julia's powerful parametric types.
 
 ## Part II: A new, parametric type hierarchy
 
-First, let us note that there are two fundamentally different types of agents
-in our world: animals and plants. All species such as grass, sheep, wolves,
-etc.  can be categorized as one of those two.
-Second, animals have two different, *immutable* sexes.  Thus an animal is
-specified by two things: its *species* and its *sex*.  With this observation
-let's try to redesign the type hiearchy using parametric types to reflect this.
+First, let us note that there are two fundamentally different types of agents in
+our world: animals and plants. All species such as grass, sheep, wolves, etc.
+can be categorized as one of those two.  We can use Julia's powerful,
+*parametric* type system to define one large abstract type for all agents
+`Agent{S}`. The `Agent` will either be an `Animal` or a `Plant` with a type
+parameter `S` which will represent the specific animal/plant
+species we are dealing with.
 
-The goal will be an `Animal` type with two parametric types: A `Species` type and
-a `Sex` type. The type of a female wolf would then be `Animal{Wolf,Female}`.
-The new type hiearchy can then look like this:
+This new type hiearchy can then look like this:
 ```@example parametric
 abstract type Species end
+
 abstract type PlantSpecies <: Species end
 abstract type Grass <: PlantSpecies end
 
@@ -131,11 +132,13 @@ abstract type AnimalSpecies <: Species end
 abstract type Sheep <: AnimalSpecies end
 abstract type Wolf <: AnimalSpecies end
 
-abstract type Sex end
-abstract type Male <: Sex end
-abstract type Female <: Sex end
-
 abstract type Agent{S<:Species} end
+
+# instead of Symbols we can use an Enum for the sex field
+# using an Enum here makes things easier to extend in case you
+# need more than just binary sexes and is also more explicit than
+# just a boolean
+@enum Sex female male
 ```
 ```@setup parametric
 using StatsBase  # for sample
@@ -162,23 +165,24 @@ end
 Now we can create a *concrete* type `Animal` with the two parametric types
 and the fields that we already know from lab 2.
 ```@example parametric
-mutable struct Animal{A<:AnimalSpecies,S<:Sex} <: Agent{A}
+mutable struct Animal{A<:AnimalSpecies} <: Agent{A}
     id::Int
     energy::Float64
     Δenergy::Float64
     reprprob::Float64
     foodprob::Float64
+    sex::Sex
 end
 ```
 To create an instance of `Animal` we have to specify the parametric type
 while constructing it
 ```@repl parametric
-Animal{Wolf,Female}(1,5,5,1,1)
+Animal{Wolf}(1,5,5,1,1,female)
 ```
-Note that we now automatically have animals of any sex without additional work.
+Note that we now automatically have animals of any species without additional work.
 Starting with the overload of the `show` method we can already see that we can
 abstract away a lot of repetitive work into the type system. We can implement
-*one single* `show` method for all animal species/sexes.
+*one single* `show` method for all animal species!
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise:</header>
@@ -193,20 +197,19 @@ another overload like this: `Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
 <summary class = "solution-header">Solution:</summary><p>
 ```
 ```@example parametric
-function Base.show(io::IO, a::Animal{A,S}) where {A<:AnimalSpecies,S<:Sex}
+function Base.show(io::IO, a::Animal{A}) where {A<:AnimalSpecies}
     e = a.energy
     d = a.Δenergy
     pr = a.reprprob
     pf = a.foodprob
-    print(io, "$A$S #$(a.id) E=$e ΔE=$d pr=$pr pf=$pf")
+    s = a.sex == female ? "♀" : "♂"
+    print(io, "$A$s #$(a.id) E=$e ΔE=$d pr=$pr pf=$pf")
 end
 
 # note that for new species/sexes we will only have to overload `show` on the
 # abstract species/sex types like below!
 Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
 Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
-Base.show(io::IO, ::Type{Male}) = print(io,"♂")
-Base.show(io::IO, ::Type{Female}) = print(io,"♀")
 ```
 ```@raw html
 </p></details>
@@ -218,7 +221,7 @@ abstract type that we cannot instantiate. However, we can manually define
 a new constructor that will give us this convenience back.
 This is done in exactly the same way as defining a constructor for a concrete type:
 ```julia
-Sheep(id,E,ΔE,pr,pf,S=rand(Bool) ? Female : Male) = Animal{Sheep,S}(id,E,ΔE,pr,pf)
+Sheep(id,E,ΔE,pr,pf,s=rand(Sex)) = Animal{Sheep}(id,E,ΔE,pr,pf,s)
 ```
 Ok, so we have a constructor for `Sheep` now. But what about all the other
 billions of species that you want to define in your huge master thesis project of
@@ -237,19 +240,19 @@ Can you manage to sneak in a type variable? Maybe with `Type`?
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-```julia
-```
+
 ```@example parametric
-function (A::Type{<:AnimalSpecies})(id::Int,E::T,ΔE::T,pr::T,pf::T,S::Type{<:Sex}) where T
-    Animal{A,S}(id,E,ΔE,pr,pf)
+function (A::Type{<:AnimalSpecies})(id::Int,E::T,ΔE::T,pr::T,pf::T,s::Sex) where T
+    Animal{A}(id,E,ΔE,pr,pf,s)
 end
 
 # get the per species defaults back
-randsex() = rand(Bool) ? Female : Male
-Sheep(id; E=4.0, ΔE=0.2, pr=0.8, pf=0.6, S=randsex()) = Sheep(id, E, ΔE, pr, pf, S)
-Wolf(id; E=10.0, ΔE=8.0, pr=0.1, pf=0.2, S=randsex()) = Wolf(id, E, ΔE, pr, pf, S)
+randsex() = rand(instances(Sex))
+Sheep(id; E=4.0, ΔE=0.2, pr=0.8, pf=0.6, s=randsex()) = Sheep(id, E, ΔE, pr, pf, s)
+Wolf(id; E=10.0, ΔE=8.0, pr=0.1, pf=0.2, s=randsex()) = Wolf(id, E, ΔE, pr, pf, s)
 nothing # hide
 ```
+
 ```@raw html
 </p></details>
 ```
@@ -288,6 +291,8 @@ end
 
 # no change
 # kill_agent!(a::Agent, w::World) = delete!(w.agents, a.id)
+
+nothing # hide
 ```
 
 
@@ -309,8 +314,7 @@ lets the two reproduce (same behaviour as before).
 <summary class = "solution-header">Solution:</summary><p>
 ```
 ```@example parametric
-mates(a::Animal{A,Female}, b::Animal{A,Male}) where A<:AnimalSpecies = true
-mates(a::Animal{A,Male}, b::Animal{A,Female}) where A<:AnimalSpecies = true
+mates(a::Animal{A}, b::Animal{A}) where A<:AnimalSpecies = a.sex != b.sex
 mates(::Agent, ::Agent) = false
 
 function find_mate(a::Animal, w::World)
@@ -318,13 +322,13 @@ function find_mate(a::Animal, w::World)
     isempty(ms) ? nothing : sample(ms)
 end
 
-function reproduce!(a::Animal{A,S}, w::World) where {A,S}
+function reproduce!(a::Animal{A}, w::World) where {A}
     m = find_mate(a,w)
     if !isnothing(m)
         a.energy = a.energy / 2
-        vals = [getproperty(a,n) for n in fieldnames(Animal) if n!=:id]
+        vals = [getproperty(a,n) for n in fieldnames(Animal) if n ∉ [:id, :sex]]
         new_id = w.max_id + 1
-        ŝ = Animal{A,S}(new_id, vals...)
+        ŝ = Animal{A}(new_id, vals..., randsex())
         w.agents[ŝ.id] = ŝ
         w.max_id = new_id
     end
@@ -336,8 +340,8 @@ nothing # hide
 ```
 
 ```@repl parametric
-s1 = Sheep(1, S=Female)
-s2 = Sheep(2, S=Male)
+s1 = Sheep(1, s=female)
+s2 = Sheep(2, s=male)
 w  = World([s1, s2])
 reproduce!(s1, w); w
 ```
@@ -379,6 +383,7 @@ function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, w::World)
     sheep.energy += grass.size * sheep.Δenergy
     grass.size = 0
 end
+nothing # hide
 ```
 ```@raw html
 </p></details>

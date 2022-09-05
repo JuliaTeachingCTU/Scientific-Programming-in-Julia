@@ -159,9 +159,9 @@ world_step!(w); w
 
 Finally, lets run a few simulation steps and plot the solution
 ```@example block
-n_grass  = 200
-n_sheep  = 10
-n_wolves = 2
+n_grass  = 1_000
+n_sheep  = 40
+n_wolves = 4
 
 gs = [Grass(id) for id in 1:n_grass]
 ss = [Sheep(id) for id in (n_grass+1):(n_grass+n_sheep)]
@@ -178,10 +178,8 @@ end
 
 using Plots
 plt = plot()
-tolabel(::Type{Animal{Sheep,Female}}) = "Sheep ♀"
-tolabel(::Type{Animal{Sheep,Male}}) = "Sheep ♂"
-tolabel(::Type{Animal{Wolf,Female}}) = "Wolf ♀"
-tolabel(::Type{Animal{Wolf,Male}}) = "Wolf ♂"
+tolabel(::Type{Animal{Sheep}}) = "Sheep"
+tolabel(::Type{Animal{Wolf}}) = "Wolf"
 tolabel(::Type{Plant{Grass}}) = "Grass"
 for (A,c) in counts
     plot!(plt, c, label=tolabel(A), lw=2)

@@ -1,5 +1,7 @@
 # Homework 3
 
+use create world closure as homework
+
 ```@setup hw03
 using EcosystemCore
 using Scientific_Programming_in_Julia
@@ -19,32 +21,6 @@ upload it to BRUTE.  Your file can contain one dependency `using StatsBase`,
 but no other packages are can to be used.  For example, having a `using Plots`
 in your code will cause the automatic evaluation to fail.
 
-
-## Poisoned Mushrooms
-
-```@raw html
-<div class="admonition is-category-homework">
-<header class="admonition-header">Homework (1 point)</header>
-<div class="admonition-body">
-```
-Implement a new species `Mushroom` which tricks a sheep into eating it by its
-delicious looks but decreases the energy of the sheep by
-`size(::Mushroom)*Δenergy(::Sheep)`.
-
-**Note**: The auto-eval system assumes that you have a constructor
-`Mushroom(id,size,max_size)` that accepts the three plant fields as arguments
-(as implemented e.g. [here](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/359f0b48314f9aa3d5d8fa0c85eebf376810aca6/src/plant.jl#L11-L13)).
-```@raw html
-</div></div>
-```
-Your new species should give you results like below
-```@repl hw03
-s = Sheep(1,2,1,1,1);
-m = Mushroom(2,2,5);
-w = World([s,m])
-eat!(s,m,w);
-w
-```
 
 ## Callbacks & Closures
 

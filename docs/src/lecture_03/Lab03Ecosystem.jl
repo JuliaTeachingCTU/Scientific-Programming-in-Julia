@@ -1,4 +1,7 @@
+using StatsBase
+
 abstract type Species end
+
 abstract type PlantSpecies <: Species end
 abstract type Grass <: PlantSpecies end
 
@@ -6,12 +9,13 @@ abstract type AnimalSpecies <: Species end
 abstract type Sheep <: AnimalSpecies end
 abstract type Wolf <: AnimalSpecies end
 
-abstract type Sex end
-abstract type Male <: Sex end
-abstract type Female <: Sex end
-
 abstract type Agent{S<:Species} end
 
+# instead of Symbols we can use an Enum for the sex field
+# using an Enum here makes things easier to extend in case you
+# need more than just binary sexes and is also more explicit than
+# just a boolean
+@enum Sex female male
 
 ##########  World  #############################################################
 
@@ -36,38 +40,38 @@ end
 
 ##########  Animals  ###########################################################
 
-mutable struct Animal{A<:AnimalSpecies,S<:Sex} <: Agent{A}
+mutable struct Animal{A<:AnimalSpecies} <: Agent{A}
     id::Int
     energy::Float64
     Δenergy::Float64
     reprprob::Float64
     foodprob::Float64
+    sex::Sex
 end
 
-function (A::Type{<:AnimalSpecies})(id::Int,E::T,ΔE::T,pr::T,pf::T) where T
-    S = rand(Bool) ? Female : Male
-    Animal{A,S}(id,E,ΔE,pr,pf)
+function (A::Type{<:AnimalSpecies})(id::Int,E::T,ΔE::T,pr::T,pf::T,s::Sex) where T
+    Animal{A}(id,E,ΔE,pr,pf,s)
 end
 
 # get the per species defaults back
-Sheep(id; E=4.0, ΔE=0.2, pr=0.8, pf=0.6) = Sheep(id, E, ΔE, pr, pf)
-Wolf(id; E=10.0, ΔE=8.0, pr=0.1, pf=0.2) = Wolf(id, E, ΔE, pr, pf)
+randsex() = rand(instances(Sex))
+Sheep(id; E=4.0, ΔE=0.2, pr=0.8, pf=0.6, s=randsex()) = Sheep(id, E, ΔE, pr, pf, s)
+Wolf(id; E=10.0, ΔE=8.0, pr=0.1, pf=0.2, s=randsex()) = Wolf(id, E, ΔE, pr, pf, s)
 
 
-function Base.show(io::IO, a::Animal{A,S}) where {A<:AnimalSpecies,S<:Sex}
+function Base.show(io::IO, a::Animal{A}) where {A<:AnimalSpecies}
     e = a.energy
     d = a.Δenergy
     pr = a.reprprob
     pf = a.foodprob
-    print(io, "$A$S #$(a.id) E=$e ΔE=$d pr=$pr pf=$pf")
+    s = a.sex == female ? "♀" : "♂"
+    print(io, "$A$s #$(a.id) E=$e ΔE=$d pr=$pr pf=$pf")
 end
 
-# note that for new species/sexes we will only have to overload `show` on the
+# note that for new species we will only have to overload `show` on the
 # abstract species/sex types like below!
 Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
 Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
-Base.show(io::IO, ::Type{Male}) = print(io,"♂")
-Base.show(io::IO, ::Type{Female}) = print(io,"♀")
 
 
 ##########  Plants  #############################################################
@@ -111,8 +115,7 @@ eat!(::Animal, ::Nothing, ::World) = nothing
 
 kill_agent!(a::Agent, w::World) = delete!(w.agents, a.id)
 
-mates(a::Animal{A,Female}, b::Animal{A,Male}) where A<:AnimalSpecies = true
-mates(a::Animal{A,Male}, b::Animal{A,Female}) where A<:AnimalSpecies = true
+mates(a::Animal{A}, b::Animal{A}) where A<:AnimalSpecies = a.sex != b.sex
 mates(::Agent, ::Agent) = false
 
 function find_mate(a::Animal, w::World)
@@ -120,17 +123,18 @@ function find_mate(a::Animal, w::World)
     isempty(ms) ? nothing : sample(ms)
 end
 
-function reproduce!(a::Animal{A,S}, w::World) where {A,S}
+function reproduce!(a::Animal{A}, w::World) where {A,S}
     m = find_mate(a,w)
     if !isnothing(m)
         a.energy = a.energy / 2
-        vals = [getproperty(a,n) for n in fieldnames(Animal) if n!=:id]
+        vals = [getproperty(a,n) for n in fieldnames(Animal) if n ∉ [:id, :sex]]
         new_id = w.max_id + 1
-        ŝ = Animal{A,S}(new_id, vals...)
+        ŝ = Animal{A}(new_id, vals..., randsex())
         w.agents[ŝ.id] = ŝ
         w.max_id = new_id
     end
 end
+
 
 
 ##########  Counting agents  ####################################################
@@ -149,4 +153,9 @@ function agent_count(w::World)
         return d
     end
     foldl(op, w.agents |> values |> collect, init=Dict())
+end
+
+function find_food(::Animal{Sheep}, w::World)
+    as = filter(x -> isa(x,Plant{Grass}), w.agents |> values |> collect)
+    isempty(as) ? nothing : sample(as)
 end
