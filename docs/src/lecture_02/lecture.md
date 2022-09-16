@@ -97,8 +97,8 @@ On my i5-8279U CPU, the difference (as measured by BenchmarkTools) is
 
 ````@example lecture
 using BenchmarkTools
-@btime energy(a);
-@btime energy(b);
+#@btime energy(a);
+#@btime energy(b);
 nothing #hide
 ````
 
@@ -118,8 +118,8 @@ nothing # hide
 `wolfpack_a` carries a type `Vector{Wolf}` while `wolfpack_b` has the type `Vector{Any}`. This means that in the first case, the compiler knows that all items are of the type `Wolf`and it can specialize functions using this information. In case of `wolfpack_b`, it does not know which animal it will encounter (although all are of the same type), and therefore it needs to dynamically resolve the type of each item upon its use. This ultimately leads to less performant code.
 
 ````@example lecture
-@btime energy(wolfpack_a)
-@btime energy(wolfpack_b)
+#@btime energy(wolfpack_a)
+#@btime energy(wolfpack_b)
 nothing # hide
 ````
 
@@ -315,7 +315,7 @@ struct PositionT{T}
   y::T
 end
 u = [PositionT(rand(), rand()) for _ in 1:100]
-@btime reduce(move, u)
+#@btime reduce(move, u)
 nothing #hide
 ````
 
@@ -323,7 +323,7 @@ Notice that the compiler can take advantage of specializing for different types 
 
 ````@example lecture
 v = [PositionT(rand(1:100), rand(1:100)) for _ in 1:100]
-@btime reduce(move, v)
+#@btime reduce(move, v)
 nothing #hide
 ````
 
