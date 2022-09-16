@@ -95,12 +95,15 @@ one observes the second version produces more optimal code. Why is that?
 This difference will indeed have an impact on the time of code execution.
 On my i5-8279U CPU, the difference (as measured by BenchmarkTools) is
 
-````@example lecture
+```julia
 using BenchmarkTools
-#@btime energy(a);
-#@btime energy(b);
-nothing #hide
-````
+@btime energy(a)
+@btime energy(b)
+```
+```
+  159.669 ns (0 allocations: 0 bytes)
+  44.571 ns (0 allocations: 0 bytes)
+```
 
 Which nicely demonstrates that the choice of types affects performance. Does it mean that we should always use `Tuples` instead of `Arrays`? Surely not, it is  just that each is better for different use-cases. Using Tuples means that the compiler will compile a special function for each length of tuple and each combination of types of items it contains, which is clearly wasteful.
 
@@ -117,11 +120,14 @@ nothing # hide
 
 `wolfpack_a` carries a type `Vector{Wolf}` while `wolfpack_b` has the type `Vector{Any}`. This means that in the first case, the compiler knows that all items are of the type `Wolf`and it can specialize functions using this information. In case of `wolfpack_b`, it does not know which animal it will encounter (although all are of the same type), and therefore it needs to dynamically resolve the type of each item upon its use. This ultimately leads to less performant code.
 
-````@example lecture
-#@btime energy(wolfpack_a)
-#@btime energy(wolfpack_b)
-nothing # hide
-````
+```julia
+@btime energy(wolfpack_a)
+@btime energy(wolfpack_b)
+```
+```
+  40.279 ns (0 allocations: 0 bytes)
+  159.407 ns (0 allocations: 0 bytes)
+```
 
 To conclude, julia is indeed a dynamically typed language, **but** if the compiler can infer
 all types in a called function in advance, it does not have to perform the type resolution
@@ -258,25 +264,49 @@ end
 
 This works as the definition above except that the arguments are not converted to `Float64` now. One can store different values in `x` and `y`, for example `String` (e.g. VaguePosition("Hello","world")). Although the above definition might be convenient, it limits the compiler's ability to specialize, as the type  `VaguePosition` does not carry information about type of `x` and `y`, which has a negative impact on the performance. For example
 
-````@example lecture
+```julia
 using BenchmarkTools
 move(a,b) = typeof(a)(a.x+b.x, a.y+b.y)
 x = [PositionF64(rand(), rand()) for _ in 1:100]
 y = [VaguePosition(rand(), rand()) for _ in 1:100]
 @benchmark reduce(move, x)
 @benchmark reduce(move, y)
-````
+```
+```
+BenchmarkTools.Trial: 10000 samples with 9 evaluations.
+ Range (min … max):  2.245 μs … 428.736 μs  ┊ GC (min … max): 0.00% … 99.35%
+ Time  (median):     2.306 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   2.538 μs ±   8.488 μs  ┊ GC (mean ± σ):  6.68% ±  1.99%
+
+       █                                                       
+  ▁▂▄▂▆█▇▇▃▂▁▁▁▂▂▁▂▂▂▁▂▂▃▂▂▂▂▂▂▂▃▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▂
+  2.25 μs         Histogram: frequency by time        2.75 μs <
+
+ Memory estimate: 3.12 KiB, allocs estimate: 199.
+```
 
 Giving fields of a composite type an abstract type does not really solve the problem of the compiler not knowing the type. In this example, it still does not know, if it should use instructions for `Float64` or `Int8`.
 
-````@example lecture
+```julia
 struct LessVaguePosition
   x::Real
   y::Real
 end
 z = [LessVaguePosition(rand(), rand()) for _ in 1:100];
 @benchmark reduce(move, z)
-````
+```
+```
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  16.542 μs …  5.043 ms  ┊ GC (min … max): 0.00% … 99.57%
+ Time  (median):     16.959 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   17.903 μs ± 50.271 μs  ┊ GC (mean ± σ):  2.80% ±  1.00%
+
+   ▆▇███▇▅▃▂▁▂▃▄▂▄▄▄▄▃▃▂▁▁                     ▁▁ ▁▁▁ ▁       ▂
+  ███████████████████████████▇▇▄▇▇▇▇▆▄▆▇▇▇▆▇▇▇▇█████████▇▇▇▆▅ █
+  16.5 μs      Histogram: log(frequency) by time      21.3 μs <
+
+ Memory estimate: 9.31 KiB, allocs estimate: 496.
+```
 
 From the perspective of generating optimal code, both definitions are equally uninformative to the compiler as it cannot assume anything about the code. However, the  `LessVaguePosition` will ensure that the position will contain only numbers, hence catching trivial errors like instantiating `VaguePosition` with non-numeric types for which arithmetic operators will not be defined (recall the discussion on the  beginning of the lecture).
 
@@ -309,23 +339,27 @@ Note, that the memory layout of mutable structures is different, as fields now c
 ### Parametric types
 So far, we had to trade-off flexibility for generality in type definitions. Can we have both? The answer is affirmative. The way to achieve this  **flexibility** in definitions of the type while being  able to generate optimal code is to  **parametrize** the type definition. This is achieved by replacing types with a parameter (typically a single uppercase character) and decorating in definition by specifying different type in curly brackets. For example
 
-````@example lecture
+```julia
 struct PositionT{T}
   x::T
   y::T
 end
 u = [PositionT(rand(), rand()) for _ in 1:100]
-#@btime reduce(move, u)
-nothing #hide
-````
+@btime reduce(move, u)
+```
+```
+  116.285 ns (1 allocation: 32 bytes)
+```
 
 Notice that the compiler can take advantage of specializing for different types (which does not have an effect here as in modern processors addition of `Float` and `Int` takes the same time).
 
-````@example lecture
+```julia
 v = [PositionT(rand(1:100), rand(1:100)) for _ in 1:100]
-#@btime reduce(move, v)
-nothing #hide
-````
+@btime reduce(move, v)
+```
+```
+  116.892 ns (1 allocation: 32 bytes)
+```
 
 The above definition suffers the same problem as `VaguePosition`, which is that it allows us to instantiate the `PositionT` with non-numeric types, e.g. `String`. We solve this by restricting the types `T` to be children of some supertype, in this case `Real`
 
@@ -457,17 +491,41 @@ If the compiler cannot narrow the types of arguments to concrete types, it has t
 100 ns for method with two arguements).
 Recall the above example
 
-````@example lecture
+```julia
 wolfpack_a =  [Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
 @benchmark energy(wolfpack_a)
-````
+```
+```
+BenchmarkTools.Trial: 10000 samples with 991 evaluations.
+ Range (min … max):  40.195 ns … 66.641 ns  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     40.742 ns              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   40.824 ns ±  1.025 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+   ▂▃ ▃▅▆▅▆█▅▅▃▂▂                                             ▂
+  ▇██████████████▇▇▅▅▁▅▄▁▅▁▄▄▃▄▅▄▅▃▅▃▅▁▃▁▄▄▃▁▁▅▃▃▄▃▄▃▄▆▆▇▇▇▇█ █
+  40.2 ns      Histogram: log(frequency) by time      43.7 ns <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+```
 
 and
 
-````@example lecture
+```julia
 wolfpack_b =  Any[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
 @benchmark energy(wolfpack_b)
-````
+```
+```
+BenchmarkTools.Trial: 10000 samples with 800 evaluations.
+ Range (min … max):  156.406 ns … 212.344 ns  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     157.136 ns               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   158.114 ns ±   4.023 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ▅█▆▅▄▂   ▃▂▁                                                  ▂
+  ██████▆▇██████▇▆▇█▇▆▆▅▅▅▅▅▃▄▄▅▄▄▄▄▅▁▃▄▄▃▃▄▃▃▃▄▄▄▅▅▅▅▁▅▄▃▅▄▄▅▅ █
+  156 ns        Histogram: log(frequency) by time        183 ns <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+```
 
 An interesting intermediate between fully abstract and fully concrete type happens, when the compiler knows that arguments have abstract type, which is composed of a small number of concrete types. This case  called Union-Splitting, which happens when there is just a little bit of uncertainty. Julia will do something like
 ```julia
@@ -481,11 +539,23 @@ end
 ```
 For example
 
-````@example lecture
+```julia
 const WolfOrSheep = Union{Wolf, Sheep}
 wolfpack_c =  WolfOrSheep[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
 @benchmark energy(wolfpack_c)
-````
+```
+```
+BenchmarkTools.Trial: 10000 samples with 991 evaluations.
+ Range (min … max):  43.600 ns … 73.494 ns  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     44.106 ns              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   44.279 ns ±  0.931 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+       █     ▁ ▃                                               
+  ▂▂▂▆▃██▅▃▄▄█▅█▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▂▂▂▁▂▂▂▂▂▂▂▂▂▂▂▂▂ ▃
+  43.6 ns         Histogram: frequency by time        47.4 ns <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+```
 
 Thanks to union splitting, Julia is able to have performant operations on arrays with undefined / missing values for example
 

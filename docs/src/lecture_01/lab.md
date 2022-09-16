@@ -600,9 +600,12 @@ nothing #hide
 ```
 
 There are other options to import a function/macro from a different package, however for now let's keep it simple with the `using Module` syntax, that brings to the REPL, all the variables/function/macros exported by the `BenchmarkTools` pkg. If `@btime` is exported, which it is, it can be accessed without specification i.e. just by calling `@btime` without the need for `BenchmarkTools.@btime`. More on the architecture of pkg/module loading in the package developement lecture.
-```@repl lab01_base
-using BenchmarkTools
-@btime polynomial(aexp, x)
+```julia
+julia> using BenchmarkTools
+
+julia> @btime polynomial(aexp, x)
+  97.119 ns (1 allocation: 16 bytes)
+3.004165230550543
 ```
 The output gives us the time of execution averaged over multiple runs (the number of samples is defined automatically based on run time) as well as the number of allocations and the output of the function, that is being benchmarked.
 
