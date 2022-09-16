@@ -59,7 +59,7 @@ makedocs(;
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
         canonical = "https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia",
-        assets = ["assets/favicon.ico"],
+        assets = ["assets/favicon.ico", "assets/onlinestats.css"],
         collapselevel = 1,
         ansicolor=true,
     ),

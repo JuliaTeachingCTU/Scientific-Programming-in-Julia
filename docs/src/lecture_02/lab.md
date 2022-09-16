@@ -1,194 +1,136 @@
 # [Lab 2: Predator-Prey Agents](@id lab02)
 
+In the next labs you will implement your own *predator-prey model*.  The model
+will contain wolves, sheep, and - to feed your sheep - some grass.  The final
+simulation will be turn-based and the agents will be able to eat each other,
+reproduce, and die in every iteration. 
+At every iteration of the simulation each agent will step forward in time
+via the `agent_step!` function. The steps for the `agent_step!` methods of
+animals and plants are written below in pseudocode.c
+```
+# for animals:
+agent_step!(animal, world)
+    decrement energy by 1
+    find & eat food (with probability pf)
+    die if no more energy
+    reproduce (with probability pr)
 
-## The Predator-Prey Model
+# for plants:
+agent_step!(plant, world)
+    grow if not at maximum size
+```
 
-In the next two labs you will implement your own, simplified, agent-based
-simulation of a *predator-prey model*.  The model will contain *wolves*,
-*sheep*, and - to feed your sheep - some *grass*.  Running and plotting your
-final result could look something like the plot below.
+The `world` in which the agents live will be the simplest possible world with
+zero dimensions (i.e. a `Dict` of `ID=>Agent`). Running and plotting your final
+result could look something like the plot below.
 
 ![img](pred-prey.png)
 
-As you can see, in this model, the wolves unfortunately died out :(.
-In this lab we will first define what our agent simulation does on a high level.
-Then you will write the core methods for finding food (`find_food`),
-to specify what an animal eats (`eat!`), and how it reproduces (`reproduce!`).
+We will start implementing the basic functionality for each `Agent` like
+`eat!`ing, `reproduce!`ing, and a very simplistic `World` for your agents to live in.
+In the next lab you will refine both the type hierarchy of your `Agent`s, as well
+as the design of the `World` in order to leverage the power of Julia's type system
+and compiler.
 
-### High level-description
-In an agent simulation we assume that we have a bunch of agents (in our case
-grass, sheep, and wolves) that act in some environment (we will call it a
-*world*). At every iteration of the simulation each agent will perform a *step* in which it
-performs some of the actions that it can take. For example, a *grass* agent will grow
-a little at every step. A *sheep* agent will try to find some grass and
-reproduce.
-
-In short:
-* Wolves, sheep, and grass exist in a one dimensional world `Dict(1=>🐺, 2=>🐑, 3=>🌿, 4=>🌿, ...)`
-  and are identified by a unique ID
-* Each agent can perform certain actions (eating, growing, reproducing, dying...)
-* In one iteration of the simulation each agent performs its actions
-
-### Code skeleton
-To get started we need a type hierarchy. The first abstract type `Agent`
-acts as the root of our tree.  All animals and plants will be subtypes of `Agent`.
-There are different kinds of animals and plants so it makes sense to create an
-`Animal` type which will be the supertype of all animals. The same is
-true for `Plant`s. Finally, we need a simple world which consist of
-a dictionary of agent IDs to agents, and a field that holds the current maximum
-ID (so that we can generate new ones).
-```@example non_parametric_agents
+We start with a very basic type hierarchy:
+```@example block
 abstract type Agent end
 abstract type Animal <: Agent end
 abstract type Plant <: Agent end
-
-mutable struct World{A<:Agent}
-    agents::Dict{Int,A}
-    max_id::Int
-end
-function World(agents::Vector{<:Agent})
-    World(Dict(id(a)=>a for a in agents), maximum(id.(agents)))
-end
-
-# optional: you can overload the `show` method to get custom
-# printing of your World
-function Base.show(io::IO, w::World)
-    println(io, typeof(w))
-    for (_,a) in w.agents
-        println(io,"  $a")
-    end
-end
 ```
 
-The function `world_step!` will advance your whole world by one step applying
-the function `agent_step!` to each agent.
-Note that this function assumes that all `Agent`s have a _**unique**_ `id`.
-```@example non_parametric_agents
-function world_step!(world::World)
-    # make sure that we only iterate over IDs that already exist in the 
-    # current timestep this lets us safely add agents
-    ids = deepcopy(keys(world.agents))
+We will implement the `World` for our `Agent`s later, but it will essentially be
+implemented by a `Dict` which maps unique IDs to an `Agent`. Hence, every agent
+will need an ID.
 
-    for id in ids
-        # agents can be killed by other agents, so make sure that we are
-        # not stepping dead agents forward
-        !haskey(world.agents,id) && continue
-
-        a = world.agents[id]
-        agent_step!(a,world)
-    end
-end
-nothing # hide
-```
-The `agent_step!` function will have multiple methods and is the first function
-in this lab that uses dispatch. The method for plants checks if a plant is
-fully grown. If it is, nothing happens. While has not reached is maximum size,
-the plant will grow a little each time `agent_step!` is called.
-```@example non_parametric_agents
-function agent_step!(a::Plant, w::World)
-    if size(a) != max_size(a)
-        grow!(a)
-    end
-end
-nothing # hide
-```
-The `agent_step!` method for animals is different. At the beginning of each step
-an animal looses energy. Afterwards it tries to find some food, which it will
-subsequently eat. If the animal then has less than zero energy it dies and is
-removed from the world. If it has positive energy it will try to reproduce.
-```@example non_parametric_agents
-function agent_step!(a::Animal, w::World)
-    incr_energy!(a,-1)
-    if rand() <= foodprob(a)
-        dinner = find_food(a,w)
-        eat!(a, dinner, w)
-    end
-    if energy(a) <= 0
-        kill_agent!(a,w)
-        return
-    end
-    if rand() <= reprprob(a)
-        reproduce!(a,w)
-    end
-    return a
-end
-nothing # hide
-```
 
 ## The `Grass` Agent
-The first concrete type we implement is the basis of life in our simulation and
-source of all energy: `Grass`.
-Our `Grass` will be growing over time and it will need a certain amount of time
-steps to fully grow before it can be eaten.
-We will realise this with a `countdown` field. At every step of the simulation
-the `countdown` will decrease until it reaches zero at which point the grass
-is fully grown.  This has to be reflected in the fields of our grass struct:
-```@example non_parametric_agents
-mutable struct Grass <: Plant
-    id::Int
-    size::Int
-    max_size::Int
-end
-```
-Note that `Grass` is a mutable type because the `size` field will
-change during the simulation.
-Let us assume that all plants have at least the fields `id`, `size`,
-and `max_size`, because all plants need some time to fully grow. If
-this is the case we can make `Grass` a subtype of `Plant` (via `<:`) and
-define a common interface for all `Plant`s.
-```@example non_parametric_agents
-id(a::Agent) = a.id  # every agent has an ID so we can just define id for Agent here
 
-Base.size(a::Plant) = a.size
-max_size(a::Plant) = a.max_size
-grow!(a::Plant) = a.size += 1
-nothing # hide
-```
-
+Let's start by implementing some `Grass` which will later be able to grow
+during each iteration of our simulation.
 ```@raw html
 <div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
+<header class="admonition-header">Exercise:</header>
 <div class="admonition-body">
 ```
-1. Define a constructor for `Grass` which, given only an ID and a maximum
-   size $m$, will create an instance of `Grass` that has a randomly initialized
-   `size` in the range $(1,m)$.
-2. Create some `Grass` agents inside a `World` and run a few `world_step!`s.
+1. Define a mutable `struct` called `Grass` which is a subtype of `Plant` has the fields
+   `id` (the unique identifier of this `Agent` - every agent needs one!),
+   `size` (the current size of the `Grass`), and `max_size`. All fields should be integers.
+2. Define a constructor for `Grass` which, given only an ID and a maximum size
+   $m$, will create an instance of `Grass` that has a randomly initialized size in
+   the range $[1,m)$. It should also be possible to create `Grass`, just with an ID
+   and a default `max_size` of `10`.
+3. Implement `Base.show(io::IO, g::Grass)` to get custom printing of your `Grass` such that
+   the `Grass` is displayed with its size in percent of its `max_size`.
+
+*Hint:* You can implement a custom `show` method for a new type `MyType` like this:
+```julia
+struct MyType
+    x::Bool
+end
+Base.show(io::IO, a::MyType) = print(io, "MyType $(a.x)")
+```
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-The constructor for grass with random growth countdown:
-```@example non_parametric_agents
-Grass(id,m) = Grass(id, rand(1:m), m)
-
-# optional: overload show function for Grass
-function Base.show(io::IO, g::Grass)
-    x = size(g)/max_size(g) * 100
-    print(io,"🌿 #$(id(g)) $(round(Int,x))% grown")
+Since Julia 1.8 we can also declare some fields of `mutable` structs as `const`,
+which can be used both to prevent us from mutating immutable fields (such as the ID)
+but can also be used by the compiler in certain cases.
+```@example block
+mutable struct Grass <: Plant
+    const id::Int
+    size::Int
+    const max_size::Int
 end
-nothing # hide
-```
-Creation of a world with a few grass agents:
-```@repl non_parametric_agents
-w = World([Grass(id,3) for id in 1:2])
-for _ in 1:3
-    world_step!(w)
-    @info w
+
+Grass(id,m=10) = Grass(id, rand(1:m), m)
+
+function Base.show(io::IO, g::Grass)
+    x = g.size/g.max_size * 100
+    # hint: to type the leaf in the julia REPL you can do:
+    # \:herb:<tab>
+    print(io,"🌿 #$(g.id) $(round(Int,x))% grown")
 end
 ```
 ```@raw html
 </p></details>
 ```
 
-## Sheep eat grass
-Our simulated `Sheep` will have a certain amount of energy $E$, a reproduction
-probability $p_r$, and a probablity to find food $p_f$ in each iteration of our
-simulation. Additionally, each sheep with get some amout of energy from eating a `Grass`
-which is computed with the variable $\Delta E$..
-The corresponding struct then looks like this
-```@example non_parametric_agents
+Creating a few `Grass` agents can then look like this:
+```@repl block
+Grass(1,5)
+g = Grass(2)
+g.id = 5
+```
+
+
+## `Sheep` and `Wolf` Agents
+
+Animals are slightly different from plants. They will have an energy $E$, which
+will be increase (or decrease) if the agent eats (or reproduces) by a certain
+amount $\Delta E$.  Later we will also need a probability to find food $p_f$ and
+a probability to reproduce $p_r$.c
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body">
+```
+1. Define two mutable structs `Sheep` and `Wolf` that are subtypes of `Animal` and have the fields
+   `id`, `energy`, `Δenergy`, `reprprob`, and `foodprob`.
+2. Define constructors with the following default values:
+   - For 🐑: $E=4$, $\Delta E=0.2$, $p_r=0.8$, and $p_f=0.6$.
+   - For 🐺: $E=10$, $\Delta E=8$, $p_r=0.1$, and $p_f=0.2$.
+3. Overload `Base.show` to get pretty printing for your two new animals.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+Solution for `Sheep`
+```@example block
 mutable struct Sheep <: Animal
     id::Int
     energy::Float64
@@ -196,38 +138,94 @@ mutable struct Sheep <: Animal
     reprprob::Float64
     foodprob::Float64
 end
-```
-Again we will use `Sheep` as a generic example for an `Animal` which
-leaves us with the interface below. We only have setters for `energy` because
-all other fields of our animals will stay constant.
-```@example non_parametric_agents
-# get field values
-energy(a::Animal) = a.energy
-Δenergy(a::Animal) = a.Δenergy
-reprprob(a::Animal) = a.reprprob
-foodprob(a::Animal) = a.foodprob
 
-# set field values
-energy!(a::Animal, e) = a.energy = e
-incr_energy!(a::Animal, Δe) = energy!(a, energy(a)+Δe)
+Sheep(id, e=4.0, Δe=0.2, pr=0.8, pf=0.6) = Sheep(id,e,Δe,pr,pf)
 
-# optional: overload the show method for Sheep
 function Base.show(io::IO, s::Sheep)
-    e = energy(s)
-    d = Δenergy(s)
-    pr = reprprob(s)
-    pf = foodprob(s)
-    print(io,"🐑 #$(id(s)) E=$e ΔE=$d pr=$pr pf=$pf")
+    e = s.energy
+    d = s.Δenergy
+    pr = s.reprprob
+    pf = s.foodprob
+    print(io,"🐑 #$(s.id) E=$e ΔE=$d pr=$pr pf=$pf")
 end
-nothing # hide
+```
+Solution for `Wolf`:
+```@example block
+mutable struct Wolf <: Animal
+    const id::Int
+    energy::Float64
+    const Δenergy::Float64
+    const reprprob::Float64
+    const foodprob::Float64
+end
+
+Wolf(id, e=10.0, Δe=8.0, pr=0.1, pf=0.2) = Wolf(id,e,Δe,pr,pf)
+
+function Base.show(io::IO, w::Wolf)
+    e = w.energy
+    d = w.Δenergy
+    pr = w.reprprob
+    pf = w.foodprob
+    print(io,"🐺 #$(w.id) E=$e ΔE=$d pr=$pr pf=$pf")
+end
+```
+```@raw html
+</p></details>
 ```
 
-In every iteration of the simulation each sheep will get a chance to eat some
-grass. The process of one animal eating a plant (or another animal) will be
-implemented via the `eat!(a::Agent,b::Agent,::World)` function.
-Calling the function will cause agent `a` to eat agent `b`, possibly mutating
-them and the world. The `eat!` function will do something different for different
-input types and is our first practical example of [*multiple dispatch*](https://docs.julialang.org/en/v1/manual/methods/).
+```@repl block
+Sheep(4)
+Wolf(5)
+```
+
+
+## The `World`
+
+Before our agents can eat or reproduce we need to build them a `World`.
+The simplest (and as you will later see, somewhat suboptimal) world is essentially
+a `Dict` from IDs to agents. Later we will also need the maximum ID, lets define
+a world with two fields:
+```@example block
+mutable struct World{A<:Agent}
+    agents::Dict{Int,A}
+    max_id::Int
+end
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body">
+```
+Implement a constructor for the `World` which accepts a vector of `Agent`s.
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+```@example block
+function World(agents::Vector{<:Agent})
+    max_id = maximum(a.id for a in agents)
+    World(Dict(a.id=>a for a in agents), max_id)
+end
+
+# optional: overload Base.show
+function Base.show(io::IO, w::World)
+    println(io, typeof(w))
+    for (_,a) in w.agents
+        println(io,"  $a")
+    end
+end
+```
+```@raw html
+</p></details>
+```
+
+
+## `Sheep` eats `Grass`
+
+We can implement the behaviour of our various agents with respect to each other
+by leveraging Julia's multiple dispatch.
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -247,10 +245,10 @@ for the case of wolves eating sheep.
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-```@example non_parametric_agents
-function eat!(a::Sheep, b::Grass, w::World)
-    incr_energy!(a, size(b)*Δenergy(a))
-    b.size = 0
+```@example block
+function eat!(sheep::Sheep, grass::Grass, w::World)
+    sheep.energy += grass.size * sheep.Δenergy
+    grass.size = 0
 end
 nothing # hide
 ```
@@ -259,9 +257,9 @@ nothing # hide
 ```
 Below you can see how a fully grown grass is eaten by a sheep.  The sheep's
 energy changes `size` of the grass is set to zero.
-```@repl non_parametric_agents
-grass = Grass(1,5,5)
-sheep = Sheep(2,10.0,2.0,0.1,0.1)
+```@repl block
+grass = Grass(1)
+sheep = Sheep(2)
 world = World([grass, sheep])
 eat!(sheep,grass,world);
 world
@@ -269,261 +267,52 @@ world
 Note that the order of the arguments has a meaning here. Calling
 `eat!(grass,sheep,world)` results in a `MethodError` which is great, because
 `Grass` cannot eat `Sheep`.
-```@repl non_parametric_agents
+```@repl block
 eat!(grass,sheep,world);
 ```
 
 
+## `Wolf` eats `Sheep`
 
-## Wolves eat sheep
 ```@raw html
 <div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body">
 ```
-Next, implement a `Wolf` with the same properties as the sheep ($E$, $\Delta
-E$, $p_r$, and $p_f$) as well as its `eat!` method. The `eat!` method for wolves increases
-the wolf's energy by `energy(sheep)*Δenergy(wolf)` and kills the sheep (i.e.
-removes the sheep from the world).
-Both `eat!` and `agent_step!` need to be able to remove agents from the world
-so it makes sense to create another function `kill_agent!(::Animal,::World)`.
-Please implement it as well to make your `agent_step!` work.
+The `eat!` method for wolves increases the wolf's energy by `sheep.energy *
+wolf.Δenergy` and kills the sheep (i.e.  removes the sheep from the world).
+There are other situationsin which agents die , so it makes sense to implement
+another function `kill_agent!(::Animal,::World)`.
 
 Hint: You can use `delete!` to remove agents from the dictionary in your world.
-
 ```@raw html
 </div></div>
 <details class = "solution-body">
 <summary class = "solution-header">Solution:</summary><p>
 ```
-
-```@example non_parametric_agents
-mutable struct Wolf <: Animal
-    id::Int
-    energy::Float64
-    Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
-end
-
+```@example block
 function eat!(wolf::Wolf, sheep::Sheep, w::World)
-    incr_energy!(wolf, energy(sheep)*Δenergy(wolf))
+    wolf.energy += sheep.energy * wolf.Δenergy
     kill_agent!(sheep,w)
 end
 
-kill_agent!(a::Animal, w::World) = delete!(w.agents, id(a))
-
-# optional: overload the show method for Wolf
-function Base.show(io::IO, w::Wolf)
-    e = energy(w)
-    d = Δenergy(w)
-    pr = reprprob(w)
-    pf = foodprob(w)
-    print(io,"🐺 #$(id(w)) E=$e ΔE=$d pr=$pr pf=$pf")
-end
+kill_agent!(a::Agent, w::World) = delete!(w.agents, a.id)
 nothing # hide
 ```
 ```@raw html
 </p></details>
 ```
 With a correct `eat!` method you should get results like this:
-```@repl non_parametric_agents
-grass = Grass(1,5,5);
-sheep = Sheep(2,10.0,1.0,0.1,1.0);
-wolf  = Wolf(3,20.0,2.0,0.1,1.0);
+```@repl block
+grass = Grass(1);
+sheep = Sheep(2);
+wolf  = Wolf(3);
 world = World([grass, sheep, wolf])
 eat!(wolf,sheep,world);
 world
 ```
 The sheep is removed from the world and the wolf's energy increased by $\Delta E$.
 
-
-## Finding food for sheep
-
-```@setup non_parametric_agents
-using StatsBase
-function find_food(a::Animal, w::World)
-    as = filter(x->eats(a,x), w.agents |> values |> collect)
-    isempty(as) ? nothing : sample(as)
-end
-
-eats(::Sheep,g::Grass) = size(g) > 0
-eats(::Wolf,::Sheep) = true
-eats(::Agent,::Agent) = false
-```
-
-The next mechanism in our simulation models an animal's search for food.  For
-example, a sheep can only try to eat if the world currently holds some grass.
-The process of finding food for a given animal will be implemented by the
-function `find_food(s::Sheep, ::World)`.
-It will either return `nothing` (if the sheep does not find grass) or sample a
-random `Grass` from all available `Grass` agents.
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-
-Implement the method `find_food(::Sheep, ::World)` which first returns either a
-`Grass` (sampled randomly from all `Grass`es with a size larger than zero) or
-returns `nothing`.
-
-1. Hint: For the functional programming way of coding this can use `filter` and
-   `isa` to filter for a certain type and `StatsBase.sample` to choose a random
-   element from a vector. You can get an `Iterator` of values of your dictionary
-   via `values` which you might want to `collect` before passing it to `sample`.
-2. Hint: You could also program this with a for-loop that iterates over your
-   agents in a random order.
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-```julia
-using StatsBase  # needed for `sample`
-# you can install it by typing `]add StatsBase` in the REPL
-
-function find_food(a::Sheep, w::World)
-    as = filter(x->isa(x,Grass) && size(x)>0, w.agents |> values |> collect)
-    isempty(as) ? nothing : sample(as)
-end
-```
-```@raw html
-</p></details>
-```
-To test your function your can create sheep with different $p_f$.
-A sheep with $p_f=1$ will always find some food if there is some in the world,
-so you should get a result like below.
-```@repl non_parametric_agents
-grass = Grass(1,5,5);
-sheep = Sheep(2,10.0,1.0,0.1,1.0);
-wolf  = Wolf(3,20.0,2.0,0.1,1.0);
-world = World([grass, sheep, wolf])
-
-dinner = find_food(sheep,world)
-eat!(sheep,dinner,world);
-sheep
-world
-```
-
-
-## Finding food for wolves
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Implement a function `find_food(::Wolf, ::World)` which returns either
-`nothing` or a randomly sampled `Sheep` from all existsing sheep.
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-```julia
-function find_food(a::Wolf, w::World)
-    as = filter(x->isa(x,Sheep), w.agents |> values |> collect)
-    isempty(as) ? nothing : sample(as)
-end
-```
-```@raw html
-</p></details>
-```
-
-
-## General food finding
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Identify the code duplications between `find_food(::Sheep,::World)` and
-`find_food(::Wolf,::World)` and generalize the function to
-`find_food(::Animal, ::World)`.
-
-Hint: You can introduce a new function `eats(::Agent,::Agent)::Bool`
-which specifies which type of agent eats another type of agent.
-
-Once you have done this, remove the two more specific functions for sheep and
-wolves and restart the REPL once you have deleted those old methods to clean up
-your namespace.
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-```julia
-function find_food(a::Animal, w::World)
-    as = filter(x->eats(a,x), w.agents |> values |> collect)
-    isempty(as) ? nothing : sample(as)
-end
-
-eats(::Sheep,g::Grass) = size(g) > 0
-eats(::Wolf,::Sheep) = true
-eats(::Agent,::Agent) = false
-```
-```@raw html
-</p></details>
-```
-
-
-## Eating nothing
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-What happens if you call `eat!(wolf, find_food(wolf,world), world)` and there
-are no sheep anymore? Or if the wolf's $p_f<1$?
-
-Consider the world below and the for-loop which represents a simplified
-simulation in which the wolf tries to eat a sheep in each iteration.
-Why does it fail?
-```julia
-sheep = [Sheep(id,10.0,1.0,1.0,1.0) for id in 1:2]
-wolf  = Wolf(3,20.0,1.0,1.0,1.0)
-world = World(vcat(sheep, [wolf]))
-
-for _ in 1:4
-    dinner = find_food(wolf,world)
-    eat!(wolf,dinner,world)
-    @show world
-end
-```
-Hint: You can try to overload the `eat!` function appropriately.
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-```@example non_parametric_agents
-# make sure any animal can also eat `nothing`
-eat!(a::Animal,b::Nothing,w::World) = nothing
-
-sheep = [Sheep(id,10.0,5.0,1.0,1.0) for id in 1:2]
-wolf  = Wolf(3,20.0,10.0,1.0,1.0)
-world = World(vcat(sheep, [wolf]))
-
-for _ in 1:4
-    local dinner # hide
-    @show world
-    dinner = find_food(wolf,world)
-    eat!(wolf,dinner,world)
-end
-```
-
-```@raw html
-</p></details>
-```
 
 ## Reproduction
 Currently our animals can only eat. In our simulation we also want them to
@@ -545,22 +334,23 @@ of the world by one and use that as the new ID for the child.
 ```
 ```julia
 function reproduce!(a::Animal, w::World)
-    energy!(a, energy(a)/2)
+    a.energy = a.energy/2
     new_id = w.max_id + 1
-    â = deepcopy(a)
-    â.id = new_id
-    w.agents[id(â)] = â
+    â = deepcopy(a)
+    â.id = new_id
+    w.agents[â.id] = â
     w.max_id = new_id
 end
 ```
-You can avoid mutating the `id` field by reconstructing the child from scratch:
-```@example non_parametric_agents
+You can avoid mutating the `id` field (which could be considered bad practice)
+by reconstructing the child from scratch:
+```@example block
 function reproduce!(a::A, w::World) where A<:Animal
-    energy!(a, energy(a)/2)
+    a.energy = a.energy/2
     a_vals = [getproperty(a,n) for n in fieldnames(A) if n!=:id]
     new_id = w.max_id + 1
-    â = A(new_id, a_vals...)
-    w.agents[id(â)] = â
+    â = A(new_id, a_vals...)
+    w.agents[â.id] = â
     w.max_id = new_id
 end
 nothing # hide
@@ -569,43 +359,9 @@ nothing # hide
 </p></details>
 ```
 
-
-## Finally! `world_step!`
-
-With all our functions in place we can finally run the `world_step!` function.
-
-Some grass that is growing:
-```@example non_parametric_agents
-gs = [Grass(id,8) for id in 1:3]
-world = World(gs)
-for _ in 1:4
-    world_step!(world)
-    @show world
-end
+```@repl block
+s1, s2 = Sheep(1), Sheep(2)
+w = World([s1, s2])
+reproduce!(s1, w);
+w
 ```
-
-Some sheep that are reproducing and then dying:
-```@example non_parametric_agents
-ss = [Sheep(id,5.0,2.0,1.0,1.0) for id in 1:2]
-world = World(ss)
-for _ in 1:3
-    world_step!(world)
-    @show world
-end
-```
-
-All of it together!
-```@example non_parametric_agents
-gs = [Grass(id,5) for id in 1:5]
-ss = [Sheep(id,10.0,5.0,0.5,0.5) for id in 6:10]
-ws = [Wolf(id,20.0,10.,0.1,0.1) for id in 11:12]
-
-world = World(vcat(gs, ss, ws))
-for _ in 1:2
-    world_step!(world)
-    @show world
-end
-```
-
-The code for this lab is inspired by the predator-prey model of
-[`Agents.jl`](https://juliadynamics.github.io/Agents.jl/v3.5/examples/predator_prey/)
