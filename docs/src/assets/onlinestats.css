@@ -31,15 +31,6 @@ img, svg {
     margin-bottom: 6px;
 }
 
-.docs-sidebar {
-    border-right: 0px !important;
-}
-
-li.is-active {
-    border-top: 0px !important;
-    border-bottom: 0px !important;
-}
-
 .content pre {
     border: 1px;
     border-radius: 4px;
@@ -62,10 +53,6 @@ ul.internal {
     border-radius: 4px 4px 0px 0px;
 }
 
-#documenter .docs-main header.docs-navbar {
-    border-bottom: 0px;
-}
-
 .docstring {
     border-radius: 4px !important;
 }
@@ -75,11 +62,11 @@ ul.internal {
 }
 
 #documenter-search-query {
-    border: 0px !important;
+    border: 1px;
 }
 
 .docs-menu {
-    border-top: 0px !important;
+    border-top: 1px;
     margin-top: 16px !important;
     overflow-x: hidden;
 }
