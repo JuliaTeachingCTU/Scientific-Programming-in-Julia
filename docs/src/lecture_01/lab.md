@@ -197,7 +197,7 @@ You can check that it is a subtype of the `Function` abstract type, with the sub
 ```@repl lab01_base
 typeof(polynomial) <: Function
 ```
-These concepts will be expanded further in the type [lecture](@ref type_system), however for now note that this construction is quite useful for example if we wanted to create derivative rules for our function `derivativeof(::typeof(polynomial), ...)`.
+These concepts will be expanded further in the [type system lecture](@ref type_system), however for now note that this construction is quite useful for example if we wanted to create derivative rules for our function `derivativeof(::typeof(polynomial), ...)`.
 
 Looking at mathematical operators `+`, `*`, we can see that in Julia they are also standalone functions. 
 ```@repl lab01_base
@@ -265,7 +265,7 @@ function polynomial(a, x)
     # function body
 end
 ```
-More on this in the [lecture](@ref pkg_lecture) about pkg development.
+More on this in lecture 4 about pkg development.
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -340,7 +340,7 @@ As opposed to the basic definition of `a` type the array is filled with `Float64
 typeof(at), eltype(at)
 polynomial(at, x)
 ```
-With round brackets over a fixed length vector we get the `Tuple` type, which is so called immutable "array" of a fixed size (its elements cannot be changed, unless initialized from scratch). Each element can be of a different type, but here we have only one and thus the `Tuple` is aliased into `NTuple`. There are some performance benefits for using immutable structure, which will be discussed [later](@ref type_system) or [even later](@ref perf_lecture).
+With round brackets over a fixed length vector we get the `Tuple` type, which is so called immutable "array" of a fixed size (its elements cannot be changed, unless initialized from scratch). Each element can be of a different type, but here we have only one and thus the `Tuple` is aliased into `NTuple`. There are some performance benefits for using immutable structure, which will be discussed [later](@ref type_system).
 
 
 Defining `key=value` pairs inside round brackets creates a structure called `NamedTuple`, which has the same properties as `Tuple` and furthermore its elements can be conveniently accessed by dot syntax, e.g. `ant.a₀`.
@@ -384,7 +384,7 @@ By swapping square brackets for round in the array comprehension `ac` above, we 
 ag = (2i^2 + 1 for i in -2:1)
 typeof(ag), eltype(ag)
 ```
-You may notice that the element type in this case is `Any`, which means that a function using this generator as an argument cannot specialize based on the type and has to infer it every time an element is generated/returned. We will touch on how this affects performance in one of the later [lectures](@ref perf_lecture).
+You may notice that the element type in this case is `Any`, which means that a function using this generator as an argument cannot specialize based on the type and has to infer it every time an element is generated/returned. We will touch on how this affects performance in one of the later lectures.
 
 ```@repl lab01_base
 polynomial(ag, x)
@@ -568,7 +568,7 @@ The output of such command usually indicates the general environment located at 
 pkg> status
 Status `~/.julia/environments/v1.6/Project.toml` (empty project)
 ```
-Generally one should avoid working in the general environment, with the exception of some generic pkgs, such as `PkgTemplates.jl`, which is used for generating library templates/folder structure like the one above ([link](https://github.com/invenia/PkgTemplates.jl)), more on this in the [lecture](@ref pkg_lecture) on pkg development. 
+Generally one should avoid working in the general environment, with the exception of some generic pkgs, such as `PkgTemplates.jl`, which is used for generating library templates/folder structure like the one above ([link](https://github.com/invenia/PkgTemplates.jl)), more on this in the lecture on pkg development. 
 
 
 ```@raw html
@@ -586,7 +586,7 @@ nothing #hide
 **HINTS:**
 - In pkg mode use the command `activate` and `status` to check the presence. 
 - In order to import the functionality from other package, lookup the keyword `using` in the repl help mode `?`. 
-- The functionality that we want to use is the `@btime` macro (it acts almost like a function but with a different syntax `@macro arg1 arg2 arg3 ...`). More on macros in the corresponding [lecture](@ref macro_lecture).
+- The functionality that we want to use is the `@btime` macro (it acts almost like a function but with a different syntax `@macro arg1 arg2 arg3 ...`). More on macros in lecture 7.
 
 **BONUS**: Compare the output of `polynomial(aexp, x)` with the value of `exp(x)`, which it approximates.
 
@@ -599,7 +599,7 @@ nothing #hide
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
-There are other options to import a function/macro from a different package, however for now let's keep it simple with the `using Module` syntax, that brings to the REPL, all the variables/function/macros exported by the `BenchmarkTools` pkg. If `@btime` is exported, which it is, it can be accessed without specification i.e. just by calling `@btime` without the need for `BenchmarkTools.@btime`. More on the architecture of pkg/module loading in the package developement [lecture](@ref pkg_lecture).
+There are other options to import a function/macro from a different package, however for now let's keep it simple with the `using Module` syntax, that brings to the REPL, all the variables/function/macros exported by the `BenchmarkTools` pkg. If `@btime` is exported, which it is, it can be accessed without specification i.e. just by calling `@btime` without the need for `BenchmarkTools.@btime`. More on the architecture of pkg/module loading in the package developement lecture.
 ```@repl lab01_base
 using BenchmarkTools
 @btime polynomial(aexp, x)
@@ -623,7 +623,7 @@ Instead of `if-else` statements that would throw an error for different types, i
 methods(evalpoly)
 ```
 
-Another avenue, that we have only touched with the `BenchmarkTools`, is performance and will be further explored in the later [lectures](@ref perf_lecture).
+Another avenue, that we have only touched with the `BenchmarkTools`, is performance and will be further explored in the later lectures.
 
 With the next lecture focused on typing in Julia, it is worth noting that polynomials lend themselves quite nicely to a definition of a custom type, which can help both readability of the code as well further extensions.
 ```julia

@@ -6,7 +6,7 @@ simulation will be turn-based and the agents will be able to eat each other,
 reproduce, and die in every iteration. 
 At every iteration of the simulation each agent will step forward in time
 via the `agent_step!` function. The steps for the `agent_step!` methods of
-animals and plants are written below in pseudocode.c
+animals and plants are written below in pseudocode.
 ```
 # for animals:
 agent_step!(animal, world)
