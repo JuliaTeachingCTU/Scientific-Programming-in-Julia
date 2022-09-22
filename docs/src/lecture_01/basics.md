@@ -57,7 +57,7 @@ Function properties:
 - return value 
   -  the last line of the function declaration, 
   - ```return``` keyword
-- zeros cost abstraction
+- zero cost abstraction
 
 ### Different style of writing code
 
