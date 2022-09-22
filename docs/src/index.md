@@ -99,5 +99,6 @@ some helpful concepts for this course.
 - [Think Julia: How to Think Like a Computer Scientist](https://benlauwens.github.io/ThinkJulia.jl/latest/book.html#chap01)
 - [From Zero to Julia!](https://techytok.com/from-zero-to-julia/)
 - [WikiBooks](https://en.wikibooks.org/wiki/Introducing_Julia)
-* [Justin Krumbiel's](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/) excellent introduction to the package manager.
-* [juliadatascience.io](https://juliadatascience.io) contains an excellent introduction to plotting with Makie.
+- [Justin Krumbiel's](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/) excellent introduction to the package manager.
+- [juliadatascience.io](https://juliadatascience.io) contains an excellent introduction to plotting with Makie.
+- MIT Course: [Julia Computation](https://github.com/mitmath/JuliaComputation)
