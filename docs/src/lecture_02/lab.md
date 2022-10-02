@@ -58,7 +58,7 @@ during each iteration of our simulation.
    `size` (the current size of the `Grass`), and `max_size`. All fields should be integers.
 2. Define a constructor for `Grass` which, given only an ID and a maximum size
    $m$, will create an instance of `Grass` that has a randomly initialized size in
-   the range $(1,m)$. It should also be possible to create `Grass`, just with an ID
+   the range $[1,m]$. It should also be possible to create `Grass`, just with an ID
    and a default `max_size` of `10`.
 3. Implement `Base.show(io::IO, g::Grass)` to get custom printing of your `Grass` such that
    the `Grass` is displayed with its size in percent of its `max_size`.
