@@ -21,8 +21,8 @@ BRUTE. Your file cannot contain any package dependencies.  For example, having a
 ## Counting Agents
 
 To monitor the different populations in our world we need a function that
-counts each type of agent. For `AbstractAnimal`s we simply have to count how
-many of each type are currently in our `World`. In the case of `AbstractPlant`s
+counts each type of agent. For `Animal`s we simply have to count how
+many of each type are currently in our `World`. In the case of `Plant`s
 we will use the fraction of `size(plant)/max_size(plant)` as a measurement
 quantity.
 
@@ -32,10 +32,10 @@ quantity.
 <div class="admonition-body">
 ```
 1. Implement a function `agent_count` that can be called on a single
-   `AbstractAgent` and returns a number between $(0,1)$ (i.e. always `1` for animals;
+   `Agent` and returns a number between $(0,1)$ (i.e. always `1` for animals;
    and `size(plant)/max_size(plant)` for plants).
 
-2. Add a method for a vector of agents `Vector{<:AbstractAgent}` which sums all
+2. Add a method for a vector of agents `Vector{<:Agent}` which sums all
    agent counts.
 
 3. Add a method for a `World` which returns a dictionary
