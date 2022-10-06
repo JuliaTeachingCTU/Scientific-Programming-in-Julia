@@ -235,7 +235,7 @@ the same.
 [From Julia documentation](https://docs.julialang.org/en/v1/manual/types/#man-abstract-types):
 Abstract types cannot be instantiated, which means that we cannot create a variable that
 would have an abstract type (try `typeof(Number(1f0))`). Also, abstract types cannot have
-any fields, therefore there is no composition (there are lengty discussions of why this is so,
+any fields, therefore there is no composition (there are lengthy discussions of why this is so,
 one of the most definite arguments of creators is that abstract types with fields frequently lead
 to children types not using some fields (consider circle vs. ellipse)).
 
