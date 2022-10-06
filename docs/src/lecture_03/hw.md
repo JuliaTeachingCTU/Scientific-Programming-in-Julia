@@ -60,10 +60,11 @@ random `Sheep`, etc.
 parts that are specific to the concrete animal types to a separate function.
 E.g. you could define a function `eats(::Wolf, ::Sheep) = true`, etc.
 
+You can check your solution with the public test:
 ```@repl block
 sheep = Sheep(1,pf=1.0)
 world = World([Grass(2), sheep])
-find_food(sheep, world)
+find_food(sheep, world) isa Plant{Grass}
 ```
 ```@raw html
 </div></div>

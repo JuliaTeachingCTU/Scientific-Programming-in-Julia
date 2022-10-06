@@ -67,6 +67,8 @@ Implement custom `getproperty`/`setproperty!` methods which allow to access the
 <summary class = "solution-header">Solution:</summary><p>
 ```
 ```@example forward
+# NOTE: the @forward macro we will discuss in a later lecture is based on this
+
 function Base.getproperty(s::⚥Sheep, name::Symbol)
     if name in fieldnames(Sheep)
         getfield(s.sheep,name)
@@ -166,12 +168,12 @@ Now we can create a *concrete* type `Animal` with the two parametric types
 and the fields that we already know from lab 2.
 ```@example parametric
 mutable struct Animal{A<:AnimalSpecies} <: Agent{A}
-    id::Int
+    const id::Int
     energy::Float64
-    Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
-    sex::Sex
+    const Δenergy::Float64
+    const reprprob::Float64
+    const foodprob::Float64
+    const sex::Sex
 end
 ```
 To create an instance of `Animal` we have to specify the parametric type
@@ -279,12 +281,6 @@ function eat!(wolf::Animal{Wolf}, sheep::Animal{Sheep}, w::World)
     wolf.energy += sheep.energy * wolf.Δenergy
     kill_agent!(sheep,w)
 end
-
-# let's add this later when we have `Plant`s
-# function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, w::World)
-#     sheep.energy += grass.size * sheep.Δenergy
-#     grass.size = 0
-# end
 
 # no change
 # eat!(::Animal, ::Nothing, ::World) = nothing
