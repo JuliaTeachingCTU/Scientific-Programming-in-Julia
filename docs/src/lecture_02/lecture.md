@@ -269,7 +269,23 @@ using BenchmarkTools
 move(a,b) = typeof(a)(a.x+b.x, a.y+b.y)
 x = [PositionF64(rand(), rand()) for _ in 1:100]
 y = [VaguePosition(rand(), rand()) for _ in 1:100]
+```
+```julia
 @benchmark reduce(move, x)
+```
+```
+BenchmarkTools.Trial: 10000 samples with 950 evaluations.
+ Range (min … max):   96.184 ns …  2.682 μs  ┊ GC (min … max): 0.00% … 96.11%
+ Time  (median):      97.281 ns              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   100.516 ns ± 58.347 ns  ┊ GC (mean ± σ):  1.41% ±  2.35%
+
+  ▇██▆▄▄▄▄▅▄▃▃▃▄▃▃▂▂▂▁▁                                        ▂
+  █████████████████████▇█▇▇▇▅▆▆▇▇▇▇▇▇▇▆▆▆▇▇▆▆▇▇▆▆▆▅▆▆▄▅▆▅▃▅▅▅▆ █
+  96.2 ns       Histogram: log(frequency) by time       120 ns <
+
+ Memory estimate: 32 bytes, allocs estimate: 1.
+```
+```julia
 @benchmark reduce(move, y)
 ```
 ```
