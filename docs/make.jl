@@ -51,6 +51,11 @@ lecture_02 = [
     "Homework" => "./lecture_02/hw.md"
 ]
 
+lecture_03 = [
+    "Lab" => "./lecture_03/lab.md"
+    "Homework" => "./lecture_03/hw.md"
+]
+
 makedocs(;
     modules = [Scientific_Programming_in_Julia],
     authors = "JuliaTeachingCTU",
@@ -69,6 +74,7 @@ makedocs(;
         "Projects" => "projects.md",
         "1: Introduction" => lecture_01,
         "2: The power of Type System & multiple dispatch" => lecture_02,
+        "3: Design Patterns" => lecture_03,
     ],
 )
 
