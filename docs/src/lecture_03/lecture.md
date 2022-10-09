@@ -232,7 +232,7 @@ Simple in Julia:
 ```
 eat!(w1::Sheep, a::Grass, w::World)=
 eat!(w1::Sheep, a::Flower, w::World)=
-eat!(w1::Sheep, a::Flower, w::World)=
+eat!(w1::Sheep, a::PoisonousGrass, w::World)=
 ```
 Boiler-plate code can be automated by macros.
 
