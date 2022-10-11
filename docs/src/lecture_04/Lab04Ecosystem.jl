@@ -118,7 +118,7 @@ end
 mates(a::Animal{A}, b::Animal{A}) where A<:AnimalSpecies = a.sex != b.sex
 mates(::Agent, ::Agent) = false
 
-function reproduce!(a::Animal{A}, w::World) where {A,S}
+function reproduce!(a::Animal{A}, w::World) where A
     m = find_mate(a,w)
     if !isnothing(m)
         a.energy = a.energy / 2
