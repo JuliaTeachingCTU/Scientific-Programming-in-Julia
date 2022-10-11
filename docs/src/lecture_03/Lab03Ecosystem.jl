@@ -111,7 +111,6 @@ function eat!(wolf::Animal{Wolf}, sheep::Animal{Sheep}, w::World)
     wolf.energy += sheep.energy * wolf.Δenergy
     kill_agent!(sheep,w)
 end
-eat!(::Animal, ::Nothing, ::World) = nothing
 
 kill_agent!(a::Agent, w::World) = delete!(w.agents, a.id)
 
