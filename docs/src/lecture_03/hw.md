@@ -2,7 +2,7 @@
 
 In this homework we will implement a function `find_food` and practice the use of closures.
 The solution of lab 3 can be found
-[here](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_03/Lab03Ecosystem.jl). You can use this file and add the code that you write
+[here](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2022W/docs/src/lecture_03/Lab03Ecosystem.jl). You can use this file and add the code that you write
 for the homework to it.
 
 ## How to submit?

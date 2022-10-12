@@ -96,21 +96,18 @@ end
 
 Base.show(io::IO, ::Type{Grass}) = print(io,"🌿")
 
-function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, w::World)
-    sheep.energy += grass.size * sheep.Δenergy
-    grass.size = 0
-end
 
 ########## Eating / Dying / Reproducing  ########################################
 
-function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, ::World)
-    sheep.energy += grass.size * sheep.Δenergy
-    grass.size = 0
-end
 function eat!(wolf::Animal{Wolf}, sheep::Animal{Sheep}, w::World)
     wolf.energy += sheep.energy * wolf.Δenergy
     kill_agent!(sheep,w)
 end
+function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, ::World)
+    sheep.energy += grass.size * sheep.Δenergy
+    grass.size = 0
+end
+eat!(::Animal, ::Nothing, ::World) = nothing
 
 kill_agent!(a::Agent, w::World) = delete!(w.agents, a.id)
 
@@ -133,6 +130,53 @@ function reproduce!(a::Animal{A}, w::World) where A
     end
 end
 
+# finding food / who eats who
+function find_food(a::Animal, w::World)
+    as = filter(x -> eats(a,x), w.agents |> values |> collect)
+    isempty(as) ? nothing : sample(as)
+end
+eats(::Animal{Sheep},g::Plant{Grass}) = g.size > 0
+eats(::Animal{Wolf},::Animal{Sheep}) = true
+eats(::Agent,::Agent) = false
+
+
+##########  Stepping through time  #############################################
+
+function agent_step!(p::Plant, ::World)
+    if p.size < p.max_size
+        p.size += 1
+    end
+end
+function agent_step!(a::Animal, w::World)
+    a.energy -= 1
+    if rand() <= a.foodprob
+        dinner = find_food(a,w)
+        eat!(a, dinner, w)
+    end
+    if a.energy <= 0
+        kill_agent!(a,w)
+        return
+    end
+    if rand() <= a.reprprob
+        reproduce!(a,w)
+    end
+    return a
+end
+
+function world_step!(world::World)
+    # make sure that we only iterate over IDs that already exist in the
+    # current timestep this lets us safely add agents
+    ids = copy(keys(world.agents))
+
+    for id in ids
+        # agents can be killed by other agents, so make sure that we are
+        # not stepping dead agents forward
+        !haskey(world.agents,id) && continue
+
+        a = world.agents[id]
+        agent_step!(a,world)
+    end
+end
 
 
 ##########  Counting agents  ####################################################
