@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_04/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/><link href="../../assets/onlinestats.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design Patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox" checked/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Package development, Unit test &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#Warmup-Stepping-through-time"><span>Warmup - Stepping through time</span></a></li><li><a class="tocitem" href="#Package:-Ecosystem.jl"><span>Package: <code>Ecosystem.jl</code></span></a></li></ul></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">4: Package development, Unit test &amp; CI</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2022W/docs/src/lecture_04/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Lab-04:-Packaging"><a class="docs-heading-anchor" href="#Lab-04:-Packaging">Lab 04: Packaging</a><a id="Lab-04:-Packaging-1"></a><a class="docs-heading-anchor-permalink" href="#Lab-04:-Packaging" title="Permalink"></a></h1><h2 id="Warmup-Stepping-through-time"><a class="docs-heading-anchor" href="#Warmup-Stepping-through-time">Warmup - Stepping through time</a><a id="Warmup-Stepping-through-time-1"></a><a class="docs-heading-anchor-permalink" href="#Warmup-Stepping-through-time" title="Permalink"></a></h2><p>We now have all necessary functions in place to make agents perform one step of our simulation.  At the beginning of each step an animal looses energy. Afterwards it tries to find some food, which it will subsequently eat. If the animal then has less than zero energy it dies and is removed from the world. If it has positive energy it will try to reproduce.</p><p>Plants have a simpler life. They simply grow if they have not reached their maximal size.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><ol><li>Implement a method <code>agent_step!(::Animal,::World)</code> which performs the following steps:<ul><li>Decrement <span>$E$</span> of agent by <code>1.0</code>.</li><li>With <span>$p_f$</span>, try to find some food and eat it.</li><li>If <span>$E&lt;0$</span>, the animal dies.</li><li>With <span>$p_r$</span>, try to reproduce.</li></ul></li><li>Implement a method <code>agent_step!(::Plant,::World)</code> which performs the following steps:<ul><li>If the size of the plant is smaller than <code>max_size</code>, increment the plant&#39;s size by one.</li></ul></li></ol></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function agent_step!(p::Plant, w::World)
+    if p.size &lt; p.max_size
+        p.size += 1
+    end
+end
+
+function agent_step!(a::Animal, w::World)
+    a.energy -= 1
+    if rand() &lt;= a.foodprob
+        dinner = find_food(a,w)
+        eat!(a, dinner, w)
+    end
+    if a.energy &lt; 0
+        kill_agent!(a,w)
+        return
+    end
+    if rand() &lt;= a.reprprob
+        reproduce!(a,w)
+    end
+end</code></pre></p></details><p>An <code>agent_step!</code> of a sheep in a world with a single grass should make it consume the grass, let it reproduce, and eventually die if there is no more food and its energy is at zero:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep = Sheep(1,2.0,2.0,1.0,1.0,male);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = Grass(2,2,2);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World([sheep, grass])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🌿  #2 100% grown
+  🐑♂ #1 E=2.0 ΔE=2.0 pr=1.0 pf=1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; agent_step!(sheep, world); world</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🌿  #2 0% grown
+  🐑♂ #1 E=5.0 ΔE=2.0 pr=1.0 pf=1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; # NOTE: The second agent step leads to an error.
+       # Can you figure out what is the problem here?
+       agent_step!(sheep, world); world</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching eat!(::Main.Animal{🐑}, ::Nothing, ::Main.World{Main.Agent})
+Closest candidates are:
+  eat!(::Main.Animal{🐑}, <span class="sgr91">::Main.Plant{🌿}</span>, ::Main.World) at ~/work/Scientific-Programming-in-Julia/Scientific-Programming-in-Julia/docs/src/lecture_03/Lab03Ecosystem.jl:106
+  eat!(<span class="sgr91">::Main.Animal{🐺}</span>, <span class="sgr91">::Main.Animal{🐑}</span>, ::Main.World) at ~/work/Scientific-Programming-in-Julia/Scientific-Programming-in-Julia/docs/src/lecture_03/Lab03Ecosystem.jl:110</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>Finally, lets implement a function <code>world_step!</code> which performs one <code>agent_step!</code> for each agent.  Note that simply iterating over all agents could lead to problems because we are mutating the agent dictionary.  One solution for this is to iterate over a copy of all agent IDs that are present when starting to iterate over agents.  Additionally, it could happen that an agent is killed by another one before we apply <code>agent_step!</code> to it. To solve this you can check if a given ID is currently present in the <code>World</code>.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs"># make it possible to eat nothing
+eat!(::Animal, ::Nothing, ::World) = nothing
+
+function world_step!(world::World)
+    # make sure that we only iterate over IDs that already exist in the
+    # current timestep this lets us safely add agents
+    ids = copy(keys(world.agents))
+
+    for id in ids
+        # agents can be killed by other agents, so make sure that we are
+        # not stepping dead agents forward
+        !haskey(world.agents,id) &amp;&amp; continue
+
+        a = world.agents[id]
+        agent_step!(a,world)
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world_step! (generic function with 1 method)</code></pre></p></details><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; w = World([Sheep(1), Sheep(2), Wolf(3)])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐑♀ #2 E=4.0 ΔE=0.2 pr=0.8 pf=0.6
+  🐺♂ #3 E=10.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♂ #1 E=4.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐑♀ #4 E=1.5 ΔE=0.2 pr=0.8 pf=0.6
+  🐑♀ #2 E=1.5 ΔE=0.2 pr=0.8 pf=0.6
+  🐺♂ #3 E=9.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♂ #1 E=3.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐑♀ #5 E=0.25 ΔE=0.2 pr=0.8 pf=0.6
+  🐑♀ #4 E=0.5 ΔE=0.2 pr=0.8 pf=0.6
+  🐑♀ #2 E=0.25 ΔE=0.2 pr=0.8 pf=0.6
+  🐺♂ #3 E=8.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♂ #1 E=2.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐺♂ #3 E=23.0 ΔE=8.0 pr=0.1 pf=0.2</code></pre><p>Finally, lets run a few simulation steps and plot the solution</p><pre><code class="language-julia hljs">n_grass  = 1_000
+n_sheep  = 40
+n_wolves = 4
+
+gs = [Grass(id) for id in 1:n_grass]
+ss = [Sheep(id) for id in (n_grass+1):(n_grass+n_sheep)]
+ws = [Wolf(id) for id in (n_grass+n_sheep+1):(n_grass+n_sheep+n_wolves)]
+w  = World(vcat(gs,ss,ws))
+
+counts = Dict(n=&gt;[c] for (n,c) in agent_count(w))
+for _ in 1:100
+    world_step!(w)
+    for (n,c) in agent_count(w)
+        push!(counts[n],c)
+    end
+end
+
+using Plots
+plt = plot()
+tolabel(::Type{Animal{Sheep}}) = &quot;Sheep&quot;
+tolabel(::Type{Animal{Wolf}}) = &quot;Wolf&quot;
+tolabel(::Type{Plant{Grass}}) = &quot;Grass&quot;
+for (A,c) in counts
+    plot!(plt, c, label=tolabel(A), lw=2)
+end
+plt</code></pre><?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="400" viewBox="0 0 2400 1600">
+<defs>
+  <clipPath id="clip450">
+    <rect x="0" y="0" width="2400" height="1600"/>
+  </clipPath>
+</defs>
+<path clip-path="url(#clip450)" d="
+M0 1600 L2400 1600 L2400 0 L0 0  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip451">
+    <rect x="480" y="0" width="1681" height="1600"/>
+  </clipPath>
+</defs>
+<path clip-path="url(#clip450)" d="
+M172.015 1486.45 L2352.76 1486.45 L2352.76 47.2441 L172.015 47.2441  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip452">
+    <rect x="172" y="47" width="2182" height="1440"/>
+  </clipPath>
+</defs>
+<polyline clip-path="url(#clip452)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  213.161,1486.45 213.161,47.2441 
+  "/>
+<polyline clip-path="url(#clip452)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  727.487,1486.45 727.487,47.2441 
+  "/>
+<polyline clip-path="url(#clip452)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1241.81,1486.45 1241.81,47.2441 
+  "/>
+<polyline clip-path="url(#clip452)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1756.14,1486.45 1756.14,47.2441 
+  "/>
+<polyline clip-path="url(#clip452)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  2270.46,1486.45 2270.46,47.2441 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,1486.45 2352.76,1486.45 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  213.161,1486.45 213.161,1467.55 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  727.487,1486.45 727.487,1467.55 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1241.81,1486.45 1241.81,1467.55 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1756.14,1486.45 1756.14,1467.55 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  2270.46,1486.45 2270.46,1467.55 
+  "/>
+<path clip-path="url(#clip450)" d="M213.161 1517.37 Q209.55 1517.37 207.721 1520.93 Q205.916 1524.47 205.916 1531.6 Q205.916 1538.71 207.721 1542.27 Q209.55 1545.82 213.161 1545.82 Q216.795 1545.82 218.601 1542.27 Q220.429 1538.71 220.429 1531.6 Q220.429 1524.47 218.601 1520.93 Q216.795 1517.37 213.161 1517.37 M213.161 1513.66 Q218.971 1513.66 222.027 1518.27 Q225.105 1522.85 225.105 1531.6 Q225.105 1540.33 222.027 1544.94 Q218.971 1549.52 213.161 1549.52 Q207.351 1549.52 204.272 1544.94 Q201.216 1540.33 201.216 1531.6 Q201.216 1522.85 204.272 1518.27 Q207.351 1513.66 213.161 1513.66 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M706.758 1544.91 L723.077 1544.91 L723.077 1548.85 L701.133 1548.85 L701.133 1544.91 Q703.795 1542.16 708.378 1537.53 Q712.984 1532.88 714.165 1531.53 Q716.41 1529.01 717.29 1527.27 Q718.193 1525.51 718.193 1523.82 Q718.193 1521.07 716.248 1519.33 Q714.327 1517.6 711.225 1517.6 Q709.026 1517.6 706.572 1518.36 Q704.142 1519.13 701.364 1520.68 L701.364 1515.95 Q704.188 1514.82 706.642 1514.24 Q709.095 1513.66 711.133 1513.66 Q716.503 1513.66 719.697 1516.35 Q722.892 1519.03 722.892 1523.52 Q722.892 1525.65 722.082 1527.57 Q721.295 1529.47 719.188 1532.07 Q718.609 1532.74 715.508 1535.95 Q712.406 1539.15 706.758 1544.91 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M732.938 1514.29 L751.294 1514.29 L751.294 1518.22 L737.22 1518.22 L737.22 1526.7 Q738.239 1526.35 739.257 1526.19 Q740.276 1526 741.294 1526 Q747.081 1526 750.461 1529.17 Q753.841 1532.34 753.841 1537.76 Q753.841 1543.34 750.368 1546.44 Q746.896 1549.52 740.577 1549.52 Q738.401 1549.52 736.132 1549.15 Q733.887 1548.78 731.48 1548.04 L731.48 1543.34 Q733.563 1544.47 735.785 1545.03 Q738.007 1545.58 740.484 1545.58 Q744.489 1545.58 746.827 1543.48 Q749.165 1541.37 749.165 1537.76 Q749.165 1534.15 746.827 1532.04 Q744.489 1529.94 740.484 1529.94 Q738.609 1529.94 736.734 1530.35 Q734.882 1530.77 732.938 1531.65 L732.938 1514.29 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M1216.51 1514.29 L1234.87 1514.29 L1234.87 1518.22 L1220.79 1518.22 L1220.79 1526.7 Q1221.81 1526.35 1222.83 1526.19 Q1223.85 1526 1224.87 1526 Q1230.65 1526 1234.03 1529.17 Q1237.41 1532.34 1237.41 1537.76 Q1237.41 1543.34 1233.94 1546.44 Q1230.47 1549.52 1224.15 1549.52 Q1221.97 1549.52 1219.71 1549.15 Q1217.46 1548.78 1215.05 1548.04 L1215.05 1543.34 Q1217.14 1544.47 1219.36 1545.03 Q1221.58 1545.58 1224.06 1545.58 Q1228.06 1545.58 1230.4 1543.48 Q1232.74 1541.37 1232.74 1537.76 Q1232.74 1534.15 1230.4 1532.04 Q1228.06 1529.94 1224.06 1529.94 Q1222.18 1529.94 1220.31 1530.35 Q1218.46 1530.77 1216.51 1531.65 L1216.51 1514.29 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M1256.63 1517.37 Q1253.02 1517.37 1251.19 1520.93 Q1249.38 1524.47 1249.38 1531.6 Q1249.38 1538.71 1251.19 1542.27 Q1253.02 1545.82 1256.63 1545.82 Q1260.26 1545.82 1262.07 1542.27 Q1263.9 1538.71 1263.9 1531.6 Q1263.9 1524.47 1262.07 1520.93 Q1260.26 1517.37 1256.63 1517.37 M1256.63 1513.66 Q1262.44 1513.66 1265.49 1518.27 Q1268.57 1522.85 1268.57 1531.6 Q1268.57 1540.33 1265.49 1544.94 Q1262.44 1549.52 1256.63 1549.52 Q1250.82 1549.52 1247.74 1544.94 Q1244.68 1540.33 1244.68 1531.6 Q1244.68 1522.85 1247.74 1518.27 Q1250.82 1513.66 1256.63 1513.66 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M1729.99 1514.29 L1752.21 1514.29 L1752.21 1516.28 L1739.67 1548.85 L1734.78 1548.85 L1746.59 1518.22 L1729.99 1518.22 L1729.99 1514.29 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M1761.38 1514.29 L1779.74 1514.29 L1779.74 1518.22 L1765.66 1518.22 L1765.66 1526.7 Q1766.68 1526.35 1767.7 1526.19 Q1768.72 1526 1769.74 1526 Q1775.52 1526 1778.9 1529.17 Q1782.28 1532.34 1782.28 1537.76 Q1782.28 1543.34 1778.81 1546.44 Q1775.34 1549.52 1769.02 1549.52 Q1766.84 1549.52 1764.58 1549.15 Q1762.33 1548.78 1759.92 1548.04 L1759.92 1543.34 Q1762.01 1544.47 1764.23 1545.03 Q1766.45 1545.58 1768.93 1545.58 Q1772.93 1545.58 1775.27 1543.48 Q1777.61 1541.37 1777.61 1537.76 Q1777.61 1534.15 1775.27 1532.04 Q1772.93 1529.94 1768.93 1529.94 Q1767.05 1529.94 1765.18 1530.35 Q1763.33 1530.77 1761.38 1531.65 L1761.38 1514.29 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2230.07 1544.91 L2237.71 1544.91 L2237.71 1518.55 L2229.4 1520.21 L2229.4 1515.95 L2237.66 1514.29 L2242.34 1514.29 L2242.34 1544.91 L2249.98 1544.91 L2249.98 1548.85 L2230.07 1548.85 L2230.07 1544.91 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2269.42 1517.37 Q2265.81 1517.37 2263.98 1520.93 Q2262.18 1524.47 2262.18 1531.6 Q2262.18 1538.71 2263.98 1542.27 Q2265.81 1545.82 2269.42 1545.82 Q2273.06 1545.82 2274.86 1542.27 Q2276.69 1538.71 2276.69 1531.6 Q2276.69 1524.47 2274.86 1520.93 Q2273.06 1517.37 2269.42 1517.37 M2269.42 1513.66 Q2275.23 1513.66 2278.29 1518.27 Q2281.37 1522.85 2281.37 1531.6 Q2281.37 1540.33 2278.29 1544.94 Q2275.23 1549.52 2269.42 1549.52 Q2263.61 1549.52 2260.53 1544.94 Q2257.48 1540.33 2257.48 1531.6 Q2257.48 1522.85 2260.53 1518.27 Q2263.61 1513.66 2269.42 1513.66 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2299.58 1517.37 Q2295.97 1517.37 2294.14 1520.93 Q2292.34 1524.47 2292.34 1531.6 Q2292.34 1538.71 2294.14 1542.27 Q2295.97 1545.82 2299.58 1545.82 Q2303.22 1545.82 2305.02 1542.27 Q2306.85 1538.71 2306.85 1531.6 Q2306.85 1524.47 2305.02 1520.93 Q2303.22 1517.37 2299.58 1517.37 M2299.58 1513.66 Q2305.39 1513.66 2308.45 1518.27 Q2311.53 1522.85 2311.53 1531.6 Q2311.53 1540.33 2308.45 1544.94 Q2305.39 1549.52 2299.58 1549.52 Q2293.77 1549.52 2290.7 1544.94 Q2287.64 1540.33 2287.64 1531.6 Q2287.64 1522.85 2290.7 1518.27 Q2293.77 1513.66 2299.58 1513.66 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><polyline clip-path="url(#clip452)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  172.015,1453.07 2352.76,1453.07 
+  "/>
+<polyline clip-path="url(#clip452)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  172.015,1085.12 2352.76,1085.12 
+  "/>
+<polyline clip-path="url(#clip452)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  172.015,717.173 2352.76,717.173 
+  "/>
+<polyline clip-path="url(#clip452)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  172.015,349.222 2352.76,349.222 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,1486.45 172.015,47.2441 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,1453.07 190.912,1453.07 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,1085.12 190.912,1085.12 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,717.173 190.912,717.173 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,349.222 190.912,349.222 
+  "/>
+<path clip-path="url(#clip450)" d="M124.07 1438.87 Q120.459 1438.87 118.631 1442.44 Q116.825 1445.98 116.825 1453.11 Q116.825 1460.22 118.631 1463.78 Q120.459 1467.32 124.07 1467.32 Q127.705 1467.32 129.51 1463.78 Q131.339 1460.22 131.339 1453.11 Q131.339 1445.98 129.51 1442.44 Q127.705 1438.87 124.07 1438.87 M124.07 1435.17 Q129.881 1435.17 132.936 1439.78 Q136.015 1444.36 136.015 1453.11 Q136.015 1461.84 132.936 1466.44 Q129.881 1471.03 124.07 1471.03 Q118.26 1471.03 115.182 1466.44 Q112.126 1461.84 112.126 1453.11 Q112.126 1444.36 115.182 1439.78 Q118.26 1435.17 124.07 1435.17 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M57.7745 1098.47 L74.0939 1098.47 L74.0939 1102.4 L52.1495 1102.4 L52.1495 1098.47 Q54.8115 1095.71 59.3949 1091.08 Q64.0013 1086.43 65.1819 1085.09 Q67.4272 1082.57 68.3068 1080.83 Q69.2096 1079.07 69.2096 1077.38 Q69.2096 1074.63 67.2652 1072.89 Q65.3439 1071.15 62.2421 1071.15 Q60.043 1071.15 57.5893 1071.92 Q55.1588 1072.68 52.381 1074.23 L52.381 1069.51 Q55.2051 1068.38 57.6588 1067.8 Q60.1124 1067.22 62.1495 1067.22 Q67.5198 1067.22 70.7142 1069.9 Q73.9087 1072.59 73.9087 1077.08 Q73.9087 1079.21 73.0985 1081.13 Q72.3115 1083.03 70.205 1085.62 Q69.6263 1086.29 66.5245 1089.51 Q63.4226 1092.7 57.7745 1098.47 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M93.9086 1070.92 Q90.2975 1070.92 88.4688 1074.49 Q86.6632 1078.03 86.6632 1085.16 Q86.6632 1092.26 88.4688 1095.83 Q90.2975 1099.37 93.9086 1099.37 Q97.5428 1099.37 99.3483 1095.83 Q101.177 1092.26 101.177 1085.16 Q101.177 1078.03 99.3483 1074.49 Q97.5428 1070.92 93.9086 1070.92 M93.9086 1067.22 Q99.7187 1067.22 102.774 1071.83 Q105.853 1076.41 105.853 1085.16 Q105.853 1093.89 102.774 1098.49 Q99.7187 1103.07 93.9086 1103.07 Q88.0984 1103.07 85.0197 1098.49 Q81.9642 1093.89 81.9642 1085.16 Q81.9642 1076.41 85.0197 1071.83 Q88.0984 1067.22 93.9086 1067.22 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M124.07 1070.92 Q120.459 1070.92 118.631 1074.49 Q116.825 1078.03 116.825 1085.16 Q116.825 1092.26 118.631 1095.83 Q120.459 1099.37 124.07 1099.37 Q127.705 1099.37 129.51 1095.83 Q131.339 1092.26 131.339 1085.16 Q131.339 1078.03 129.51 1074.49 Q127.705 1070.92 124.07 1070.92 M124.07 1067.22 Q129.881 1067.22 132.936 1071.83 Q136.015 1076.41 136.015 1085.16 Q136.015 1093.89 132.936 1098.49 Q129.881 1103.07 124.07 1103.07 Q118.26 1103.07 115.182 1098.49 Q112.126 1093.89 112.126 1085.16 Q112.126 1076.41 115.182 1071.83 Q118.26 1067.22 124.07 1067.22 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M66.5939 703.967 L54.7884 722.416 L66.5939 722.416 L66.5939 703.967 M65.367 699.893 L71.2466 699.893 L71.2466 722.416 L76.1772 722.416 L76.1772 726.304 L71.2466 726.304 L71.2466 734.453 L66.5939 734.453 L66.5939 726.304 L50.9921 726.304 L50.9921 721.791 L65.367 699.893 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M93.9086 702.971 Q90.2975 702.971 88.4688 706.536 Q86.6632 710.078 86.6632 717.207 Q86.6632 724.314 88.4688 727.879 Q90.2975 731.42 93.9086 731.42 Q97.5428 731.42 99.3483 727.879 Q101.177 724.314 101.177 717.207 Q101.177 710.078 99.3483 706.536 Q97.5428 702.971 93.9086 702.971 M93.9086 699.268 Q99.7187 699.268 102.774 703.874 Q105.853 708.457 105.853 717.207 Q105.853 725.934 102.774 730.541 Q99.7187 735.124 93.9086 735.124 Q88.0984 735.124 85.0197 730.541 Q81.9642 725.934 81.9642 717.207 Q81.9642 708.457 85.0197 703.874 Q88.0984 699.268 93.9086 699.268 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M124.07 702.971 Q120.459 702.971 118.631 706.536 Q116.825 710.078 116.825 717.207 Q116.825 724.314 118.631 727.879 Q120.459 731.42 124.07 731.42 Q127.705 731.42 129.51 727.879 Q131.339 724.314 131.339 717.207 Q131.339 710.078 129.51 706.536 Q127.705 702.971 124.07 702.971 M124.07 699.268 Q129.881 699.268 132.936 703.874 Q136.015 708.457 136.015 717.207 Q136.015 725.934 132.936 730.541 Q129.881 735.124 124.07 735.124 Q118.26 735.124 115.182 730.541 Q112.126 725.934 112.126 717.207 Q112.126 708.457 115.182 703.874 Q118.26 699.268 124.07 699.268 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M64.3254 347.358 Q61.1773 347.358 59.3254 349.511 Q57.4967 351.664 57.4967 355.414 Q57.4967 359.14 59.3254 361.316 Q61.1773 363.469 64.3254 363.469 Q67.4735 363.469 69.3022 361.316 Q71.1541 359.14 71.1541 355.414 Q71.1541 351.664 69.3022 349.511 Q67.4735 347.358 64.3254 347.358 M73.6077 332.705 L73.6077 336.965 Q71.8485 336.131 70.0429 335.692 Q68.2606 335.252 66.5013 335.252 Q61.8717 335.252 59.418 338.377 Q56.9875 341.502 56.6402 347.821 Q58.006 345.807 60.0662 344.742 Q62.1263 343.654 64.6032 343.654 Q69.8115 343.654 72.8207 346.826 Q75.8531 349.974 75.8531 355.414 Q75.8531 360.738 72.705 363.955 Q69.5568 367.173 64.3254 367.173 Q58.33 367.173 55.1588 362.59 Q51.9875 357.983 51.9875 349.256 Q51.9875 341.062 55.8764 336.201 Q59.7652 331.317 66.3161 331.317 Q68.0754 331.317 69.8578 331.664 Q71.6633 332.011 73.6077 332.705 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M93.9086 335.02 Q90.2975 335.02 88.4688 338.585 Q86.6632 342.127 86.6632 349.256 Q86.6632 356.363 88.4688 359.927 Q90.2975 363.469 93.9086 363.469 Q97.5428 363.469 99.3483 359.927 Q101.177 356.363 101.177 349.256 Q101.177 342.127 99.3483 338.585 Q97.5428 335.02 93.9086 335.02 M93.9086 331.317 Q99.7187 331.317 102.774 335.923 Q105.853 340.506 105.853 349.256 Q105.853 357.983 102.774 362.59 Q99.7187 367.173 93.9086 367.173 Q88.0984 367.173 85.0197 362.59 Q81.9642 357.983 81.9642 349.256 Q81.9642 340.506 85.0197 335.923 Q88.0984 331.317 93.9086 331.317 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M124.07 335.02 Q120.459 335.02 118.631 338.585 Q116.825 342.127 116.825 349.256 Q116.825 356.363 118.631 359.927 Q120.459 363.469 124.07 363.469 Q127.705 363.469 129.51 359.927 Q131.339 356.363 131.339 349.256 Q131.339 342.127 129.51 338.585 Q127.705 335.02 124.07 335.02 M124.07 331.317 Q129.881 331.317 132.936 335.923 Q136.015 340.506 136.015 349.256 Q136.015 357.983 132.936 362.59 Q129.881 367.173 124.07 367.173 Q118.26 367.173 115.182 362.59 Q112.126 357.983 112.126 349.256 Q112.126 340.506 115.182 335.923 Q118.26 331.317 124.07 331.317 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><polyline clip-path="url(#clip452)" style="stroke:#009af9; stroke-linecap:round; stroke-linejoin:round; stroke-width:8; stroke-opacity:1; fill:none" points="
+  233.734,443.417 254.307,298.628 274.88,208.48 295.453,179.228 316.026,218.967 336.599,271.584 357.172,341.679 377.745,408.83 398.318,478.188 418.891,510.384 
+  439.464,507.44 460.037,491.251 480.61,441.761 501.183,382.889 521.756,335.423 542.329,282.99 562.902,230.741 583.475,179.964 604.048,136.178 624.621,116.125 
+  645.194,101.958 665.768,99.3828 686.341,111.157 706.914,134.154 727.487,169.293 748.06,206.089 768.633,241.228 789.206,302.492 809.779,321.073 830.352,343.15 
+  850.925,337.447 871.498,323.649 892.071,317.762 912.644,309.483 933.217,307.827 953.79,314.634 974.363,313.162 994.936,307.643 1015.51,301.572 1036.08,280.231 
+  1056.66,266.8 1077.23,239.756 1097.8,217.127 1118.37,202.961 1138.95,201.305 1159.52,209.952 1180.09,216.023 1200.67,230.741 1221.24,253.738 1241.81,293.845 
+  1262.39,332.48 1282.96,373.506 1303.53,388.408 1324.1,377.002 1344.68,361.916 1365.25,341.863 1385.82,307.827 1406.4,279.863 1426.97,244.907 1447.54,206.824 
+  1468.12,179.228 1488.69,154.391 1509.26,144.273 1529.83,135.994 1550.41,126.979 1570.98,126.979 1591.55,149.24 1612.13,157.151 1632.7,179.044 1653.27,181.988 
+  1673.85,204.985 1694.42,237.916 1714.99,254.658 1735.57,270.112 1756.14,295.317 1776.71,309.483 1797.28,327.88 1817.86,325.121 1838.43,337.815 1859,342.598 
+  1879.58,356.581 1900.15,362.652 1920.72,364.308 1941.3,350.877 1961.87,329.168 1982.44,286.67 2003.01,237.732 2023.59,193.026 2044.16,149.608 2064.73,115.941 
+  2085.31,99.0148 2105.88,87.9763 2126.45,91.1039 2147.03,103.798 2167.6,136.546 2188.17,188.979 2208.74,229.453 2229.32,261.649 2249.89,306.171 2270.46,324.017 
+  2291.04,336.159 
+  "/>
+<polyline clip-path="url(#clip452)" style="stroke:#e26f46; stroke-linecap:round; stroke-linejoin:round; stroke-width:8; stroke-opacity:1; fill:none" points="
+  233.734,1445.72 254.307,1443.88 274.88,1443.88 295.453,1442.04 316.026,1440.2 336.599,1440.2 357.172,1440.2 377.745,1440.2 398.318,1440.2 418.891,1438.36 
+  439.464,1438.36 460.037,1438.36 480.61,1438.36 501.183,1438.36 521.756,1438.36 542.329,1438.36 562.902,1436.52 583.475,1432.84 604.048,1429.16 624.621,1427.32 
+  645.194,1429.16 665.768,1427.32 686.341,1431 706.914,1432.84 727.487,1427.32 748.06,1423.64 768.633,1423.64 789.206,1419.96 809.779,1414.44 830.352,1410.76 
+  850.925,1410.76 871.498,1410.76 892.071,1408.92 912.644,1410.76 933.217,1412.6 953.79,1414.44 974.363,1410.76 994.936,1401.56 1015.51,1408.92 1036.08,1412.6 
+  1056.66,1421.8 1077.23,1421.8 1097.8,1423.64 1118.37,1427.32 1138.95,1429.16 1159.52,1425.48 1180.09,1429.16 1200.67,1423.64 1221.24,1425.48 1241.81,1425.48 
+  1262.39,1421.8 1282.96,1421.8 1303.53,1419.96 1324.1,1416.28 1344.68,1408.92 1365.25,1401.56 1385.82,1407.08 1406.4,1405.24 1426.97,1394.2 1447.54,1392.36 
+  1468.12,1394.2 1488.69,1396.04 1509.26,1394.2 1529.83,1410.76 1550.41,1416.28 1570.98,1416.28 1591.55,1416.28 1612.13,1418.12 1632.7,1418.12 1653.27,1416.28 
+  1673.85,1421.8 1694.42,1421.8 1714.99,1418.12 1735.57,1418.12 1756.14,1421.8 1776.71,1425.48 1797.28,1425.48 1817.86,1429.16 1838.43,1432.84 1859,1434.68 
+  1879.58,1436.52 1900.15,1436.52 1920.72,1434.68 1941.3,1432.84 1961.87,1436.52 1982.44,1438.36 2003.01,1436.52 2023.59,1438.36 2044.16,1440.2 2064.73,1440.2 
+  2085.31,1442.04 2105.88,1440.2 2126.45,1438.36 2147.03,1436.52 2167.6,1436.52 2188.17,1436.52 2208.74,1436.52 2229.32,1440.2 2249.89,1438.36 2270.46,1438.36 
+  2291.04,1438.36 
+  "/>
+<polyline clip-path="url(#clip452)" style="stroke:#3da44d; stroke-linecap:round; stroke-linejoin:round; stroke-width:8; stroke-opacity:1; fill:none" points="
+  233.734,1379.48 254.307,1322.45 274.88,1219.43 295.453,1101.68 316.026,1031.77 336.599,1009.69 357.172,996.815 377.745,982.097 398.318,998.655 418.891,1050.17 
+  439.464,1077.76 460.037,1188.15 480.61,1215.75 501.183,1226.78 521.756,1237.82 542.329,1237.82 562.902,1261.74 583.475,1274.62 604.048,1258.06 624.621,1258.06 
+  645.194,1258.06 665.768,1228.62 686.341,1215.75 706.914,1191.83 727.487,1147.68 748.06,1109.04 768.633,1081.44 789.206,1092.48 809.779,1103.52 830.352,1134.8 
+  850.925,1149.52 871.498,1182.63 892.071,1169.75 912.644,1151.35 933.217,1169.75 953.79,1177.11 974.363,1149.52 994.936,1169.75 1015.51,1171.59 1036.08,1191.83 
+  1056.66,1223.11 1077.23,1239.66 1097.8,1221.27 1118.37,1217.59 1138.95,1195.51 1159.52,1156.87 1180.09,1171.59 1200.67,1144 1221.24,1134.8 1241.81,1083.28 
+  1262.39,1068.57 1282.96,1107.2 1303.53,1086.96 1324.1,1136.64 1344.68,1177.11 1365.25,1195.51 1385.82,1208.39 1406.4,1213.91 1426.97,1241.5 1447.54,1263.58 
+  1468.12,1252.54 1488.69,1250.7 1509.26,1223.11 1529.83,1239.66 1550.41,1224.95 1570.98,1201.03 1591.55,1210.23 1612.13,1191.83 1632.7,1193.67 1653.27,1178.95 
+  1673.85,1160.55 1694.42,1145.84 1714.99,1129.28 1735.57,1127.44 1756.14,1120.08 1776.71,1145.84 1797.28,1107.2 1817.86,1145.84 1838.43,1127.44 1859,1094.32 
+  1879.58,1101.68 1900.15,1114.56 1920.72,1127.44 1941.3,1164.23 1961.87,1210.23 1982.44,1239.66 2003.01,1281.98 2023.59,1300.38 2044.16,1296.7 2064.73,1269.1 
+  2085.31,1270.94 2105.88,1230.46 2126.45,1199.19 2147.03,1199.19 2167.6,1164.23 2188.17,1132.96 2208.74,1114.56 2229.32,1114.56 2249.89,1120.08 2270.46,1120.08 
+  2291.04,1127.44 
+  "/>
+<path clip-path="url(#clip450)" d="
+M1894.91 302.578 L2280.06 302.578 L2280.06 95.2176 L1894.91 95.2176  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip450)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1894.91,302.578 2280.06,302.578 2280.06,95.2176 1894.91,95.2176 1894.91,302.578 
+  "/>
+<polyline clip-path="url(#clip450)" style="stroke:#009af9; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1919.14,147.058 2064.53,147.058 
+  "/>
+<path clip-path="url(#clip450)" d="M2114.31 159.407 L2114.31 150.125 L2106.67 150.125 L2106.67 146.282 L2118.94 146.282 L2118.94 161.12 Q2116.23 163.041 2112.97 164.037 Q2109.71 165.009 2106 165.009 Q2097.9 165.009 2093.32 160.287 Q2088.76 155.541 2088.76 147.092 Q2088.76 138.62 2093.32 133.898 Q2097.9 129.153 2106 129.153 Q2109.38 129.153 2112.41 129.986 Q2115.47 130.819 2118.04 132.44 L2118.04 137.416 Q2115.45 135.217 2112.53 134.106 Q2109.61 132.995 2106.4 132.995 Q2100.05 132.995 2096.86 136.537 Q2093.69 140.078 2093.69 147.092 Q2093.69 154.083 2096.86 157.625 Q2100.05 161.166 2106.4 161.166 Q2108.87 161.166 2110.82 160.75 Q2112.76 160.31 2114.31 159.407 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2142.32 142.393 Q2141.6 141.977 2140.75 141.791 Q2139.91 141.583 2138.9 141.583 Q2135.28 141.583 2133.34 143.944 Q2131.42 146.282 2131.42 150.68 L2131.42 164.338 L2127.14 164.338 L2127.14 138.412 L2131.42 138.412 L2131.42 142.44 Q2132.76 140.078 2134.91 138.944 Q2137.07 137.787 2140.15 137.787 Q2140.59 137.787 2141.12 137.856 Q2141.65 137.903 2142.3 138.018 L2142.32 142.393 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2158.57 151.305 Q2153.41 151.305 2151.42 152.486 Q2149.43 153.666 2149.43 156.514 Q2149.43 158.782 2150.91 160.125 Q2152.41 161.444 2154.98 161.444 Q2158.53 161.444 2160.65 158.944 Q2162.81 156.421 2162.81 152.254 L2162.81 151.305 L2158.57 151.305 M2167.07 149.546 L2167.07 164.338 L2162.81 164.338 L2162.81 160.402 Q2161.35 162.763 2159.17 163.898 Q2157 165.009 2153.85 165.009 Q2149.87 165.009 2147.51 162.787 Q2145.17 160.541 2145.17 156.791 Q2145.17 152.416 2148.09 150.194 Q2151.03 147.972 2156.84 147.972 L2162.81 147.972 L2162.81 147.555 Q2162.81 144.615 2160.86 143.018 Q2158.94 141.398 2155.45 141.398 Q2153.22 141.398 2151.12 141.93 Q2149.01 142.463 2147.07 143.527 L2147.07 139.592 Q2149.4 138.69 2151.6 138.25 Q2153.8 137.787 2155.89 137.787 Q2161.51 137.787 2164.29 140.703 Q2167.07 143.62 2167.07 149.546 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2192.37 139.176 L2192.37 143.203 Q2190.56 142.277 2188.62 141.815 Q2186.67 141.352 2184.59 141.352 Q2181.42 141.352 2179.82 142.324 Q2178.25 143.296 2178.25 145.24 Q2178.25 146.722 2179.38 147.578 Q2180.52 148.412 2183.94 149.176 L2185.4 149.5 Q2189.94 150.472 2191.84 152.254 Q2193.76 154.014 2193.76 157.185 Q2193.76 160.796 2190.89 162.902 Q2188.04 165.009 2183.04 165.009 Q2180.96 165.009 2178.69 164.592 Q2176.44 164.199 2173.94 163.388 L2173.94 158.99 Q2176.3 160.217 2178.59 160.842 Q2180.89 161.444 2183.13 161.444 Q2186.14 161.444 2187.76 160.426 Q2189.38 159.384 2189.38 157.509 Q2189.38 155.773 2188.2 154.847 Q2187.04 153.921 2183.09 153.064 L2181.6 152.717 Q2177.65 151.884 2175.89 150.171 Q2174.13 148.435 2174.13 145.426 Q2174.13 141.768 2176.72 139.778 Q2179.31 137.787 2184.08 137.787 Q2186.44 137.787 2188.53 138.134 Q2190.61 138.481 2192.37 139.176 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2217.07 139.176 L2217.07 143.203 Q2215.26 142.277 2213.32 141.815 Q2211.37 141.352 2209.29 141.352 Q2206.12 141.352 2204.52 142.324 Q2202.95 143.296 2202.95 145.24 Q2202.95 146.722 2204.08 147.578 Q2205.21 148.412 2208.64 149.176 L2210.1 149.5 Q2214.64 150.472 2216.53 152.254 Q2218.46 154.014 2218.46 157.185 Q2218.46 160.796 2215.59 162.902 Q2212.74 165.009 2207.74 165.009 Q2205.65 165.009 2203.39 164.592 Q2201.14 164.199 2198.64 163.388 L2198.64 158.99 Q2201 160.217 2203.29 160.842 Q2205.59 161.444 2207.83 161.444 Q2210.84 161.444 2212.46 160.426 Q2214.08 159.384 2214.08 157.509 Q2214.08 155.773 2212.9 154.847 Q2211.74 153.921 2207.78 153.064 L2206.3 152.717 Q2202.34 151.884 2200.59 150.171 Q2198.83 148.435 2198.83 145.426 Q2198.83 141.768 2201.42 139.778 Q2204.01 137.787 2208.78 137.787 Q2211.14 137.787 2213.22 138.134 Q2215.31 138.481 2217.07 139.176 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><polyline clip-path="url(#clip450)" style="stroke:#e26f46; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1919.14,198.898 2064.53,198.898 
+  "/>
+<path clip-path="url(#clip450)" d="M2088.76 181.618 L2093.48 181.618 L2100.75 210.83 L2107.99 181.618 L2113.25 181.618 L2120.52 210.83 L2127.76 181.618 L2132.51 181.618 L2123.83 216.178 L2117.95 216.178 L2110.66 186.178 L2103.29 216.178 L2097.41 216.178 L2088.76 181.618 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2145.79 193.238 Q2142.37 193.238 2140.38 195.923 Q2138.39 198.585 2138.39 203.238 Q2138.39 207.891 2140.35 210.576 Q2142.34 213.238 2145.79 213.238 Q2149.2 213.238 2151.19 210.553 Q2153.18 207.867 2153.18 203.238 Q2153.18 198.631 2151.19 195.946 Q2149.2 193.238 2145.79 193.238 M2145.79 189.627 Q2151.35 189.627 2154.52 193.238 Q2157.69 196.849 2157.69 203.238 Q2157.69 209.604 2154.52 213.238 Q2151.35 216.849 2145.79 216.849 Q2140.22 216.849 2137.04 213.238 Q2133.9 209.604 2133.9 203.238 Q2133.9 196.849 2137.04 193.238 Q2140.22 189.627 2145.79 189.627 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2164.75 180.159 L2169.01 180.159 L2169.01 216.178 L2164.75 216.178 L2164.75 180.159 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2191.05 180.159 L2191.05 183.701 L2186.97 183.701 Q2184.68 183.701 2183.78 184.627 Q2182.9 185.553 2182.9 187.96 L2182.9 190.252 L2189.91 190.252 L2189.91 193.562 L2182.9 193.562 L2182.9 216.178 L2178.62 216.178 L2178.62 193.562 L2174.54 193.562 L2174.54 190.252 L2178.62 190.252 L2178.62 188.446 Q2178.62 184.118 2180.63 182.15 Q2182.65 180.159 2187.02 180.159 L2191.05 180.159 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><polyline clip-path="url(#clip450)" style="stroke:#3da44d; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1919.14,250.738 2064.53,250.738 
+  "/>
+<path clip-path="url(#clip450)" d="M2111 234.592 L2111 239.152 Q2108.34 237.879 2105.98 237.254 Q2103.62 236.629 2101.42 236.629 Q2097.6 236.629 2095.52 238.11 Q2093.46 239.592 2093.46 242.323 Q2093.46 244.615 2094.82 245.795 Q2096.21 246.953 2100.05 247.67 L2102.88 248.249 Q2108.11 249.245 2110.59 251.768 Q2113.09 254.268 2113.09 258.481 Q2113.09 263.504 2109.71 266.096 Q2106.35 268.689 2099.85 268.689 Q2097.39 268.689 2094.61 268.133 Q2091.86 267.578 2088.9 266.49 L2088.9 261.675 Q2091.74 263.272 2094.47 264.082 Q2097.21 264.893 2099.85 264.893 Q2103.85 264.893 2106.03 263.319 Q2108.2 261.744 2108.2 258.828 Q2108.2 256.282 2106.63 254.846 Q2105.08 253.411 2101.51 252.694 L2098.66 252.138 Q2093.43 251.096 2091.1 248.874 Q2088.76 246.652 2088.76 242.694 Q2088.76 238.11 2091.97 235.471 Q2095.22 232.833 2100.89 232.833 Q2103.32 232.833 2105.84 233.272 Q2108.36 233.712 2111 234.592 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2141.74 252.369 L2141.74 268.018 L2137.48 268.018 L2137.48 252.508 Q2137.48 248.828 2136.05 246.999 Q2134.61 245.17 2131.74 245.17 Q2128.29 245.17 2126.3 247.37 Q2124.31 249.569 2124.31 253.365 L2124.31 268.018 L2120.03 268.018 L2120.03 231.999 L2124.31 231.999 L2124.31 246.12 Q2125.84 243.782 2127.9 242.624 Q2129.98 241.467 2132.69 241.467 Q2137.16 241.467 2139.45 244.245 Q2141.74 246.999 2141.74 252.369 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2172.41 253.99 L2172.41 256.073 L2152.83 256.073 Q2153.11 260.471 2155.47 262.786 Q2157.85 265.078 2162.09 265.078 Q2164.54 265.078 2166.84 264.476 Q2169.15 263.874 2171.42 262.67 L2171.42 266.698 Q2169.13 267.67 2166.72 268.18 Q2164.31 268.689 2161.84 268.689 Q2155.63 268.689 2152 265.078 Q2148.39 261.467 2148.39 255.309 Q2148.39 248.944 2151.81 245.217 Q2155.26 241.467 2161.09 241.467 Q2166.33 241.467 2169.36 244.846 Q2172.41 248.203 2172.41 253.99 M2168.15 252.74 Q2168.11 249.245 2166.19 247.161 Q2164.29 245.078 2161.14 245.078 Q2157.58 245.078 2155.42 247.092 Q2153.29 249.106 2152.97 252.763 L2168.15 252.74 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2201.58 253.99 L2201.58 256.073 L2182 256.073 Q2182.28 260.471 2184.64 262.786 Q2187.02 265.078 2191.26 265.078 Q2193.71 265.078 2196 264.476 Q2198.32 263.874 2200.59 262.67 L2200.59 266.698 Q2198.29 267.67 2195.89 268.18 Q2193.48 268.689 2191 268.689 Q2184.8 268.689 2181.16 265.078 Q2177.55 261.467 2177.55 255.309 Q2177.55 248.944 2180.98 245.217 Q2184.43 241.467 2190.26 241.467 Q2195.49 241.467 2198.53 244.846 Q2201.58 248.203 2201.58 253.99 M2197.32 252.74 Q2197.28 249.245 2195.35 247.161 Q2193.46 245.078 2190.31 245.078 Q2186.74 245.078 2184.59 247.092 Q2182.46 249.106 2182.14 252.763 L2197.32 252.74 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip450)" d="M2212.69 264.129 L2212.69 277.879 L2208.41 277.879 L2208.41 242.092 L2212.69 242.092 L2212.69 246.027 Q2214.03 243.712 2216.07 242.601 Q2218.13 241.467 2220.98 241.467 Q2225.7 241.467 2228.64 245.217 Q2231.6 248.967 2231.6 255.078 Q2231.6 261.189 2228.64 264.939 Q2225.7 268.689 2220.98 268.689 Q2218.13 268.689 2216.07 267.578 Q2214.03 266.443 2212.69 264.129 M2227.18 255.078 Q2227.18 250.379 2225.24 247.717 Q2223.32 245.032 2219.94 245.032 Q2216.56 245.032 2214.61 247.717 Q2212.69 250.379 2212.69 255.078 Q2212.69 259.777 2214.61 262.462 Q2216.56 265.124 2219.94 265.124 Q2223.32 265.124 2225.24 262.462 Q2227.18 259.777 2227.18 255.078 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /></svg>
+<h2 id="Package:-Ecosystem.jl"><a class="docs-heading-anchor" href="#Package:-Ecosystem.jl">Package: <code>Ecosystem.jl</code></a><a id="Package:-Ecosystem.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Package:-Ecosystem.jl" title="Permalink"></a></h2><p>In the main section of this lab you will create your own <code>Ecosystem.jl</code> package to organize <em>and test (!)</em> the code that we have written so far.</p><h3 id="PkgTemplates.jl"><a class="docs-heading-anchor" href="#PkgTemplates.jl"><code>PkgTemplates.jl</code></a><a id="PkgTemplates.jl-1"></a><a class="docs-heading-anchor-permalink" href="#PkgTemplates.jl" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>The simplest way to create a new package in Julia is to use <code>PkgTemplates.jl</code>. <code>]add PkgTemplates</code> to your global julia env and create a new package by running:</p><pre><code class="language-julia hljs">using PkgTemplates
+Template(interactive=true)(&quot;Ecosystem&quot;)</code></pre><p>to interactively specify various options for your new package or use the following snippet to generate it programmatically:</p><pre><code class="language-julia hljs">using PkgTemplates
+
+# define the package template
+template = Template(;
+    user = &quot;GithubUserName&quot;,            # github user name
+    authors = [&quot;Author1&quot;, &quot;Author2&quot;],   # list of authors
+    dir = &quot;/path/to/folder/&quot;,           # dir in which the package will be created
+    julia = v&quot;1.8&quot;,                     # compat version of Julia
+    plugins = [
+        !CompatHelper,                  # disable CompatHelper
+        !TagBot,                        # disable TagBot
+        Readme(; inline_badges = true), # added readme file with badges
+        Tests(; project = true),        # added Project.toml file for unit tests
+        Git(; manifest = false),        # add manifest.toml to .gitignore
+        License(; name = &quot;MIT&quot;)         # addedMIT licence
+    ],
+)
+
+# execute the package template (this creates all files/folders)
+template(&quot;Ecosystem&quot;)</code></pre></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>This should have created a new folder <code>Ecosystem</code> which looks like below.</p><pre><code class="nohighlight hljs">.
+├── LICENSE
+├── Project.toml
+├── README.md
+├── src
+│   └── Ecosystem.jl
+└── test
+    ├── Manifest.toml
+    ├── Project.toml
+    └── runtests.jl</code></pre><p>If you <code>]activate /path/to/Ecosystem</code> you should be able to run <code>]test</code> to run the autogenerated test (which is not doing anything) and get the following output:</p><pre><code class="nohighlight hljs">(Ecosystem) pkg&gt; test
+     Testing Ecosystem
+      Status `/private/var/folders/6h/l9_skfms2v3dt8z3zfnd2jr00000gn/T/jl_zd5Uai/Project.toml`
+  [e77cd98c] Ecosystem v0.1.0 `~/repos/Ecosystem`
+  [8dfed614] Test `@stdlib/Test`
+      Status `/private/var/folders/6h/l9_skfms2v3dt8z3zfnd2jr00000gn/T/jl_zd5Uai/Manifest.toml`
+  [e77cd98c] Ecosystem v0.1.0 `~/repos/Ecosystem`
+  [2a0f44e3] Base64 `@stdlib/Base64`
+  [b77e0a4c] InteractiveUtils `@stdlib/InteractiveUtils`
+  [56ddb016] Logging `@stdlib/Logging`
+  [d6f4376e] Markdown `@stdlib/Markdown`
+  [9a3f8284] Random `@stdlib/Random`
+  [ea8e919c] SHA v0.7.0 `@stdlib/SHA`
+  [9e88b42a] Serialization `@stdlib/Serialization`
+  [8dfed614] Test `@stdlib/Test`
+     Testing Running tests...
+Test Summary: |Time
+Ecosystem.jl  | None  0.0s
+     Testing Ecosystem tests passed </code></pre></p></details><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>From now on make sure that you <strong>always</strong> have the <code>Ecosystem</code> enviroment enabled. Otherwise you will not end up with the correct dependencies in your packages</p></div></div><h3 id="Adding-content-to-Ecosystem.jl"><a class="docs-heading-anchor" href="#Adding-content-to-Ecosystem.jl">Adding content to <code>Ecosystem.jl</code></a><a id="Adding-content-to-Ecosystem.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-content-to-Ecosystem.jl" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>Next, let&#39;s add the types and functions we have defined so far. You can use <code>include(&quot;path/to/file.jl&quot;)</code> in the main module file at <code>src/Ecosystem.jl</code> to bring some structure in your code. An exemplary file structure could look like below.</p><pre><code class="nohighlight hljs">.
+├── LICENSE
+├── Manifest.toml
+├── Project.toml
+├── README.md
+├── src
+│   ├── Ecosystem.jl
+│   ├── animal.jl
+│   ├── plant.jl
+│   └── world.jl
+└── test
+    └── runtests.jl</code></pre><p>While you are adding functionality to your package you can make great use of <code>Revise.jl</code>.  Loading <code>Revise.jl</code> before your <code>Ecosystem.jl</code> will automatically recompile (and invalidate old methods!) while you develop.  You can install it in your global environment and and create a <code>$HOME/.config/startup.jl</code> which always loads <code>Revise</code>. It can look like this:</p><pre><code class="language-julia hljs"># try/catch block to make sure you can start julia if Revise should not be installed
+try
+    using Revise
+catch e
+    @warn(e.msg)
+end</code></pre></div></div><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>At some point along the way you should run into problems with the <code>sample</code> functions or when trying <code>using StatsBase</code>. This is normal, because you have not added the package to the <code>Ecosystem</code> environment yet. Adding it is as easy as <code>]add StatsBase</code>. Your <code>Ecosystem</code> environment should now look like this:</p><pre><code class="nohighlight hljs">(Ecosystem) pkg&gt; status
+Project Ecosystem v0.1.0
+Status `~/repos/Ecosystem/Project.toml`
+  [2913bbd2] StatsBase v0.33.21</code></pre></div></div><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>In order to use your new types/functions like below</p><pre><code class="language-julia hljs">using Ecosystem
+
+Sheep(2)</code></pre><p>you have to <code>export</code> them from your module. Add exports for all important types and functions.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs"># src/Ecosystem.jl
+module Ecosystem
+
+using StatsBase
+
+export World
+export Species, PlantSpecies, AnimalSpecies, Grass, Sheep, Wolf
+export Agent, Plant, Animal
+export agent_step!, eat!, eats, find_food, reproduce!, world_step!, agent_count
+
+# ....
+
+end</code></pre></p></details><h3 id="Unit-tests"><a class="docs-heading-anchor" href="#Unit-tests">Unit tests</a><a id="Unit-tests-1"></a><a class="docs-heading-anchor-permalink" href="#Unit-tests" title="Permalink"></a></h3><p>Every package should have tests which verify the correctness of your implementation, such that you can make changes to your codebase and remain confident that you did not break anything.</p><p>Julia&#39;s <code>Test</code> package provides you functionality to easily write <a href="https://docs.julialang.org/en/v1/stdlib/Test/">unit tests</a>.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>In the file <code>test/runtests.jl</code>, create a new <code>@testset</code> and write three <code>@test</code>s which check that the <code>show</code> methods we defined for <code>Grass</code>, <code>Sheep</code>, and <code>Wolf</code> work as expected.</p><p>The function <code>repr(x) == &quot;some string&quot;</code> to check if the string representation we defined in the <code>Base.show</code> overload returns what you expect.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # using Ecosystem
+       using Test</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @testset &quot;Base.show&quot; begin
+           g = Grass(1,1,1)
+           s = Animal{Sheep}(2,1,1,1,1,male)
+           w = Animal{Wolf}(3,1,1,1,1,female)
+           @test repr(g) == &quot;🌿  #1 100% grown&quot;
+           @test repr(s) == &quot;🐑♂ #2 E=1.0 ΔE=1.0 pr=1.0 pf=1.0&quot;
+           @test repr(w) == &quot;🐺♀ #3 E=1.0 ΔE=1.0 pr=1.0 pf=1.0&quot;
+       end</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr1">Test Summary: | <span class="sgr32">Pass  </span><span class="sgr36">Total  </span>Time</span>
+Base.show     | <span class="sgr32">   3  </span><span class="sgr36">    3  </span>0.1s
+Test.DefaultTestSet(&quot;Base.show&quot;, Any[], 3, false, false, true, 1.66556253773818e9, 1.665562537882602e9)</code></pre></p></details><h3 id="Github-CI"><a class="docs-heading-anchor" href="#Github-CI">Github CI</a><a id="Github-CI-1"></a><a class="docs-heading-anchor-permalink" href="#Github-CI" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>If you want you can upload you package to Github and add the <code>julia-runtest</code> <a href="https://github.com/julia-actions/julia-runtest">Github Action</a> to automatically test your code for every new push you make to the repository.</p></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../lecture_03/hw/">« Homework</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Wednesday 12 October 2022 08:15">Wednesday 12 October 2022</span>. Using Julia version 1.8.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
