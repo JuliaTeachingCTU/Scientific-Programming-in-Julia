@@ -66,9 +66,9 @@ Combinations:
  - symbol "*" denotes functions that can be redefined
 
  ```julia
- using  MySpace: test1
+ using  .MySpace: test1
  test1()=println("new test")
- import  MySpace: test1
+ import  .MySpace: test1
  test1()=println("new test")
 ```
 
@@ -94,14 +94,20 @@ module B
    module C
        c = 2
    end
-   b = C.c   
+   b = C.c # you can read from C    (by reference)
    using ..A: a
+   # a= b # but not write to A
 end;
 ```
 
 REPL of Julia is a module called "Main". 
 - modules are not copied, but referenced, i.e. `B.b===B.C.c`
 - including one module twice (from different packages) is not a problem
+- Upcoming Julia 1.9 has teh ability to change the contextual module in the REPL:
+  ```REPL.activate(TestPackage)```
+
+
+
 
 ### Revise.jl
 
@@ -141,6 +147,7 @@ end
 ```
 
 
+
 ## Namespaces & scoping
 
 Every module introduces a new global scope. 
@@ -148,7 +155,7 @@ Every module introduces a new global scope.
   
   - No variable or function is expected to exist  outside of it
   - Every module is equal a global scope (no single "global" exists)
-  - The REPL is a global module called `Main`
+  - The REPL has a global module called `Main`
 
 - Local scope
 
@@ -161,7 +168,7 @@ Every module introduces a new global scope.
   f(y)=x+y
   ```
 
-  The rules for local scope determine how to treat assignment of `x`. If local `x` exists, it is used, if it does not:
+  The rules for local scope determine how to treat **assignment** of `x`. If local `x` exists, it is used, if it does not:
   - in *hard* scope: new local `x` is created
   - in *soft* scope: checks if `x` exists outside (global)
     - if not: new local `x` is created
@@ -200,10 +207,10 @@ end
 
 ## Packages
 
-Package is a source tree with a standard layout. Can be loaded with `include` or `using` and provides a module.
+Package is a source tree with a standard layout. It provides a module and thus can be loaded with `include` or `using`.
 
 
-Minimimal project:
+Minimimal package:
 
 ```
 PackageName/
@@ -252,7 +259,7 @@ version = "0.3.4"
 
 Content of files `Project.toml` and `Manifest.toml` are maintained by PackageManager.
 
-## Package/Project manager
+## Package manager
 
 Handles both packages and projects:
 - creating a project `]generate PkgName`
@@ -263,24 +270,52 @@ Handles both packages and projects:
 - removing `]rm PkgName`
 - updating `]update`
 - developing `]dev http://...` 
+  - `add` treats packages as being finished, version handling pkg manager. Precompiles!
+  - `dev` leaves all operations on the package to the user (git versioning, etc.). Always read content of files
 
-  Always reads the actual content of files. `Add` creates a precompiled blob.
-
-By default these operations are related to environment `.julia/environments/v1.6`
+By default these operations are related to environment `.julia/environments/v1.8`
 
 E.g. running an updating will update packages in `Manifest.toml` in this directory. What if the update breaks functionality of some project package that uses special features?
 
-There can be more than one environment!
+There can and should be more than one environment!
 
-Any package can define its own project environment with a list of dependencies.
+Project environments are based on files with installed packages.
 
-- switching by `]activate Path`
+- switching by `]activate Path` - creates `Project.toml` if not existing
 
 - from that moment, all package modifications will be relevant only to this project!
 - when switching to a new project `]instantiate` will prepare (download and precompile) the environment
+  - creates `Manifest.toml` = list of all exact versions of all packages 
 - which Packages are visible is determined by `LOAD_PATH`
     - typically contaings default libraries and default environment
-    - it is different for REPL and Pkg.tests ! No default env. in tests.
+    - it is different for REPL and Pkg.tests ! No default env. in tests. 
+
+
+## Package hygiene - workflow
+
+!!! theorem "Potential danger"
+    Package dependencies may not be compatible: 
+    - package `A` requires `C@<0.2`
+    - package `B` requires `C@>0.3`
+    - what should happen when `]add A` and `add B`?
+
+- keep your "@v#.#" as clean as possible (recommended are only debugging/profiling packages)
+- use packages as much as you can, even for short work with scripts `]activate .`
+  - adding a package existing elsewhere is cheap (global cache)
+- if do not wich to store any files just test random tricks of a cool package: `]activate --temp`
+
+### Package development with Revise
+
+Developing a package with interactively test/development:
+
+1. Create a package/module at one directory `MainPackage`
+2. Create a script at another directory `MainScript`, and activate it `]activate .`
+3. `dev MainPackage` in the `MainScript` environment
+   - Revise.jl will watch the `MainPackage` so it is always up to date
+   - in `dev` mode you have full control over commits etc.
+
+
+
 
 ## Unit testing, /test
 
@@ -329,8 +364,9 @@ Testset is a collection of tests that will be run and summarized in a common rep
 
   The same results of RNG are not guaranteed between Julia versions!
 
-- Test coverage: package Coverage.jl  
+- Test coverage: package `Coverage.jl`
 - Can be run automatically by continuous integration, e.g. GitHub actions
+- integration in VSCode test via package `TestItems.jl` 
 
 
 ## Documentation & Style, /docs
@@ -399,7 +435,7 @@ x=3
 
   See `?x` and `?y`. 
     
-  It uses the same very standdr building blocks: multiple dispatch.
+  It uses the same very standard building blocks: multiple dispatch.
 
 ## Precompilation
 
@@ -426,3 +462,15 @@ Can be investigated using `MethodAnalysis`.
 using MethodAnalysis
 mi =methodinstances(fsum)
 ```
+
+Useful packages:
+- `PackageCompiler.jl` has three main purposes:
+
+  - Creating custom sysimages for reduced latency when working locally with packages that has a high startup time.
+  - Creating "apps" which are a bundle of files including an executable that can be sent and run on other machines without Julia being installed on that machine.
+  - Creating a relocatable C library bundle form of Julia code.
+
+
+
+
+- `AutoSysimages.jl` allows easy generation of precompiles images - reduces package loading
