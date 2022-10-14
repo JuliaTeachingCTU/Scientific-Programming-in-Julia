@@ -238,7 +238,11 @@ The package typically loads other modules that form package dependencies.
 
 ## Project environments
 
-Is a package that contains additional file `Manifest.toml`.
+Is a package that does not contain `Name` and `UUID` in `Project.toml`. It's used when you don't need to create a package for your work. It's created by `activate some/path` in REPL package mode. 
+
+## Project Manifest
+
+Both package and environment can contains additional file `Manifest.toml`.
 This file tracks full dependency tree of a project including versions of the packages on which it depends.
 
 for example:
