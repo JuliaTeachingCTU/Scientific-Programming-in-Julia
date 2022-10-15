@@ -2,9 +2,9 @@
 
 In this homework you will have to write two additional `@testset`s for the
 Ecosystem.  One testset should be contained in a file `test/sheep.jl` and verify
-that the function `eat!(::Sheep, ::Grass, ::World)` works correctly.  Another
+that the function `eat!(::Animal{Sheep}, ::Plant{Grass}, ::World)` works correctly.  Another
 testset should be in the file `test/wolf.jl` and veryfiy that the function
-`eat!(::Wolf, ::Sheep, ::World)` works correctly.
+`eat!(::Animal{Wolf}, ::Animal{Sheep}, ::World)` works correctly.
 
 ## How to submit?
 
@@ -38,7 +38,7 @@ include("wolf.jl")
 ```
 1. Create a `Sheep` with food probability $p_f=1$
 2. Create *fully grown* `Grass` and a `World` with the two agents.
-3. Execute `eat!(::Sheep, ::Grass, ::World)
+3. Execute `eat!(::Animal{Sheep}, ::Plant{Grass}, ::World)
 4. `@test` that the size of the `Grass` now has `size == 0`
 ```@raw html
 </div></div>
@@ -54,7 +54,7 @@ include("wolf.jl")
 ```
 1. Create a `Wolf` with food probability $p_f=1$
 2. Create a `Sheep` and a `World` with the two agents.
-3. Execute `eat!(::Wolf, ::Sheep, ::World)
+3. Execute `eat!(::Animal{Wolf}, ::Animal{Sheep}, ::World)
 4. `@test` that the World only has one agent left in the agents dictionary
 ```@raw html
 </div></div>
