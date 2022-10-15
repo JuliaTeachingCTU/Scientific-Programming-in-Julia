@@ -186,10 +186,12 @@ where `<:` means "is a subtype of" and it is used in declarations where the righ
 
 We can list childrens of an abstract type using function `subtypes`  
 ```@example lecture
+using InteractiveUtils: subtypes  # hide
 subtypes(AbstractFloat)
 ```
 and we can also list the immediate `supertype` or climb the ladder all the way to `Any` using `supertypes`
 ```@example lecture
+using InteractiveUtils: supertypes  # hide
 supertypes(AbstractFloat)
 ```
 
@@ -404,20 +406,20 @@ end
 ````
 
 which will throw an error if we try to initialize it with `Position("1.0", "2.0")`. Notice the flexibility we have achieved. We can use `Position` to store (and later compute) not only over `Float32` / `Float64` but any real numbers defined by other packages, for example with `Posit`s.
-````@example lecture
+```@example lecture
 using SoftPosit
 Position(Posit8(3), Posit8(1))
 ```
-also notice that trying to construc the `Position` with different type of real numbers will fail, example `Position(1f0,1e0)`
+also notice that trying to construct the `Position` with different type of real numbers will fail, example `Position(1f0,1e0)`
 
 Naturally, fields in structures can be of different types, as is in the below pointless example.
 
-````@example lecture
+```@example lecture
 struct PositionXY{X<:Real, Y<:Real}
   x::X
   y::Y
 end
-````
+```
 
 ### Abstract parametric types
 Like Composite types, Abstract types can also have parameters. These parameters define types that are common for all child types. A very good example is Julia's definition of arrays of arbitrary dimension `N` and type `T` of its items as
@@ -450,6 +452,7 @@ You can verify that the above general function can be compiled to performant cod
 specialized for particular arguments.
 
 ````@example lecture; ansicolor=true
+using InteractiveUtils: @code_native
 @code_native debuginfo=:none mapreduce(*,+, [1,2,3], [1,2,3])
 ````
 
