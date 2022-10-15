@@ -1,5 +1,7 @@
 # Ecosystem debugging
-Let's now apply what we have learned so far on the much bigger codebase of our `Ecosystem` and `EcosystemCore` packages. 
+
+Let's now apply what we have learned so far on the much bigger codebase of our
+`Ecosystem`.
 
 ```@example block
 include("ecosystems/lab04/Ecosystem.jl")
@@ -107,7 +109,40 @@ The scripts to produce the numbers above can be found
 [here](ecosystems/lab04/bench.jl) for our original version and
 [here](ecosystems/animal_S_world_DictUnion/bench.jl) for the `Dict{Int,Union{...}}` version.
 
-This however, does not yet fix our type instabilities completely. We are still working with `Union`s of types.
+This however, does not yet fix our type instabilities completely. We are still working with `Union`s of types
+which we can see again using `@code_warntype`:
+```@setup uniondict
+include("ecosystems/animal_S_world_DictUnion/Ecosystem.jl")
+
+function make_counter()
+    n = 0
+    counter() = n += 1
+end
+
+function create_world()
+    n_grass  = 1_000
+    n_sheep  = 40
+    n_wolves = 4
+
+    nextid = make_counter()
+
+    World(vcat(
+        [Grass(nextid()) for _ in 1:n_grass],
+        [Sheep(nextid()) for _ in 1:n_sheep],
+        [Wolf(nextid()) for _ in 1:n_wolves],
+    ))
+end
+world = create_world();
+```
+```@example uniondict
+using InteractiveUtils # hide
+w = Wolf(4000)
+find_food(w, world)
+@code_warntype find_food(w, world)
+```
+
+--- 
+
 Next we could create a world that - instead of one plain dictionary - works with a tuple of dictionaries
 with one entry for each type of agent. Our world would then look like this:
 ```julia
@@ -129,6 +164,38 @@ With this slightly more involved update we can gain another bit of speed:
 | `find_food`  | 43.917 μs  | 12.208 μs             | 8.639 μs                   |
 | `reproduce!` | 439.666 μs | 340.041 μs            | 273.103 μs                 |
 
+And type stable code!
+```@setup namedtuple
+include("ecosystems/animal_S_world_NamedTupleDict/Ecosystem.jl")
+
+function make_counter()
+    n = 0
+    counter() = n += 1
+end
+
+function create_world()
+    n_grass  = 1_000
+    n_sheep  = 40
+    n_wolves = 4
+
+    nextid = make_counter()
+
+    World(vcat(
+        [Grass(nextid()) for _ in 1:n_grass],
+        [Sheep(nextid()) for _ in 1:n_sheep],
+        [Wolf(nextid()) for _ in 1:n_wolves],
+    ))
+end
+world = create_world();
+```
+```@example namedtuple
+using InteractiveUtils # hide
+w = Wolf(4000)
+find_food(w, world)
+@code_warntype find_food(w, world)
+```
+
+---
 
 The last optimization we can do is to move the `Sex` of our animals from a field
 into a parametric type. Our world would then look like below:

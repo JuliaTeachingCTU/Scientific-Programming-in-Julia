@@ -134,6 +134,7 @@ function find_agent(::Type{A}, w::World) where A<:Agent
 end
 
 find_agent(::Type{P}, w::World) where P<:PlantSpecies = find_agent(Plant{P}, w)
+find_agent(::Type{A}, w::World) where A<:AnimalSpecies = find_agent(Animal{A}, w)
 
 find_food(::Animal{Wolf}, w::World) = find_agent(Sheep, w)
 find_food(::Animal{Sheep}, w::World) = find_agent(Grass, w)
