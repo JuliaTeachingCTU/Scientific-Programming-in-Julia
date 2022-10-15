@@ -317,11 +317,13 @@ BenchmarkTools.Trial: 10000 samples with 9 evaluations.
 
 Giving fields of a composite type an abstract type does not really solve the problem of the compiler not knowing the type. In this example, it still does not know, if it should use instructions for `Float64` or `Int8`.
 
-```julia
+```@example lecture
 struct LessVaguePosition
   x::Real
   y::Real
 end
+```
+```julia
 z = [LessVaguePosition(rand(), rand()) for _ in 1:100];
 @benchmark reduce(move, $(z))
 ```
