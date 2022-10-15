@@ -64,7 +64,7 @@ function (A::Type{<:AnimalSpecies})(id::Int,E::T,ΔE::T,pr::T,pf::T,S::Type{<:Se
 end
 
 # get the per species defaults back
-randsex() = rand(subtypes(Sex))
+randsex() = rand(Bool) ? Female : Male
 Sheep(id; E=4.0, ΔE=0.2, pr=0.8, pf=0.6, S=randsex()) = Sheep(id, E, ΔE, pr, pf, S)
 Wolf(id; E=10.0, ΔE=8.0, pr=0.1, pf=0.2, S=randsex()) = Wolf(id, E, ΔE, pr, pf, S)
 

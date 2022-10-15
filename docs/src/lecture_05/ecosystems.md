@@ -163,8 +163,7 @@ The implementation of the new version with two parametric types can be found [he
 
 The same is true for the output of `@code_warntype`
 
-```@example
-using InteractiveUtils # hide
+```@example newblock
 include("ecosystems/animal_ST_world_NamedTupleDict/Ecosystem.jl")
 
 function make_counter()
@@ -186,7 +185,10 @@ function create_world()
     ))
 end
 world = create_world();
-
+nothing # hide
+```
+```@example newblock
+using InteractiveUtils # hide
 w = Wolf(4000)
 find_food(w, world)
 @code_warntype find_food(w, world)
