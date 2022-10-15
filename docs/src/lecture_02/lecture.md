@@ -12,7 +12,8 @@ the two main roles of a type system, which are:
 2. Communicating to the compiler how a type will be used
 
 The first aspect is important for the convenience of the programmer and enables abstractions
-in the language, the latter aspect is important for the speed of the generated code.
+in the language, the latter aspect is important for the speed of the generated code. *Writing efficient Julia code is best viewed as a dialogue between the programmer and the compiler.* [^1] 
+
 
 Type systems according to [Wikipedia](https://en.wikipedia.org/wiki/Data_type):
 * In computer science and computer programming, a **data type** or simply **type** is an attribute of data which tells the compiler or interpreter how the programmer intends to use the data.
@@ -61,7 +62,7 @@ programmer which inevitably leads to errors (note that severely constrained
 type systems are difficult to use).
 
 ## Intention of use and restrictions on compilers
-Additionally, types are used to generate efficient code. As an example, consider the following two
+Types plays an important role in generating efficient code by a compiler, becuase they tells the compiler which operations are permitted and prohibited. If compiler knows that something is constant, it can expoit such information. As an example, consider the following two
 alternatives to represent a set of animals:
 
 ````@example lecture
@@ -84,8 +85,8 @@ A good compiler makes use of the information provided by the type system to gene
 which we can verify by inspecting the compiled code using `@code_native` macro
 
 ````@repl lecture; ansicolor=true
-@code_native energy(a)
-@code_native energy(b)
+@code_native debuginfo=:none energy(a)
+@code_native debuginfo=:none energy(b)
 ````
 
 one observes the second version produces more optimal code. Why is that?
@@ -129,9 +130,7 @@ nothing # hide
   159.407 ns (0 allocations: 0 bytes)
 ```
 
-To conclude, julia is indeed a dynamically typed language, **but** if the compiler can infer
-all types in a called function in advance, it does not have to perform the type resolution
-during execution, which produces performant code.
+To conclude, julia is indeed a dynamically typed language, **but** if the compiler can infer all types in a called function in advance, it does not have to perform the type resolution during execution, which produces performant code.
 
 ## Classes of types
 Julia divides types into three classes: primitive, composite, and abstract.
@@ -185,8 +184,20 @@ abstract type Integer       <: Real end
 abstract type Signed        <: Integer end
 abstract type Unsigned      <: Integer end
 ```
-where `<:` means "is a subtype of" and it is used in declarations where the right-hand is an immediate sypertype of a given type (`Integer` has the immediate supertype `Real`.) If the supertype is not supplied, it is considered to be Any, therefore in the above defition `Number` has the supertype `Any`. Children of a particular type can be viewed as
+where `<:` means "is a subtype of" and it is used in declarations where the right-hand is an immediate sypertype of a given type (`Integer` has the immediate supertype `Real`.) If the supertype is not supplied, it is considered to be Any, therefore in the above defition `Number` has the supertype `Any`. 
 
+We can list childrens of an abstract type using function `subtypes`  
+```@example lecture
+subtypes(AbstractFloat)
+```
+and we can also list the immediate `supertype` or climb the ladder all the way to `Any` using `supertypes`
+```@example lecture
+supertypes(AbstractFloat)
+```
+
+`supertype` and `subtypes` print only types defined in Modules that are currently loaded to your workspace. For example with Julia without any Modules, `subtypes(Number)` returns `[Complex, Real]`, whereas if I load `Mods` package implementing numbers defined over finite field, the same call returns `[Comples,Real, AbstractMod]`.
+
+It is relatively simple to print a complete type hierarchy of 
 ````@example lecture
 using AbstractTrees
 function AbstractTrees.children(t::Type)
@@ -196,7 +207,7 @@ AbstractTrees.printnode(io::IO,t::Type) = print(io,t)
 print_tree(Number)
 ````
 
-As was mentioned, abstract types allows as to define functions that can be applied variebles of types with a given abstract type as a supertype. For example we can define a `sgn` function for **all** real numbers as
+The main role of abstract types allows is in function definitions. They allow to define functions that can be used on variables with types with a given abstract type as a supertype. For example we can define a `sgn` function for **all** real numbers as
 
 ````@example lecture
 sgn(x::Real) = x > 0 ? 1 : x < 0 ? -1 : 0
@@ -693,7 +704,5 @@ end
 
 The parameters of the type carry information about the type used to encode the position of `one` in each column in `T`, the dimension of one-hot vectors in `L`, the dimension of the storage of `indices` in `N` (which is zero for `OneHotVector` and one for `OneHotMatrix`), number of dimensions of the `OneHotArray` in `var"N+1"` and the type of underlying storage of indicies `I`.
 
----
 
-*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
-
+[^1]: Type Stability in Julia, Pelenitsyn et al., 2021](https://arxiv.org/pdf/2109.01950.pdf)
