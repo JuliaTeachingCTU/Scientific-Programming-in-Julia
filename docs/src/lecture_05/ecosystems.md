@@ -1,9 +1,6 @@
 # Ecosystem debugging
 Let's now apply what we have learned so far on the much bigger codebase of our `Ecosystem` and `EcosystemCore` packages. 
 
-!!! note "Installation of Ecosystem pkg"
-    If you do not have Ecosystem readily available you can get it from our [repository](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/Ecosystem.jl).
-
 ```@example block
 include("ecosystems/lab04/Ecosystem.jl")
 
