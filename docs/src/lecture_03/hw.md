@@ -58,7 +58,7 @@ random `Sheep`, etc.
 
 *Hint*: You can write a general `find_food` method for all animals and move the
 parts that are specific to the concrete animal types to a separate function.
-E.g. you could define a function `eats(::Wolf, ::Sheep) = true`, etc.
+E.g. you could define a function `eats(::Animal{Wolf}, ::Animal{Sheep}) = true`, etc.
 
 You can check your solution with the public test:
 ```@repl block
@@ -91,7 +91,7 @@ You can use `every_nth` to log (or save) the agent count only every couple of
 steps of your simulation. Using `every_nth` will look like this:
 ```@repl block
 w = World([Sheep(1), Grass(2), Wolf(3)])
-# `@info agent_count(w)` is executed only every 5th call to logcb(w)
+# `@info agent_count(w)` is executed only every 3rd call to logcb(w)
 logcb = every_nth(w->(@info agent_count(w)), 3);
 
 logcb(w);  # x->(@info agent_count(w)) is not called
