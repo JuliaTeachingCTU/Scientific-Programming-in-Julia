@@ -1,4 +1,5 @@
 using StatsBase
+using Random
 
 abstract type Species end
 
@@ -119,7 +120,7 @@ function eat!(sheep::Animal{Sheep}, grass::Plant{Grass}, ::World)
 end
 eat!(::Animal, ::Nothing, ::World) = nothing
 
-kill_agent!(a::Agent, w::World) = delete!(w.agents, a.id)
+kill_agent!(a::Agent, w::World) = delete!(getfield(w.agents, tosym(typeof(a))), a.id)
 
 function find_agent(::Type{A}, w::World) where A<:Agent
     dict = get(w.agents, tosym(A), nothing)
@@ -197,19 +198,34 @@ function agent_step!(a::Animal, w::World)
     return a
 end
 
-function world_step!(world::World)
-    # make sure that we only iterate over IDs that already exist in the
-    # current timestep this lets us safely add agents
-    ids = copy(keys(world.agents))
-
-    for id in ids
-        # agents can be killed by other agents, so make sure that we are
-        # not stepping dead agents forward
-        !haskey(world.agents,id) && continue
-
-        a = world.agents[id]
-        agent_step!(a,world)
+function flat(w::World)
+    xs = map(zip(keys(w.agents), w.agents)) do (name, species)
+        map(species |> keys |> collect) do id
+            id, name
+        end
     end
+    Iterators.flatten(xs)
+end
+
+function world_step!(world::World)
+    for (id, field) in shuffle(flat(world) |> collect)
+        species = getfield(world.agents, field)
+        !haskey(species, id) && continue
+        a = species[id]
+        agent_step!(a, world)
+    end
+
+    # this is faster but incorrect because species of same gender are treated
+    # one after another - which means that e.g. all Animal{Sheep,Female} will
+    # eat before all Animal{Sheep,Male} leaving less food for the latter
+    # map(world.agents) do species
+    #     ids = copy(keys(species))
+    #     for id in ids
+    #         !haskey(species,id) && continue
+    #         a = species[id]
+    #         agent_step!(a, world)
+    #     end
+    # end
 end
 
 # for accessing NamedTuple in World

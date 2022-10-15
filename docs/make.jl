@@ -63,6 +63,13 @@ lecture_04 = [
     "Homework" => "./lecture_04/hw.md"
 ]
 
+lecture_05 = [
+    "Lecture" => "./lecture_05/lecture.md"
+    "Lab" => "./lecture_05/lab.md"
+    "Homework" => "./lecture_05/hw.md"
+    "Ecosystem" => "./lecture_05/ecosystem.md"
+]
+
 makedocs(;
     modules = [Scientific_Programming_in_Julia],
     authors = "JuliaTeachingCTU",
@@ -83,6 +90,7 @@ makedocs(;
         "2: The power of Type System & multiple dispatch" => lecture_02,
         "3: Design Patterns" => lecture_03,
         "4: Package development, Unit test & CI" => lecture_04,
+        "5: Benchmarking, profiling, and performance gotachs" => lecture_05,
     ],
 )
 
