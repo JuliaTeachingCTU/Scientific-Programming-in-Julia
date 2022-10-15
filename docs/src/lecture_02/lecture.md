@@ -1,12 +1,5 @@
 # [Motivation](@id type_lecture)
-
-````@example lecture
-using InteractiveUtils # hide
-using InteractiveUtils: subtypes # hide
-````
-
-Before going into the details of Julia's type system, we will spend a few minutes motivating
-the two main roles of a type system, which are:
+Before going into the details of Julia's type system, we will spend a few minutes motivating the roles of a type system, which are:
 
 1. Structuring code
 2. Communicating to the compiler how a type will be used
@@ -49,20 +42,25 @@ nothing # hide
 Therefore the compiler (or interpreter) **enforces** that a wolf can only `howl`
 and never `baa` and vice versa a sheep can only `baa`. In this sense, it ensures
 that `howl(sheep)` and `baa(wolf)` never happen.
-For comparison, consider an alternative definition as follows
+```
+baa(Sheep("Karl",3))
+baa(Wolf("Karl",3))
+```
+Notice the type of error of the latter call `baa(Wolf("Karl",3))`. Julia raises `MethodError` which states that there is no function `baa` for the type `Wolf` (but there is a function `baa` for type `Sheep`).
+
+For comparison, consider an alternative definition which does not have specified types
 
 ````@example lecture
 bark(animal) = println(animal.name, " has howled.")
 baa(animal)  = println(animal.name, " has baaed.")
 nothing # hide
 ````
-
 in which case the burden of ensuring that a wolf will never baa rests upon the
 programmer which inevitably leads to errors (note that severely constrained
 type systems are difficult to use).
 
 ## Intention of use and restrictions on compilers
-Types plays an important role in generating efficient code by a compiler, becuase they tells the compiler which operations are permitted and prohibited. If compiler knows that something is constant, it can expoit such information. As an example, consider the following two
+Types plays an important role in generating efficient code by a compiler, because they tells the compiler which operations are permitted and prohibited, and possibly about costants. If compiler knows that something is constant, it can expoit such information. As an example, consider the following two
 alternatives to represent a set of animals:
 
 ````@example lecture
@@ -90,7 +88,7 @@ which we can verify by inspecting the compiled code using `@code_native` macro
 ````
 
 one observes the second version produces more optimal code. Why is that?
-* In the first representation, `a`, the animals are stored in an `Array` which can have arbitrary size and can contain arbitrary animals. This means that the compiler has to compile `energy(a)` such that it works on such arrays.
+* In the first representation, `a`, the animals are stored in an `Array{Any}` which can have arbitrary size and can contain arbitrary animals. This means that the compiler has to compile `energy(a)` such that it works on such arrays.
 * In the second representation, `b`, the animals are stored in a `Tuple`, which specializes for lengths and types of items. This means that the compiler knows the number of animals and the type of each animal on each position within the tuple, which allows it to specialize.
 
 This difference will indeed have an impact on the time of code execution.
@@ -98,12 +96,12 @@ On my i5-8279U CPU, the difference (as measured by BenchmarkTools) is
 
 ```julia
 using BenchmarkTools
-@btime energy(a)
-@btime energy(b)
+@btime energy($(a))
+@btime energy($(b))
 ```
 ```
-  159.669 ns (0 allocations: 0 bytes)
-  44.571 ns (0 allocations: 0 bytes)
+  70.2 ns (0 allocations: 0 bytes)
+  2.62 ns (0 allocations: 0 bytes)
 ```
 
 Which nicely demonstrates that the choice of types affects performance. Does it mean that we should always use `Tuples` instead of `Arrays`? Surely not, it is  just that each is better for different use-cases. Using Tuples means that the compiler will compile a special function for each length of tuple and each combination of types of items it contains, which is clearly wasteful.
@@ -122,15 +120,15 @@ nothing # hide
 `wolfpack_a` carries a type `Vector{Wolf}` while `wolfpack_b` has the type `Vector{Any}`. This means that in the first case, the compiler knows that all items are of the type `Wolf`and it can specialize functions using this information. In case of `wolfpack_b`, it does not know which animal it will encounter (although all are of the same type), and therefore it needs to dynamically resolve the type of each item upon its use. This ultimately leads to less performant code.
 
 ```julia
-@btime energy(wolfpack_a)
-@btime energy(wolfpack_b)
+@benchmark energy($(wolfpack_a))
+@benchmark energy($(wolfpack_b))
 ```
 ```
-  40.279 ns (0 allocations: 0 bytes)
-  159.407 ns (0 allocations: 0 bytes)
+  3.7 ns (0 allocations: 0 bytes)
+  69.4 ns (0 allocations: 0 bytes)
 ```
 
-To conclude, julia is indeed a dynamically typed language, **but** if the compiler can infer all types in a called function in advance, it does not have to perform the type resolution during execution, which produces performant code.
+To conclude, julia is indeed a dynamically typed language, **but** if the compiler can infer all types in a called function in advance, it does not have to perform the type resolution during execution, which produces performant code. This means and in hot (performance critical) parts of the code, you should be type stable, in other parts, it is not such big deal.
 
 ## Classes of types
 Julia divides types into three classes: primitive, composite, and abstract.
@@ -195,7 +193,7 @@ and we can also list the immediate `supertype` or climb the ladder all the way t
 supertypes(AbstractFloat)
 ```
 
-`supertype` and `subtypes` print only types defined in Modules that are currently loaded to your workspace. For example with Julia without any Modules, `subtypes(Number)` returns `[Complex, Real]`, whereas if I load `Mods` package implementing numbers defined over finite field, the same call returns `[Comples,Real, AbstractMod]`.
+`supertype` and `subtypes` print only types defined in Modules that are currently loaded to your workspace. For example with Julia without any Modules, `subtypes(Number)` returns `[Complex, Real]`, whereas if I load `Mods` package implementing numbers defined over finite field, the same call returns `[Complex, Real, AbstractMod]`.
 
 It is relatively simple to print a complete type hierarchy of 
 ````@example lecture
@@ -280,6 +278,7 @@ using BenchmarkTools
 move(a,b) = typeof(a)(a.x+b.x, a.y+b.y)
 x = [PositionF64(rand(), rand()) for _ in 1:100]
 y = [VaguePosition(rand(), rand()) for _ in 1:100]
+<<<<<<< HEAD
 ```
 ```julia
 @benchmark reduce(move, x)
@@ -298,6 +297,10 @@ BenchmarkTools.Trial: 10000 samples with 950 evaluations.
 ```
 ```julia
 @benchmark reduce(move, y)
+=======
+@benchmark reduce(move, $(x))
+@benchmark reduce(move, $(y))
+>>>>>>> 59e5094 (local changes commited)
 ```
 ```
 BenchmarkTools.Trial: 10000 samples with 9 evaluations.
@@ -320,7 +323,7 @@ struct LessVaguePosition
   y::Real
 end
 z = [LessVaguePosition(rand(), rand()) for _ in 1:100];
-@benchmark reduce(move, z)
+@benchmark reduce(move, $(z))
 ```
 ```
 BenchmarkTools.Trial: 10000 samples with 1 evaluation.
@@ -361,7 +364,7 @@ a.x = 2;
 a
 ````
 
-Note, that the memory layout of mutable structures is different, as fields now contain references to memory locations, where the actual values are stored.
+Note, that the memory layout of mutable structures is different, as fields now contain references to memory locations, where the actual values are stored (such structures cannot be allocated on stack, which increases the pressure on Garbage Collector).
 
 ### Parametric types
 So far, we had to trade-off flexibility for generality in type definitions. Can we have both? The answer is affirmative. The way to achieve this  **flexibility** in definitions of the type while being  able to generate optimal code is to  **parametrize** the type definition. This is achieved by replacing types with a parameter (typically a single uppercase character) and decorating in definition by specifying different type in curly brackets. For example
@@ -372,7 +375,8 @@ struct PositionT{T}
   y::T
 end
 u = [PositionT(rand(), rand()) for _ in 1:100]
-@btime reduce(move, u)
+u = [PositionT(rand(Float32), rand(Float32)) for _ in 1:100]
+@benchmark reduce(move, $(u))
 ```
 ```
   116.285 ns (1 allocation: 32 bytes)
@@ -397,7 +401,12 @@ struct Position{T<:Real}
 end
 ````
 
-which will throw an error if we try to initialize it with `Position("1.0", "2.0")`.
+which will throw an error if we try to initialize it with `Position("1.0", "2.0")`. Notice the flexibility we have achieved. We can use `Position` to store (and later compute) not only over `Float32` / `Float64` but any real numbers defined by other packages, for example with `Posit`s.
+````@example lecture
+using SoftPosit
+Position(Posit8(3), Posit8(1))
+```
+also notice that trying to construc the `Position` with different type of real numbers will fail, example `Position(1f0,1e0)`
 
 Naturally, fields in structures can be of different types, as is in the below pointless example.
 
@@ -439,7 +448,7 @@ You can verify that the above general function can be compiled to performant cod
 specialized for particular arguments.
 
 ````@example lecture; ansicolor=true
-@code_native mapreduce(*,+, [1,2,3], [1,2,3])
+@code_native debuginfo=:none mapreduce(*,+, [1,2,3], [1,2,3])
 ````
 
 ## More on the use of types in function definitions
@@ -462,14 +471,19 @@ move(Position(1.0,1.0), Position(2.0,2.0))
 the compiler generates two methods, one for `Position{Int64}` and the other for `Position{Float64}`. Notice that inside generated functions, the compiler needs to use different intrinsic operations, which can be viewed from
 
 ````@example lecture; ansicolor=true
-@code_native move(Position(1,1), Position(2,2))
+@code_native debuginfo=:none move(Position(1,1), Position(2,2))
 ````
 
 and
 
 ````@example lecture; ansicolor=true
-@code_native move(Position(1.0,1.0), Position(2.0,2.0))
+@code_native debuginfo=:none move(Position(1.0,1.0), Position(2.0,2.0))
 ````
+
+Notice that `move` works on `Posits` defined in 3rd party libas well
+```
+move(Position(Posit8(1),Posit8(1)), Position(Posit8(2),Posit8(2)))
+```
 
 ## Intermezzo: How does the Julia compiler work?
 Let's walk through an example. Consider the following definitions
@@ -515,12 +529,12 @@ m.cache
 A compiled function is therefore  a "blob" of **native code** living in a particular memory location. When Julia calls a function, it needs to pick the right block corresponding to a function with particular type of parameters.
 
 If the compiler cannot narrow the types of arguments to concrete types, it has to perform the above procedure inside the called function, which has negative effects on performance, as the type resulution and identification of the methods can be slow, especially for methods with many arguments (e.g. 30ns for a method with one argument,
-100 ns for method with two arguements).
+100 ns for method with two arguements). **You always want to avoid run-time resolution inside the performant loop!!!**
 Recall the above example
 
 ```julia
 wolfpack_a =  [Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
-@benchmark energy(wolfpack_a)
+@benchmark energy($(wolfpack_a))
 ```
 ```
 BenchmarkTools.Trial: 10000 samples with 991 evaluations.
@@ -539,7 +553,7 @@ and
 
 ```julia
 wolfpack_b =  Any[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
-@benchmark energy(wolfpack_b)
+@benchmark energy($(wolfpack_b))
 ```
 ```
 BenchmarkTools.Trial: 10000 samples with 800 evaluations.
@@ -569,7 +583,7 @@ For example
 ```julia
 const WolfOrSheep = Union{Wolf, Sheep}
 wolfpack_c =  WolfOrSheep[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
-@benchmark energy(wolfpack_c)
+@benchmark energy($(wolfpack_c))
 ```
 ```
 BenchmarkTools.Trial: 10000 samples with 991 evaluations.
@@ -673,7 +687,7 @@ foo(a::Vector{<:Real}) = println("Vector{T} where {T<:Real}")
 nothing # hide
 ````
 
-2. Diagonal rule says that a repeated type in a method signature has to be a concrete type. Consider for example the function below
+2. Diagonal rule says that a repeated type in a method signature has to be a concrete type (this is to avoid ambinguity if the repeated type is used inside function definition to define a new variable to change type of variables). Consider for example the function below
 
 ````@example lecture
 move(a::T, b::T) where {T<:Position} = T(a.x + by.x, a.y + by.y)
