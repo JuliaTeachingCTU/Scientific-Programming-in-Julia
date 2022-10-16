@@ -38,7 +38,7 @@ include("wolf.jl")
 ```
 1. Create a `Sheep` with food probability $p_f=1$
 2. Create *fully grown* `Grass` and a `World` with the two agents.
-3. Execute `eat!(::Animal{Sheep}, ::Plant{Grass}, ::World)
+3. Execute `eat!(::Animal{Sheep}, ::Plant{Grass}, ::World)`
 4. `@test` that the size of the `Grass` now has `size == 0`
 ```@raw html
 </div></div>
@@ -54,7 +54,7 @@ include("wolf.jl")
 ```
 1. Create a `Wolf` with food probability $p_f=1$
 2. Create a `Sheep` and a `World` with the two agents.
-3. Execute `eat!(::Animal{Wolf}, ::Animal{Sheep}, ::World)
+3. Execute `eat!(::Animal{Wolf}, ::Animal{Sheep}, ::World)`
 4. `@test` that the World only has one agent left in the agents dictionary
 ```@raw html
 </div></div>
