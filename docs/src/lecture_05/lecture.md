@@ -535,20 +535,14 @@ BenchmarkTools.Trial: 90 samples with 1 evaluation.
 ``` 
 
 
-## Global variables introduce type instability (avoid non-const globals)
+## Untyped global variables introduce type instability
 ```julia
 function implicit_sum()
-    n = length(y)
-    n == 0 && return(zero(eltype(y)))
-    n == 1 && return(y[1])
-    @inbounds a1 = y[1]
-    @inbounds a2 = y[2]
-    v = a1 + a2
-    @simd for i = 3 : n
-        @inbounds ai = y[i]
-        v += ai
-    end
-    v
+	s = zero(eltype(y))
+	@simd for yᵢ in y
+		s += yᵢ
+	end
+	s
 end
 ```
 
@@ -568,12 +562,12 @@ y = randn(10^4)
 @profile implicit_sum()
 ProfileSVG.save("/tmp/profile5.svg")
 ```
-(output available [here](profile5.svg)) which does not say anything except that there is a huge type-instability (red bar). In fact, the whole computation is dominated by Julia constantly determining the type (of something).
+(output available [here](profile5.svg)) which does not say anything except that there is a huge type-instability (red bar). In fact, the whole computation is dominated by Julia constantly determining the(of something.
 
 How can we determine, where is the type instability?
 - `@code_typed implicit_sum()` is 
 - Cthulhu as `@descend implicit_sum()`
-- JET (available with the nightly build of Julia and 1.7 pre-releases)
+- JET available for Julia 1.7 onward
 
 !!! info 
 	## JET 
@@ -582,53 +576,32 @@ How can we determine, where is the type instability?
 		using JET
 		@report_opt implicit_sum()
 	```
- 
-
 
 All of these tools tells us that the Julia's compiler cannot determine the type of `x`. But why? I can just invoke `typeof(x)` and I know immediately the type of `x`. 
 
 To understand the problem, you have to think about the compiler.
 1. You define function `implicit_sum().`
-2. If you call `implicit_sum` and `x` does not exist, Julia will happily crash.
-3. If you call `implicit_sum` and `x` exist, the function will give you the result (albeit slowly). At this moment, Julia has to specialize `implicit_sum`. It has two options how to behave with respect to `x`. 
-    a. The compiler can assume that type of `x` is the current `typeof(x)` but that would mean that if a user redefines x and change the type, the specialization of the function `implicit_sum` will assume the wrong type of `x` and it can have unexpected results.
-    b. The compiler take safe approach and determine the type of `x` inside the function `implicit_sum` and behave accordingly (recall that julia is dynamically typed). Yet, not knowing the type precisely is absolute disaster for performance.
+2. If you call `implicit_sum` and `y` does not exist, Julia will happily crash.
+3. If you call `implicit_sum` and `y` exist, the function will give you the result (albeit slowly). At this moment, Julia has to specialize `implicit_sum`. It has two options how to behave with respect to `y`. 
+    a. The compiler can assume that type of `y` is the current `typeof(y)` but that would mean that if a user redefines x and change the type, the specialization of the function `implicit_sum` will assume the wrong type of `y` and it can have unexpected results.
+    b. The compiler take safe approach and determine the type of `y` inside the function `implicit_sum` and behave accordingly (recall that julia is dynamically typed). Yet, not knowing the type precisely is absolute disaster for performance. You can see this assumption for yourself by typing `@code_typed implicit_sum()`.
 
-Notice the compiler dispatches on the name of the function and type of its arguments, hence, the compiler cannot create different versions of `implicit_sum` for different types of `x`, since it is not in argument, hence the dynamic resolution of types `x` inside `implicit_sum` function.
+Notice the compiler dispatches on the name of the function and type of its arguments, hence, the compiler cannot create different versions of `implicit_sum` for different types of `y`, since it is not in argument, hence the dynamic resolution of types `y` inside `implicit_sum` function.
 
 Julia takes the **safe approach**, which we can verify that although the `implicit_sum` was specialized (compiled) when `x` was `Vector{Float64}`, it works for other types
 ```julia
-x = rand(Int, 1000)
-implicit_sum() ≈ sum(x)
-x = map(x -> Complex(x...), zip(rand(1000), rand(1000)))
-implicit_sum() ≈ sum(x)
+y = rand(Int, 1000)
+implicit_sum() ≈ sum(y)
+y = map(x -> Complex(y...), zip(rand(1000), rand(1000)))
+implicit_sum() ≈ sum(y)
 ```
 
-This means, using global variables inside functions without passing them as arguments ultimately leads to type-instability. What are the solutions
+This means, using global variables inside functions without passing them as arguments ultimately leads to type-instability. What are the solutions?
 
-### Declaring `x` as const
-We can declare `x` as const, which tells the compiler that `x` will not change (and for the compiler mainly indicates **that type of `x` will not change**).
+### Julia 1.7 and below => Declaring `y` as const
+We can declare `y` as const, which tells the compiler that `y` will not change (and for the compiler mainly indicates **that type of `y` will not change**).
 
-Let's see that, but restart the julia before trying
-```julia
-using BenchmarkTools
-function implicit_sum()
-	n = length(x)
-	n == 0 && return(zero(eltype(x)))
-	n == 1 && return(x[1])
-    @inbounds a1 = x[1]
-    @inbounds a2 = x[2]
-    v = a1 + a2
-    @simd for i = 3 : n
-        @inbounds ai = x[i]
-        v += ai
-    end
-    v
-end
-const x = randn(10^8);
-```
-
-after benchmarking we see that the speed is the same as of `simd_sum()`.
+Let's see that, but restart the julia before trying. After defining `y` as `const`,  we see that the speed is the same as of `simd_sum()`.
 ```julia
 julia> @benchmark implicit_sum()
 BenchmarkTools.Trial: 99 samples with 1 evaluation.
@@ -642,30 +615,33 @@ BenchmarkTools.Trial: 99 samples with 1 evaluation.
 
  Memory estimate: 0 bytes, allocs estimate: 0.
 ```
+Also notice the difference in `@code_typed implicit_sum()`
+
+### Julia 1.8 and above => Provide type to `y`
+Julia 1.8 added support for typed global variables which solves the above problem as can be seen from (do not forget to restart julia)
+```julia
+y::Vector{Float64} = rand(10^8);
+``julia
+@benchmark implicit_sum()
+@code_typed implicit_sum()
+```
+Unlike in `const`, we are free to change the bindings if it is possible to convert it to `typeof(y)`
+```julia
+y = [1.0,2.0]
+typeof(y)
+y = [1,2]
+typeof(y)
+```
+but `y = ["1","2"]` will issue an error, since `String` has no default conversion rule to `Float64` (you can overwrite this by defining `Base.convert(::Type{Float64}, s::String) = parse(Float64, s)` but it will likely lead to all kinds of shenanigans).
 
 ### Barier function
-The reason, why the `implicit_sum` is so slow that every time the function invokes `getindex` and `+`, it has to resolve types. The solution would be to limit the number of resolutions, which can done by passing all parameters to inner function as follows.
-
+The reason, why the `implicit_sum` is so slow that every time the function invokes `getindex` and `+`, it has to resolve types. The solution would be to limit the number of resolutions, which can done by passing all parameters to inner function as follows (do not forget to restart julia if you have defined `y` as const before).
 ```julia
 using BenchmarkTools
-function simd_sum(x)
-	n = length(x)
-	n == 0 && return(zero(eltype(x)))
-	n == 1 && return(x[1])
-    @inbounds a1 = x[1]
-    @inbounds a2 = x[2]
-    v = a1 + a2
-    @simd for i = 3 : n
-        @inbounds ai = x[i]
-        v += ai
-    end
-    v
-end
-
 function barrier_sum()
-	simd_sum(x)
+	simd_sum(y)
 end
-x = randn(10^8);
+y = randn(10^8);
 ```
 
 ```julia
@@ -690,7 +666,7 @@ using JET
 ## Boxing in closure
 Recall closure is a function which contains some parameters contained 
 
-An example of closure from Jet.jl
+An example of closure (adopted from JET.jl)
 ```julia
 function abmult(r::Int)
    if r < 0
