@@ -8,10 +8,10 @@ This class is a short introduction to writing a performant code. As such, we wan
 
 Though recall the most important rule of thumb: **Never optimize code from the very beginning.** A much more productive workflow is 
 1. write the code that is idiomatic and easy to understand
-2. cover the code with unit test, such that you know that the optimized code works the same as the original
+2. meticulously cover the code with unit test, such that you know that the optimized code works the same as the original
 3. optimize the code
 
-Premature optimization frequently backfires, because:
+**Premature optimization frequently backfires**, because:
 - you might end-up optimizing wrong thing, i.e. you will not optimize performance bottleneck, but something very different
 - optimized code can be difficult to read and reason about, which means it is more difficult to make it right.
 
@@ -42,7 +42,7 @@ p = 2*pi*rand(2,n)
 
 ```
 
-The first thing we do is to run Profiler, to identify, where the function spends most of the time.
+The first step is to do proper benchmarking, e.g., using `@benchmark` from `BenchmarkTools`. The second step is to use Profiler to identify, where the function spends most time.
 
 !!! note 
 	## Julia's built-in profiler
@@ -103,7 +103,7 @@ and
 [[cos(t1) - 1im*sin(t1)  0]; 
  [0  cos(t1) + 1im*sin(t1)]]
 ```
-Scrutinizing the function `f`, we see that in every call, it has to allocate arrays `m0` and `m1` **on the heap.** The allocation on heap is expensive, because it might require interaction with the operating system and it pu stress on the potential garbage collector. Can we avoid it?
+Scrutinizing the function `f`, we see that in every call, it has to allocate arrays `m0` and `m1` **on the heap.** The allocation on heap is expensive, because it might require interaction with the operating system and it potentially stress garbage collector. Can we avoid it?
 Repeated allocation can be frequently avoided by:
 - preallocating arrays (if the arrays are of the fixed dimensions)
 - or allocating objects on stack, which does not involve interaction with OS (but can be used in limited cases.)
@@ -227,7 +227,7 @@ julia> @benchmark g3(p,n)
 
  Memory estimate: 7.63 MiB, allocs estimate: 24.
 ```
-Notice that now, we are about six times faster than the first solution, albeit passing the pre code is getting messy. Also notice that we spent a very little time in garbage collector. Running the profiler, 
+Notice that now, we are about six times faster than the first solution, albeit passing the preallocated arrays is getting messy. Also notice that we spent a very little time in garbage collector. Running the profiler, 
 ```julia
 Profile.clear()
 @profile g3(p,n)
@@ -403,9 +403,8 @@ Sometimes it happens that we create a non-stable code, which might be difficult 
 ```julia
 function poor_sum(x)
 	s = 0
-	n = length(x)
-	for i in 1:n
-		s += x[i]	
+	for xᵢ in x
+		s += xᵢ
 	end
 	s
 end
@@ -443,9 +442,8 @@ We can fix it for example by initializing `x` to be the zero of an element type 
 ```julia
 function stable_sum(x)
 	s = zero(eltype(x))
-	n = length(x)
-	for i in 1:n
-		s += x[i]
+	for xᵢ in x
+		s += xᵢ
 	end
 	s
 end
@@ -513,18 +511,13 @@ BenchmarkTools.Trial: 42 samples with 1 evaluation.
 Further, we can tell Julia that it is safe to vectorize the code
 ```julia
 function simd_sum(x)
-	n = length(x)
-	n == 0 && return(zero(eltype(x)))
-	n == 1 && return(x[1])
-    @inbounds a1 = x[1]
-    @inbounds a2 = x[2]
-    v = a1 + a2
-    @simd for i = 3 : n
-        @inbounds ai = x[i]
-        v += ai
-    end
-    v
+	s = zero(eltype(x))
+	@simd for xᵢ in x
+		s += xᵢ
+	end
+	s
 end
+
 ```
 
 ```julia
