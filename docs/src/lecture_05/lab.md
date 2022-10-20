@@ -43,7 +43,7 @@ using InteractiveUtils #hide
 @code_warntype polynomial(a, x)  # type stable
 @code_warntype polynomial(a, xf) # type unstable
 ```
-We are getting a little ahead of ourselves in this lab, as understanding of these expressions is part of the future [lecture](@ref introspection) and [lab](@ref introspection_lab). Anyway the output basically shows what the compiler thinks of each variable in the code, albeit for us in less readable form than the original code. The more red the color is of the type info the less sure the inferred type is. Our main focus should be on the return type of the function which is just at the start of the code with the keyword `Body`. In the first case the return type is an `Int64`, whereas in the second example the compiler is unsure whether the type is `Float64` or `Int64`, marked as the `Union` type of the two. Fortunately for us this type instability can be fixed with a single line edit, but we will see later that it is not always the case.
+We are getting a little ahead of ourselves in this lab, as understanding of these expressions is part of the future lecture. Anyway the output basically shows what the compiler thinks of each variable in the code, albeit for us in less readable form than the original code. The more red the color is of the type info the less sure the inferred type is. Our main focus should be on the return type of the function which is just at the start of the code with the keyword `Body`. In the first case the return type is an `Int64`, whereas in the second example the compiler is unsure whether the type is `Float64` or `Int64`, marked as the `Union` type of the two. Fortunately for us this type instability can be fixed with a single line edit, but we will see later that it is not always the case.
 
 !!! note "Type stability"
     Having a variable represented as `Union` of multiple types in a functions is a lesser evil than having `Any`, as we can at least enumerate statically the available options of functions to which to dynamically dispatch and in some cases there may be a low penalty.
@@ -89,10 +89,16 @@ polynomial_stable(a, xf) #hide
 ```
 
 Only really visible when evaluating multiple times.
-```@repl lab05_polynomial
-using BenchmarkTools
-@btime polynomial($a, $xf)
-@btime polynomial_stable($a, $xf)
+```julia
+julia> using BenchmarkTools
+
+julia> @btime polynomial($a, $xf)
+  31.806 ns (0 allocations: 0 bytes)
+128.0
+
+julia> @btime polynomial_stable($a, $xf)
+  28.522 ns (0 allocations: 0 bytes)
+128.0
 ```
 Difference only a few nanoseconds.
 
@@ -123,11 +129,24 @@ The number of samples/evaluations can be set manually, however most of the time 
 
 The most commonly used interface of `Benchmarkools` is the `@btime` macro, which returns an output similar to the regular `@time` macro however now aggregated over samples by taking their minimum (a robust estimator for the location parameter of the time distribution, should not be considered an outlier - usually the noise from other processes/tasks puts the results to the other tail of the distribution and some miraculous noisy speedups are uncommon. In order to see the underlying sampling better there is also the `@benchmark` macro, which runs in the same way as `@btime`, but prints more detailed statistics which are also returned in the `Trial` type instead of the actual code output.
 
-```@repl lab05_bench
-using BenchmarkTools #hide
-@btime sum($(rand(1000)))
-@benchmark sum($(rand(1000)))
 ```
+julia> @btime sum($(rand(1000)))
+  174.274 ns (0 allocations: 0 bytes)
+504.16236531044757
+
+julia> @benchmark sum($(rand(1000)))
+BenchmarkTools.Trial: 10000 samples with 723 evaluations.
+ Range (min … max):  174.274 ns … 364.856 ns  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     174.503 ns               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   176.592 ns ±   7.361 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  █▃     ▃▃                                                     ▁
+  █████████▇█▇█▇▇▇▇▇▆▆▇▆▆▆▆▆▆▅▆▆▅▅▅▆▆▆▆▅▅▅▅▅▅▅▅▆▅▅▅▄▄▅▅▄▄▅▃▅▅▄▅ █
+  174 ns        Histogram: log(frequency) by time        206 ns <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+```
+
 !!! danger "Interpolation ~ `$` in BenchmarkTools"
     In the previous example we have used the interpolation signs `$` to indicate that the code inside should be evaluated once and stored into a local variable. This allows us to focus only on the benchmarking of code itself instead of the input generation. A more subtle way where this is crops up is the case of using previously defined global variable, where instead of data generation we would measure also the type inference at each evaluation, which is usually not what we want. The following list will help you decide when to use interpolation.
     ```julia
@@ -141,7 +160,7 @@ using BenchmarkTools #hide
 ## Profiling
 Profiling in Julia is part of the standard library in the `Profile` module. It implements a fairly simple sampling based profiler, which in a nutshell asks at regular intervals, where the code execution is currently at. As a result we get an array of stacktraces (= chain of function calls), which allow us to make sense of where the execution spent the most time. The number of samples, that can be stored and the period in seconds can be checked after loading `Profile` into the session with the `init()` function.
 
-```@repl lab05_polynomial
+```julia
 using Profile
 Profile.init()
 ```
@@ -154,14 +173,19 @@ The same function, but with keyword arguments, can be used to change these setti
 ### Polynomial with scalars
 Let's look at our favorite `polynomial` function or rather it's type stable variant `polynomial_stable` under the profiling lens.
 
-```@repl lab05_polynomial
-Profile.clear() # clear the last trace (does not have to be run on fresh start)
+```julia
+# clear the last trace (does not have to be run on fresh start)
+Profile.clear()
+
 @profile polynomial_stable(a, xf)
-Profile.print() # text based output of the profiler
+
+# text based output of the profiler
+# not shown here because it is not incredibly informative
+Profile.print()
 ```
 Unless the machine that you run the code on is really slow, the resulting output contains nothing or only some internals of Julia's interactive REPL. This is due to the fact that our `polynomial` function take only few nanoseconds to run. When we want to run profiling on something, that takes only a few nanoseconds, we have to repeatedly execute the function.
 
-```@repl lab05_polynomial
+```julia
 function run_polynomial_stable(a, x, n) 
     for _ in 1:n
         polynomial_stable(a, x)
@@ -178,12 +202,10 @@ Profile.print()
 
 In order to get more of a visual feel for profiling, there are packages that allow you to generate interactive plots or graphs. In this lab we will use [`ProfileSVG.jl`](https://github.com/timholy/ProfileSVG.jl), which does not require any fancy IDE or GUI libraries.
 
-```@example lab05_polynomial
-using ProfileSVG
-ProfileSVG.set_default(width=777, height=555) #hide
-ProfileSVG.save("./profile_poly.svg") # can work with already created traces
-ProfileSVG.view() #hide
+```julia
+@profview run_polynomial_stable(a, xf, Int(1e5))
 ```
+![poly_stable](poly_stable.png)
 
 
 ```@raw html
@@ -208,13 +230,10 @@ function run_polynomial(a, x, n)
 end
 ```
 
-```@example lab05_polynomial
-run_polynomial(a, xf, 10) #hide
+```julia
 @profview run_polynomial(a, xf, Int(1e5)) # clears the profile for us
-ProfileSVG.save("./profile_poly_unstable.svg") #hide
-nothing #hide
 ```
-![profile_unstable](./profile_poly_unstable.svg)
+![poly_unstable](poly_unstable.png)
 
 
 ```@raw html
@@ -248,7 +267,7 @@ Rewrite the `polynomial` function using the Horner schema/method[^1]. Moreover i
 <summary class = "solution-header">Solution:</summary><p>
 ```
 
-```@repl lab05_polynomial
+```julia
 function polynomial(a, x)
     accumulator = a[end] * one(x)
     for i in length(a)-1:-1:1
@@ -259,324 +278,40 @@ end
 ```
 
 Speed up:
-- 42ns -> 12ns ~ 3.5x on integer valued input 
-- 420ns -> 12ns ~ 15x on real valued input
+- 49ns -> 8ns ~ 6x on integer valued input 
+- 59ns -> 8ns ~ 7x on real valued input
 
-```@repl lab05_polynomial
-@btime polynomial($a, $x)
-@btime polynomial_stable($a, $x)
-@btime polynomial($a, $xf)
-@btime polynomial_stable($a, $xf)
+```
+julia> @btime polynomial($a, $x)
+  8.008 ns (0 allocations: 0 bytes)
+97818
+
+julia> @btime polynomial_stable($a, $x)
+  49.173 ns (0 allocations: 0 bytes)
+97818
+
+julia> @btime polynomial($a, $xf)
+  8.008 ns (0 allocations: 0 bytes)
+97818.0
+
+julia> @btime polynomial_stable($a, $xf)
+  58.773 ns (0 allocations: 0 bytes)
+97818.0
 ```
 These numbers will be different on different HW.
 
 **BONUS**: The profile trace does not even contain the calling of mathematical operators and is mainly dominated by the iteration utilities. In this case we had to increase the number of runs to `1e6` to get some meaningful trace.
 
-```@example lab05_polynomial
-run_polynomial(a, xf, 10) #hide
+```julia
 @profview run_polynomial(a, xf, Int(1e6))
-ProfileSVG.save("./profile_poly_horner.svg") #hide
 ```
-![profile_horner](./profile_poly_horner.svg)
-
-```@raw html
-</p></details>
-```
-
-## Ecosystem debugging
-Let's now apply what we have learned so far on the much bigger codebase of our `Ecosystem` and `EcosystemCore` packages. 
-
-!!! note "Installation of Ecosystem pkg"
-    If you do not have Ecosystem readily available you can get it from our [repository](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/Ecosystem.jl).
-
-```@example lab05_ecosystem
-using Scientific_Programming_in_Julia.Ecosystem #hide
-using Profile, ProfileSVG
-
-function create_world()
-    n_grass       = 500
-    regrowth_time = 17.0
-
-    n_sheep         = 100
-    Δenergy_sheep   = 5.0
-    sheep_reproduce = 0.5
-    sheep_foodprob  = 0.4
-
-    n_wolves       = 8
-    Δenergy_wolf   = 17.0
-    wolf_reproduce = 0.03
-    wolf_foodprob  = 0.02
-
-    gs = [Grass(id, regrowth_time) for id in 1:n_grass];
-    ss = [Sheep(id, 2*Δenergy_sheep, Δenergy_sheep, sheep_reproduce, sheep_foodprob) for id in n_grass+1:n_grass+n_sheep];
-    ws = [Wolf(id, 2*Δenergy_wolf, Δenergy_wolf, wolf_reproduce, wolf_foodprob) for id in n_grass+n_sheep+1:n_grass+n_sheep+n_wolves];
-    World(vcat(gs, ss, ws))
-end
-world = create_world();
-nothing #hide
-```
-
-Precompile everything by running one step of our simulation and run the profiler.
-
-```julia
-simulate!(world, 1)
-@profview simulate!(world, 100)
-```
-![profile_ecosim_100](./profile_ecosim_100.svg)
-
-Red bars indicate type instabilities however, unless the bars stacked on top of them are high, narrow and not filling the whole width, the problem should not be that serious. In our case the worst offender is the`filter` method inside `EcosystemCore.find_rand` function, either when called from `EcosystemCore.find_food` or `EcosystemCore.find_mate`. In both cases the bars on top of it are narrow and not the full with, meaning that not that much time has been really spend working, but instead inferring the types in the function itself during runtime.
-
-```julia
-# original
-function EcosystemCore.find_rand(f, w::World)
-    xs = filter(f, w.agents |> values |> collect)
-    isempty(xs) ? nothing : sample(xs)
-end
-```
-
-Looking at the original [code](https://github.com/JuliaTeachingCTU/EcosystemCore.jl/blob/359f0b48314f9aa3d5d8fa0c85eebf376810aca6/src/animal.jl#L36-L39), we may not know exactly what is the problem, however the red color indicates that the code may be type unstable. Let's see if that is the case by evaluation the function with some isolated inputs.
-
-```@example lab05_ecosystem
-using InteractiveUtils #hide
-using Scientific_Programming_in_Julia.Ecosystem.EcosystemCore #hide
-w = Wolf(1, 20.0, 10.0, 0.9, 0.75)                  # get an instance of a wolf
-f = x -> EcosystemCore.eats(w, x)                   # define the filter function used in the `find_rand`
-EcosystemCore.find_rand(f, world)                   # check that it returns what we want
-@code_warntype EcosystemCore.find_rand(f, world)    # check type stability
-```
-
-Indeed we see that the return type is not inferred precisely but ends up being just the `Union{Nothing, Agent}`, however this is better than straight out `Any`, which is the union of all types and thus the compiler has to search much wider space. This uncertainty is propagated further resulting in the two parent functions to be inferred imperfectly.
-```@repl lab05_ecosystem
-@code_warntype EcosystemCore.find_food(w, world)
-@code_warntype EcosystemCore.find_mate(w, world)
-```
-
-The underlying issue here is that we are enumerating over an array of type `Vector{Agent}`, where `Agent` is abstract, which does not allow Julia compiler to specialize the code for the loop body as it has to always check first the type of the item in the vector. This is even more pronounced in the `filter` function that filters the array by creating a copy of their elements, thus needing to know what the resulting array should look like.
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Replace the `filter` function in `EcosystemCore.find_rand` with a different mechanism, which does not suffer from the same performance problems as viewed by the profiler. Use the simulation of 100 steps to see the difference.
-
-Use temporary patching by redefine the function in the current REPL session, i.e. write the function fully specified
-```julia
-function EcosystemCore.find_rand(f, w::World)
-    ...
-end
-```
-
-**BONUS**: Explore the algorithmic side of things by implementing a different sampling strategies [^2][^3].
-
-[^2]: Reservoir sampling [https://en.wikipedia.org/wiki/Reservoir\_sampling](https://en.wikipedia.org/wiki/Reservoir_sampling)
-[^3]: A simple algorithm [https://stackoverflow.com/q/9690009](https://stackoverflow.com/q/9690009)
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-There are a few alterations, which we can try.
-
-```@example lab05_ecosystem
-using StatsBase: shuffle!
-function EcosystemCore.find_rand(f, w::World)
-    for i in shuffle!(collect(keys(w.agents)))
-        a = w.agents[i]
-        f(a) && return a
-    end
-    return nothing
-end
-```
-
-```julia
-world = create_world();
-simulate!(world, 1)
-@profview simulate!(world, 100)
-```
-![profile_ecosim_100_nofilter_1](./profile_ecosim_100_nofilter_1.svg)
-
-Let's try something that should does not allocate
-```@example lab05_ecosystem
-function EcosystemCore.find_rand(f, w::World)
-    count = 1
-    selected = nothing
-    for a in values(w.agents)
-        if f(a) 
-            if rand() * count < 1
-                selected = a
-            end
-            count += 1
-        end
-    end
-    selected
-end
-```
-
-```julia
-world = create_world();
-simulate!(world, 1)
-@profview simulate!(world, 100)
-```
-![./profile_ecosim_100_nofilter_2](./profile_ecosim_100_nofilter_2.svg)
-```@raw html
-</p></details>
-```
-
-We have tried a few variants, however none of them really gets rid of the underlying problem. The solution unfortunately requires rewriting the `World` and other bits, such that the iteration never goes over an array of mixed types. Having said this we may still be interested in a solution that performs the best, given the current architecture.
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Benchmark different versions of the `find_rand` function in a simulation 10 steps. In order for this comparison to be fair, we need to ensure that both the initial state of the `World` as well as all calls to the `Random` library stay the same.
-
-**HINTS**:
-- use `Random.seed!` to fix the global random number generator before each run of simulation
-- use `setup` keyword and `deepcopy` to initiate the `world` variable to the same state in each evaluation (see resources at the end of this page for more information)
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-Run the following code for each version to find some differences. 
-```julia
-using Random
-world = create_world();
-@benchmark begin
-    Random.seed!(7); 
-    simulate!(w, 10) 
-end setup=(w=deepcopy($world)) evals=1 samples=20 seconds=30
-```
-Recall that when using `setup`, we have to limit number of evaluations to `evals=1` in order not to mutate the `world` struct.
-```@raw html
-</p></details>
-```
-
-### Tracking allocations
-Memory allocation is oftentimes the most CPU heavy part of the computation, thus working with memory correctly, i.e. avoiding unnecessary allocation is key for a well performing code. In order to get a sense of how much memory is allocated at individual places of the your codebase, we can instruct Julia to keep track of the allocations with a command line option `--track-allocation={all|user}`
-- `user` - measure memory allocation everywhere except Julia's core code
-- `all` - measure memory allocation at each line of Julia code
-
-After exiting, Julia will create a copy of each source file, that has been touched during execution and assign to each line the number of allocations in bytes. In order to avoid including allocation from compilation the memory allocation statistics have to be cleared after first run by calling `Profile.clear_malloc_data()`, resulting in this kind of workflow
-```julia
-using Profile
-run_code()
-Profile.clear_malloc_data()
-run_code()
-# exit julia
-```
-
-`run_code` can be replaced by inclusion of a script file, which will be the annotated as well.
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-
-Transform the simulation code above into a script and include it into a new Julia session
-```bash
-julia --track-allocation=user
-```
-Use the steps above to obtain a memory allocation map. Investigate the results of allocation tracking inside `EcosystemCore` source files. Where is the line with the most allocations?
-
-**HINT**: In order to locate source files consult the useful resources at the end of this page.
-**BONUS**: Use pkg `Coverage.jl` to process the resulting files from withing the `EcosystemCore`.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-The [script](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_05/sim.jl) called `sim.jl`
-```julia
-using Ecosystem 
-
-function create_world()
-    n_grass       = 500
-    regrowth_time = 17.0
-
-    n_sheep         = 100
-    Δenergy_sheep   = 5.0
-    sheep_reproduce = 0.5
-    sheep_foodprob  = 0.4
-
-    n_wolves       = 8
-    Δenergy_wolf   = 17.0
-    wolf_reproduce = 0.03
-    wolf_foodprob  = 0.02
-
-    gs = [Grass(id, regrowth_time) for id in 1:n_grass];
-    ss = [Sheep(id, 2*Δenergy_sheep, Δenergy_sheep, sheep_reproduce, sheep_foodprob) for id in n_grass+1:n_grass+n_sheep];
-    ws = [Wolf(id, 2*Δenergy_wolf, Δenergy_wolf, wolf_reproduce, wolf_foodprob) for id in n_grass+n_sheep+1:n_grass+n_sheep+n_wolves];
-    World(vcat(gs, ss, ws))
-end
-world = create_world();
-simulate!(world, 10)
-```
-
-How to run.
-```julia
-using Profile
-include("./sim.jl")
-Profile.clear_malloc_data()
-include("./sim.jl")
-```
-
-Pkg `Coverage.jl` can highlight where is the problem with allocations.
-```julia
-julia> using Coverage
-julia> analyze_malloc(expanduser("~/.julia/packages/EcosystemCore/8dzJF/src"))
-35-element Vector{CoverageTools.MallocInfo}:
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 21)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 22)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 24)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 26)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 27)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 28)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 30)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 31)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 33)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 38)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 41)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 48)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 49)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 59)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 60)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 62)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 64)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 65)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/plant.jl.498486.mem", 16)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/plant.jl.498486.mem", 17)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 14)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 15)
- CoverageTools.MallocInfo(0, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 16)
- CoverageTools.MallocInfo(16, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 9)
- CoverageTools.MallocInfo(32, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 2)
- CoverageTools.MallocInfo(32, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 8)
- CoverageTools.MallocInfo(288, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 7)
- CoverageTools.MallocInfo(3840, "~/.julia/packages/EcosystemCore/8dzJF/src/world.jl.498486.mem", 13)
- CoverageTools.MallocInfo(32000, "~/.julia/packages/EcosystemCore/8dzJF/src/plant.jl.498486.mem", 13)
- CoverageTools.MallocInfo(69104, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 23)
- CoverageTools.MallocInfo(81408, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 58)
- CoverageTools.MallocInfo(244224, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 2)
- CoverageTools.MallocInfo(488448, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 63)
- CoverageTools.MallocInfo(895488, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 61)
- CoverageTools.MallocInfo(229589792, "~/.julia/packages/EcosystemCore/8dzJF/src/animal.jl.498486.mem", 37)
-```
+![poly_horner](poly_horner.png)
 
 ```@raw html
 </p></details>
 ```
 
 ---
-
-## Useful resources
 
 ### Where to find source code?
 As most of Julia is written in Julia itself it is sometimes helpful to look inside for some details or inspiration. The code of `Base` and stdlib pkgs is located just next to Julia's installation in the `./share/julia` subdirectory
@@ -616,18 +351,353 @@ If you are using VSCode, the paths visible in the REPL can be clicked through to
 
 ### Setting up benchmarks to our liking
 In order to control the number of samples/evaluation and the amount of time given to a given benchmark, we can simply append these as keyword arguments to `@btime` or `@benchmark` in the following way
-```@repl lab05_bench
-@benchmark sum($(rand(1000))) evals=100 samples=10 seconds=1
+```
+julia> @benchmark sum($(rand(1000))) evals=100 samples=10 seconds=1
+BenchmarkTools.Trial: 10 samples with 100 evaluations.
+ Range (min … max):  174.580 ns … 188.750 ns  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     175.420 ns               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   176.585 ns ±   4.293 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+     █                                                          
+  █▅▁█▁▅▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▅ ▁
+  175 ns           Histogram: frequency by time          189 ns <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
 ```
 which runs the code repeatedly for up to `1s`, where each of the `10` samples in the trial is composed of `10` evaluations. Setting up these parameters ourselves creates a more controlled environment in which performance regressions can be more easily identified.
 
 Another axis of customization is needed when we are benchmarking mutable operations such as `sort!`, which sorts an array in-place. One way of achieving a consistent benchmark is by omitting the interpolation such as
-```@repl lab05_bench
-@benchmark sort!(rand(1000))
+```
+julia> @benchmark sort!(rand(1000))
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):  27.250 μs … 95.958 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     29.875 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   30.340 μs ±  2.678 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+         ▃▇█▄▇▄                                               
+  ▁▁▁▂▃▆█████████▆▅▃▄▃▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▂
+  27.2 μs         Histogram: frequency by time        41.3 μs <
+
+ Memory estimate: 7.94 KiB, allocs estimate: 1.
 ```
 however now we are again measuring the data generation as well. A better way of doing such timing is using the built in `setup` keyword, into which you can put a code that has to be run before each sample and which won't be measured.
-```@repl lab05_bench
-@benchmark sort!(y) setup=(y=rand(1000))
-A = rand(1000) #hide
-@benchmark sort!(AA) setup=(AA=copy($A))
 ```
+julia> @benchmark sort!(y) setup=(y=rand(1000))
+BenchmarkTools.Trial: 10000 samples with 7 evaluations.
+ Range (min … max):  7.411 μs …  25.869 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     7.696 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   7.729 μs ± 305.383 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+             ▂▄▅▆█▇▇▆▄▃                                       
+  ▁▁▁▁▂▂▃▄▅▆████████████▆▅▃▂▂▂▁▁▁▁▁▁▁▁▁▂▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▃
+  7.41 μs         Histogram: frequency by time        8.45 μs <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+```
+
+
+
+## Ecosystem debugging
+
+Let's now apply what we have learned so far on the much bigger codebase of our
+`Ecosystem`.
+
+```@example block
+include("ecosystems/lab04/Ecosystem.jl")
+
+function make_counter()
+    n = 0
+    counter() = n += 1
+end
+
+function create_world()
+    n_grass  = 1_000
+    n_sheep  = 40
+    n_wolves = 4
+
+    nextid = make_counter()
+
+    World(vcat(
+        [Grass(nextid()) for _ in 1:n_grass],
+        [Sheep(nextid()) for _ in 1:n_sheep],
+        [Wolf(nextid()) for _ in 1:n_wolves],
+    ))
+end
+world = create_world();
+nothing # hide
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body">
+```
+Use `@profview` and `@code_warntype` to find the type unstable and slow parts of
+our simulation.
+
+Precompile everything by running one step of our simulation and run the profiler
+like this:
+
+```julia
+world_step!(world)
+@profview for i=1:100 world_step!(world) end
+```
+
+You should get a flamegraph similar to the one below:
+![lab04-ecosystem](ecosystems/lab04-worldstep.png)
+
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+Red bars indicate type instabilities. The bars stacked on top of them are high,
+narrow and not filling the whole width, indicating that the problem is pretty
+serious. In our case the worst offender is the `filter` method inside
+`find_food` and `find_mate` functions.
+In both cases the bars on top of it are narrow and not the full with, meaning
+that not that much time has been really spend working, but instead inferring the
+types in the function itself during runtime.
+
+As a reminder, this is the `find_food` function:
+```julia
+# original
+function find_food(a::Animal, w::World)
+    as = filter(x -> eats(a,x), w.agents |> values |> collect)
+    isempty(as) ? nothing : sample(as)
+end
+```
+Just from looking at that piece of code its not obvious what is the problem,
+however the red color indicates that the code may be type unstable. Let's see if
+that is the case by evaluation the function with some isolated inputs.
+
+```@example block
+using InteractiveUtils # hide
+w = Wolf(4000)
+find_food(w, world)
+@code_warntype find_food(w, world)
+```
+
+Indeed we see that the return type is not inferred precisely but ends up being
+just the `Union{Nothing, Agent}`, this is better than straight out `Any`, which
+is the union of all types but still, julia has to do dynamic dispatch here, which is slow.
+
+The underlying issue here is that we are working array of type `Vector{Agent}`,
+where `Agent` is abstract, which does not allow the compiler to specialize the
+code for the loop body.
+```@raw html
+</p></details>
+```
+
+
+## Different `Ecosystem.jl` versions
+
+In order to fix the type instability in the `Vector{Agent}` we somehow have to
+rethink our world such that we get a vector of a concrete type. Optimally we would have one
+vector for each type of agent that populates our world. Before we completely
+redesign how our world works we can try a simple hack that might already improve
+things. Instead of letting julia figure our which types of agents we have (which
+could be infinitely many), we can tell the compiler at least that we have only
+three of them: `Wolf`, `Sheep`, and `Grass`.
+
+We can do this with a tiny change in the constructor of our `World`:
+
+```julia
+function World(agents::Vector{<:Agent})
+    ids = [a.id for a in agents]
+    length(unique(ids)) == length(agents) || error("Not all agents have unique IDs!")
+
+    # construct Dict{Int,Union{Animal{Wolf}, Animal{Sheep}, Plant{Grass}}}
+    # instead of Dict{Int,Agent}
+    types = unique(typeof.(agents))
+    dict = Dict{Int,Union{types...}}(a.id => a for a in agents)
+
+    World(dict, maximum(ids))
+end
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body">
+```
+1. Run the benchmark script provided [here](ecosystems/lab04/bench.jl) to get
+   timings for `find_food` and `reproduce!` for the original ecosystem.
+2. Run the same benchmark with the modified `World` constructor.
+
+Which differences can you observe? Why is one version faster than the other?
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+It turns out that with this simple change we can already gain a little bit of speed:
+
+|                                           | `find_food` | `reproduce!` |
+|-------------------------------------------|-------------|--------------|
+|`Animal{A}`   & `Dict{Int,Agent}`          | 43.917 μs   | 439.666 μs   |
+|`Animal{A}`   & `Dict{Int,Union{...}}`     | 12.208 μs   | 340.041 μs   |
+
+We are gaining performance here because for small `Union`s of types the julia
+compiler can precompile the multiple available code branches.  If we have just a
+`Dict` of `Agent`s this is not possible.
+
+This however, does not yet fix our type instabilities completely. We are still working with `Union`s of types
+which we can see again using `@code_warntype`:
+```@setup uniondict
+include("ecosystems/animal_S_world_DictUnion/Ecosystem.jl")
+
+function make_counter()
+    n = 0
+    counter() = n += 1
+end
+
+function create_world()
+    n_grass  = 1_000
+    n_sheep  = 40
+    n_wolves = 4
+
+    nextid = make_counter()
+
+    World(vcat(
+        [Grass(nextid()) for _ in 1:n_grass],
+        [Sheep(nextid()) for _ in 1:n_sheep],
+        [Wolf(nextid()) for _ in 1:n_wolves],
+    ))
+end
+world = create_world();
+```
+```@example uniondict
+using InteractiveUtils # hide
+w = Wolf(4000)
+find_food(w, world)
+@code_warntype find_food(w, world)
+```
+```@raw html
+</p></details>
+```
+
+--- 
+
+Julia still has to perform runtime dispatch on the small `Union` of `Agent`s that is in our dictionary.
+To avoid this we could create a world that - instead of one plain dictionary - works with a tuple of dictionaries
+with one entry for each type of agent. Our world would then look like this:
+```julia
+# pseudocode:
+world ≈ (
+    :Grass = Dict{Int, Plant{Grass}}(...),
+    :Sheep = Dict{Int, Animal{Sheep}}(...),
+    :Wolf = Dict{Int, Animal{Wolf}}(...)
+)
+```
+In order to make this work we have to touch our ecosystem code in a number of
+places, mostly related to `find_food` and `reproduce!`.  You can find a working
+version of the ecosystem with a world based on `NamedTuple`s
+[here](ecosystems/animal_S_world_NamedTupleDict/Ecosystem.jl).
+With this slightly more involved update we can gain another bit of speed:
+
+|                                           | `find_food` | `reproduce!` |
+|-------------------------------------------|-------------|--------------|
+|`Animal{A}`   & `Dict{Int,Agent}`          | 43.917 μs   | 439.666 μs   |
+|`Animal{A}`   & `Dict{Int,Union{...}}`     | 12.208 μs   | 340.041 μs   |
+|`Animal{A}`   & `NamedTuple{Dict,...}`     | 8.639 μs    | 273.103 μs   |
+
+And type stable code!
+```@setup namedtuple
+include("ecosystems/animal_S_world_NamedTupleDict/Ecosystem.jl")
+
+function make_counter()
+    n = 0
+    counter() = n += 1
+end
+
+function create_world()
+    n_grass  = 1_000
+    n_sheep  = 40
+    n_wolves = 4
+
+    nextid = make_counter()
+
+    World(vcat(
+        [Grass(nextid()) for _ in 1:n_grass],
+        [Sheep(nextid()) for _ in 1:n_sheep],
+        [Wolf(nextid()) for _ in 1:n_wolves],
+    ))
+end
+world = create_world();
+```
+```@example namedtuple
+using InteractiveUtils # hide
+w = Wolf(4000)
+find_food(w, world)
+@code_warntype find_food(w, world)
+```
+
+---
+
+The last optimization we can do is to move the `Sex` of our animals from a field
+into a parametric type. Our world would then look like below:
+```julia
+# pseudocode:
+world ≈ (
+    :Grass = Dict{Int, Plant{Grass}}(...),
+    :SheepFemale = Dict{Int, Animal{Sheep,Female}}(...),
+    :SheepMale = Dict{Int, Animal{Sheep,Male}}(...),
+    :WolfFemale = Dict{Int, Animal{Wolf,Female}}(...)
+    :WolfMale = Dict{Int, Animal{Wolf,Male}}(...)
+)
+```
+This should give us a lot of speedup in the `reproduce!` function, because we
+will not have to `filter` for the correct sex anymore, but instead can just pick
+the `NamedTuple` that is associated with the correct type of mate.
+Unfortunately, changing the type signature of `Animal` essentially means that we
+have to touch every line of code of our original ecosystem. However, the gain we
+get for it is quite significant:
+
+|                                           | `find_food` | `reproduce!` |
+|-------------------------------------------|-------------|--------------|
+|`Animal{A}`   & `Dict{Int,Agent}`          | 43.917 μs   | 439.666 μs   |
+|`Animal{A}`   & `Dict{Int,Union{...}}`     | 12.208 μs   | 340.041 μs   |
+|`Animal{A}`   & `NamedTuple{Dict,...}`     | 8.639 μs    | 273.103 μs   |
+|`Animal{A,S}` & `NamedTuple{Dict,...}`     | 7.823 μs    | 77.646 ns    |
+|`Animal{A,S}` & `Dict{Int,Union{...}}`     | 13.416 μs   | 6.436 ms     |
+
+The implementation of the new version with two parametric types can be found [here](ecosystems/animal_ST_world_NamedTupleDict/Ecosystem.jl). The completely blue (i.e. type stable) `@profview` of this version of the Ecosystem is quite satisfying to see
+
+![neweco](ecosystems/animal_ST_world_NamedTuple_worldstep.png)
+
+The same is true for the output of `@code_warntype`
+
+```@example newblock
+include("ecosystems/animal_ST_world_NamedTupleDict/Ecosystem.jl")
+
+function make_counter()
+    n = 0
+    counter() = n += 1
+end
+
+function create_world()
+    n_grass  = 1_000
+    n_sheep  = 40
+    n_wolves = 4
+
+    nextid = make_counter()
+
+    World(vcat(
+        [Grass(nextid()) for _ in 1:n_grass],
+        [Sheep(nextid()) for _ in 1:n_sheep],
+        [Wolf(nextid()) for _ in 1:n_wolves],
+    ))
+end
+world = create_world();
+nothing # hide
+```
+```@example newblock
+using InteractiveUtils # hide
+w = Wolf(4000)
+find_food(w, world)
+@code_warntype find_food(w, world)
+```
+
+## Useful resources
