@@ -89,7 +89,7 @@ makedocs(;
         "2: The power of Type System & multiple dispatch" => lecture_02,
         "3: Design Patterns" => lecture_03,
         "4: Package development, Unit test & CI" => lecture_04,
-        "5: Benchmarking, profiling, and performance gotachs" => lecture_05,
+        "5: Performance Benchmarking" => lecture_05,
     ],
 )
 

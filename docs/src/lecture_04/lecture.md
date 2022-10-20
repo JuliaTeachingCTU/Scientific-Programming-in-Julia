@@ -73,19 +73,19 @@ Combinations:
 ```
 
 ### Conflicts:
-When importing/using functions with name that that is already imported/used from another module:
+When importing/using functions with name that is already imported/used from another module:
 - the imported functions/structs are invalidated. 
-- both function has to be acessed by their full names.
+- both functions has to be acessed by their full names.
 
-Resoluton:
+Resolution:
 - It may be easier to cherry pick only the functions we need (rather than importing all via `using`)
-- remane some function using keyword `as`
+- rename some function using keyword `as`
   ```julia
   import MySpace2: test1 as t1
   ```
 
 ### Submodules
-Modules can be used or included withing another modules:
+Modules can be used or included within other modules:
 ```julia
 module A
    a=1;
@@ -103,7 +103,7 @@ end;
 REPL of Julia is a module called "Main". 
 - modules are not copied, but referenced, i.e. `B.b===B.C.c`
 - including one module twice (from different packages) is not a problem
-- Upcoming Julia 1.9 has teh ability to change the contextual module in the REPL:
+- Upcoming Julia 1.9 has the ability to change the contextual module in the REPL:
   ```REPL.activate(TestPackage)```
 
 
@@ -111,13 +111,13 @@ REPL of Julia is a module called "Main".
 
 ### Revise.jl
 
-The fact that julia can redefine a function in a Module by importing it is used by package `Revise.jl` to synchronize REPL with a module or file.
+The fact that Julia can redefine a function in a Module by importing it is used by package `Revise.jl` to synchronize REPL with a module or file.
 
 So far, we have worked in REPL. If you have a file that is loaded and you want to modify it, you would need to either:
 1. reload the whole file, or
 2. copy the changes to REPL
 
-`Revise.jl` do the latter automatically.
+`Revise.jl` does the latter automatically.
 
 Example demo:
 ```julia
@@ -133,7 +133,7 @@ Works with:
 
 Does not work with variables!
 
-**How it works**: monitors source code for changes and then do
+**How it works**: monitors source code for changes and then does:
 ```julia
 for def in setdiff(oldexprs, newexprs)
     # `def` is an expression that defines a method.
@@ -154,14 +154,14 @@ Every module introduces a new global scope.
 - Global scope
   
   - No variable or function is expected to exist  outside of it
-  - Every module is equal a global scope (no single "global" exists)
+  - Every module is equal to a global scope (no single "global" exists)
   - The REPL has a global module called `Main`
 
 - Local scope
 
-  Variables in Julia do not need to be explcitely declared, they are created by assignments: `x=1`. 
+  Variables in Julia do not need to be explicitly declared, they are created by assignments: `x=1`. 
 
-  In local scope, the compiler checks if variable `x` does not exists outside. We have seen:
+  In local scope, the compiler checks if variable `x` does not exist outside. We have seen:
 
   ```julia 
   x=1
@@ -221,8 +221,8 @@ PackageName/
 
 Contains:
 - `Project.toml` file describing basic properties:
-  - `Name`, does not have to be Unique (federated package sources)
-  - `UUID`, has to be uniques (generated automatically)
+  - `Name`, does not have to be unique (federated package sources)
+  - `UUID`, has to be unique (generated automatically)
   - optionally [deps], [targets],...
 
 -  file `src/PackageName.jl` that defines module `PackageName` which is executed when loaded.
@@ -242,7 +242,7 @@ Is a package that does not contain `Name` and `UUID` in `Project.toml`. It's use
 
 ## Project Manifest
 
-Both package and environment can contains additional file `Manifest.toml`.
+Both package and environment can contain an additional file `Manifest.toml`.
 This file tracks full dependency tree of a project including versions of the packages on which it depends.
 
 for example:
@@ -279,7 +279,7 @@ Handles both packages and projects:
 
 By default these operations are related to environment `.julia/environments/v1.8`
 
-E.g. running an updating will update packages in `Manifest.toml` in this directory. What if the update breaks functionality of some project package that uses special features?
+E.g. running and updating will update packages in `Manifest.toml` in this directory. What if the update breaks functionality of some project package that uses special features?
 
 There can and should be more than one environment!
 
@@ -306,11 +306,11 @@ Project environments are based on files with installed packages.
 - keep your "@v#.#" as clean as possible (recommended are only debugging/profiling packages)
 - use packages as much as you can, even for short work with scripts `]activate .`
   - adding a package existing elsewhere is cheap (global cache)
-- if do not wich to store any files just test random tricks of a cool package: `]activate --temp`
+- if do you not wish to store any files just test random tricks of a cool package: `]activate --temp`
 
 ### Package development with Revise
 
-Developing a package with interactively test/development:
+Developing a package with interactive test/development:
 
 1. Create a package/module at one directory `MainPackage`
 2. Create a script at another directory `MainScript`, and activate it `]activate .`
@@ -326,7 +326,7 @@ Developing a package with interactively test/development:
 Without explicit keywords for checking constructs (think missing functions in interfaces), the good quality of the code is guaranteed by detailed unit testing.
 
 - each package should have directory `/test`
-- file `/test/runtest.jl` is run by command `]test` of the package manager
+- file `/test/runtest.jl` is run by the command `]test` of the package manager
 
   this file typically contains `include` of other tests
 

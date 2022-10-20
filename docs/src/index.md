@@ -102,3 +102,4 @@ some helpful concepts for this course.
 - [Justin Krumbiel's](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/) excellent introduction to the package manager.
 - [juliadatascience.io](https://juliadatascience.io) contains an excellent introduction to plotting with Makie.
 - MIT Course: [Julia Computation](https://github.com/mitmath/JuliaComputation)
+- Tim Holy's [Advanced Scientific Computing](https://github.com/timholy/AdvancedScientificComputing)

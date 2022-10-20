@@ -8,10 +8,10 @@ This class is a short introduction to writing a performant code. As such, we wan
 
 Though recall the most important rule of thumb: **Never optimize code from the very beginning.** A much more productive workflow is 
 1. write the code that is idiomatic and easy to understand
-2. cover the code with unit test, such that you know that the optimized code works the same as the original
+2. meticulously cover the code with unit test, such that you know that the optimized code works the same as the original
 3. optimize the code
 
-Premature optimization frequently backfires, because:
+**Premature optimization frequently backfires**, because:
 - you might end-up optimizing wrong thing, i.e. you will not optimize performance bottleneck, but something very different
 - optimized code can be difficult to read and reason about, which means it is more difficult to make it right.
 
@@ -42,7 +42,7 @@ p = 2*pi*rand(2,n)
 
 ```
 
-The first thing we do is to run Profiler, to identify, where the function spends most of the time.
+The first step is to do proper benchmarking, e.g., using `@benchmark` from `BenchmarkTools`. The second step is to use Profiler to identify, where the function spends most time.
 
 !!! note 
 	## Julia's built-in profiler
@@ -103,7 +103,16 @@ and
 [[cos(t1) - 1im*sin(t1)  0]; 
  [0  cos(t1) + 1im*sin(t1)]]
 ```
-Scrutinizing the function `f`, we see that in every call, it has to allocate arrays `m0` and `m1` **on the heap.** The allocation on heap is expensive, because it might require interaction with the operating system and it pu stress on the potential garbage collector. Can we avoid it?
+
+Julia 1.8 now offers a memory profiler, which helps to identify parts of the code allocating memory on heap. Unfortunately, `ProfileSVG` does not currently visualize its output, hence we are going to use `PProf`.
+```julia
+using Profile, PProf
+Profile.Allocs.@profile g(p,n)
+PProf.Allocs.pprof(Profile.Allocs.fetch(), from_c=false)
+```
+PProf by default shows outputs in call graph (how to read it can be found [here](https://git.io/JfYMW)), but supports the flamegraph (fortunately). Investigating the output we found that most allocations are caused by concatenation of arrays on lines 3 and 4.
+
+Scrutinizing the function `f`, we see that in every call, it has to allocate arrays `m0` and `m1` **on the heap.** The allocation on heap is expensive, because it might require interaction with the operating system and it potentially stress garbage collector. Can we avoid it?
 Repeated allocation can be frequently avoided by:
 - preallocating arrays (if the arrays are of the fixed dimensions)
 - or allocating objects on stack, which does not involve interaction with OS (but can be used in limited cases.)
@@ -227,7 +236,7 @@ julia> @benchmark g3(p,n)
 
  Memory estimate: 7.63 MiB, allocs estimate: 24.
 ```
-Notice that now, we are about six times faster than the first solution, albeit passing the pre code is getting messy. Also notice that we spent a very little time in garbage collector. Running the profiler, 
+Notice that now, we are about six times faster than the first solution, albeit passing the preallocated arrays is getting messy. Also notice that we spent a very little time in garbage collector. Running the profiler, 
 ```julia
 Profile.clear()
 @profile g3(p,n)
@@ -403,9 +412,8 @@ Sometimes it happens that we create a non-stable code, which might be difficult 
 ```julia
 function poor_sum(x)
 	s = 0
-	n = length(x)
-	for i in 1:n
-		s += x[i]	
+	for xᵢ in x
+		s += xᵢ
 	end
 	s
 end
@@ -443,9 +451,8 @@ We can fix it for example by initializing `x` to be the zero of an element type 
 ```julia
 function stable_sum(x)
 	s = zero(eltype(x))
-	n = length(x)
-	for i in 1:n
-		s += x[i]
+	for xᵢ in x
+		s += xᵢ
 	end
 	s
 end
@@ -479,52 +486,16 @@ BenchmarkTools.Trial: 42 samples with 1 evaluation.
 	The optimization of small unions is a big deal. It simplifies implementation of arrays with missing values, or allows to signal that result has not been produced by returning `missing`. In case of arrays with missing values, the type of element is `Union{Missing,T}` where `T` is the type of non-missing element.
 
 
-The main problem with the above formulation is that Julia is checking that getting element of arrays from `x[i]` is within bounds. We can remove the check using `@inbounds` macro.
-```julia
-function inbounds_sum(x)
-	n = length(x)
-	n == 0 && return(zero(eltype(x)))
-	n == 1 && return(x[1])
-    @inbounds a1 = x[1]
-    @inbounds a2 = x[2]
-    v = a1 + a2
-    @inbounds for i = 3 : n
-        ai = x[i]
-        v += ai
-    end
-    v
-end
-``` 
-
-This did not give us much.
-```julia
-BenchmarkTools.Trial: 42 samples with 1 evaluation.
- Range (min … max):  117.804 ms … 123.634 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     119.077 ms               ┊ GC (median):    0.00%
- Time  (mean ± σ):   119.387 ms ±   1.225 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
-
-           ▂  ▂█
-  ▅█▁▅▅▁██▅█████▅▅▁██▁▅▅▁▅▁▅▁▅▅▁▁▅▁▅▁▁▁▁▁▁▁▁▁▁▅▁▁▁▁▁▁▅▁▁▁▁▁▁▁▁▅ ▁
-  118 ms           Histogram: frequency by time          124 ms <
-
- Memory estimate: 16 bytes, allocs estimate: 1.
-```
-
-Further, we can tell Julia that it is safe to vectorize the code
+We can tell Julia that it is safe to vectorize the code
 ```julia
 function simd_sum(x)
-	n = length(x)
-	n == 0 && return(zero(eltype(x)))
-	n == 1 && return(x[1])
-    @inbounds a1 = x[1]
-    @inbounds a2 = x[2]
-    v = a1 + a2
-    @simd for i = 3 : n
-        @inbounds ai = x[i]
-        v += ai
-    end
-    v
+	s = zero(eltype(x))
+	@simd for xᵢ in x
+		s += xᵢ
+	end
+	s
 end
+
 ```
 
 ```julia
@@ -541,21 +512,14 @@ BenchmarkTools.Trial: 90 samples with 1 evaluation.
  Memory estimate: 16 bytes, allocs estimate: 1.
 ``` 
 
-
-## Global variables introduce type instability (avoid non-const globals)
+## Untyped global variables introduce type instability
 ```julia
 function implicit_sum()
-    n = length(y)
-    n == 0 && return(zero(eltype(y)))
-    n == 1 && return(y[1])
-    @inbounds a1 = y[1]
-    @inbounds a2 = y[2]
-    v = a1 + a2
-    @simd for i = 3 : n
-        @inbounds ai = y[i]
-        v += ai
-    end
-    v
+	s = zero(eltype(y))
+	@simd for yᵢ in y
+		s += yᵢ
+	end
+	s
 end
 ```
 
@@ -575,12 +539,12 @@ y = randn(10^4)
 @profile implicit_sum()
 ProfileSVG.save("/tmp/profile5.svg")
 ```
-(output available [here](profile5.svg)) which does not say anything except that there is a huge type-instability (red bar). In fact, the whole computation is dominated by Julia constantly determining the type (of something).
+(output available [here](profile5.svg)) which does not say anything except that there is a huge type-instability (red bar). In fact, the whole computation is dominated by Julia constantly determining the(of something.
 
 How can we determine, where is the type instability?
 - `@code_typed implicit_sum()` is 
 - Cthulhu as `@descend implicit_sum()`
-- JET (available with the nightly build of Julia and 1.7 pre-releases)
+- JET available for Julia 1.7 onward
 
 !!! info 
 	## JET 
@@ -589,53 +553,32 @@ How can we determine, where is the type instability?
 		using JET
 		@report_opt implicit_sum()
 	```
- 
-
 
 All of these tools tells us that the Julia's compiler cannot determine the type of `x`. But why? I can just invoke `typeof(x)` and I know immediately the type of `x`. 
 
 To understand the problem, you have to think about the compiler.
 1. You define function `implicit_sum().`
-2. If you call `implicit_sum` and `x` does not exist, Julia will happily crash.
-3. If you call `implicit_sum` and `x` exist, the function will give you the result (albeit slowly). At this moment, Julia has to specialize `implicit_sum`. It has two options how to behave with respect to `x`. 
-    a. The compiler can assume that type of `x` is the current `typeof(x)` but that would mean that if a user redefines x and change the type, the specialization of the function `implicit_sum` will assume the wrong type of `x` and it can have unexpected results.
-    b. The compiler take safe approach and determine the type of `x` inside the function `implicit_sum` and behave accordingly (recall that julia is dynamically typed). Yet, not knowing the type precisely is absolute disaster for performance.
+2. If you call `implicit_sum` and `y` does not exist, Julia will happily crash.
+3. If you call `implicit_sum` and `y` exist, the function will give you the result (albeit slowly). At this moment, Julia has to specialize `implicit_sum`. It has two options how to behave with respect to `y`. 
+    a. The compiler can assume that type of `y` is the current `typeof(y)` but that would mean that if a user redefines x and change the type, the specialization of the function `implicit_sum` will assume the wrong type of `y` and it can have unexpected results.
+    b. The compiler take safe approach and determine the type of `y` inside the function `implicit_sum` and behave accordingly (recall that julia is dynamically typed). Yet, not knowing the type precisely is absolute disaster for performance. You can see this assumption for yourself by typing `@code_typed implicit_sum()`.
 
-Notice the compiler dispatches on the name of the function and type of its arguments, hence, the compiler cannot create different versions of `implicit_sum` for different types of `x`, since it is not in argument, hence the dynamic resolution of types `x` inside `implicit_sum` function.
+Notice the compiler dispatches on the name of the function and type of its arguments, hence, the compiler cannot create different versions of `implicit_sum` for different types of `y`, since it is not in argument, hence the dynamic resolution of types `y` inside `implicit_sum` function.
 
 Julia takes the **safe approach**, which we can verify that although the `implicit_sum` was specialized (compiled) when `x` was `Vector{Float64}`, it works for other types
 ```julia
-x = rand(Int, 1000)
-implicit_sum() ≈ sum(x)
-x = map(x -> Complex(x...), zip(rand(1000), rand(1000)))
-implicit_sum() ≈ sum(x)
+y = rand(Int, 1000)
+implicit_sum() ≈ sum(y)
+y = map(x -> Complex(y...), zip(rand(1000), rand(1000)))
+implicit_sum() ≈ sum(y)
 ```
 
-This means, using global variables inside functions without passing them as arguments ultimately leads to type-instability. What are the solutions
+This means, using global variables inside functions without passing them as arguments ultimately leads to type-instability. What are the solutions?
 
-### Declaring `x` as const
-We can declare `x` as const, which tells the compiler that `x` will not change (and for the compiler mainly indicates **that type of `x` will not change**).
+### Julia 1.7 and below => Declaring `y` as const
+We can declare `y` as const, which tells the compiler that `y` will not change (and for the compiler mainly indicates **that type of `y` will not change**).
 
-Let's see that, but restart the julia before trying
-```julia
-using BenchmarkTools
-function implicit_sum()
-	n = length(x)
-	n == 0 && return(zero(eltype(x)))
-	n == 1 && return(x[1])
-    @inbounds a1 = x[1]
-    @inbounds a2 = x[2]
-    v = a1 + a2
-    @simd for i = 3 : n
-        @inbounds ai = x[i]
-        v += ai
-    end
-    v
-end
-const x = randn(10^8);
-```
-
-after benchmarking we see that the speed is the same as of `simd_sum()`.
+Let's see that, but restart the julia before trying. After defining `y` as `const`,  we see that the speed is the same as of `simd_sum()`.
 ```julia
 julia> @benchmark implicit_sum()
 BenchmarkTools.Trial: 99 samples with 1 evaluation.
@@ -649,30 +592,33 @@ BenchmarkTools.Trial: 99 samples with 1 evaluation.
 
  Memory estimate: 0 bytes, allocs estimate: 0.
 ```
+Also notice the difference in `@code_typed implicit_sum()`
+
+### Julia 1.8 and above => Provide type to `y`
+Julia 1.8 added support for typed global variables which solves the above problem as can be seen from (do not forget to restart julia)
+```julia
+y::Vector{Float64} = rand(10^8);
+``julia
+@benchmark implicit_sum()
+@code_typed implicit_sum()
+```
+Unlike in `const`, we are free to change the bindings if it is possible to convert it to `typeof(y)`
+```julia
+y = [1.0,2.0]
+typeof(y)
+y = [1,2]
+typeof(y)
+```
+but `y = ["1","2"]` will issue an error, since `String` has no default conversion rule to `Float64` (you can overwrite this by defining `Base.convert(::Type{Float64}, s::String) = parse(Float64, s)` but it will likely lead to all kinds of shenanigans).
 
 ### Barier function
-The reason, why the `implicit_sum` is so slow that every time the function invokes `getindex` and `+`, it has to resolve types. The solution would be to limit the number of resolutions, which can done by passing all parameters to inner function as follows.
-
+The reason, why the `implicit_sum` is so slow that every time the function invokes `getindex` and `+`, it has to resolve types. The solution would be to limit the number of resolutions, which can done by passing all parameters to inner function as follows (do not forget to restart julia if you have defined `y` as const before).
 ```julia
 using BenchmarkTools
-function simd_sum(x)
-	n = length(x)
-	n == 0 && return(zero(eltype(x)))
-	n == 1 && return(x[1])
-    @inbounds a1 = x[1]
-    @inbounds a2 = x[2]
-    v = a1 + a2
-    @simd for i = 3 : n
-        @inbounds ai = x[i]
-        v += ai
-    end
-    v
-end
-
 function barrier_sum()
-	simd_sum(x)
+	simd_sum(y)
 end
-x = randn(10^8);
+y = randn(10^8);
 ```
 
 ```julia
@@ -694,10 +640,86 @@ using JET
 @report_opt barrier_sum()
 ```
 
+## Checking bounds is expensive
+By default, julia checks bounds on every access to a location on an array, which can be difficult. Consider a following quicksort
+```julia
+function qsort!(a,lo,hi)
+    i, j = lo, hi
+    while i < hi
+        pivot = a[(lo+hi)>>>1]
+        while i <= j
+            while a[i] < pivot; i = i+1; end
+            while a[j] > pivot; j = j-1; end
+            if i <= j
+                a[i], a[j] = a[j], a[i]
+                i, j = i+1, j-1
+            end
+        end
+        if lo < j; qsort!(a,lo,j); end
+        lo, j = i, hi
+    end
+    return a
+end
+
+qsort!(a) = qsort!(a,1,length(a))
+``` 
+On lines 6 and 7 the `qsort!` accesses elements of array and upon every access julia checks bounds. We can signal to the compiler that it is safe not to check bounds using macro `@inbounds` as follows
+```julia
+function inqsort!(a,lo,hi)
+    i, j = lo, hi
+    @inbounds while i < hi
+        pivot = a[(lo+hi)>>>1]
+        while i <= j
+            while a[i] < pivot; i = i+1; end
+            while a[j] > pivot; j = j-1; end
+            if i <= j
+                a[i], a[j] = a[j], a[i]
+                i, j = i+1, j-1
+            end
+        end
+        if lo < j; inqsort!(a,lo,j); end
+        lo, j = i, hi
+    end
+    return a
+end
+
+inqsort!(a) = inqsort!(a,1,length(a))
+``` 
+We `@benchmark` to measure the impact
+```julia
+julia> a = randn(1000);
+julia> @benchmark qsort!($(a))
+BenchmarkTools.Trial: 10000 samples with 4 evaluations.
+ Range (min … max):  7.324 μs … 41.118 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     7.415 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   7.666 μs ±  1.251 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ▇█   ▁                    ▁   ▁   ▁                        ▁
+  ██▄█▆█▆▆█▃▇▃▁█▆▁█▅▃█▆▁▆▇▃▄█▆▄▆█▇▅██▄▃▃█▆▁▁▃▄▃▁▃▁▆▅▅▅▁▃▃▅▆▆ █
+  7.32 μs      Histogram: log(frequency) by time     12.1 μs <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+
+
+julia> @benchmark inqsort!($(a))
+BenchmarkTools.Trial: 10000 samples with 7 evaluations.
+ Range (min … max):  4.523 μs … 873.401 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     4.901 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   5.779 μs ±   9.165 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ▄█▇▅▁▁▁▁       ▁▁▂▃▂▁▁ ▁                                    ▁
+  █████████▆▆▆▆▆▇██████████▇▇▆▆▆▇█▇▆▅▅▆▇▅▅▆▅▅▅▇▄▅▆▅▃▅▅▆▅▄▄▃▅▅ █
+  4.52 μs      Histogram: log(frequency) by time      14.8 μs <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+
+```
+and see that by not checking bounds, the code is `33%` faster.
+
 ## Boxing in closure
 Recall closure is a function which contains some parameters contained 
 
-An example of closure from Jet.jl
+An example of closure (adopted from JET.jl)
 ```julia
 function abmult(r::Int)
    if r < 0
