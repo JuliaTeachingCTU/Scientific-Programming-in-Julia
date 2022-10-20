@@ -103,6 +103,15 @@ and
 [[cos(t1) - 1im*sin(t1)  0]; 
  [0  cos(t1) + 1im*sin(t1)]]
 ```
+
+Julia 1.8 now offers a memory profiler, which helps to identify parts of the code allocating memory on heap. Unfortunately, `ProfileSVG` does not currently visualize its output, hence we are going to use `PProf`.
+```julia
+using Profile, PProf
+Profile.Allocs.@profile g(p,n)
+PProf.Allocs.pprof(Profile.Allocs.fetch(), from_c=false)
+```
+PProf by default shows outputs in call graph (how to read it can be found [here](https://git.io/JfYMW)), but supports the flamegraph (fortunately). Investigating the output we found that most allocations are caused by concatenation of arrays on lines 3 and 4.
+
 Scrutinizing the function `f`, we see that in every call, it has to allocate arrays `m0` and `m1` **on the heap.** The allocation on heap is expensive, because it might require interaction with the operating system and it potentially stress garbage collector. Can we avoid it?
 Repeated allocation can be frequently avoided by:
 - preallocating arrays (if the arrays are of the fixed dimensions)
@@ -477,38 +486,7 @@ BenchmarkTools.Trial: 42 samples with 1 evaluation.
 	The optimization of small unions is a big deal. It simplifies implementation of arrays with missing values, or allows to signal that result has not been produced by returning `missing`. In case of arrays with missing values, the type of element is `Union{Missing,T}` where `T` is the type of non-missing element.
 
 
-The main problem with the above formulation is that Julia is checking that getting element of arrays from `x[i]` is within bounds. We can remove the check using `@inbounds` macro.
-```julia
-function inbounds_sum(x)
-	n = length(x)
-	n == 0 && return(zero(eltype(x)))
-	n == 1 && return(x[1])
-    @inbounds a1 = x[1]
-    @inbounds a2 = x[2]
-    v = a1 + a2
-    @inbounds for i = 3 : n
-        ai = x[i]
-        v += ai
-    end
-    v
-end
-``` 
-
-This did not give us much.
-```julia
-BenchmarkTools.Trial: 42 samples with 1 evaluation.
- Range (min … max):  117.804 ms … 123.634 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     119.077 ms               ┊ GC (median):    0.00%
- Time  (mean ± σ):   119.387 ms ±   1.225 ms  ┊ GC (mean ± σ):  0.00% ± 0.00%
-
-           ▂  ▂█
-  ▅█▁▅▅▁██▅█████▅▅▁██▁▅▅▁▅▁▅▁▅▅▁▁▅▁▅▁▁▁▁▁▁▁▁▁▁▅▁▁▁▁▁▁▅▁▁▁▁▁▁▁▁▅ ▁
-  118 ms           Histogram: frequency by time          124 ms <
-
- Memory estimate: 16 bytes, allocs estimate: 1.
-```
-
-Further, we can tell Julia that it is safe to vectorize the code
+We can tell Julia that it is safe to vectorize the code
 ```julia
 function simd_sum(x)
 	s = zero(eltype(x))
@@ -533,7 +511,6 @@ BenchmarkTools.Trial: 90 samples with 1 evaluation.
 
  Memory estimate: 16 bytes, allocs estimate: 1.
 ``` 
-
 
 ## Untyped global variables introduce type instability
 ```julia
@@ -662,6 +639,82 @@ BenchmarkTools.Trial: 93 samples with 1 evaluation.
 using JET
 @report_opt barrier_sum()
 ```
+
+## Checking bounds is expensive
+By default, julia checks bounds on every access to a location on an array, which can be difficult. Consider a following quicksort
+```julia
+function qsort!(a,lo,hi)
+    i, j = lo, hi
+    while i < hi
+        pivot = a[(lo+hi)>>>1]
+        while i <= j
+            while a[i] < pivot; i = i+1; end
+            while a[j] > pivot; j = j-1; end
+            if i <= j
+                a[i], a[j] = a[j], a[i]
+                i, j = i+1, j-1
+            end
+        end
+        if lo < j; qsort!(a,lo,j); end
+        lo, j = i, hi
+    end
+    return a
+end
+
+qsort!(a) = qsort!(a,1,length(a))
+``` 
+On lines 6 and 7 the `qsort!` accesses elements of array and upon every access julia checks bounds. We can signal to the compiler that it is safe not to check bounds using macro `@inbounds` as follows
+```julia
+function inqsort!(a,lo,hi)
+    i, j = lo, hi
+    @inbounds while i < hi
+        pivot = a[(lo+hi)>>>1]
+        while i <= j
+            while a[i] < pivot; i = i+1; end
+            while a[j] > pivot; j = j-1; end
+            if i <= j
+                a[i], a[j] = a[j], a[i]
+                i, j = i+1, j-1
+            end
+        end
+        if lo < j; inqsort!(a,lo,j); end
+        lo, j = i, hi
+    end
+    return a
+end
+
+inqsort!(a) = inqsort!(a,1,length(a))
+``` 
+We `@benchmark` to measure the impact
+```julia
+julia> a = randn(1000);
+julia> @benchmark qsort!($(a))
+BenchmarkTools.Trial: 10000 samples with 4 evaluations.
+ Range (min … max):  7.324 μs … 41.118 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     7.415 μs              ┊ GC (median):    0.00%
+ Time  (mean ± σ):   7.666 μs ±  1.251 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ▇█   ▁                    ▁   ▁   ▁                        ▁
+  ██▄█▆█▆▆█▃▇▃▁█▆▁█▅▃█▆▁▆▇▃▄█▆▄▆█▇▅██▄▃▃█▆▁▁▃▄▃▁▃▁▆▅▅▅▁▃▃▅▆▆ █
+  7.32 μs      Histogram: log(frequency) by time     12.1 μs <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+
+
+julia> @benchmark inqsort!($(a))
+BenchmarkTools.Trial: 10000 samples with 7 evaluations.
+ Range (min … max):  4.523 μs … 873.401 μs  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     4.901 μs               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   5.779 μs ±   9.165 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  ▄█▇▅▁▁▁▁       ▁▁▂▃▂▁▁ ▁                                    ▁
+  █████████▆▆▆▆▆▇██████████▇▇▆▆▆▇█▇▆▅▅▆▇▅▅▆▅▅▅▇▄▅▆▅▃▅▅▆▅▄▄▃▅▅ █
+  4.52 μs      Histogram: log(frequency) by time      14.8 μs <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.
+
+```
+and see that by not checking bounds, the code is `33%` faster.
 
 ## Boxing in closure
 Recall closure is a function which contains some parameters contained 
