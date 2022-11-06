@@ -1,6 +1,6 @@
 # [Benchmarking, profiling, and performance gotchas](@id perf_lecture)
 
-This class is a short introduction to writing a performant code. As such, we want to cover
+This class is a short introduction to writing a performant code. As such, we cover
 - how to identify weak spots in the code
 - how to properly benchmark
 - common performance anti-patterns
@@ -21,12 +21,12 @@ It frequently happens that Julia newbies asks on forum that their code in Julia 
 [^1]: Adapted from Julia's discourse [thread](https://discourse.julialang.org/t/numpy-10x-faster-than-julia-what-am-i-doing-wrong-solved-julia-faster-now/29922)
 
 ```julia
-function f(p)														# line 1 
-    t0,t1 = p 														# line 2
-    m0 = [[cos(t0) - 1im*sin(t0)  0]; [0  cos(t0) + 1im*sin(t0)]]	# line 3
-    m1 = [[cos(t1) - 1im*sin(t1)  0]; [0  cos(t1) + 1im*sin(t1)]]	# line 4
-    r = m1*m0*[1. ; 0.] 											# line 5
-    return abs(r[1])^2 												# line 6
+function f(p)                                                       # line 1 
+    t0,t1 = p                                                       # line 2
+    m0 = [[cos(t0) - 1im*sin(t0)  0]; [0  cos(t0) + 1im*sin(t0)]]   # line 3
+    m1 = [[cos(t1) - 1im*sin(t1)  0]; [0  cos(t1) + 1im*sin(t1)]]   # line 4
+    r = m1*m0*[1. ; 0.]                                             # line 5
+    return abs(r[1])^2                                              # line 6
 end
 
 function g(p,n)
@@ -42,7 +42,7 @@ p = 2*pi*rand(2,n)
 
 ```
 
-The first step is to do proper benchmarking, e.g., using `@benchmark` from `BenchmarkTools`. The second step is to use Profiler to identify, where the function spends most time.
+Let's first use Profiler to identify, where the function spends most time.
 
 !!! note 
 	## Julia's built-in profiler
@@ -74,9 +74,9 @@ The first step is to do proper benchmarking, e.g., using `@benchmark` from `Benc
 	- Code has to be run before profiling in order to filter out all the type inference and interpretation stuff. (Unless compilation is what we want to profile.)
 	- When the execution time is short, the sampling may be insufficient -> run multiple times.
 
-	We will use `ProfileSVG` for its simplicity (especially installation). It shows the statistics in for of a flame graph which read as follows: , where . The hierarchy is expressed as functions on the bottom calls functions on the top. reads as follows:
+	We will use `ProfileSVG` for its simplicity (especially installation). It shows the statistics in form of a flame graph which read as follows: , where . The hierarchy is expressed as functions on the bottom calls functions on the top. reads as follows:
 	- each function is represented by a horizontal bar
-	- function in the bottom calls functions that lays on it
+	- function in the bottom calls functions above
 	- the width of the bar corresponds to time spent in the function
 	- red colored bars indicate type instabilities
 	- functions in bottom bars calls functions on top of upper bars
@@ -110,7 +110,7 @@ using Profile, PProf
 Profile.Allocs.@profile g(p,n)
 PProf.Allocs.pprof(Profile.Allocs.fetch(), from_c=false)
 ```
-PProf by default shows outputs in call graph (how to read it can be found [here](https://git.io/JfYMW)), but supports the flamegraph (fortunately). Investigating the output we found that most allocations are caused by concatenation of arrays on lines 3 and 4.
+PProf by default shows outputs in call graph (how to read it can be found [here](https://git.io/JfYMW)), but also supports the flamegraph (fortunately). Investigating the output we found that most allocations are caused by concatenation of arrays on lines 3 and 4.
 
 Scrutinizing the function `f`, we see that in every call, it has to allocate arrays `m0` and `m1` **on the heap.** The allocation on heap is expensive, because it might require interaction with the operating system and it potentially stress garbage collector. Can we avoid it?
 Repeated allocation can be frequently avoided by:
@@ -149,7 +149,7 @@ end
 	end
 	(time() - t₀) / n 
 	```
-	where we add repetitions to calibrate for background processes that can step in the precise measurements (recall that your program is not allone). Writing the above for benchmarking is utterly boring. Moreover, you might want to automatically determine the number of repetitions (the shorter time the more repetitions you want), take care of compilation of your function, you might want to have more informative output, for example median, mean, and maximum time of execution, information about number of allocation, time spent in garbage collector, etc. This is in nutshell what `BenchmarkTools.jl` offers, which we consider an essential tool for anyone interesting in tuning its code.
+	where we add repetitions to calibrate for background processes that can step in the precise measurements (recall that your program is not allone). Writing the above for benchmarking is utterly boring. Moreover, you might want to automatically determine the number of repetitions (the shorter time the more repetitions you want), take care of compilation of the function outside measured loop, you might want to have more informative output, for example median, mean, and maximum time of execution, information about number of allocation, time spent in garbage collector, etc. This is in nutshell what `BenchmarkTools.jl` offers, which we consider an essential tool for anyone interesting in tuning its code.
 
 
 We will using macro `@benchmark` from `BenchmarkTools.jl` to observe the speedup we will get between `g` and `g2`.
@@ -215,8 +215,8 @@ function f1!(r1, r2, m0, m1, t0, t1, u)
 end
 
 function g3(p,n)
-	u = [1. ; 0.]
-	m0 = [cos(p[1]) - 1im*sin(p[1])  0; 0  cos(p[1]) + 1im*sin(p[1])]
+    u = [1. ; 0.]
+    m0 = [cos(p[1]) - 1im*sin(p[1])  0; 0  cos(p[1]) + 1im*sin(p[1])]
     m1 = [cos(p[2]) - 1im*sin(p[2])  0; 0  cos(p[2]) + 1im*sin(p[2])]
     r1 = m0*u
     r2 = m1*r1
@@ -294,6 +294,7 @@ function cmean(x::AbstractMatrix{T}) where {T}
 	n > 0 ? o ./ n : o 
 end
 x = randn(2, 10000)
+
 ```
 
 ```julia
@@ -411,11 +412,11 @@ Detecting this type of inefficiencies is generally difficult, and requires proce
 Sometimes it happens that we create a non-stable code, which might be difficult to spot at first, for a non-trained eye. A prototypical example of such bug is as follows
 ```julia
 function poor_sum(x)
-	s = 0
-	for xᵢ in x
-		s += xᵢ
-	end
-	s
+    s = 0
+    for xᵢ in x
+        s += xᵢ
+    end
+    s
 end
 ```
 
@@ -450,11 +451,11 @@ So why nor compiler nor `@code_typed(poor_sum(x))` warns us about the type insta
 We can fix it for example by initializing `x` to be the zero of an element type of the array `x` (though this solution technically assumes `x` is an array, which means that `poor_sum` will not work for generators)
 ```julia
 function stable_sum(x)
-	s = zero(eltype(x))
-	for xᵢ in x
-		s += xᵢ
-	end
-	s
+    s = zero(eltype(x))
+    for xᵢ in x
+        s += xᵢ
+    end
+    s
 end
 ```
 
@@ -489,13 +490,12 @@ BenchmarkTools.Trial: 42 samples with 1 evaluation.
 We can tell Julia that it is safe to vectorize the code
 ```julia
 function simd_sum(x)
-	s = zero(eltype(x))
-	@simd for xᵢ in x
-		s += xᵢ
-	end
-	s
+    s = zero(eltype(x))
+    @simd for xᵢ in x
+        s += xᵢ
+    end
+    s
 end
-
 ```
 
 ```julia
@@ -525,6 +525,7 @@ end
 
 
 ```julia
+julia> y = randn(10^8);
 julia> @benchmark implicit_sum()
 BenchmarkTools.Trial: 1 sample with 1 evaluation.
  Single result which took 10.837 s (11.34% GC) to evaluate,
@@ -539,7 +540,7 @@ y = randn(10^4)
 @profile implicit_sum()
 ProfileSVG.save("/tmp/profile5.svg")
 ```
-(output available [here](profile5.svg)) which does not say anything except that there is a huge type-instability (red bar). In fact, the whole computation is dominated by Julia constantly determining the(of something.
+(output available [here](profile5.svg)) which does not say anything except that there is a huge type-instability (red bar). In fact, the whole computation is dominated by Julia constantly determining the type of something.
 
 How can we determine, where is the type instability?
 - `@code_typed implicit_sum()` is 
@@ -560,12 +561,14 @@ To understand the problem, you have to think about the compiler.
 1. You define function `implicit_sum().`
 2. If you call `implicit_sum` and `y` does not exist, Julia will happily crash.
 3. If you call `implicit_sum` and `y` exist, the function will give you the result (albeit slowly). At this moment, Julia has to specialize `implicit_sum`. It has two options how to behave with respect to `y`. 
-    a. The compiler can assume that type of `y` is the current `typeof(y)` but that would mean that if a user redefines x and change the type, the specialization of the function `implicit_sum` will assume the wrong type of `y` and it can have unexpected results.
+
+    a. The compiler can assume that type of `y` is the current `typeof(y)` but that would mean that if a user redefines `y` and change the type, the specialization of the function `implicit_sum` will assume the wrong type of `y` and it can have unexpected results.
+
     b. The compiler take safe approach and determine the type of `y` inside the function `implicit_sum` and behave accordingly (recall that julia is dynamically typed). Yet, not knowing the type precisely is absolute disaster for performance. You can see this assumption for yourself by typing `@code_typed implicit_sum()`.
 
-Notice the compiler dispatches on the name of the function and type of its arguments, hence, the compiler cannot create different versions of `implicit_sum` for different types of `y`, since it is not in argument, hence the dynamic resolution of types `y` inside `implicit_sum` function.
+Notice the compiler dispatches on the name of the function and type of its arguments, hence, the compiler cannot create different versions of `implicit_sum` for different types of `y`, since it is not an argument, hence the dynamic resolution of types `y` inside `implicit_sum` function.
 
-Julia takes the **safe approach**, which we can verify that although the `implicit_sum` was specialized (compiled) when `x` was `Vector{Float64}`, it works for other types
+Julia takes the **safe approach**, which we can verify that although the `implicit_sum` was specialized (compiled) when `y` was `Vector{Float64}`, it works for other types
 ```julia
 y = rand(Int, 1000)
 implicit_sum() ≈ sum(y)
@@ -612,11 +615,11 @@ typeof(y)
 but `y = ["1","2"]` will issue an error, since `String` has no default conversion rule to `Float64` (you can overwrite this by defining `Base.convert(::Type{Float64}, s::String) = parse(Float64, s)` but it will likely lead to all kinds of shenanigans).
 
 ### Barier function
-The reason, why the `implicit_sum` is so slow that every time the function invokes `getindex` and `+`, it has to resolve types. The solution would be to limit the number of resolutions, which can done by passing all parameters to inner function as follows (do not forget to restart julia if you have defined `y` as const before).
+Recall the reason, why the `implicit_sum` is so slow is that every time the function invokes `getindex` and `+`, it has to resolve types. The solution would be to limit the number of resolutions, which can done by passing all parameters to inner function as follows (do not forget to restart julia if you have defined `y` as const before).
 ```julia
 using BenchmarkTools
 function barrier_sum()
-	simd_sum(y)
+    simd_sum(y)
 end
 y = randn(10^8);
 ```
@@ -734,35 +737,36 @@ end;
 Another example of closure counting the error and printing it every `steps`
 ```julia
 function initcallback(; steps = 10)
-	i = 0
-	ts = time()
-	y = 0.0
-	cby = function evalcb(_y)
-		i += 1.0
-		y += _y
-		if mod(i, steps) == 0
-			l = y / steps
-			y = 0.0
-			println(i, ": loss: ", l," time per step: ",round((time() - ts)/steps, sigdigits = 2))
-			ts = time()
-		end
-	end
-	cby
+    i = 0
+    ts = time()
+    y = 0.0
+    cby = function evalcb(_y)
+        i += 1.0
+        y += _y
+        if mod(i, steps) == 0
+            l = y / steps
+            y = 0.0
+            println(i, ": loss: ", l," time per step: ",round((time() - ts)/steps, sigdigits = 2))
+            ts = time()
+        end
+    end
+    cby
 end
+
 
 cby = initcallback()
 
 for i in 1:100
-	cby(rand())
+    cby(rand())
 end
 ``` 
 
 ```julia
 function simulation()
-	cby = initcallback(;steps = 10000)	#intentionally disable printing
-	for i in 1:1000
-		cby(sin(rand()))
-	end
+    cby = initcallback(;steps = 10000)	#intentionally disable printing
+    for i in 1:1000
+        cby(sin(rand()))
+    end
 end
 
 @benchmark simulation()
@@ -886,15 +890,15 @@ Imagine that we have a (nonsensical) simulation like
 ```julia
 settings = Dict(:stepsize => 0.01, :h => 0.001, :iters => 500, :info => "info")
 function find_min!(f, x, p)
-	for i in 1:p[:iters]
-		x̃ = x + p[:h]
-		fx = f(x)									# line 4
-		x -= p[:stepsize] * (f(x̃) - fx)/p[:h]		# line 5
-	end
-	x
+    for i in 1:p[:iters]
+        x̃ = x + p[:h]
+        fx = f(x)                                   # line 4
+        x -= p[:stepsize] * (f(x̃) - fx)/p[:h]       # line 5
+    end
+    x
 end
 ```
-Notice the parameter `p` is a `Dict` and notice that it can contain arbitrary parameters, which is useful. Hence, `Dict` is cool for passing parameters.
+Notice the parameter `p` is a `Dict` and that it can contain arbitrary parameters, which is useful. Hence, `Dict` is cool for passing parameters.
 Let's now run the function through the profiler
 ```julia
 x₀ = rand()
@@ -946,7 +950,7 @@ Checking the output with JET, there is no type instability anymore
 @report_opt find_min!(f, x₀, nt_settings)
 No errors !
 ```
-<!-- 
+
 ## Don't use IO unless you have to
 - debug printing in performance critical code should be kept to minimum or using in memory/file based logger in stdlib `Logging.jl`
 ```julia
@@ -975,4 +979,4 @@ function find_min!(f, x, p; verbose=true)
 	x
 end
 @btime find_min!($f, $x₀, $params_tuple; verbose=true)
-``` -->
+```
