@@ -69,6 +69,12 @@ lecture_05 = [
     "Homework" => "./lecture_05/hw.md"
 ]
 
+lecture_06 = [
+    "Lecture" => "./lecture_06/lecture.md"
+    "Lab" => "./lecture_06/lab.md"
+    "Homework" => "./lecture_06/hw.md"
+]
+
 makedocs(;
     modules = [Scientific_Programming_in_Julia],
     authors = "JuliaTeachingCTU",
@@ -90,6 +96,7 @@ makedocs(;
         "3: Design Patterns" => lecture_03,
         "4: Package development, Unit test & CI" => lecture_04,
         "5: Performance Benchmarking" => lecture_05,
+        "6: Language introspection" => lecture_06,
     ],
 )
 
