@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_06/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/><link href="../../assets/onlinestats.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design Patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Package development, Unit test &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Performance Benchmarking</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox" checked/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#Quick-reminder-of-introspection-tooling"><span>Quick reminder of introspection tooling</span></a></li><li><a class="tocitem" href="#AST-manipulation:-The-first-steps-to-metaprogramming"><span>AST manipulation: The first steps to metaprogramming</span></a></li><li><a class="tocitem" href="#Resources"><span>Resources</span></a></li></ul></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">6: Language introspection</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2022W/docs/src/lecture_06/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="introspection_lab"><a class="docs-heading-anchor" href="#introspection_lab">Lab 06: Code introspection and metaprogramming</a><a id="introspection_lab-1"></a><a class="docs-heading-anchor-permalink" href="#introspection_lab" title="Permalink"></a></h1><p>In this lab we are first going to inspect some tooling to help you understand what Julia does under the hood such as:</p><ul><li>looking at the code at different levels</li><li>understanding what method is being called</li><li>showing different levels of code optimization</li></ul><p>Secondly we will start playing with the metaprogramming side of Julia, mainly covering:</p><ul><li>how to view abstract syntax tree (AST) of Julia code</li><li>how to manipulate AST</li></ul><p>These topics will be extended in the next <a href="../../lecture_07/lecture/#macro_lecture">lecture</a>/<a href="../../lecture_07/lab/#macro_lab">lab</a>, where we are going use metaprogramming to manipulate code with macros.</p><p>We will be again a little getting ahead of ourselves as we are going to use quite a few macros, which will be properly explained in the next lecture as well, however for now the important thing to know is that a macro is just a special function, that accepts as an argument Julia code, which it can modify.</p><h2 id="Quick-reminder-of-introspection-tooling"><a class="docs-heading-anchor" href="#Quick-reminder-of-introspection-tooling">Quick reminder of introspection tooling</a><a id="Quick-reminder-of-introspection-tooling-1"></a><a class="docs-heading-anchor-permalink" href="#Quick-reminder-of-introspection-tooling" title="Permalink"></a></h2><p>Let&#39;s start with the topic of code inspection, e.g. we may ask the following: What happens when Julia evaluates <code>[i for i in 1:10]</code>?</p><ul><li>parsing </li></ul><pre><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; :([i for i in 1:10]) |&gt; dump</code><code class="nohighlight hljs ansi" style="display:block;">Expr
+  head: Symbol comprehension
+  args: Array{Any}((1,))
+    1: Expr
+      head: Symbol generator
+      args: Array{Any}((2,))
+        1: Symbol i
+        2: Expr
+          head: Symbol =
+          args: Array{Any}((2,))
+            1: Symbol i
+            2: Expr
+              head: Symbol call
+              args: Array{Any}((3,))
+                1: Symbol :
+                2: Int64 1
+                3: Int64 10</code></pre><ul><li>lowering</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; Meta.@lower [i for i in 1:10]</code><code class="nohighlight hljs ansi" style="display:block;">:($(Expr(:thunk, CodeInfo(
+   <span class="sgr33"> @ none within `top-level scope`</span>
+<span class="sgr90">1 ─</span> %1 = 1:10
+<span class="sgr90">│  </span> %2 = Base.Generator(Base.identity, %1)
+<span class="sgr90">│  </span> %3 = Base.collect(%2)
+<span class="sgr90">└──</span>      return %3
+))))</code></pre><ul><li>typing</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; f() = [i for i in 1:10]</code><code class="nohighlight hljs ansi" style="display:block;">f (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_typed f()</code><code class="nohighlight hljs ansi" style="display:block;">CodeInfo(
+<span class="sgr90">1 ──</span>       goto #3 if not true
+<span class="sgr90">2 ──</span>       nothing<span class="sgr90">::Nothing</span>
+<span class="sgr90">3 ┄─</span> %3  = $(Expr(:foreigncall, :(:jl_alloc_array_1d), Vector{Int64}, svec(Any, Int64), 0, :(:ccall), Vector{Int64}, 10, 10))<span class="sgr36">::Vector{Int64}</span>
+<span class="sgr90">└───</span>       Base.arrayset(true, %3, 1, 1)<span class="sgr90">::Vector{Int64}</span>
+<span class="sgr90">4 ┄─</span> %5  = φ (#3 =&gt; 2, #13 =&gt; %27)<span class="sgr36">::Int64</span>
+<span class="sgr90">│   </span> %6  = φ (#3 =&gt; 1, #13 =&gt; %23)<span class="sgr36">::Int64</span>
+<span class="sgr90">└───</span>       goto #14 if not true
+<span class="sgr90">5 ──</span> %8  = (%6 === 10)<span class="sgr36">::Bool</span>
+<span class="sgr90">└───</span>       goto #7 if not %8
+<span class="sgr90">6 ──</span>       Base.nothing<span class="sgr90">::Nothing</span>
+<span class="sgr90">└───</span>       goto #8
+<span class="sgr90">7 ──</span> %12 = Base.add_int(%6, 1)<span class="sgr36">::Int64</span>
+<span class="sgr90">└───</span>       goto #8
+<span class="sgr90">8 ┄─</span> %14 = φ (#6 =&gt; true, #7 =&gt; false)<span class="sgr36">::Bool</span>
+<span class="sgr90">│   </span> %15 = φ (#7 =&gt; %12)<span class="sgr36">::Int64</span>
+<span class="sgr90">│   </span> %16 = φ (#7 =&gt; %12)<span class="sgr36">::Int64</span>
+<span class="sgr90">└───</span>       goto #10 if not %14
+<span class="sgr90">9 ──</span>       Base.nothing<span class="sgr90">::Nothing</span>
+<span class="sgr90">└───</span>       goto #11
+<span class="sgr90">10 ─</span>       goto #11
+<span class="sgr90">11 ┄</span> %21 = φ (#9 =&gt; true, #10 =&gt; false)<span class="sgr36">::Bool</span>
+<span class="sgr90">│   </span> %22 = φ (#10 =&gt; %15)<span class="sgr36">::Int64</span>
+<span class="sgr90">│   </span> %23 = φ (#10 =&gt; %16)<span class="sgr36">::Int64</span>
+<span class="sgr90">└───</span>       goto #13 if not %21
+<span class="sgr90">12 ─</span>       goto #14
+<span class="sgr90">13 ─</span>       Base.arrayset(false, %3, %22, %5)<span class="sgr90">::Vector{Int64}</span>
+<span class="sgr90">│   </span> %27 = Base.add_int(%5, 1)<span class="sgr36">::Int64</span>
+<span class="sgr90">└───</span>       goto #4
+<span class="sgr90">14 ┄</span>       goto #15
+<span class="sgr90">15 ─</span>       goto #16
+<span class="sgr90">16 ─</span>       goto #17
+<span class="sgr90">17 ─</span>       return %3
+) =&gt; Vector{Int64}</code></pre><ul><li>LLVM code generation</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_llvm f()</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr90">;  @ REPL[1]:1 within `f`</span>
+<span class="sgr95">define</span> <span class="sgr95">nonnull</span> <span class="sgr33">{}</span>* <span class="sgr93">@julia_f_10433</span><span class="sgr33">()</span> #0 <span class="sgr33">{</span>
+<span class="sgr91">top:</span>
+<span class="sgr90">; ┌ @ array.jl:792 within `collect`</span>
+<span class="sgr90">; │┌ @ array.jl:676 within `_array_for`</span>
+<span class="sgr90">; ││┌ @ abstractarray.jl:840 within `similar` @ abstractarray.jl:841</span>
+<span class="sgr90">; │││┌ @ boot.jl:468 within `Array` @ boot.jl:459</span>
+      %0 = <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr95">nonnull</span> <span class="sgr33">{}</span>* <span class="sgr95">inttoptr</span> <span class="sgr33">(</span><span class="sgr36">i64</span> <span class="sgr33">140644951794064</span> <span class="sgr95">to</span> <span class="sgr33">{}</span>* <span class="sgr33">({}</span>*, <span class="sgr36">i64</span><span class="sgr33">)</span>*<span class="sgr33">)({}</span>* <span class="sgr95">inttoptr</span> <span class="sgr33">(</span><span class="sgr36">i64</span> <span class="sgr33">140644608877968</span> <span class="sgr95">to</span> <span class="sgr33">{}</span>*<span class="sgr33">)</span>, <span class="sgr36">i64</span> <span class="sgr33">10)</span>
+<span class="sgr90">; │└└└</span>
+<span class="sgr90">; │ @ array.jl:797 within `collect`</span>
+<span class="sgr90">; │┌ @ array.jl:822 within `collect_to_with_first!`</span>
+<span class="sgr90">; ││┌ @ array.jl:966 within `setindex!`</span>
+     %1 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr33">{}</span>* %0 <span class="sgr95">to</span> <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>*
+     %2 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>, <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>* %1, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i32</span> <span class="sgr33">1</span>
+     %3 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %2, <span class="sgr95">align</span> <span class="sgr33">8</span>
+     %.not = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %3, <span class="sgr33">0</span>
+     <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %.not, <span class="sgr36">label</span> <span class="sgr91">%oob</span>, <span class="sgr36">label</span> <span class="sgr91">%idxend</span>
+
+<span class="sgr91">oob:</span>                                              <span class="sgr90">; preds = %top</span>
+     %4 = <span class="sgr96"><span class="sgr1">alloca</span></span> <span class="sgr36">i64</span>, <span class="sgr95">align</span> <span class="sgr33">8</span>
+     <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr36">i64</span> <span class="sgr33">1</span>, <span class="sgr36">i64</span>* %4, <span class="sgr95">align</span> <span class="sgr33">8</span>
+     <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr36">void</span> <span class="sgr93">@ijl_bounds_error_ints</span><span class="sgr33">({}</span>* %0, <span class="sgr36">i64</span>* <span class="sgr95">nonnull</span> %4, <span class="sgr36">i64</span> <span class="sgr33">1)</span>
+     <span class="sgr96"><span class="sgr1">unreachable</span></span>
+
+<span class="sgr91">idxend:</span>                                           <span class="sgr90">; preds = %top</span>
+     %5 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr33">{}</span>* %0 <span class="sgr95">to</span> <span class="sgr36">i64</span>**
+     %6 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">i64</span>*, <span class="sgr36">i64</span>** %5, <span class="sgr95">align</span> <span class="sgr33">8</span>
+     %7 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr36">i64</span>* %6 <span class="sgr95">to</span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>*
+     <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span> <span class="sgr33">&lt;</span><span class="sgr36">i64</span> <span class="sgr33">1</span>, <span class="sgr36">i64</span> <span class="sgr33">2</span>, <span class="sgr36">i64</span> <span class="sgr33">3</span>, <span class="sgr36">i64</span> <span class="sgr33">4&gt;</span>, <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>* %7, <span class="sgr95">align</span> <span class="sgr33">8</span>
+<span class="sgr90">; ││└</span>
+<span class="sgr90">; ││ @ array.jl:823 within `collect_to_with_first!`</span>
+<span class="sgr90">; ││┌ @ array.jl:849 within `collect_to!`</span>
+<span class="sgr90">; │││┌ @ array.jl:966 within `setindex!`</span>
+      %8 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %6, <span class="sgr36">i64</span> <span class="sgr33">4</span>
+      %9 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr36">i64</span>* %8 <span class="sgr95">to</span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>*
+      <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span> <span class="sgr33">&lt;</span><span class="sgr36">i64</span> <span class="sgr33">5</span>, <span class="sgr36">i64</span> <span class="sgr33">6</span>, <span class="sgr36">i64</span> <span class="sgr33">7</span>, <span class="sgr36">i64</span> <span class="sgr33">8&gt;</span>, <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>* %9, <span class="sgr95">align</span> <span class="sgr33">8</span>
+      %10 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %6, <span class="sgr36">i64</span> <span class="sgr33">8</span>
+      %11 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr36">i64</span>* %10 <span class="sgr95">to</span> <span class="sgr33">&lt;2</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>*
+      <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr33">&lt;2</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span> <span class="sgr33">&lt;</span><span class="sgr36">i64</span> <span class="sgr33">9</span>, <span class="sgr36">i64</span> <span class="sgr33">10&gt;</span>, <span class="sgr33">&lt;2</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>* %11, <span class="sgr95">align</span> <span class="sgr33">8</span>
+<span class="sgr90">; └└└└</span>
+  <span class="sgr96"><span class="sgr1">ret</span></span> <span class="sgr33">{}</span>* %0
+<span class="sgr33">}</span></code></pre><ul><li>native code generation</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_native f()</code><code class="nohighlight hljs ansi" style="display:block;">	.text
+	.file	&quot;f&quot;
+	.section	.rodata.cst32,&quot;aM&quot;,@progbits,<span class="sgr33">32</span>
+	.p2align	<span class="sgr33">5</span>                               <span class="sgr90"># -- Begin function julia_f_10451</span>
+<span class="sgr91">.LCPI0_0:</span>
+	.quad	<span class="sgr33">1</span>                               <span class="sgr90"># 0x1</span>
+	.quad	<span class="sgr33">2</span>                               <span class="sgr90"># 0x2</span>
+	.quad	<span class="sgr33">3</span>                               <span class="sgr90"># 0x3</span>
+	.quad	<span class="sgr33">4</span>                               <span class="sgr90"># 0x4</span>
+<span class="sgr91">.LCPI0_1:</span>
+	.quad	<span class="sgr33">5</span>                               <span class="sgr90"># 0x5</span>
+	.quad	<span class="sgr33">6</span>                               <span class="sgr90"># 0x6</span>
+	.quad	<span class="sgr33">7</span>                               <span class="sgr90"># 0x7</span>
+	.quad	<span class="sgr33">8</span>                               <span class="sgr90"># 0x8</span>
+	.section	.rodata.cst16,&quot;aM&quot;,@progbits,<span class="sgr33">16</span>
+	.p2align	<span class="sgr33">4</span>
+<span class="sgr91">.LCPI0_2:</span>
+	.quad	<span class="sgr33">9</span>                               <span class="sgr90"># 0x9</span>
+	.quad	<span class="sgr33">10</span>                              <span class="sgr90"># 0xa</span>
+	.text
+	.globl	julia_f_10451
+	.p2align	<span class="sgr33">4</span>, <span class="sgr33">0x90</span>
+	.type	julia_f_10451,@function
+<span class="sgr91">julia_f_10451:</span>                          <span class="sgr90"># @julia_f_10451</span>
+<span class="sgr90">; ┌ @ REPL[1]:1 within `f`</span>
+	.cfi_startproc
+<span class="sgr90"># %bb.0:                                # %top</span>
+	<span class="sgr96"><span class="sgr1">pushq</span></span>	%rbp
+	.cfi_def_cfa_offset <span class="sgr33">16</span>
+	.cfi_offset %rbp, <span class="sgr33">-16</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsp, %rbp
+	.cfi_def_cfa_register %rbp
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr33">$140644608877968</span>, %rdi          <span class="sgr90"># imm = 0x7FEA5FF3A590</span>
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr33">$140644951794064</span>, %rax          <span class="sgr90"># imm = 0x7FEA74642190</span>
+<span class="sgr90">; │┌ @ array.jl:792 within `collect`</span>
+<span class="sgr90">; ││┌ @ array.jl:676 within `_array_for`</span>
+<span class="sgr90">; │││┌ @ abstractarray.jl:840 within `similar` @ abstractarray.jl:841</span>
+<span class="sgr90">; ││││┌ @ boot.jl:468 within `Array` @ boot.jl:459</span>
+	<span class="sgr96"><span class="sgr1">movl</span></span>	<span class="sgr33">$10</span>, %esi
+	<span class="sgr96"><span class="sgr1">callq</span></span>	*%rax
+<span class="sgr90">; ││└└└</span>
+<span class="sgr90">; ││ @ array.jl:797 within `collect`</span>
+<span class="sgr90">; ││┌ @ array.jl:822 within `collect_to_with_first!`</span>
+<span class="sgr90">; │││┌ @ array.jl:966 within `setindex!`</span>
+	<span class="sgr96"><span class="sgr1">cmpq</span></span>	<span class="sgr33">$0</span>, <span class="sgr33">8(</span>%rax<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">je</span></span>	.LBB0_1
+<span class="sgr90"># %bb.5:                                # %idxend</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	<span class="sgr33">(</span>%rax<span class="sgr33">)</span>, %rcx
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$.LCPI0_0</span>, %rdx
+	<span class="sgr96"><span class="sgr1">vmovaps</span></span>	<span class="sgr33">(</span>%rdx<span class="sgr33">)</span>, %ymm0
+	<span class="sgr96"><span class="sgr1">vmovups</span></span>	%ymm0, <span class="sgr33">(</span>%rcx<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$.LCPI0_1</span>, %rdx
+<span class="sgr90">; │││└</span>
+<span class="sgr90">; │││ @ array.jl:823 within `collect_to_with_first!`</span>
+<span class="sgr90">; │││┌ @ array.jl:849 within `collect_to!`</span>
+<span class="sgr90">; ││││┌ @ array.jl:966 within `setindex!`</span>
+	<span class="sgr96"><span class="sgr1">vmovaps</span></span>	<span class="sgr33">(</span>%rdx<span class="sgr33">)</span>, %ymm0
+	<span class="sgr96"><span class="sgr1">vmovups</span></span>	%ymm0, <span class="sgr33">32(</span>%rcx<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$.LCPI0_2</span>, %rdx
+	<span class="sgr96"><span class="sgr1">vmovaps</span></span>	<span class="sgr33">(</span>%rdx<span class="sgr33">)</span>, %xmm0
+	<span class="sgr96"><span class="sgr1">vmovups</span></span>	%xmm0, <span class="sgr33">64(</span>%rcx<span class="sgr33">)</span>
+<span class="sgr90">; │└└└└</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rbp, %rsp
+	<span class="sgr96"><span class="sgr1">popq</span></span>	%rbp
+	.cfi_def_cfa %rsp, <span class="sgr33">8</span>
+	<span class="sgr96"><span class="sgr1">vzeroupper</span></span>
+	<span class="sgr96"><span class="sgr1">retq</span></span>
+<span class="sgr91">.LBB0_1:</span>                                <span class="sgr90"># %oob</span>
+<span class="sgr90">; │┌ @ array.jl:797 within `collect`</span>
+<span class="sgr90">; ││┌ @ array.jl:822 within `collect_to_with_first!`</span>
+<span class="sgr90">; │││┌ @ array.jl:966 within `setindex!`</span>
+	.cfi_def_cfa %rbp, <span class="sgr33">16</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsp, %rsi
+	<span class="sgr96"><span class="sgr1">movl</span></span>	<span class="sgr33">$16</span>, %ecx
+	<span class="sgr96"><span class="sgr1">subq</span></span>	%rcx, %rsi
+	<span class="sgr96"><span class="sgr1">cmpq</span></span>	%rsp, %rsi
+	<span class="sgr96"><span class="sgr1">jge</span></span>	.LBB0_4
+<span class="sgr91">.LBB0_3:</span>                                <span class="sgr90"># %oob</span>
+                                        <span class="sgr90"># =&gt;This Inner Loop Header: Depth=1</span>
+	<span class="sgr96"><span class="sgr1">xorq</span></span>	<span class="sgr33">$0</span>, <span class="sgr33">(</span>%rsp<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">subq</span></span>	<span class="sgr33">$4096</span>, %rsp                     <span class="sgr90"># imm = 0x1000</span>
+	<span class="sgr96"><span class="sgr1">cmpq</span></span>	%rsp, %rsi
+	<span class="sgr96"><span class="sgr1">jl</span></span>	.LBB0_3
+<span class="sgr91">.LBB0_4:</span>                                <span class="sgr90"># %oob</span>
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsi, %rsp
+	<span class="sgr96"><span class="sgr1">movq</span></span>	<span class="sgr33">$1</span>, <span class="sgr33">(</span>%rsi<span class="sgr33">)</span>
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$ijl_bounds_error_ints</span>, %rcx
+	<span class="sgr96"><span class="sgr1">movl</span></span>	<span class="sgr33">$1</span>, %edx
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rax, %rdi
+	<span class="sgr96"><span class="sgr1">callq</span></span>	*%rcx
+<span class="sgr91">.Lfunc_end0:</span>
+	.size	julia_f_10451, .Lfunc_end0-julia_f_10451
+	.cfi_endproc
+<span class="sgr90">; └└└└</span>
+                                        <span class="sgr90"># -- End function</span>
+	.section	&quot;.note.GNU-stack&quot;,&quot;&quot;,@progbits</code></pre><p>Let&#39;s see how these tools can help us understand some of Julia&#39;s internals on examples from previous labs and lectures.</p><h3 id="Understanding-the-runtime-dispatch-and-type-instabilities"><a class="docs-heading-anchor" href="#Understanding-the-runtime-dispatch-and-type-instabilities">Understanding the runtime dispatch and type instabilities</a><a id="Understanding-the-runtime-dispatch-and-type-instabilities-1"></a><a class="docs-heading-anchor-permalink" href="#Understanding-the-runtime-dispatch-and-type-instabilities" title="Permalink"></a></h3><p>We will start with a question: Can we spot internally some difference between type stable/unstable code?</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Inspect the following two functions using <code>@code_lowered</code>, <code>@code_typed</code>, <code>@code_llvm</code> and <code>@code_native</code>.</p><pre><code class="language-julia hljs">x = rand(10^5)
+function explicit_len(x)
+    length(x)
+end
+
+function implicit_len()
+    length(x)
+end</code></pre><p>For now do not try to understand the details, but focus on the overall differences such as length of the code.</p><div class="admonition is-info"><header class="admonition-header">Redirecting `stdout`</header><div class="admonition-body"><p>If the output of the method introspection tools is too long you can use a general way of redirecting standard output <code>stdout</code> to a file</p><pre><code class="language-julia hljs">open(&quot;./llvm_fun.ll&quot;, &quot;w&quot;) do file
+    original_stdout = stdout
+    redirect_stdout(file)
+    @code_llvm fun()
+    redirect_stdout(original_stdout)
+end</code></pre><p>In case of <code>@code_llvm</code> and <code>@code_native</code> there are special options, that allow this out of the box, see help <code>?</code> for underlying <code>code_llvm</code> and <code>code_native</code>. If you don&#39;t mind adding dependencies there is also the <code>@capture_out</code> from <a href="https://github.com/JuliaIO/Suppressor.jl"><code>Suppressor.jl</code></a></p></div></div></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">@code_warntype explicit_sum(x)
+@code_warntype implicit_sum()
+
+@code_typed explicit_sum(x)
+@code_typed implicit_sum()
+
+@code_llvm explicit_sum(x)
+@code_llvm implicit_sum()
+
+@code_native explicit_sum(x)
+@code_native implicit_sum()</code></pre><p>In this case we see that the generated code for such a simple operation is much longer in the type unstable case resulting in longer run times. However in the next example we will see that having longer code is not always a bad thing.</p></p></details><h3 id="Loop-unrolling"><a class="docs-heading-anchor" href="#Loop-unrolling">Loop unrolling</a><a id="Loop-unrolling-1"></a><a class="docs-heading-anchor-permalink" href="#Loop-unrolling" title="Permalink"></a></h3><p>In some cases the compiler uses loop unrolling<sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup> optimization to speed up loops at the expense of binary size. The result of such optimization is removal of the loop control instructions and rewriting the loop into a repeated sequence of independent statements.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Inspect under what conditions does the compiler unroll the for loop in the <code>polynomial</code> function from the last <a href="../../lecture_05/lab/#horner">lab</a>.</p><pre><code class="language-julia hljs">function polynomial(a, x)
+    accumulator = a[end] * one(x)
+    for i in length(a)-1:-1:1
+        accumulator = accumulator * x + a[i]
+    end
+    accumulator
+end</code></pre><p>Compare the speed of execution with and without loop unrolling.</p><p><strong>HINTS</strong>:</p><ul><li>these kind of optimization are lower level than intermediate language</li><li>loop unrolling is possible when compiler knows the length of the input</li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">using BenchmarkTools
+a = Tuple(ones(20)) # tuple has known size
+ac = collect(a)
+x = 2.0
+
+@code_lowered polynomial(a,x)       # cannot be seen here as optimizations are not applied
+@code_typed polynomial(a,x)         # loop unrolling is not part of type inference optimization</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_llvm polynomial(a,x)</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr90">;  @ lab.md:113 within `polynomial`</span>
+<span class="sgr95">define</span> <span class="sgr36">double</span> <span class="sgr93">@julia_polynomial_10495</span><span class="sgr33">([20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* <span class="sgr95">nocapture</span> <span class="sgr95">nonnull</span> <span class="sgr95">readonly</span> <span class="sgr95">align</span> <span class="sgr33">8</span> <span class="sgr95">dereferenceable</span><span class="sgr33">(160)</span> %0, <span class="sgr36">double</span> %1<span class="sgr33">)</span> #0 <span class="sgr33">{</span>
+<span class="sgr91">pass.18:</span>
+<span class="sgr90">;  @ lab.md:114 within `polynomial`</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %2 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">19</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %3 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %2, <span class="sgr95">align</span> <span class="sgr33">8</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">;  @ lab.md:116 within `polynomial`</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %4 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %3, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %5 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">18</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %6 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %5, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %7 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %4, %6
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %8 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %7, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %9 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">17</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %10 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %9, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %11 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %8, %10
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %12 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %11, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %13 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">16</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %14 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %13, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %15 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %12, %14
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %16 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %15, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %17 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">15</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %18 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %17, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %19 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %16, %18
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %20 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %19, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %21 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">14</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %22 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %21, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %23 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %20, %22
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %24 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %23, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %25 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">13</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %26 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %25, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %27 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %24, %26
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %28 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %27, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %29 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">12</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %30 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %29, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %31 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %28, %30
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %32 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %31, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %33 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">11</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %34 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %33, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %35 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %32, %34
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %36 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %35, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %37 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">10</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %38 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %37, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %39 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %36, %38
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %40 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %39, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %41 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">9</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %42 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %41, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %43 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %40, %42
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %44 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %43, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %45 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">8</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %46 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %45, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %47 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %44, %46
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %48 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %47, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %49 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">7</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %50 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %49, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %51 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %48, %50
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %52 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %51, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %53 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">6</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %54 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %53, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %55 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %52, %54
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %56 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %55, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %57 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">5</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %58 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %57, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %59 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %56, %58
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %60 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %59, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %61 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">4</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %62 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %61, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %63 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %60, %62
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %64 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %63, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %65 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">3</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %66 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %65, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %67 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %64, %66
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %68 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %67, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %69 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">2</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %70 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %69, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %71 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %68, %70
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %72 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %71, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %73 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">1</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %74 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %73, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %75 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %72, %74
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %76 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %75, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+   %77 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">0</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %78 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %77, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %79 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %76, %78
+<span class="sgr90">; └</span>
+<span class="sgr90">;  @ lab.md:118 within `polynomial`</span>
+  <span class="sgr96"><span class="sgr1">ret</span></span> <span class="sgr36">double</span> %79
+<span class="sgr33">}</span></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_llvm polynomial(ac,x)</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr90">;  @ lab.md:113 within `polynomial`</span>
+<span class="sgr95">define</span> <span class="sgr36">double</span> <span class="sgr93">@julia_polynomial_10497</span><span class="sgr33">({}</span>* <span class="sgr95">nonnull</span> <span class="sgr95">align</span> <span class="sgr33">16</span> <span class="sgr95">dereferenceable</span><span class="sgr33">(40)</span> %0, <span class="sgr36">double</span> %1<span class="sgr33">)</span> #0 <span class="sgr33">{</span>
+<span class="sgr91">top:</span>
+<span class="sgr90">;  @ lab.md:114 within `polynomial`</span>
+<span class="sgr90">; ┌ @ abstractarray.jl:378 within `lastindex`</span>
+<span class="sgr90">; │┌ @ abstractarray.jl:341 within `eachindex`</span>
+<span class="sgr90">; ││┌ @ abstractarray.jl:116 within `axes1`</span>
+<span class="sgr90">; │││┌ @ abstractarray.jl:95 within `axes`</span>
+<span class="sgr90">; ││││┌ @ array.jl:151 within `size`</span>
+       %2 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr33">{}</span>* %0 <span class="sgr95">to</span> <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>*
+       %3 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>, <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>* %2, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i32</span> <span class="sgr33">1</span>
+       %4 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %3, <span class="sgr95">align</span> <span class="sgr33">8</span>
+<span class="sgr90">; └└└└└</span>
+<span class="sgr90">; ┌ @ array.jl:924 within `getindex`</span>
+   %5 = <span class="sgr96"><span class="sgr1">add</span></span> <span class="sgr95">nsw</span> <span class="sgr36">i64</span> %4, <span class="sgr33">-1</span>
+   %.not19 = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %4, <span class="sgr33">0</span>
+   <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %.not19, <span class="sgr36">label</span> <span class="sgr91">%oob</span>, <span class="sgr36">label</span> <span class="sgr91">%idxend</span>
+
+<span class="sgr91">L25:</span>                                              <span class="sgr90">; preds = %idxend7, %L25.preheader</span>
+   %value_phi3 = <span class="sgr96"><span class="sgr1">phi</span></span> <span class="sgr36">i64</span> <span class="sgr33">[</span> %6, <span class="sgr91">%idxend7</span> <span class="sgr33">]</span>, <span class="sgr33">[</span> %5, <span class="sgr91">%L25.preheader</span> <span class="sgr33">]</span>
+   %value_phi5 = <span class="sgr96"><span class="sgr1">phi</span></span> <span class="sgr36">double</span> <span class="sgr33">[</span> %22, <span class="sgr91">%idxend7</span> <span class="sgr33">]</span>, <span class="sgr33">[</span> %12, <span class="sgr91">%L25.preheader</span> <span class="sgr33">]</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">;  @ lab.md:116 within `polynomial`</span>
+<span class="sgr90">; ┌ @ array.jl:924 within `getindex`</span>
+   %6 = <span class="sgr96"><span class="sgr1">add</span></span> <span class="sgr95">nsw</span> <span class="sgr36">i64</span> %value_phi3, <span class="sgr33">-1</span>
+   %7 = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">ult</span></span> <span class="sgr36">i64</span> %6, %16
+   <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %7, <span class="sgr36">label</span> <span class="sgr91">%idxend7</span>, <span class="sgr36">label</span> <span class="sgr91">%oob6</span>
+
+<span class="sgr91">L44:</span>                                              <span class="sgr90">; preds = %idxend7, %idxend</span>
+   %value_phi11 = <span class="sgr96"><span class="sgr1">phi</span></span> <span class="sgr36">double</span> <span class="sgr33">[</span> %12, <span class="sgr91">%idxend</span> <span class="sgr33">]</span>, <span class="sgr33">[</span> %22, <span class="sgr91">%idxend7</span> <span class="sgr33">]</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">;  @ lab.md:118 within `polynomial`</span>
+  <span class="sgr96"><span class="sgr1">ret</span></span> <span class="sgr36">double</span> %value_phi11
+
+<span class="sgr91">oob:</span>                                              <span class="sgr90">; preds = %top</span>
+<span class="sgr90">;  @ lab.md:114 within `polynomial`</span>
+<span class="sgr90">; ┌ @ array.jl:924 within `getindex`</span>
+   %8 = <span class="sgr96"><span class="sgr1">alloca</span></span> <span class="sgr36">i64</span>, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span>* %8, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr36">void</span> <span class="sgr93">@ijl_bounds_error_ints</span><span class="sgr33">({}</span>* %0, <span class="sgr36">i64</span>* <span class="sgr95">nonnull</span> %8, <span class="sgr36">i64</span> <span class="sgr33">1)</span>
+   <span class="sgr96"><span class="sgr1">unreachable</span></span>
+
+<span class="sgr91">idxend:</span>                                           <span class="sgr90">; preds = %top</span>
+   %9 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr33">{}</span>* %0 <span class="sgr95">to</span> <span class="sgr36">double</span>**
+   %10 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>*, <span class="sgr36">double</span>** %9, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %11 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %10, <span class="sgr36">i64</span> %5
+   %12 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %11, <span class="sgr95">align</span> <span class="sgr33">8</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">;  @ lab.md:115 within `polynomial`</span>
+<span class="sgr90">; ┌ @ range.jl:22 within `Colon`</span>
+<span class="sgr90">; │┌ @ range.jl:24 within `_colon`</span>
+<span class="sgr90">; ││┌ @ range.jl:369 within `StepRange` @ range.jl:316</span>
+     %13 = <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr36">i64</span> <span class="sgr93">@j_steprange_last_10499</span><span class="sgr33">(</span><span class="sgr36">i64</span> <span class="sgr95">signext</span> %5, <span class="sgr36">i64</span> <span class="sgr95">signext</span> <span class="sgr33">-1</span>, <span class="sgr36">i64</span> <span class="sgr95">signext</span> <span class="sgr33">1)</span> #0
+<span class="sgr90">; └└└</span>
+<span class="sgr90">; ┌ @ range.jl:879 within `iterate`</span>
+<span class="sgr90">; │┌ @ range.jl:651 within `isempty`</span>
+<span class="sgr90">; ││┌ @ operators.jl:282 within `!=`</span>
+<span class="sgr90">; │││┌ @ promotion.jl:477 within `==`</span>
+      %14 = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %5, %13
+<span class="sgr90">; ││└└</span>
+<span class="sgr90">; ││┌ @ operators.jl:382 within `&gt;`</span>
+<span class="sgr90">; │││┌ @ int.jl:83 within `&lt;`</span>
+      %.not = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">sgt</span></span> <span class="sgr36">i64</span> %4, %13
+<span class="sgr90">; │└└└</span>
+   %15 = <span class="sgr96"><span class="sgr1">or</span></span> <span class="sgr36">i1</span> %14, %.not
+<span class="sgr90">; └</span>
+  <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %15, <span class="sgr36">label</span> <span class="sgr91">%L25.preheader</span>, <span class="sgr36">label</span> <span class="sgr91">%L44</span>
+
+<span class="sgr91">L25.preheader:</span>                                    <span class="sgr90">; preds = %idxend</span>
+  %16 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %3, <span class="sgr95">align</span> <span class="sgr33">8</span>
+  %17 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>*, <span class="sgr36">double</span>** %9, <span class="sgr95">align</span> <span class="sgr33">8</span>
+<span class="sgr90">;  @ lab.md:116 within `polynomial`</span>
+<span class="sgr90">; ┌ @ array.jl:924 within `getindex`</span>
+   <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">label</span> <span class="sgr91">%L25</span>
+
+<span class="sgr91">oob6:</span>                                             <span class="sgr90">; preds = %L25</span>
+   %18 = <span class="sgr96"><span class="sgr1">alloca</span></span> <span class="sgr36">i64</span>, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr36">i64</span> %value_phi3, <span class="sgr36">i64</span>* %18, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr36">void</span> <span class="sgr93">@ijl_bounds_error_ints</span><span class="sgr33">({}</span>* %0, <span class="sgr36">i64</span>* <span class="sgr95">nonnull</span> %18, <span class="sgr36">i64</span> <span class="sgr33">1)</span>
+   <span class="sgr96"><span class="sgr1">unreachable</span></span>
+
+<span class="sgr91">idxend7:</span>                                          <span class="sgr90">; preds = %L25</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:385 within `*`</span>
+   %19 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %value_phi5, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ array.jl:924 within `getindex`</span>
+   %20 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %17, <span class="sgr36">i64</span> %6
+   %21 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %20, <span class="sgr95">align</span> <span class="sgr33">8</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:383 within `+`</span>
+   %22 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %19, %21
+<span class="sgr90">; └</span>
+<span class="sgr90">;  @ lab.md:117 within `polynomial`</span>
+<span class="sgr90">; ┌ @ range.jl:883 within `iterate`</span>
+<span class="sgr90">; │┌ @ promotion.jl:477 within `==`</span>
+    %.not15 = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %value_phi3, %13
+<span class="sgr90">; └└</span>
+  <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %.not15, <span class="sgr36">label</span> <span class="sgr91">%L44</span>, <span class="sgr36">label</span> <span class="sgr91">%L25</span>
+<span class="sgr33">}</span></code></pre><p>More than 2x speedup</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a,$x)</code><code class="nohighlight hljs ansi" style="display:block;">  16.733 ns (0 allocations: 0 bytes)
+1.048575e6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($ac,$x)</code><code class="nohighlight hljs ansi" style="display:block;">  36.154 ns (0 allocations: 0 bytes)
+1.048575e6</code></pre></p></details><h3 id="Recursion-inlining-depth"><a class="docs-heading-anchor" href="#Recursion-inlining-depth">Recursion inlining depth</a><a id="Recursion-inlining-depth-1"></a><a class="docs-heading-anchor-permalink" href="#Recursion-inlining-depth" title="Permalink"></a></h3><p>Inlining<sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup> is another compiler optimization that allows us to speed up the code by avoiding function calls. Where applicable compiler can replace <code>f(args)</code> directly with the function body of <code>f</code>, thus removing the need to modify stack to transfer the control flow to a different place. This is yet another optimization that may improve speed at the expense of binary size.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Rewrite the <code>polynomial</code> function from the last <a href="../../lecture_05/lab/#horner">lab</a> using recursion and find the length of the coefficients, at which inlining of the recursive calls stops occurring.</p><pre><code class="language-julia hljs">function polynomial(a, x)
+    accumulator = a[end] * one(x)
+    for i in length(a)-1:-1:1
+        accumulator = accumulator * x + a[i]
+    end
+    accumulator  
+end</code></pre><div class="admonition is-info"><header class="admonition-header">Splatting/slurping operator `...`</header><div class="admonition-body"><p>The operator <code>...</code> serves two purposes inside function calls <sup class="footnote-reference"><a id="citeref-3" href="#footnote-3">[3]</a></sup><sup class="footnote-reference"><a id="citeref-4" href="#footnote-4">[4]</a></sup>:</p><ul><li>combines multiple arguments into one</li></ul><pre><code class="language- hljs">function printargs(args...)
+    println(typeof(args))
+    for (i, arg) in enumerate(args)
+        println(&quot;Arg #$i = $arg&quot;)
+    end
+end
+printargs(1, 2, 3)</code></pre><ul><li>splits one argument into many different arguments</li></ul><pre><code class="language- hljs">function threeargs(a, b, c)
+    println(&quot;a = $a::$(typeof(a))&quot;)
+    println(&quot;b = $b::$(typeof(b))&quot;)
+    println(&quot;c = $c::$(typeof(c))&quot;)
+end
+threeargs([1,2,3]...) # or with a variable threeargs(x...)</code></pre></div></div><p><strong>HINTS</strong>:</p><ul><li>define two methods <code>_polynomial!(ac, x, a...)</code> and <code>_polynomial!(ac, x, a)</code> for the case of ≥2 coefficients and the last coefficient</li><li>use splatting together with range indexing <code>a[1:end-1]...</code></li><li>the correctness can be checked using the built-in <code>evalpoly</code></li><li>recall that these kind of optimization are possible just around the type inference stage</li><li>use container of known length to store the coefficients</li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">_polynomial!(ac, x, a...) = _polynomial!(x * ac + a[end], x, a[1:end-1]...)
+_polynomial!(ac, x, a) = x * ac + a
+polynomial(a, x) = _polynomial!(a[end] * one(x), x, a[1:end-1]...)
+
+# the coefficients have to be a tuple
+a = Tuple(ones(Int, 21)) # everything less than 22 gets inlined
+x = 2
+polynomial(a,x) == evalpoly(x,a) # compare with built-in function
+
+# @code_llvm polynomial(a,x)    # seen here too, but code_typed is a better option
+@code_lowered polynomial(a,x) # cannot be seen here as optimizations are not applied</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_typed polynomial(a,x)</code><code class="nohighlight hljs ansi" style="display:block;">CodeInfo(
+<span class="sgr90">1 ─</span> %1  = Base.getfield(a, 21, true)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %2  = Base.mul_int(%1, 1)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %3  = Core.getfield(a, 1)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %4  = Core.getfield(a, 2)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %5  = Core.getfield(a, 3)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %6  = Core.getfield(a, 4)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %7  = Core.getfield(a, 5)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %8  = Core.getfield(a, 6)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %9  = Core.getfield(a, 7)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %10 = Core.getfield(a, 8)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %11 = Core.getfield(a, 9)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %12 = Core.getfield(a, 10)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %13 = Core.getfield(a, 11)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %14 = Core.getfield(a, 12)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %15 = Core.getfield(a, 13)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %16 = Core.getfield(a, 14)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %17 = Core.getfield(a, 15)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %18 = Core.getfield(a, 16)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %19 = Core.getfield(a, 17)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %20 = Core.getfield(a, 18)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %21 = Core.getfield(a, 19)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %22 = Core.getfield(a, 20)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %23 = Base.mul_int(x, %2)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %24 = Base.add_int(%23, %22)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %25 = Base.mul_int(x, %24)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %26 = Base.add_int(%25, %21)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %27 = Base.mul_int(x, %26)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %28 = Base.add_int(%27, %20)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %29 = Base.mul_int(x, %28)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %30 = Base.add_int(%29, %19)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %31 = Base.mul_int(x, %30)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %32 = Base.add_int(%31, %18)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %33 = Base.mul_int(x, %32)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %34 = Base.add_int(%33, %17)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %35 = Base.mul_int(x, %34)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %36 = Base.add_int(%35, %16)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %37 = Base.mul_int(x, %36)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %38 = Base.add_int(%37, %15)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %39 = Base.mul_int(x, %38)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %40 = Base.add_int(%39, %14)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %41 = Base.mul_int(x, %40)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %42 = Base.add_int(%41, %13)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %43 = Base.mul_int(x, %42)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %44 = Base.add_int(%43, %12)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %45 = Base.mul_int(x, %44)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %46 = Base.add_int(%45, %11)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %47 = Base.mul_int(x, %46)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %48 = Base.add_int(%47, %10)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %49 = Base.mul_int(x, %48)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %50 = Base.add_int(%49, %9)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %51 = Base.mul_int(x, %50)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %52 = Base.add_int(%51, %8)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %53 = Base.mul_int(x, %52)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %54 = Base.add_int(%53, %7)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %55 = Base.mul_int(x, %54)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %56 = Base.add_int(%55, %6)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %57 = Base.mul_int(x, %56)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %58 = Base.add_int(%57, %5)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %59 = Base.mul_int(x, %58)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %60 = Base.add_int(%59, %4)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %61 = Base.mul_int(x, %60)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %62 = Base.add_int(%61, %3)<span class="sgr36">::Int64</span>
+<span class="sgr90">└──</span>       return %62
+) =&gt; Int64</code></pre></p></details><h2 id="AST-manipulation:-The-first-steps-to-metaprogramming"><a class="docs-heading-anchor" href="#AST-manipulation:-The-first-steps-to-metaprogramming">AST manipulation: The first steps to metaprogramming</a><a id="AST-manipulation:-The-first-steps-to-metaprogramming-1"></a><a class="docs-heading-anchor-permalink" href="#AST-manipulation:-The-first-steps-to-metaprogramming" title="Permalink"></a></h2><p>Julia is so called homoiconic language, as it allows the language to reason about its code. This capability is inspired by years of development in other languages such as Lisp, Clojure or Prolog.</p><p>There are two easy ways to extract/construct the code structure <sup class="footnote-reference"><a id="citeref-5" href="#footnote-5">[5]</a></sup></p><ul><li>parsing code stored in string with internal <code>Meta.parse</code></li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; code_parse = Meta.parse(&quot;x = 2&quot;)    # for single line expressions (additional spaces are ignored)</code><code class="nohighlight hljs ansi" style="display:block;">:(x = 2)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; code_parse_block = Meta.parse(&quot;&quot;&quot;
+       begin
+           x = 2
+           y = 3
+           x + y
+       end
+       &quot;&quot;&quot;) # for multiline expressions</code><code class="nohighlight hljs ansi" style="display:block;">quote
+    <span class="sgr90">#= none:2 =#</span>
+    x = 2
+    <span class="sgr90">#= none:3 =#</span>
+    y = 3
+    <span class="sgr90">#= none:4 =#</span>
+    x + y
+end</code></pre><ul><li>constructing an expression using <code>quote ... end</code> or simple <code>:()</code> syntax</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; code_expr = :(x = 2)    # for single line expressions (additional spaces are ignored)</code><code class="nohighlight hljs ansi" style="display:block;">:(x = 2)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; code_expr_block = quote
+           x = 2
+           y = 3
+           x + y
+       end # for multiline expressions</code><code class="nohighlight hljs ansi" style="display:block;">quote
+    <span class="sgr90">#= REPL[2]:2 =#</span>
+    x = 2
+    <span class="sgr90">#= REPL[2]:3 =#</span>
+    y = 3
+    <span class="sgr90">#= REPL[2]:4 =#</span>
+    x + y
+end</code></pre><p>Results can be stored into some variables, which we can inspect further.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; typeof(code_parse)</code><code class="nohighlight hljs ansi" style="display:block;">Expr</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; dump(code_parse)</code><code class="nohighlight hljs ansi" style="display:block;">Expr
+  head: Symbol =
+  args: Array{Any}((2,))
+    1: Symbol x
+    2: Int64 2</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; typeof(code_parse_block)</code><code class="nohighlight hljs ansi" style="display:block;">Expr</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; dump(code_parse_block)</code><code class="nohighlight hljs ansi" style="display:block;">Expr
+  head: Symbol block
+  args: Array{Any}((6,))
+    1: LineNumberNode
+      line: Int64 2
+      file: Symbol none
+    2: Expr
+      head: Symbol =
+      args: Array{Any}((2,))
+        1: Symbol x
+        2: Int64 2
+    3: LineNumberNode
+      line: Int64 3
+      file: Symbol none
+    4: Expr
+      head: Symbol =
+      args: Array{Any}((2,))
+        1: Symbol y
+        2: Int64 3
+    5: LineNumberNode
+      line: Int64 4
+      file: Symbol none
+    6: Expr
+      head: Symbol call
+      args: Array{Any}((3,))
+        1: Symbol +
+        2: Symbol x
+        3: Symbol y</code></pre><p>The type of both multiline and single line expression is <code>Expr</code> with fields <code>head</code> and <code>args</code>. Notice that <code>Expr</code> type is recursive in the <code>args</code>, which can store other expressions resulting in a tree structure - abstract syntax tree (AST) - that can be visualized for example with the combination of <code>GraphRecipes</code> and <code>Plots</code> packages. </p><pre><code class="language-julia hljs">plot(code_expr_block, fontsize=12, shorten=0.01, axis_buffer=0.15, nodeshape=:rect)</code></pre><?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="400" viewBox="0 0 2400 1600">
+<defs>
+  <clipPath id="clip490">
+    <rect x="0" y="0" width="2400" height="1600"/>
+  </clipPath>
+</defs>
+<path clip-path="url(#clip490)" d="
+M0 1600 L2400 1600 L2400 0 L0 0  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip491">
+    <rect x="480" y="0" width="1681" height="1600"/>
+  </clipPath>
+</defs>
+<path clip-path="url(#clip490)" d="
+M447.244 1552.76 L1952.76 1552.76 L1952.76 47.2441 L447.244 47.2441  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip492">
+    <rect x="447" y="47" width="1507" height="1507"/>
+  </clipPath>
+</defs>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1200,232.538 1198.39,254.662 1193.69,276.153 1186.15,297.057 1175.99,317.422 1163.44,337.294 1148.72,356.72 1132.06,375.748 1113.69,394.423 1093.84,412.794 
+  1072.74,430.907 1050.62,448.808 1027.69,466.546 1004.2,484.166 980.358,501.715 956.407,519.242 932.57,536.791 909.075,554.411 886.15,572.149 864.023,590.05 
+  842.921,608.163 823.072,626.534 804.706,645.209 788.048,664.237 773.328,683.663 760.773,703.535 750.612,723.9 743.071,744.804 738.38,766.295 736.766,788.419 
+  
+  "/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1200,232.538 1200,249.983 1200,267.798 1200,285.954 1200,304.425 1200,323.183 1200,342.201 1200,361.451 1200,380.907 1200,400.54 
+  1200,420.324 1200,440.23 1200,460.233 1200,480.304 1200,500.416 1200,520.541 1200,540.653 1200,560.724 1200,580.727 1200,600.633 
+  1200,620.417 1200,640.05 1200,659.506 1200,678.756 1200,697.774 1200,716.532 1200,735.003 1200,753.159 1200,770.974 1200,788.419 
+  
+  "/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1200,232.538 1201.61,254.662 1206.31,276.153 1213.85,297.057 1224.01,317.422 1236.56,337.294 1251.28,356.72 1267.94,375.748 1286.31,394.423 1306.16,412.794 
+  1327.26,430.907 1349.38,448.808 1372.31,466.546 1395.8,484.166 1419.64,501.715 1443.59,519.242 1467.43,536.791 1490.92,554.411 1513.85,572.149 1535.98,590.05 
+  1557.08,608.163 1576.93,626.534 1595.29,645.209 1611.95,664.237 1626.67,683.663 1639.23,703.535 1649.39,723.9 1656.93,744.804 1661.62,766.295 1663.23,788.419 
+  
+  "/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  736.766,811.581 736.362,829.359 735.189,847.435 733.304,865.787 730.764,884.393 727.625,903.23 723.945,922.277 719.781,941.511 715.189,960.911 710.227,980.455 
+  704.951,1000.12 699.419,1019.88 693.688,1039.73 687.814,1059.62 681.855,1079.55 675.867,1099.49 669.908,1119.42 664.034,1139.32 658.303,1159.16 652.771,1178.92 
+  647.496,1198.59 642.534,1218.13 637.942,1237.53 633.778,1256.77 630.098,1275.81 626.959,1294.65 624.419,1313.26 622.533,1331.61 621.361,1349.68 620.957,1367.46 
+  
+  "/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  736.766,811.581 737.169,829.359 738.342,847.435 740.227,865.787 742.768,884.393 745.906,903.23 749.586,922.277 753.751,941.511 758.342,960.911 763.304,980.455 
+  768.58,1000.12 774.112,1019.88 779.843,1039.73 785.717,1059.62 791.676,1079.55 797.664,1099.49 803.623,1119.42 809.497,1139.32 815.228,1159.16 820.76,1178.92 
+  826.035,1198.59 830.997,1218.13 835.589,1237.53 839.754,1256.77 843.434,1275.81 846.572,1294.65 849.113,1313.26 850.998,1331.61 852.171,1349.68 852.574,1367.46 
+  
+  "/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1200,811.581 1199.6,829.359 1198.42,847.435 1196.54,865.787 1194,884.393 1190.86,903.23 1187.18,922.277 1183.01,941.511 1178.42,960.911 1173.46,980.455 
+  1168.19,1000.12 1162.65,1019.88 1156.92,1039.73 1151.05,1059.62 1145.09,1079.55 1139.1,1099.49 1133.14,1119.42 1127.27,1139.32 1121.54,1159.16 1116.01,1178.92 
+  1110.73,1198.59 1105.77,1218.13 1101.18,1237.53 1097.01,1256.77 1093.33,1275.81 1090.19,1294.65 1087.65,1313.26 1085.77,1331.61 1084.6,1349.68 1084.19,1367.46 
+  
+  "/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1200,811.581 1200.4,829.359 1201.58,847.435 1203.46,865.787 1206,884.393 1209.14,903.23 1212.82,922.277 1216.99,941.511 1221.58,960.911 1226.54,980.455 
+  1231.81,1000.12 1237.35,1019.88 1243.08,1039.73 1248.95,1059.62 1254.91,1079.55 1260.9,1099.49 1266.86,1119.42 1272.73,1139.32 1278.46,1159.16 1283.99,1178.92 
+  1289.27,1198.59 1294.23,1218.13 1298.82,1237.53 1302.99,1256.77 1306.67,1275.81 1309.81,1294.65 1312.35,1313.26 1314.23,1331.61 1315.4,1349.68 1315.81,1367.46 
+  
+  "/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1663.23,811.581 1662.83,829.359 1661.66,847.435 1659.77,865.787 1657.23,884.393 1654.09,903.23 1650.41,922.277 1646.25,941.511 1641.66,960.911 1636.7,980.455 
+  1631.42,1000.12 1625.89,1019.88 1620.16,1039.73 1614.28,1059.62 1608.32,1079.55 1602.34,1099.49 1596.38,1119.42 1590.5,1139.32 1584.77,1159.16 1579.24,1178.92 
+  1573.96,1198.59 1569,1218.13 1564.41,1237.53 1560.25,1256.77 1556.57,1275.81 1553.43,1294.65 1550.89,1313.26 1549,1331.61 1547.83,1349.68 1547.43,1367.46 
+  
+  "/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1663.23,811.581 1663.64,829.359 1664.81,847.435 1666.7,865.787 1669.24,884.393 1672.38,903.23 1676.06,922.277 1680.22,941.511 1684.81,960.911 1689.77,980.455 
+  1695.05,1000.12 1700.58,1019.88 1706.31,1039.73 1712.19,1059.62 1718.14,1079.55 1724.13,1099.49 1730.09,1119.42 1735.97,1139.32 1741.7,1159.16 1747.23,1178.92 
+  1752.5,1198.59 1757.47,1218.13 1762.06,1237.53 1766.22,1256.77 1769.9,1275.81 1773.04,1294.65 1775.58,1313.26 1777.47,1331.61 1778.64,1349.68 1779.04,1367.46 
+  
+  "/>
+<path clip-path="url(#clip492)" d="
+M1079.13 274.322 L1320.87 274.322 L1320.87 167.592 L1079.13 167.592 L1079.13 274.322 L1079.13 274.322  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1079.13,274.322 1320.87,274.322 1320.87,167.592 1079.13,167.592 1079.13,274.322 
+  "/>
+<path clip-path="url(#clip492)" d="
+M703.413 853.365 L770.118 853.365 L770.118 746.635 L703.413 746.635 L703.413 853.365 L703.413 853.365  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  703.413,853.365 770.118,853.365 770.118,746.635 703.413,746.635 703.413,853.365 
+  "/>
+<path clip-path="url(#clip492)" d="
+M587.604 1432.41 L654.31 1432.41 L654.31 1325.68 L587.604 1325.68 L587.604 1432.41 L587.604 1432.41  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  587.604,1432.41 654.31,1432.41 654.31,1325.68 587.604,1325.68 587.604,1432.41 
+  "/>
+<path clip-path="url(#clip492)" d="
+M819.221 1432.41 L885.927 1432.41 L885.927 1325.68 L819.221 1325.68 L819.221 1432.41 L819.221 1432.41  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  819.221,1432.41 885.927,1432.41 885.927,1325.68 819.221,1325.68 819.221,1432.41 
+  "/>
+<path clip-path="url(#clip492)" d="
+M1166.65 853.365 L1233.35 853.365 L1233.35 746.635 L1166.65 746.635 L1166.65 853.365 L1166.65 853.365  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1166.65,853.365 1233.35,853.365 1233.35,746.635 1166.65,746.635 1166.65,853.365 
+  "/>
+<path clip-path="url(#clip492)" d="
+M1050.84 1432.41 L1117.54 1432.41 L1117.54 1325.68 L1050.84 1325.68 L1050.84 1432.41 L1050.84 1432.41  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1050.84,1432.41 1117.54,1432.41 1117.54,1325.68 1050.84,1325.68 1050.84,1432.41 
+  "/>
+<path clip-path="url(#clip492)" d="
+M1282.46 1432.41 L1349.16 1432.41 L1349.16 1325.68 L1282.46 1325.68 L1282.46 1432.41 L1282.46 1432.41  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1282.46,1432.41 1349.16,1432.41 1349.16,1325.68 1282.46,1325.68 1282.46,1432.41 
+  "/>
+<path clip-path="url(#clip492)" d="
+M1629.88 853.365 L1696.59 853.365 L1696.59 746.635 L1629.88 746.635 L1629.88 853.365 L1629.88 853.365  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1629.88,853.365 1696.59,853.365 1696.59,746.635 1629.88,746.635 1629.88,853.365 
+  "/>
+<path clip-path="url(#clip492)" d="
+M1514.07 1432.41 L1580.78 1432.41 L1580.78 1325.68 L1514.07 1325.68 L1514.07 1432.41 L1514.07 1432.41  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1514.07,1432.41 1580.78,1432.41 1580.78,1325.68 1514.07,1325.68 1514.07,1432.41 
+  "/>
+<path clip-path="url(#clip492)" d="
+M1745.69 1432.41 L1812.4 1432.41 L1812.4 1325.68 L1745.69 1325.68 L1745.69 1432.41 L1745.69 1432.41  Z
+  " fill="#009af9" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip492)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1745.69,1432.41 1812.4,1432.41 1812.4,1325.68 1745.69,1325.68 1745.69,1432.41 
+  "/>
+<path clip-path="url(#clip492)" d="M1199.6 220.557 L1199.6 221.357 L1200.4 221.357 L1200.4 220.557 L1199.6 220.557 Z" fill="#009af9" fill-rule="evenodd" fill-opacity="1" stroke="#000000" stroke-opacity="1" stroke-width="3.2"/>
+<path clip-path="url(#clip492)" d="M736.366 799.6 L736.366 800.4 L737.166 800.4 L737.166 799.6 L736.366 799.6 Z" fill="#009af9" fill-rule="evenodd" fill-opacity="1" stroke="#000000" stroke-opacity="1" stroke-width="3.2"/>
+<path clip-path="url(#clip492)" d="M620.557 1378.64 L620.557 1379.44 L621.357 1379.44 L621.357 1378.64 L620.557 1378.64 Z" fill="#009af9" fill-rule="evenodd" fill-opacity="1" stroke="#000000" stroke-opacity="1" stroke-width="3.2"/>
+<path clip-path="url(#clip492)" d="M852.174 1378.64 L852.174 1379.44 L852.974 1379.44 L852.974 1378.64 L852.174 1378.64 Z" fill="#009af9" fill-rule="evenodd" fill-opacity="1" stroke="#000000" stroke-opacity="1" stroke-width="3.2"/>
+<path clip-path="url(#clip492)" d="M1199.6 799.6 L1199.6 800.4 L1200.4 800.4 L1200.4 799.6 L1199.6 799.6 Z" fill="#009af9" fill-rule="evenodd" fill-opacity="1" stroke="#000000" stroke-opacity="1" stroke-width="3.2"/>
+<path clip-path="url(#clip492)" d="M1083.79 1378.64 L1083.79 1379.44 L1084.59 1379.44 L1084.59 1378.64 L1083.79 1378.64 Z" fill="#009af9" fill-rule="evenodd" fill-opacity="1" stroke="#000000" stroke-opacity="1" stroke-width="3.2"/>
+<path clip-path="url(#clip492)" d="M1315.41 1378.64 L1315.41 1379.44 L1316.21 1379.44 L1316.21 1378.64 L1315.41 1378.64 Z" fill="#009af9" fill-rule="evenodd" fill-opacity="1" stroke="#000000" stroke-opacity="1" stroke-width="3.2"/>
+<path clip-path="url(#clip492)" d="M1662.83 799.6 L1662.83 800.4 L1663.63 800.4 L1663.63 799.6 L1662.83 799.6 Z" fill="#009af9" fill-rule="evenodd" fill-opacity="1" stroke="#000000" stroke-opacity="1" stroke-width="3.2"/>
+<path clip-path="url(#clip492)" d="M1547.03 1378.64 L1547.03 1379.44 L1547.83 1379.44 L1547.83 1378.64 L1547.03 1378.64 Z" fill="#009af9" fill-rule="evenodd" fill-opacity="1" stroke="#000000" stroke-opacity="1" stroke-width="3.2"/>
+<path clip-path="url(#clip492)" d="M1778.64 1378.64 L1778.64 1379.44 L1779.44 1379.44 L1779.44 1378.64 L1778.64 1378.64 Z" fill="#009af9" fill-rule="evenodd" fill-opacity="1" stroke="#000000" stroke-opacity="1" stroke-width="3.2"/>
+<path clip-path="url(#clip490)" d="M1137.15 227.467 Q1137.15 220.419 1134.24 216.426 Q1131.35 212.398 1126.29 212.398 Q1121.22 212.398 1118.3 216.426 Q1115.42 220.419 1115.42 227.467 Q1115.42 234.516 1118.3 238.544 Q1121.22 242.537 1126.29 242.537 Q1131.35 242.537 1134.24 238.544 Q1137.15 234.516 1137.15 227.467 M1115.42 213.891 Q1117.43 210.419 1120.49 208.752 Q1123.58 207.051 1127.85 207.051 Q1134.93 207.051 1139.34 212.676 Q1143.79 218.301 1143.79 227.467 Q1143.79 236.634 1139.34 242.259 Q1134.93 247.884 1127.85 247.884 Q1123.58 247.884 1120.49 246.217 Q1117.43 244.516 1115.42 241.044 L1115.42 246.877 L1108.99 246.877 L1108.99 192.85 L1115.42 192.85 L1115.42 213.891 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M1154.38 192.85 L1160.76 192.85 L1160.76 246.877 L1154.38 246.877 L1154.38 192.85 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M1189.2 212.467 Q1184.06 212.467 1181.08 216.495 Q1178.09 220.488 1178.09 227.467 Q1178.09 234.447 1181.04 238.474 Q1184.03 242.467 1189.2 242.467 Q1194.31 242.467 1197.29 238.44 Q1200.28 234.412 1200.28 227.467 Q1200.28 220.558 1197.29 216.53 Q1194.31 212.467 1189.2 212.467 M1189.2 207.051 Q1197.53 207.051 1202.29 212.467 Q1207.05 217.884 1207.05 227.467 Q1207.05 237.016 1202.29 242.467 Q1197.53 247.884 1189.2 247.884 Q1180.83 247.884 1176.08 242.467 Q1171.35 237.016 1171.35 227.467 Q1171.35 217.884 1176.08 212.467 Q1180.83 207.051 1189.2 207.051 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M1245.62 209.481 L1245.62 215.454 Q1242.92 213.961 1240.17 213.231 Q1237.47 212.467 1234.69 212.467 Q1228.47 212.467 1225.03 216.426 Q1221.6 220.349 1221.6 227.467 Q1221.6 234.585 1225.03 238.544 Q1228.47 242.467 1234.69 242.467 Q1237.47 242.467 1240.17 241.738 Q1242.92 240.974 1245.62 239.481 L1245.62 245.384 Q1242.95 246.634 1240.07 247.259 Q1237.22 247.884 1233.99 247.884 Q1225.21 247.884 1220.03 242.363 Q1214.86 236.842 1214.86 227.467 Q1214.86 217.954 1220.07 212.502 Q1225.31 207.051 1234.41 207.051 Q1237.36 207.051 1240.17 207.676 Q1242.99 208.266 1245.62 209.481 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M1256.49 192.85 L1262.92 192.85 L1262.92 224.759 L1281.98 207.988 L1290.14 207.988 L1269.51 226.183 L1291.01 246.877 L1282.67 246.877 L1262.92 227.884 L1262.92 246.877 L1256.49 246.877 L1256.49 192.85 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M714.509 793.629 L759.022 793.629 L759.022 799.462 L714.509 799.462 L714.509 793.629 M714.509 807.795 L759.022 807.795 L759.022 813.698 L714.509 813.698 L714.509 807.795 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M639.082 1366.07 L625.019 1385 L639.811 1404.96 L632.276 1404.96 L620.957 1389.69 L609.638 1404.96 L602.103 1404.96 L617.207 1384.62 L603.388 1366.07 L610.922 1366.07 L621.235 1379.93 L631.547 1366.07 L639.082 1366.07 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M844.553 1399.06 L869.032 1399.06 L869.032 1404.96 L836.116 1404.96 L836.116 1399.06 Q840.109 1394.93 846.984 1387.98 Q853.894 1381 855.664 1378.99 Q859.032 1375.21 860.352 1372.6 Q861.706 1369.96 861.706 1367.43 Q861.706 1363.3 858.789 1360.69 Q855.908 1358.09 851.255 1358.09 Q847.956 1358.09 844.276 1359.23 Q840.63 1360.38 836.463 1362.71 L836.463 1355.62 Q840.699 1353.92 844.38 1353.05 Q848.06 1352.19 851.116 1352.19 Q859.171 1352.19 863.963 1356.21 Q868.755 1360.24 868.755 1366.98 Q868.755 1370.17 867.539 1373.05 Q866.359 1375.9 863.199 1379.79 Q862.331 1380.8 857.678 1385.62 Q853.026 1390.41 844.553 1399.06 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M1177.74 793.629 L1222.26 793.629 L1222.26 799.462 L1177.74 799.462 L1177.74 793.629 M1177.74 807.795 L1222.26 807.795 L1222.26 813.698 L1177.74 813.698 L1177.74 807.795 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M1086.03 1408.57 Q1083.32 1415.52 1080.75 1417.64 Q1078.18 1419.75 1073.88 1419.75 L1068.77 1419.75 L1068.77 1414.41 L1072.52 1414.41 Q1075.16 1414.41 1076.62 1413.16 Q1078.08 1411.91 1079.85 1407.25 L1081 1404.34 L1065.27 1366.07 L1072.04 1366.07 L1084.19 1396.49 L1096.34 1366.07 L1103.11 1366.07 L1086.03 1408.57 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M1322.18 1377.01 Q1327.21 1378.09 1330.03 1381.49 Q1332.87 1384.89 1332.87 1389.89 Q1332.87 1397.57 1327.6 1401.77 Q1322.32 1405.97 1312.6 1405.97 Q1309.33 1405.97 1305.86 1405.31 Q1302.42 1404.69 1298.74 1403.4 L1298.74 1396.63 Q1301.66 1398.33 1305.13 1399.2 Q1308.6 1400.07 1312.39 1400.07 Q1318.99 1400.07 1322.42 1397.46 Q1325.9 1394.86 1325.9 1389.89 Q1325.9 1385.31 1322.67 1382.74 Q1319.47 1380.14 1313.74 1380.14 L1307.7 1380.14 L1307.7 1374.37 L1314.02 1374.37 Q1319.19 1374.37 1321.94 1372.32 Q1324.68 1370.24 1324.68 1366.35 Q1324.68 1362.36 1321.83 1360.24 Q1319.02 1358.09 1313.74 1358.09 Q1310.86 1358.09 1307.56 1358.71 Q1304.26 1359.34 1300.31 1360.66 L1300.31 1354.41 Q1304.3 1353.3 1307.77 1352.74 Q1311.28 1352.19 1314.37 1352.19 Q1322.35 1352.19 1327.01 1355.83 Q1331.66 1359.44 1331.66 1365.62 Q1331.66 1369.93 1329.19 1372.91 Q1326.73 1375.87 1322.18 1377.01 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M1666.15 781.337 L1666.15 800.677 L1685.49 800.677 L1685.49 806.58 L1666.15 806.58 L1666.15 825.92 L1660.32 825.92 L1660.32 806.58 L1640.98 806.58 L1640.98 800.677 L1660.32 800.677 L1660.32 781.337 L1666.15 781.337 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M1565.55 1366.07 L1551.49 1385 L1566.28 1404.96 L1558.75 1404.96 L1547.43 1389.69 L1536.11 1404.96 L1528.57 1404.96 L1543.68 1384.62 L1529.86 1366.07 L1537.39 1366.07 L1547.7 1379.93 L1558.02 1366.07 L1565.55 1366.07 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip490)" d="M1780.88 1408.57 Q1778.17 1415.52 1775.61 1417.64 Q1773.04 1419.75 1768.73 1419.75 L1763.63 1419.75 L1763.63 1414.41 L1767.38 1414.41 Q1770.02 1414.41 1771.47 1413.16 Q1772.93 1411.91 1774.7 1407.25 L1775.85 1404.34 L1760.12 1366.07 L1766.89 1366.07 L1779.04 1396.49 L1791.2 1366.07 L1797.97 1366.07 L1780.88 1408.57 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /></svg>
+<p>This recursive structure has some major performance drawbacks, because the <code>args</code> field is of type <code>Any</code> and therefore modifications of this expression level AST won&#39;t be type stable. Building blocks of expressions are <code>Symbol</code>s and literal values (numbers).</p><p>A possible nuisance of working with multiline expressions is the presence of <code>LineNumber</code> nodes, which can be removed with <code>Base.remove_linenums!</code> function.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; Base.remove_linenums!(code_parse_block)</code><code class="nohighlight hljs ansi" style="display:block;">quote
+    x = 2
+    y = 3
+    x + y
+end</code></pre><p>Parsed expressions can be evaluate using <code>eval</code> function. </p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; eval(code_parse)    # evaluation of :(x = 2)</code><code class="nohighlight hljs ansi" style="display:block;">2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; x                   # should be defined</code><code class="nohighlight hljs ansi" style="display:block;">2</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Before doing anything more fancy let&#39;s start with some simple manipulation of ASTs.</p><ul><li>Define a variable <code>code</code> to be as the result of parsing the string <code>&quot;j = i^2&quot;</code>. </li><li>Copy code into a variable <code>code2</code>. Modify this to replace the power <code>2</code> with a power <code>3</code>. Make sure that the original code variable is not also modified. </li><li>Copy <code>code2</code> to a variable <code>code3</code>. Replace <code>i</code> with <code>i + 1</code> in <code>code3</code>.</li><li>Define a variable <code>i</code> with the value <code>4</code>. Evaluate the different code expressions using the <code>eval</code> function and check the value of the variable <code>j</code>.</li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; code = Meta.parse(&quot;j = i^2&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">:(j = i ^ 2)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; code2 = copy(code)</code><code class="nohighlight hljs ansi" style="display:block;">:(j = i ^ 2)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; code2.args[2].args[3] = 3</code><code class="nohighlight hljs ansi" style="display:block;">3</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; code3 = copy(code2)</code><code class="nohighlight hljs ansi" style="display:block;">:(j = i ^ 3)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; code3.args[2].args[2] = :(i + 1)</code><code class="nohighlight hljs ansi" style="display:block;">:(i + 1)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; i = 4</code><code class="nohighlight hljs ansi" style="display:block;">4</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eval(code), eval(code2), eval(code3)</code><code class="nohighlight hljs ansi" style="display:block;">(16, 64, 125)</code></pre></p></details><p>Following up on the more general substitution of variables in an expression from the lecture, let&#39;s see how the situation becomes more complicated, when we are dealing with strings instead of a parsed AST.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><pre><code class="language-julia hljs">replace_i(s::Symbol) = s == :i ? :k : s
+replace_i(e::Expr) = Expr(e.head, map(replace_i, e.args)...)
+replace_i(u) = u</code></pre><p>Given a function <code>replace_i</code>, which replaces variables <code>i</code> for <code>k</code> in an expression like the following</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ex = :(i + i*i + y*i - sin(z))</code><code class="nohighlight hljs ansi" style="display:block;">:((i + i * i + y * i) - sin(z))</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @test replace_i(ex) == :(k + k*k + y*k - sin(z))</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr32"><span class="sgr1">Test Passed</span></span></code></pre><p>write a different function <code>sreplace_i(s)</code>, which does the same thing but instead of a parsed expression (AST) it manipulates a string, such as</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; s = string(ex)</code><code class="nohighlight hljs ansi" style="display:block;">&quot;(i + i * i + y * i) - sin(z)&quot;</code></pre><p><strong>HINTS</strong>:</p><ul><li>Use <code>Meta.parse</code> in combination with <code>replace_i</code> <strong>ONLY</strong> for checking of correctness.</li><li>You can use the <code>replace</code> function in combination with regular expressions.</li><li>Think of some corner cases, that the method may not handle properly.</li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>The naive solution</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sreplace_i(s) = replace(s, &#39;i&#39; =&gt; &#39;k&#39;)</code><code class="nohighlight hljs ansi" style="display:block;">sreplace_i (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr91"><span class="sgr1">Test Failed</span></span> at <span class="sgr1">REPL[2]:1</span>
+  Expression: Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
+   Evaluated: (k + k * k + y * k) - skn(z) == (k + k * k + y * k) - sin(z)
+ERROR: <span class="sgr91">There was an error during testing</span></code></pre><p>does not work in this simple case, because it will replace &quot;i&quot; inside the <code>sin(z)</code> expression. We can play with regular expressions to obtain something, that is more robust</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sreplace_i(s) = replace(s, r&quot;([^\w]|\b)i(?=[^\w]|\z)&quot; =&gt; s&quot;\1k&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">sreplace_i (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr32"><span class="sgr1">Test Passed</span></span></code></pre><p>however the code may now be harder to read. Thus it is preferable to use the parsed AST when manipulating Julia&#39;s code.</p></p></details><p>If the exercises so far did not feel very useful let&#39;s focus on one, that is similar to a part of the <a href="https://github.com/JuliaIntervals/IntervalArithmetic.jl"><code>IntervalArithmetics.jl</code></a> pkg.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Write function <code>wrap!(ex::Expr)</code> which wraps literal values (numbers) with a call to <code>f()</code>. You can test it on the following example</p><pre><code class="language-julia hljs">f = x -&gt; convert(Float64, x)
+ex = :(x*x + 2*y*x + y*y)     # original expression
+rex = :(x*x + f(2)*y*x + y*y) # result expression</code></pre><p><strong>HINTS</strong>:</p><ul><li>use recursion and multiple dispatch</li><li>dispatch on <code>::Number</code> to detect numbers in an expression</li><li>for testing purposes, create a copy of <code>ex</code> before mutating</li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; function wrap!(ex::Expr)
+           args = ex.args
+       
+           for i in 1:length(args)
+               args[i] = wrap!(args[i])
+           end
+       
+           return ex
+       end</code><code class="nohighlight hljs ansi" style="display:block;">wrap! (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; wrap!(ex::Number) = Expr(:call, :f, ex)</code><code class="nohighlight hljs ansi" style="display:block;">wrap! (generic function with 2 methods)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; wrap!(ex) = ex</code><code class="nohighlight hljs ansi" style="display:block;">wrap! (generic function with 3 methods)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ext, x, y = copy(ex), 2, 3</code><code class="nohighlight hljs ansi" style="display:block;">(:(x * x + 2 * y * x + y * y), 2, 3)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @test wrap!(ex) == :(x*x + f(2)*y*x + y*y)</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr32"><span class="sgr1">Test Passed</span></span></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eval(ext)</code><code class="nohighlight hljs ansi" style="display:block;">25</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eval(ex)</code><code class="nohighlight hljs ansi" style="display:block;">25.0</code></pre></p></details><p>This kind of manipulation is at the core of some pkgs, such as aforementioned <a href="https://github.com/JuliaIntervals/IntervalArithmetic.jl"><code>IntervalArithmetics.jl</code></a> where every number is replaced with a narrow interval in order to find some bounds on the result of a computation.</p><hr/><h2 id="Resources"><a class="docs-heading-anchor" href="#Resources">Resources</a><a id="Resources-1"></a><a class="docs-heading-anchor-permalink" href="#Resources" title="Permalink"></a></h2><ul><li>Julia&#39;s manual on <a href="https://docs.julialang.org/en/v1/manual/metaprogramming/">metaprogramming</a></li><li>David P. Sanders&#39; <a href="https://www.youtube.com/watch?v=2QLhw6LVaq0">workshop @ JuliaCon 2021</a> </li><li>Steven Johnson&#39;s <a href="https://www.youtube.com/watch?v=mSgXWpvQEHE">keynote talk @ JuliaCon 2019</a></li><li>Andy Ferris&#39;s <a href="https://www.youtube.com/watch?v=SeqAQHKLNj4">workshop @ JuliaCon 2018</a></li><li><a href="https://github.com/johnmyleswhite/julia_tutorials">From Macros to DSL</a> by John Myles White </li><li>Notes on <a href="https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project">JuliaCompilerPlugin</a></li></ul><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a><a href="https://en.wikipedia.org/wiki/Loop\\_unrolling">https://en.wikipedia.org/wiki/Loop_unrolling</a></li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a><a href="https://en.wikipedia.org/wiki/Inline\\_expansion">https://en.wikipedia.org/wiki/Inline_expansion</a></li><li class="footnote" id="footnote-3"><a class="tag is-link" href="#citeref-3">3</a><a href="https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?">https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?</a></li><li class="footnote" id="footnote-4"><a class="tag is-link" href="#citeref-4">4</a><a href="https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions">https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions</a></li><li class="footnote" id="footnote-5"><a class="tag is-link" href="#citeref-5">5</a>Once you understand the recursive structure of expressions, the AST can be constructed manually like any other type.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Friday 11 November 2022 06:13">Friday 11 November 2022</span>. Using Julia version 1.8.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
