@@ -1,5 +1,5 @@
 # Homework 6: Find variables
-Following the lab exercises, you may thing that metaprogramming is a fun little exercise. Let's challenge this notion in this homework, where *YOU* are being trusted with catching all the edge cases in an AST.
+Following the lab exercises, you may think that metaprogramming is a fun little exercise. Let's challenge this notion in this homework, where *YOU* are being trusted with catching all the edge cases in an AST.
 
 ## How to submit?
 Put the code of the compulsory task inside `hw.jl`. Zip only this file (not its parent folder) and upload it to BRUTE. Your file should not use any 3rd party dependency.
