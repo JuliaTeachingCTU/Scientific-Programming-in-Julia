@@ -573,15 +573,15 @@ julia> eval(e)
 ```
 As already mentioned, the manipulation of Expression can be arbitrary. In the above example, we have been operating directly on the arguments. But what if `x` would be deeper in the expression, as for example in `2(3 + x) + 2(2 - x) `? We can implement the substitution using multiple dispatch as we would do when implementing any other function in Julia.
 ```julia
-replace_x(x::Symbol) = x == :x ? :(2*x) : x
-replace_x(e::Expr) = Expr(e.head, map(replace_x, e.args)...)
-replace_x(u) = u
+substitue_x(x::Symbol) = x == :x ? :(2*x) : x
+substitue_x(e::Expr) = Expr(e.head, map(substitue_x, e.args)...)
+substitue_x(u) = u
 ```
 which works as promised.
 ```julia
 julia> e = :(2(3 + 2x) + 2(2 - x))
 :(2 * (3 + x) + 2 * (2 - x))
-julia> f = replace_x(e)
+julia> f = substitue_x(e)
 :(2 * (3 + 2x) + 2 * (2 - 2x))
 ```
 
@@ -702,6 +702,11 @@ julia> a
 ```
 In this way, Julia acts as its own preprocessor.
 The above look can be equally written as 
+```julia
+for f in [:setindex!, :getindex, :size, :length]
+    println("$(f)(A::MyMatrix, args...) = $(f)(A.x, args...)")
+end
+```
 ```julia
 for f in [:setindex!, :getindex, :size, :length]
 	s = "Base.$(f)(A::MyMatrix, args...) = $(f)(A.x, args...)"

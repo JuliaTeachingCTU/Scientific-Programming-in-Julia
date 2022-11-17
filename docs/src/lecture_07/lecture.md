@@ -5,11 +5,11 @@ In its essence, macro is a function, which
 2. modify the expressions in argument
 3. insert the modified expression at the same place as the one that is parsed.
 
-Macros are necessary because they execute when code is parsed, therefore, macros allow the programmer to generate and include fragments of customized code before the full program is run. **Since they are executed during parsing, they do not have access to the values of their arguments, but only to their syntax**.
+Macros are necessary because they execute after the code is parsed (2nd step in conversion of source code to binary as described in last lect, after `Meta.parse`) therefore, macros allow the programmer to generate and include fragments of customized code before the full program is compiled run. **Since they are executed during parsing, they do not have access to the values of their arguments, but only to their syntax**.
 
 To illustrate the difference, consider the following example:
 
-One of the very convenient and highly recommended ways to write macros is to write functions modifying the `Expr`ession and then call that function in the macro. Let's demonstrate on an example, where every occurrence of `sin` is replaced by `cos`.
+A very convenient and highly recommended ways to write macros is to write functions modifying the `Expr`ession and then call that function in the macro. Let's demonstrate on an example, where every occurrence of `sin` is replaced by `cos`.
 We defined the function recursively traversing the AST and performing the substitution
 ```julia
 replace_sin(x::Symbol) = x == :sin ? :cos : x
@@ -32,9 +32,9 @@ notice the following
 - when you are using macro, you should be as a user aware that the code you are entering can be arbitrarily modified and you can receive something completely different. This meanst that `@` should also serve as a warning that you are leaving Julia's syntax. In practice, it make sense to make things akin to how they are done in Julia or to write Domain Specific Language with syntax familiar in that domain.
 Inspecting the lowered code
 ```julia
-Meta.@lower @replace_sin(cosp1(x) = 1 + sin(x))
+Meta.@lower @replace_sin( 1 + sin(x))
 ```
-We obeserve that there is no trace of macro in lowered code, which demonstrates that the macro has been after code has been parsed but before it has been lowered. In this sense macros are indispensible, as you cannot replace them simply by the combination of `Meta.parse` end `eval`. You might object that in the above example it is possible, which is true, but only because the effect of the macro is in the global scope.
+We obeserve that there is no trace of macro in lowered code (compare to `Meta.@lower 1 + cos(x)`, which demonstrates that the macro has been expanded after the code has been parsed but before it has been lowered. In this sense macros are indispensible, as you cannot replace them simply by the combination of `Meta.parse` end `eval`. You might object that in the above example it is possible, which is true, but only because the effect of the macro is in the global scope.
 ```julia
 ex = Meta.parse("cosp1(x) = 1 + sin(x)")
 ex = replace_sin(ex)
@@ -167,7 +167,7 @@ Observe that macro dispatch is based on the types of AST that are handed to the 
 ## [Notes on quotation](@id lec7_quotation)
 In the previous lecture we have seen that we can *quote a block of code*, which tells the compiler to treat the input as a data and parse it. We have talked about three ways of quoting code.
 1.  `:(quoted code)`
-2. Meta.parse(input_string)
+2. `Meta.parse(input_string)`
 3. `quote ... end`
 The truth is that Julia does not do full quotation, but a *quasiquotation* as it allows you to **interpolate** expressions inside the quoted code using `$` symbol similar to the string. This is handy, as sometimes, when we want to insert into the quoted code an result of some computation / preprocessing.
 Observe the following difference in returned code
@@ -207,7 +207,7 @@ let y = :x
     )
 end
 ```
-At first glance, `QuoteNode` wrapper seems to be useless. But `QuoteNode` has clear value when it's used inside a macro to indicate that something should stay quoted even after the macro finishes its. Also notice that the expression received by macro are quoted, not quasiquoted, since in the latter case `$y` would be replaced. We can demonstate it using the `@showarg` macro introduced earlier, as
+At first glance, `QuoteNode` wrapper seems to be useless. But `QuoteNode` has clear value when it's used inside a macro to indicate that something should stay quoted even after the macro finishes its work. Also notice that the expression received by macro are quoted, not quasiquoted, since in the latter case `$y` would be replaced. We can demonstate it using the `@showarg` macro introduced earlier, as
 ```julia
 @showarg(1 + $x)
 ```
@@ -449,11 +449,10 @@ which means that macros are expanded in the order from the outer most to inner m
 ```
 also notice that the escaping is only partial (running `@macroexpand @m2 @m1 1 + sin(1)` would not change the results).
 
-<!-- Why are variables on right-hand side replaced by access to global variables? -->
 ## Write @exfiltrate macro
-Since Julia's debugger is a complicated story, people have been looking for tools, which would simplify the debugging. One of them is a macro `@exfiltrate`, which copies all variables in a given scope to a dafe place, from where they can be collected later on. This helps you in evaluating the function. 
+Since Julia's debugger is a complicated story, people have been looking for tools, which would simplify the debugging. One of them is a macro `@exfiltrate`, which copies all variables in a given scope to a afe place, from where they can be collected later on. This helps you in evaluating the function. F
 
-Let's try to implement such facility.
+Whyle a full implementation is provided in package [`Infiltrator.jl`](https://github.com/JuliaDebug/Infiltrator.jl), we can implement such functionality by outselves.
 - We collect names and values of variables in a given scope using the macro `Base.@locals`
 - We store variables in some global variable in some module, such that we have one place from which we can retrieve them and we are certain that this storage would not interact with any existing code.
 - If the `@exfiltrate` should be easy, ideally called without parameters, it has to be implemented as a macro to supply the relevant variables to be stored.
@@ -537,10 +536,10 @@ end;
 ```
 which resembles, but not copy Julia's syntax due to the use of `~`. A similar DSLs can be seen in `ModelingToolkit.jl` for differential equations, in `Soss.jl` again for expressing probability problems, in `Metatheory.jl` / `SymbolicUtils.jl` for defining rules on elements of algebras, or `JuMP.jl` for specific mathematical programs.
 
-One of the reasons for popularity of DSLs is that macro system is very helpful in their implementation, but it also contraints the DSL, as it has to be parseable by Julia's parser. This is a tremendous helps, because one does not have to care about how to parse numbers, strings, parenthesess, functions, etc. 
+One of the reasons for popularity of DSLs is that macro system is very helpful in their implementation, but it also contraints the DSL, as it has to be parseable by Julia's parser. This is a tremendous helps, because one does not have to care about how to parse numbers, strings, parenthesess, functions, etc. (recall the last lecture about replacing occurences of `i` variable).
 
-Let's jump into the first example adapted from (John Myles White's howto)[https://github.com/johnmyleswhite/julia_tutorials/blob/master/From%20Macros%20to%20DSLs%20in%20Julia%20-%20Part%202%20-%20DSLs.ipynb].
-We would like to write a macro, which allows us to define graph in `LightGraphs.jl` just by defining edges.
+Let's jump into the first example adapted from [John Myles White's howto](https://github.com/johnmyleswhite/julia_tutorials/blob/master/From%20Macros%20to%20DSLs%20in%20Julia%20-%20Part%202%20-%20DSLs.ipynb).
+We would like to write a macro, which allows us to define graph in `Graphs.jl` just by defining edges.
 ```julia
 @graph begin 
 	1 -> 2
@@ -550,12 +549,12 @@ end
 ``` 
 The above should expand to
 ```julia
-using LightGraphs
+using Graphs
 g = DiGraph(3)
 add_edge!(g, 1,2)
 add_edge!(g, 2,3)
 add_edge!(g, 3,1)
-d
+g
 ```
 Let's start with easy and observe, how 
 ```julia
@@ -611,7 +610,7 @@ function parse_graph(ex)
 	edges = filter(!isnothing, parse_edge.(ex.args))
 	n = maximum(e -> maximum(e.args[3:4]), edges)
 	quote
-       g = LightGraphs.DiGraph($(n))
+       g = Graphs.DiGraph($(n))
        $(edges...)
        g
    end
@@ -643,7 +642,7 @@ function parse_graph(ex)
 	edges = filter(!isnothing, parse_edge.(g, ex.args))
 	n = maximum(e -> maximum(e.args[3:4]), edges)
 	quote
-       $(g) = LightGraphs.DiGraph($(n))
+       $(g) = Graphs.DiGraph($(n))
        $(edges...)
        $(g)
    end
@@ -670,7 +669,7 @@ julia> @macroexpand @graph begin
        end
 quote
     #= REPL[173]:8 =#
-    var"#27###graph#273" = (Main.LightGraphs).DiGraph(3)
+    var"#27###graph#273" = (Main.Graphs).DiGraph(3)
     #= REPL[173]:9 =#
     Main.add_edge!(var"#27###graph#273", 1, 2)
     Main.add_edge!(var"#27###graph#273", 2, 3)
@@ -699,6 +698,39 @@ we see that the string macro receives string as an argument.
 
 Why are they useful? Sometimes, we want to use syntax which is not compatible with Julia's parser. For example `IntervalArithmetics.jl` allows to define an interval open only from one side, for example `[a, b)`, which is something that Julia's parser would not like much. String macro solves this problem by letting you to write the parser by your own.
 
+```julia
+struct Interval{T}
+	left::T
+	right::T
+	left_open::Bool
+	right_open::Bool
+end
+
+function Interval(s::String)
+	s[1] == '(' || s[1] == '[' || error("left nterval can be only [,(")
+	s[end] == ')' || s[end] == ']' || error("left nterval can be only ],)")
+ 	left_open = s[1] == '(' ? true : false
+ 	right_open = s[end] == ')' ? true : false
+ 	ss = parse.(Float64, split(s[2:end-1],","))
+ 	length(ss) != 2 && error("interval should have two numbers separated by ','")
+ 	Interval(ss..., left_open, right_open)
+end
+
+function Base.show(io::IO, r::Interval)
+	lb = r.left_open ? "(" : "["
+	rb = r.right_open ? ")" : "]"
+	print(io, lb,r.left,",",r.right,rb)
+end
+```
+We can check it does the job by trying `Interval("[1,2)")`.
+Finally, we define a string macro as 
+```julia
+macro int_str(s)
+	Interval(s)
+end
+```
+which allows us to define interval as `int"[1,2)"`.
+
 ## sources
-Great discussion on evaluation of macros
-https://discourse.julialang.org/t/interpolation-in-macro-calls/25530
+Great discussion on [evaluation of macros](
+https://discourse.julialang.org/t/interpolation-in-macro-calls/25530)
