@@ -137,8 +137,8 @@ macro showarg(ex)
 	@show ex
 	ex
 end
-@showarg 1 + 1
 @showarg(1 + 1)
+@showarg 1 + 1
 ```
 Macros use the very same multiple dispatch as functions, which allows to specialize macro calls
 ```julia
