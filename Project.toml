@@ -6,8 +6,11 @@ version = "0.1.0"
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
+FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+Umlaut = "92992a2b-8ce5-4a9c-bb9d-58be9a7dc841"
+Yota = "cd998857-8626-517d-b929-70ad188a48f0"
 
 [compat]
 julia = "1.6"

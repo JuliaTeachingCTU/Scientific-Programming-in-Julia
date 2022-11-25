@@ -191,8 +191,8 @@ And let's test the **_Babylonian Square Root_** (an algorithm to compute $\sqrt 
 babysqrt(x, t=(1+x)/2, n=10) = n==0 ? t : babysqrt(x, (t+x/t)/2, n-1)
 
 forward_diff(babysqrt, 2) 
-forward_diff(x -> [1 + x, 5x, 5/x], 2) 
 forward_diff(babysqrt, 2) ≈ 1/(2sqrt(2))
+forward_diff(x -> [1 + x, 5x, 5/x], 2) 
 ```
 
 We now compare the analytic solution to values computed by the `forward_diff` and byt he finite differencing
@@ -216,8 +216,7 @@ plot!(0.1:0.01:2, forward_dsqrt, label="Dual Forward Mode f'", lw=3, ls=:dash)
 ---
 ### Takeaways
 1. Forward mode $f'$ is obtained simply by pushing a `Dual` through `babysqrt`
-2. To make the forward diff work in Julia, we only need to **_overload_** a few **_operators_** for forward mode AD to
-   work on **_any function_**
+2. To make the forward diff work in Julia, we only need to **_overload_** a few **_operators_** for forward mode AD to work on **_any function._** Therefore the name of the approach is called operator overloading.
 3. For vector valued function we can use [**_Hyperduals_**](http://adl.stanford.edu/hyperdual/)
 5. Forward diff can differentiation through the `setindex!` (called each time an element is assigned to a place in array, e.g. `x = [1,2,3]; x[2] = 1`)
 6. ForwardDiff is implemented in [`ForwardDiff.jl`](https://github.com/JuliaDiff/ForwardDiff.jl), which might appear to be neglected, but the truth is that it is very stable and general implementation.
@@ -262,6 +261,13 @@ Most reverse mode AD engines does not support mutating values of arrays (`setind
     The terminology in automatic differentiation is everything but fixed. The community around `ChainRules.jl` went a great length to use something reasonable. They use **pullback** for a function realizing vector-Jacobian product in the reverse-diff reminding that the gradient is pulled back to the origin of the computation. The use **pushforward** to denote the same operation in the ForwardDiff, as the gradient is push forward through the computation.
 
 ## Implementation details of reverse AD
+Reverse-mode AD needs to record operations over variables when computing the value of a differentiated function, such that it can walk back when computing the gradient. This _record_ is called **_tape_**, but it is effectively a directed acyclic graph. The construction of the tape can be either explicit or implicit. The code computing the gradient can be produced by operator-overloading or code-rewriting techniques. This give rise of four different takes on AD, and Julia has libraries for alll four.
+* [`Yota.jl`](https://github.com/dfdx/Yota.jl): explict tape, code-rewriting
+* [`Tracker.jl`](https://github.com/FluxML/Tracker.jl), [`AutoGrad.jl`](https://github.com/denizyuret/AutoGrad.jl): implict tape, operator overloading
+* [`ReverseDiff.jl`](https://github.com/JuliaDiff/ReverseDiff.jl): explict tape, operator overloading
+* [`Zygote.jl`](https://github.com/FluxML/Zygote.jl): implict tape, code-rewriting
+
+
 ### Graph-based AD
 In Graph-based approach, we start with a complete knowledge of the computation graph (which is known in many cases like classical neural networks) and augment it with nodes representing the computation of the computation of the gradient (backward path). We need to be careful to add all edges representing the flow of information needed to calculate the gradient. Once the computation graph is augmented, we can find the subgraph needed to compute the desired node(s). 
 
@@ -299,6 +305,21 @@ Disadvantages:
 - You are restricted to fixed computation graph. It is generally difficult to implement `if` or `while`, and hence to change the computation according to values computed during the forward pass.
 - Development and debugging can be difficult, since you are not developing the computation graph in the host language.
 - Exploiting within computation graph parallelism might be difficult.
+
+Comments:
+- [DaggerFLux.jl](https://github.com/FluxML/DaggerFlux.jl) use this approach to perform model-based paralelism, where parts of the computation graph (and especially parameters) can reside on different machines.
+- [Umlaut.jl](https://github.com/dfdx/Umlaut.jl) allows to easily obtain the tape through _tracing_ of the execution of a function, which can be then used to implement the AD as described above (see [Yota's documentation](https://dfdx.github.io/Yota.jl/dev/design/) for complete example).
+```@repl lec08
+using Umlaut
+g(x, y) = x * y
+f(x, y) = g(x, y)+sin(x)
+tape = trace(f, 1.0, 2.0)[2]
+```
+`Yota.jl` use the tape to generate the gradient as 
+```@repl lec08
+tape = Yota.gradtape(f, 1.0, 2.0; seed=1.0)
+Umlaut.to_expr(tape)
+```
 
 ### Tracking-based AD
 Alternative to static-graph based methods are methods, which builds the graph during invocation of functions and then use this dynamically built graph to know, how to compute the gradient. The dynamically built graph is frequently called *tape*. This approach is used by popular libraries like [**_PyTorch_**](https://pytorch.org/), [**_AutoGrad_**](https://github.com/HIPS/autograd), and [**_Chainer_**](https://chainer.org/) in Python ecosystem, or by [**_Tracker.jl_**](https://github.com/FluxML/Tracker.jl) (`Flux.jl`'s former AD backend), [**_ReverseDiff.jl_**](https://github.com/JuliaDiff/ReverseDiff.jl), and [**_AutoGrad.jl_**](https://github.com/denizyuret/AutoGrad.jl) (`Knet.jl`'s AD backend) in Julia. This type of AD systems is also called *operator overloading*, since in order to record the operations performed on the arguments we need to replace/wrap the original implementation.
@@ -382,16 +403,18 @@ end
 ```
 We can calculate the gradient by initializing the gradient of the result to vector of ones simulating the `sum` function
 ```julia
-using Zygote
+using FiniteDifferences
 R.deriv .= 1
 accum!(A)[1]
-gradient(a -> a*b + sin(a), a)[1]
+∇a = grad(central_fdm(5,1), a -> a*b + sin(a), a)[1]
+A.deriv[1] ≈ ∇a
 accum!(B)[1]
-gradient(b -> a*b + sin(a), b)[1]
+∇b = grad(central_fdm(5,1), b -> a*b + sin(a), b)[1]
+B.deriv[1] ≈ ∇b
 ```
 The api function for computing the grad might look like
 ```julia
-function grad(f, args...)
+function trackedgrad(f, args...)
     args = track.(args)
     o = f(args...)
     fill!(o.deriv, 1)
@@ -400,14 +423,14 @@ end
 ```
 where we should assert that the output dimension is 1. In our implementation we dirtily expect the output of f to be summed to a scalar.
 
-Let's compare the results to those computed by Zygote
+Let's compare the results to those computed by FiniteDifferences
 ```julia
 A = rand(4,4)
 B = rand(4,4)
-grad(A -> A * B + msin(A), A)[1]
-gradient(A -> sum(A * B + sin.(A)), A)[1]
-grad(A -> A * B + msin(A), B)[1]
-gradient(A -> sum(A * B + sin.(A)), B)[1]
+trackedgrad(A -> A * B + msin(A), A)[1]
+grad(central_fdm(5,1), A -> sum(A * B + sin.(A)), A)[1]
+trackedgrad(A -> A * B + msin(A), B)[1]
+grad(central_fdm(5,1), A -> sum(A * B + sin.(A)), B)[1]
 ```
 
 To make the above AD system really useful, we would need to 
@@ -450,12 +473,14 @@ Disadvantages:
 - The computation graph is created and differentiated during every computation, which might be costly. In most deep learning applications, this overhead is negligible in comparison to time of needed to perform the operations itself (`ReverseDiff.jl` allows to compile the tape).
 - Since computation graph is dynamic, it cannot be optimized as the static graph, the same holds for the memory allocations. 
 
+A more complete example which allow to train feed-forward neural network on GPU can be found [here](ffnn.jl).
+
 !!! info
     The difference between tracking and graph-based AD systems is conceptually similar to interpreted and compiled programming languages. Tracking AD systems interpret the time while computing the gradient, while graph-based AD systems compile the computation of the gradient.
 
 
 ## ChainRules
-From our discussions about AD systems so far we see that while the basic, *engine*, part is relatively straightforward, it devil is in writing the rules prescribing the computation of gradients. These rules are needed for every system whether it is graph based, tracking, or Wengert list based. ForwardDiff also needs a rule system, but rules are a bit different (as they are pushing the gradient forward rather than pulling it back). It is obviously a waste of effort for each AD system to have its own set of rules. Therefore the community (initiated by Lyndon White backed by [Invenia](https://github.com/invenia)) have started to work on a unified system to express differentiation rules, such that they can be shared between systems. So far, they are supported by `Zygote.jl`, `Nabla.jl`, `ReverseDiff.jl` and `Diffractor.jl`, suggesting that the unification approach is working.
+From our discussions about AD systems so far we see that while the basic, *engine*, part is relatively straightforward, it devil is in writing the rules prescribing the computation of gradients. These rules are needed for every system whether it is graph based, tracking, or Wengert list based. ForwardDiff also needs a rule system, but rules are a bit different (as they are pushing the gradient forward rather than pulling it back). It is obviously a waste of effort for each AD system to have its own set of rules. Therefore the community (initiated by Catherine Frames White backed by [Invenia](https://github.com/invenia)) have started to work on a unified system to express differentiation rules, such that they can be shared between systems. So far, they are supported by `Zygote.jl`, `Nabla.jl`, `ReverseDiff.jl` and `Diffractor.jl`, suggesting that the unification approach is working.
 
 The definition of reverse diff rules follows the idea we have nailed above (we refer readers interested in forward diff rules [to official documentation](https://juliadiff.org/ChainRulesCore.jl)).
 
@@ -634,6 +659,7 @@ accum!(A)
 ### Sources for this lecture
 * Mike Innes' [diff-zoo](https://github.com/MikeInnes/diff-zoo)
 * [Write Your Own StS in One Day](https://blog.rogerluo.me/2019/07/27/yassad/)
+* [Build your own AD with Umlaut](https://dfdx.github.io/Yota.jl/dev/design/)
 * [Zygote.jl Paper](https://arxiv.org/pdf/1810.07951.pdf)
   and [Zygote.jl Internals](https://fluxml.ai/Zygote.jl/dev/internals/)
 * Keno's [Talk](https://www.youtube.com/watch?v=mQnSRfseu0c&feature=youtu.be)
