@@ -120,7 +120,7 @@ Note that this kind of repeat macro is also defined in the [`Flux.jl`](https://f
 ## [Polynomial macro](@id lab07_polymacro)
 This is probably the last time we are rewriting the `polynomial` function, though not quite in the same way. We have seen in the last [lab](@ref introspection_lab), that some optimizations occur automatically, when the compiler can infer the length of the coefficient array, however with macros we can *generate* optimized code directly (not on the same level - we are essentially preparing already unrolled/inlined code).
 
-Ideally we would like write some macro `@poly` that takes a polynomial in a mathematical notation and spits out an anonymous function for its evaluation, where the loop is unrolled. 
+Ideally we would like to write some macro `@poly` that takes a polynomial in a mathematical notation and spits out an anonymous function for its evaluation, where the loop is unrolled. 
 
 *Example usage*:
 ```julia
@@ -158,7 +158,7 @@ end
 - you can use `muladd` function as replacement for `ac * x + a[i]`
 - think of the `accumulator` variable as the mathematical expression that is incrementally built (try to write out the Horner's method[^1] to see it)
 - you can nest expression arbitrarily
-- the order of coefficients has different order than in previous labs (going from )
+- the order of coefficients has different order than in previous labs (going from high powers of `x` last to them being first)
 - use `evalpoly` to check the correctness
 ```julia
 using Test
@@ -286,7 +286,7 @@ end
 ```
 Let's test it.
 ```@repl lab07_poly
-p = @poly x 3x^2+2x^1+ 10
+p = @poly x 3x^2+2x^1+10x^0
 p(2) == evalpoly(2, [10,2,3])
 @code_lowered p(2) # can show the generated code
 ```
