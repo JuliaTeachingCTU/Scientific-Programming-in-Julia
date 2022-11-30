@@ -59,7 +59,7 @@ How it maps to the notation we have used above? Particularly, what are ``f_1, f_
 ```math
 \begin{alignat*}{6}
 f_1:&\mathbb{R}^2 \rightarrow \mathbb{R} \quad&f_1(y_1)& = y_{1,1} + y_{1,2}            \quad & y_0 = & (xy + \sin(x))           \\
-f_2:&\mathbb{R}^3 \rightarrow \mathbb{R}^2 \quad&f_2(y_2)& = (y_{2,1}y_{1,2}, y_{2,3}) \quad & y_1 = &  (xy, \sin(x))&\\
+f_2:&\mathbb{R}^3 \rightarrow \mathbb{R}^2 \quad&f_2(y_2)& = (y_{2,1}y_{2,2}, y_{2,3}) \quad & y_1 = &  (xy, \sin(x))&\\
 f_3:& \mathbb{R}^2 \rightarrow \mathbb{R}^3 \quad&f_3(y_3)& = (y_{3,1}, y_{3,2}, \sin(y_{3,1}))  \quad & y_2 =& (x, y, \sin(x))\\
 \end{alignat*}
 ```
@@ -67,7 +67,7 @@ The corresponding jacobians are
 ```math
 \begin{alignat*}{4}
 f_1(y_1) & = y_{1,1} + y_{1,2}             \quad & \mathbf{J}_1& = \begin{bmatrix} 1 \\ 1 \end{bmatrix}  \\
-f_2(y_2) & = (y_{2,1}y_{1,2}, y_{2,3})     \quad & \mathbf{J}_2& = \begin{bmatrix} y_{2, 2} & 0 \\ y_{2,1} & 0 \\ 0 & 1 \end{bmatrix}\\
+f_2(y_2) & = (y_{2,1}y_{2,2}, y_{2,3})     \quad & \mathbf{J}_2& = \begin{bmatrix} y_{2, 2} & 0 \\ y_{2,1} & 0 \\ 0 & 1 \end{bmatrix}\\
 f_3(y_3) & = (y_{3,1}, y_{3,2}, \sin(y_{3,1}))     \quad & \mathbf{J}_3 & = \begin{bmatrix} 1 & 0 & \cos(y_{3,1}) \\ 0 & 1 & 0 \end{bmatrix} \\
 \end{alignat*}
 ```
