@@ -64,7 +64,7 @@ genpoly(x::Number, p::NTuple{N}) where N
   function, so you will need things like `:($expr1 + $expr2)`.
 * You can debug the expression you are generating by omitting the `@generated`
   macro from your function.
-* link to macro lab: you have created this expression already
+* You have already written a very similar expression in [lab 07](@ref macro_lab)
 ```@raw html
 </div></div>
 <details class = "solution-body">
