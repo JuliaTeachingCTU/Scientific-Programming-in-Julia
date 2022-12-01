@@ -2,10 +2,10 @@
 
 In this lab you will practice two advanced meta programming techniques:
 
-* _**Generated functions**_ can help you write specialized code for certain
-  kinds of parametric types with more flexibility and/or less code.
+* _**Generated functions**_ & `CompTime.jl` can help you write specialized code for certain
+  kinds of parametric types. This can offload certain computations to compile time!
 * _**IRTools.jl**_ is a package that simplifies the manipulation of lowered and
-  typed Julia code
+  typed Julia code enabling relatively easy **source-to-source** transformations.
 
 ```@setup lab09
 using BenchmarkTools
