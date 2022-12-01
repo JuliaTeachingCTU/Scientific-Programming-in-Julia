@@ -2,10 +2,10 @@
 
 In this lab you will practice two advanced meta programming techniques:
 
-* _**Generated functions**_ can help you write specialized code for certain
-  kinds of parametric types with more flexibility and/or less code.
+* _**Generated functions**_ & `CompTime.jl` can help you write specialized code for certain
+  kinds of parametric types. This can offload certain computations to compile time!
 * _**IRTools.jl**_ is a package that simplifies the manipulation of lowered and
-  typed Julia code
+  typed Julia code enabling relatively easy **source-to-source** transformations.
 
 ```@setup lab09
 using BenchmarkTools
@@ -64,6 +64,7 @@ genpoly(x::Number, p::NTuple{N}) where N
   function, so you will need things like `:($expr1 + $expr2)`.
 * You can debug the expression you are generating by omitting the `@generated`
   macro from your function.
+* You have already written a very similar expression in [lab 07](@ref macro_lab)
 ```@raw html
 </div></div>
 <details class = "solution-body">
