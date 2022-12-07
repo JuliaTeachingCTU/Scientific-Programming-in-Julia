@@ -220,7 +220,7 @@ In overdubbing, our intention is to recursively dive into called function defini
 The overdubbing pattern works as follows.
 1. We define a `@generated function overdub(f, args...)` which takes as a first argument a function `f` and then its arguments.
 2. In the function `overdub` we retrieve the `CodeInfo` for `f(args...)`, which is possible as we know types of the arguments at this time.
-3. We modify the the `CodeInfo` of `f(args...)` according to our liking. Importantly, we replace all function calls `some_fun(some_args...)` with `overdub(some_fun, some_args...)` which establishes the recursive pattern.
+3. We modify the the `CodeInfo` of `f(args...)` according to our preference. Importantly, we replace all function calls `some_fun(some_args...)` with `overdub(some_fun, some_args...)` which establishes the recursive pattern.
 4. Modify the arguments of the `CodeInfo` of `f(args...)` to match `overdub(f, args..)`.
 5. Return the modified `CodeInfo`.
 

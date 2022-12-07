@@ -1,3 +1,5 @@
+(VERSION < v"1.8.0") && error("tested with julia version 1.8.1")
+
 using Dictionaries
 include("loggingprofiler.jl")
 
@@ -57,7 +59,6 @@ overdub(f::Core.IntrinsicFunction, args...) = f(args...)
 overdub(f::Core.Builtin, args...) = f(args...)
 
 @generated function overdub(f::F, args...) where {F}
-    @show ((f, args...))
     ci = retrieve_code_info((F, args...))
     if ci === nothing 
         return(Expr(:call, :f, [:(args[$(i)]) for i in 1:length(args)]...))
@@ -135,6 +136,12 @@ function foo(x, y)
    z + sin(y)
 end
 
+function foo2(x, y)
+   foo(x, y)
+   z =  x * y
+   z + sin(y)
+end
+
 
 LoggingProfiler.reset!()
 overdub(foo, 1.0, 1.0)
@@ -146,4 +153,8 @@ end
 
 LoggingProfiler.reset!()
 @record foo(1.0, 1.0)
+LoggingProfiler.to
+
+LoggingProfiler.reset!()
+@record foo2(1.0, 1.0)
 LoggingProfiler.to
