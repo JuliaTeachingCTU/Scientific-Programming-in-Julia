@@ -1,123 +1,329 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_04/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox" checked/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Packages development, Unit Tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#Separating-core-and-extended-functionality"><span>Separating core and extended functionality</span></a></li><li><a class="tocitem" href="#Testing-the-Ecosystem"><span>Testing the Ecosystem</span></a></li><li><a class="tocitem" href="#Github-and-Continuous-Integration"><span>Github &amp; Continuous Integration</span></a></li><li><a class="tocitem" href="#Code-coverage"><span>Code coverage</span></a></li></ul></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Benchmarking, profiling, and performance gotchas</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Introduction to automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-12" type="checkbox"/><label class="tocitem" for="menuitem-12"><span class="docs-label">9: Manipulating intermediate representation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_09/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_09/lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-13" type="checkbox"/><label class="tocitem" for="menuitem-13"><span class="docs-label">10: Different levels of parallel programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_10/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_10/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_10/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-14" type="checkbox"/><label class="tocitem" for="menuitem-14"><span class="docs-label">11: Julia for GPU programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_11/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_11/lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-15" type="checkbox"/><label class="tocitem" for="menuitem-15"><span class="docs-label">12: Uncertainty propagation in ODE</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_12/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_12/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_12/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-16" type="checkbox"/><label class="tocitem" for="menuitem-16"><span class="docs-label">13: Learning ODE from data</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_13/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_13/lecture/">Lecture</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">4: Packages development, Unit Tests &amp; CI</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_04/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Lab-4:-Packages,-Tests,-Continuous-Integration"><a class="docs-heading-anchor" href="#Lab-4:-Packages,-Tests,-Continuous-Integration">Lab 4: Packages, Tests, Continuous Integration</a><a id="Lab-4:-Packages,-Tests,-Continuous-Integration-1"></a><a class="docs-heading-anchor-permalink" href="#Lab-4:-Packages,-Tests,-Continuous-Integration" title="Permalink"></a></h1><p>In this lab you will practice common development workflows in Julia. At the end of the lab you will have</p><ul><li>Your own package called <code>Ecosystem.jl</code> which you can conveniently install in any Julia REPL</li><li>Tests for the major functionality of your package</li><li>Set up continuous integration (CI) via Github Actions to automatically execute your tests</li></ul><h2 id="Separating-core-and-extended-functionality"><a class="docs-heading-anchor" href="#Separating-core-and-extended-functionality">Separating core and extended functionality</a><a id="Separating-core-and-extended-functionality-1"></a><a class="docs-heading-anchor-permalink" href="#Separating-core-and-extended-functionality" title="Permalink"></a></h2><p>To practice working with multiple packages that build on top of each other we first separate the core functionality of our ecosystem into a package called <code>EcosystemCore.jl</code>. This core package <a href="https://github.com/JuliaTeachingCTU/EcosystemCore.jl">already exists</a> and defines the interface to <code>Animal</code> and <code>Plant</code>. It also contains the three basic species types <code>Grass</code>, <code>Sheep</code>, and <code>Wolf</code>, as well as the most important functions: <code>eat!</code>, <code>agent_step!</code>, <code>find_food</code> and <code>reproduce!</code>, <code>model_step!</code>.</p><p>Your task is to create your own package <code>Ecosystem.jl</code> which will contain the utitlity functions <code>simulate!</code>, <code>agent_count</code>, <code>every_nth</code> that we created, as well as the new species <code>Mushroom</code>.</p><div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body"><ol><li><p>Familiarize yourself with <code>EcosystemCore.jl</code>.</p></li><li><p>Create a new package by starting a julia REPL, typing <code>]</code> to enter the <code>Pkg</code> REPL and writing <code>generate Ecosystem</code>. This will create a new package called <code>Ecosystem</code> with a <code>Project.toml</code> and one file <code>src/Ecosystem.jl</code></p></li><li><p>Navigate into the newly generated package folder via <code>;cd Ecosystem</code> and activate the environment via <code>]activate .</code>.</p></li><li><p>Add <code>EcosystemCore.jl</code> as a dependency by running</p><pre><code class="nohighlight hljs">]add https://github.com/JuliaTeachingCTU/EcosystemCore.jl.git</code></pre></li></ol></div></div>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_04/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/><link href="../../assets/onlinestats.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design Patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox" checked/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Package development, Unit test &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#Warmup-Stepping-through-time"><span>Warmup - Stepping through time</span></a></li><li><a class="tocitem" href="#Package:-Ecosystem.jl"><span>Package: <code>Ecosystem.jl</code></span></a></li></ul></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Performance Benchmarking</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-12" type="checkbox"/><label class="tocitem" for="menuitem-12"><span class="docs-label">9: Intermediate representation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_09/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_09/lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-13" type="checkbox"/><label class="tocitem" for="menuitem-13"><span class="docs-label">10: Parallel programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_10/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_10/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_10/hw/">Homework</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">4: Package development, Unit test &amp; CI</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2022W/docs/src/lecture_04/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Lab-04:-Packaging"><a class="docs-heading-anchor" href="#Lab-04:-Packaging">Lab 04: Packaging</a><a id="Lab-04:-Packaging-1"></a><a class="docs-heading-anchor-permalink" href="#Lab-04:-Packaging" title="Permalink"></a></h1><h2 id="Warmup-Stepping-through-time"><a class="docs-heading-anchor" href="#Warmup-Stepping-through-time">Warmup - Stepping through time</a><a id="Warmup-Stepping-through-time-1"></a><a class="docs-heading-anchor-permalink" href="#Warmup-Stepping-through-time" title="Permalink"></a></h2><p>We now have all necessary functions in place to make agents perform one step of our simulation.  At the beginning of each step an animal looses energy. Afterwards it tries to find some food, which it will subsequently eat. If the animal then has less than zero energy it dies and is removed from the world. If it has positive energy it will try to reproduce.</p><p>Plants have a simpler life. They simply grow if they have not reached their maximal size.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><ol><li>Implement a method <code>agent_step!(::Animal,::World)</code> which performs the following steps:<ul><li>Decrement <span>$E$</span> of agent by <code>1.0</code>.</li><li>With <span>$p_f$</span>, try to find some food and eat it.</li><li>If <span>$E&lt;0$</span>, the animal dies.</li><li>With <span>$p_r$</span>, try to reproduce.</li></ul></li><li>Implement a method <code>agent_step!(::Plant,::World)</code> which performs the following steps:<ul><li>If the size of the plant is smaller than <code>max_size</code>, increment the plant&#39;s size by one.</li></ul></li></ol></div></div>
 <details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p><p>You should now have only a single dependency in your new package:</p><pre><code class="language-julia hljs">(Ecosystem) pkg&gt; st
-     Project Ecosystem v0.1.0
-      Status `~/Ecosystem/Project.toml`
-  [3e0d8730] EcosystemCore v0.1.0 `https://github.com/JuliaTeachingCTU/EcosystemCore.jl.git#main`</code></pre><p>You can try if <code>using EcosystemCore</code> correctly loads the core package and use its exported functions and types as in the labs before.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using EcosystemCore</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = Grass(1,5);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep = Sheep(2,10.0,5.0,0.1,0.1);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World([grass, sheep])</code><code class="nohighlight hljs ansi" style="display:block;">World{EcosystemCore.Agent}
-  🐑♀ #2 E=10.0 ΔE=5.0 pr=0.1 pf=0.1
-  🌿  #1 80% grown</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eat!(sheep,grass,world);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world</code><code class="nohighlight hljs ansi" style="display:block;">World{EcosystemCore.Agent}
-  🐑♀ #2 E=30.0 ΔE=5.0 pr=0.1 pf=0.1
-  🌿  #1 0% grown</code></pre></p></details><div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body"><ol><li><p>Next, let&#39;s add the utility functions <code>simulate!</code>, <code>agent_count</code>, and <code>every_nth</code>, as well as the new species <code>Mushroom</code> along with its necessary method overloads to the <code>Ecosystem</code> module.</p><p>While you are adding functionality to your package you can make great use of <code>Revise.jl</code>.  Loading <code>Revise.jl</code> before your <code>Ecosystem.jl</code> will automatically recompile (and invalidate old methods!) while you develop.  You can install it in your global environment and and create a <code>USERDIR/.config/startup.jl</code> which always loads <code>Revise</code>. It can look like this:</p><pre><code class="language-julia hljs"># try/catch block to make sure you can start julia if Revise should not be installed
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function agent_step!(p::Plant, w::World)
+    if p.size &lt; p.max_size
+        p.size += 1
+    end
+end
+
+function agent_step!(a::Animal, w::World)
+    a.energy -= 1
+    if rand() &lt;= a.foodprob
+        dinner = find_food(a,w)
+        eat!(a, dinner, w)
+    end
+    if a.energy &lt; 0
+        kill_agent!(a,w)
+        return
+    end
+    if rand() &lt;= a.reprprob
+        reproduce!(a,w)
+    end
+end</code></pre></p></details><p>An <code>agent_step!</code> of a sheep in a world with a single grass should make it consume the grass, let it reproduce, and eventually die if there is no more food and its energy is at zero:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep = Sheep(1,2.0,2.0,1.0,1.0,male);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = Grass(2,2,2);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World([sheep, grass])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🌿  #2 100% grown
+  🐑♂ #1 E=2.0 ΔE=2.0 pr=1.0 pf=1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; agent_step!(sheep, world); world</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🌿  #2 0% grown
+  🐑♂ #1 E=5.0 ΔE=2.0 pr=1.0 pf=1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; # NOTE: The second agent step leads to an error.
+       # Can you figure out what is the problem here?
+       agent_step!(sheep, world); world</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching eat!(::Main.Animal{🐑}, ::Nothing, ::Main.World{Main.Agent})
+Closest candidates are:
+  eat!(::Main.Animal{🐑}, <span class="sgr91">::Main.Plant{🌿}</span>, ::Main.World) at ~/work/Scientific-Programming-in-Julia/Scientific-Programming-in-Julia/docs/src/lecture_03/Lab03Ecosystem.jl:106
+  eat!(<span class="sgr91">::Main.Animal{🐺}</span>, <span class="sgr91">::Main.Animal{🐑}</span>, ::Main.World) at ~/work/Scientific-Programming-in-Julia/Scientific-Programming-in-Julia/docs/src/lecture_03/Lab03Ecosystem.jl:110</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>Finally, lets implement a function <code>world_step!</code> which performs one <code>agent_step!</code> for each agent.  Note that simply iterating over all agents could lead to problems because we are mutating the agent dictionary.  One solution for this is to iterate over a copy of all agent IDs that are present when starting to iterate over agents.  Additionally, it could happen that an agent is killed by another one before we apply <code>agent_step!</code> to it. To solve this you can check if a given ID is currently present in the <code>World</code>.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs"># make it possible to eat nothing
+eat!(::Animal, ::Nothing, ::World) = nothing
+
+function world_step!(world::World)
+    # make sure that we only iterate over IDs that already exist in the
+    # current timestep this lets us safely add agents
+    ids = copy(keys(world.agents))
+
+    for id in ids
+        # agents can be killed by other agents, so make sure that we are
+        # not stepping dead agents forward
+        !haskey(world.agents,id) &amp;&amp; continue
+
+        a = world.agents[id]
+        agent_step!(a,world)
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world_step! (generic function with 1 method)</code></pre></p></details><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; w = World([Sheep(1), Sheep(2), Wolf(3)])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐑♀ #2 E=4.0 ΔE=0.2 pr=0.8 pf=0.6
+  🐺♂ #3 E=10.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♀ #1 E=4.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐑♀ #2 E=3.0 ΔE=0.2 pr=0.8 pf=0.6
+  🐺♂ #3 E=9.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♀ #1 E=3.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐺♂ #3 E=24.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♀ #1 E=2.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐺♂ #3 E=39.0 ΔE=8.0 pr=0.1 pf=0.2</code></pre><p>Finally, lets run a few simulation steps and plot the solution</p><pre><code class="language-julia hljs">n_grass  = 1_000
+n_sheep  = 40
+n_wolves = 4
+
+gs = [Grass(id) for id in 1:n_grass]
+ss = [Sheep(id) for id in (n_grass+1):(n_grass+n_sheep)]
+ws = [Wolf(id) for id in (n_grass+n_sheep+1):(n_grass+n_sheep+n_wolves)]
+w  = World(vcat(gs,ss,ws))
+
+counts = Dict(n=&gt;[c] for (n,c) in agent_count(w))
+for _ in 1:100
+    world_step!(w)
+    for (n,c) in agent_count(w)
+        push!(counts[n],c)
+    end
+end
+
+using Plots
+plt = plot()
+tolabel(::Type{Animal{Sheep}}) = &quot;Sheep&quot;
+tolabel(::Type{Animal{Wolf}}) = &quot;Wolf&quot;
+tolabel(::Type{Plant{Grass}}) = &quot;Grass&quot;
+for (A,c) in counts
+    plot!(plt, c, label=tolabel(A), lw=2)
+end
+plt</code></pre><?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="400" viewBox="0 0 2400 1600">
+<defs>
+  <clipPath id="clip910">
+    <rect x="0" y="0" width="2400" height="1600"/>
+  </clipPath>
+</defs>
+<path clip-path="url(#clip910)" d="
+M0 1600 L2400 1600 L2400 0 L0 0  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip911">
+    <rect x="480" y="0" width="1681" height="1600"/>
+  </clipPath>
+</defs>
+<path clip-path="url(#clip910)" d="
+M172.015 1486.45 L2352.76 1486.45 L2352.76 47.2441 L172.015 47.2441  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<defs>
+  <clipPath id="clip912">
+    <rect x="172" y="47" width="2182" height="1440"/>
+  </clipPath>
+</defs>
+<polyline clip-path="url(#clip912)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  213.161,1486.45 213.161,47.2441 
+  "/>
+<polyline clip-path="url(#clip912)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  727.487,1486.45 727.487,47.2441 
+  "/>
+<polyline clip-path="url(#clip912)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1241.81,1486.45 1241.81,47.2441 
+  "/>
+<polyline clip-path="url(#clip912)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  1756.14,1486.45 1756.14,47.2441 
+  "/>
+<polyline clip-path="url(#clip912)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  2270.46,1486.45 2270.46,47.2441 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,1486.45 2352.76,1486.45 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  213.161,1486.45 213.161,1467.55 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  727.487,1486.45 727.487,1467.55 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1241.81,1486.45 1241.81,1467.55 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1756.14,1486.45 1756.14,1467.55 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  2270.46,1486.45 2270.46,1467.55 
+  "/>
+<path clip-path="url(#clip910)" d="M213.161 1517.37 Q209.55 1517.37 207.721 1520.93 Q205.916 1524.47 205.916 1531.6 Q205.916 1538.71 207.721 1542.27 Q209.55 1545.82 213.161 1545.82 Q216.795 1545.82 218.601 1542.27 Q220.429 1538.71 220.429 1531.6 Q220.429 1524.47 218.601 1520.93 Q216.795 1517.37 213.161 1517.37 M213.161 1513.66 Q218.971 1513.66 222.027 1518.27 Q225.105 1522.85 225.105 1531.6 Q225.105 1540.33 222.027 1544.94 Q218.971 1549.52 213.161 1549.52 Q207.351 1549.52 204.272 1544.94 Q201.216 1540.33 201.216 1531.6 Q201.216 1522.85 204.272 1518.27 Q207.351 1513.66 213.161 1513.66 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M706.758 1544.91 L723.077 1544.91 L723.077 1548.85 L701.133 1548.85 L701.133 1544.91 Q703.795 1542.16 708.378 1537.53 Q712.984 1532.88 714.165 1531.53 Q716.41 1529.01 717.29 1527.27 Q718.193 1525.51 718.193 1523.82 Q718.193 1521.07 716.248 1519.33 Q714.327 1517.6 711.225 1517.6 Q709.026 1517.6 706.572 1518.36 Q704.142 1519.13 701.364 1520.68 L701.364 1515.95 Q704.188 1514.82 706.642 1514.24 Q709.095 1513.66 711.133 1513.66 Q716.503 1513.66 719.697 1516.35 Q722.892 1519.03 722.892 1523.52 Q722.892 1525.65 722.082 1527.57 Q721.295 1529.47 719.188 1532.07 Q718.609 1532.74 715.508 1535.95 Q712.406 1539.15 706.758 1544.91 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M732.938 1514.29 L751.294 1514.29 L751.294 1518.22 L737.22 1518.22 L737.22 1526.7 Q738.239 1526.35 739.257 1526.19 Q740.276 1526 741.294 1526 Q747.081 1526 750.461 1529.17 Q753.841 1532.34 753.841 1537.76 Q753.841 1543.34 750.368 1546.44 Q746.896 1549.52 740.577 1549.52 Q738.401 1549.52 736.132 1549.15 Q733.887 1548.78 731.48 1548.04 L731.48 1543.34 Q733.563 1544.47 735.785 1545.03 Q738.007 1545.58 740.484 1545.58 Q744.489 1545.58 746.827 1543.48 Q749.165 1541.37 749.165 1537.76 Q749.165 1534.15 746.827 1532.04 Q744.489 1529.94 740.484 1529.94 Q738.609 1529.94 736.734 1530.35 Q734.882 1530.77 732.938 1531.65 L732.938 1514.29 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M1216.51 1514.29 L1234.87 1514.29 L1234.87 1518.22 L1220.79 1518.22 L1220.79 1526.7 Q1221.81 1526.35 1222.83 1526.19 Q1223.85 1526 1224.87 1526 Q1230.65 1526 1234.03 1529.17 Q1237.41 1532.34 1237.41 1537.76 Q1237.41 1543.34 1233.94 1546.44 Q1230.47 1549.52 1224.15 1549.52 Q1221.97 1549.52 1219.71 1549.15 Q1217.46 1548.78 1215.05 1548.04 L1215.05 1543.34 Q1217.14 1544.47 1219.36 1545.03 Q1221.58 1545.58 1224.06 1545.58 Q1228.06 1545.58 1230.4 1543.48 Q1232.74 1541.37 1232.74 1537.76 Q1232.74 1534.15 1230.4 1532.04 Q1228.06 1529.94 1224.06 1529.94 Q1222.18 1529.94 1220.31 1530.35 Q1218.46 1530.77 1216.51 1531.65 L1216.51 1514.29 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M1256.63 1517.37 Q1253.02 1517.37 1251.19 1520.93 Q1249.38 1524.47 1249.38 1531.6 Q1249.38 1538.71 1251.19 1542.27 Q1253.02 1545.82 1256.63 1545.82 Q1260.26 1545.82 1262.07 1542.27 Q1263.9 1538.71 1263.9 1531.6 Q1263.9 1524.47 1262.07 1520.93 Q1260.26 1517.37 1256.63 1517.37 M1256.63 1513.66 Q1262.44 1513.66 1265.49 1518.27 Q1268.57 1522.85 1268.57 1531.6 Q1268.57 1540.33 1265.49 1544.94 Q1262.44 1549.52 1256.63 1549.52 Q1250.82 1549.52 1247.74 1544.94 Q1244.68 1540.33 1244.68 1531.6 Q1244.68 1522.85 1247.74 1518.27 Q1250.82 1513.66 1256.63 1513.66 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M1729.99 1514.29 L1752.21 1514.29 L1752.21 1516.28 L1739.67 1548.85 L1734.78 1548.85 L1746.59 1518.22 L1729.99 1518.22 L1729.99 1514.29 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M1761.38 1514.29 L1779.74 1514.29 L1779.74 1518.22 L1765.66 1518.22 L1765.66 1526.7 Q1766.68 1526.35 1767.7 1526.19 Q1768.72 1526 1769.74 1526 Q1775.52 1526 1778.9 1529.17 Q1782.28 1532.34 1782.28 1537.76 Q1782.28 1543.34 1778.81 1546.44 Q1775.34 1549.52 1769.02 1549.52 Q1766.84 1549.52 1764.58 1549.15 Q1762.33 1548.78 1759.92 1548.04 L1759.92 1543.34 Q1762.01 1544.47 1764.23 1545.03 Q1766.45 1545.58 1768.93 1545.58 Q1772.93 1545.58 1775.27 1543.48 Q1777.61 1541.37 1777.61 1537.76 Q1777.61 1534.15 1775.27 1532.04 Q1772.93 1529.94 1768.93 1529.94 Q1767.05 1529.94 1765.18 1530.35 Q1763.33 1530.77 1761.38 1531.65 L1761.38 1514.29 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2230.07 1544.91 L2237.71 1544.91 L2237.71 1518.55 L2229.4 1520.21 L2229.4 1515.95 L2237.66 1514.29 L2242.34 1514.29 L2242.34 1544.91 L2249.98 1544.91 L2249.98 1548.85 L2230.07 1548.85 L2230.07 1544.91 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2269.42 1517.37 Q2265.81 1517.37 2263.98 1520.93 Q2262.18 1524.47 2262.18 1531.6 Q2262.18 1538.71 2263.98 1542.27 Q2265.81 1545.82 2269.42 1545.82 Q2273.06 1545.82 2274.86 1542.27 Q2276.69 1538.71 2276.69 1531.6 Q2276.69 1524.47 2274.86 1520.93 Q2273.06 1517.37 2269.42 1517.37 M2269.42 1513.66 Q2275.23 1513.66 2278.29 1518.27 Q2281.37 1522.85 2281.37 1531.6 Q2281.37 1540.33 2278.29 1544.94 Q2275.23 1549.52 2269.42 1549.52 Q2263.61 1549.52 2260.53 1544.94 Q2257.48 1540.33 2257.48 1531.6 Q2257.48 1522.85 2260.53 1518.27 Q2263.61 1513.66 2269.42 1513.66 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2299.58 1517.37 Q2295.97 1517.37 2294.14 1520.93 Q2292.34 1524.47 2292.34 1531.6 Q2292.34 1538.71 2294.14 1542.27 Q2295.97 1545.82 2299.58 1545.82 Q2303.22 1545.82 2305.02 1542.27 Q2306.85 1538.71 2306.85 1531.6 Q2306.85 1524.47 2305.02 1520.93 Q2303.22 1517.37 2299.58 1517.37 M2299.58 1513.66 Q2305.39 1513.66 2308.45 1518.27 Q2311.53 1522.85 2311.53 1531.6 Q2311.53 1540.33 2308.45 1544.94 Q2305.39 1549.52 2299.58 1549.52 Q2293.77 1549.52 2290.7 1544.94 Q2287.64 1540.33 2287.64 1531.6 Q2287.64 1522.85 2290.7 1518.27 Q2293.77 1513.66 2299.58 1513.66 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><polyline clip-path="url(#clip912)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  172.015,1447.68 2352.76,1447.68 
+  "/>
+<polyline clip-path="url(#clip912)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  172.015,1055.32 2352.76,1055.32 
+  "/>
+<polyline clip-path="url(#clip912)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  172.015,662.97 2352.76,662.97 
+  "/>
+<polyline clip-path="url(#clip912)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:2; stroke-opacity:0.1; fill:none" points="
+  172.015,270.617 2352.76,270.617 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,1486.45 172.015,47.2441 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,1447.68 190.912,1447.68 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,1055.32 190.912,1055.32 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,662.97 190.912,662.97 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  172.015,270.617 190.912,270.617 
+  "/>
+<path clip-path="url(#clip910)" d="M124.07 1433.48 Q120.459 1433.48 118.631 1437.04 Q116.825 1440.58 116.825 1447.71 Q116.825 1454.82 118.631 1458.38 Q120.459 1461.93 124.07 1461.93 Q127.705 1461.93 129.51 1458.38 Q131.339 1454.82 131.339 1447.71 Q131.339 1440.58 129.51 1437.04 Q127.705 1433.48 124.07 1433.48 M124.07 1429.77 Q129.881 1429.77 132.936 1434.38 Q136.015 1438.96 136.015 1447.71 Q136.015 1456.44 132.936 1461.05 Q129.881 1465.63 124.07 1465.63 Q118.26 1465.63 115.182 1461.05 Q112.126 1456.44 112.126 1447.71 Q112.126 1438.96 115.182 1434.38 Q118.26 1429.77 124.07 1429.77 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M57.7745 1068.67 L74.0939 1068.67 L74.0939 1072.6 L52.1495 1072.6 L52.1495 1068.67 Q54.8115 1065.91 59.3949 1061.28 Q64.0013 1056.63 65.1819 1055.29 Q67.4272 1052.77 68.3068 1051.03 Q69.2096 1049.27 69.2096 1047.58 Q69.2096 1044.83 67.2652 1043.09 Q65.3439 1041.35 62.2421 1041.35 Q60.043 1041.35 57.5893 1042.12 Q55.1588 1042.88 52.381 1044.43 L52.381 1039.71 Q55.2051 1038.58 57.6588 1038 Q60.1124 1037.42 62.1495 1037.42 Q67.5198 1037.42 70.7142 1040.1 Q73.9087 1042.79 73.9087 1047.28 Q73.9087 1049.41 73.0985 1051.33 Q72.3115 1053.23 70.205 1055.82 Q69.6263 1056.49 66.5245 1059.71 Q63.4226 1062.9 57.7745 1068.67 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M93.9086 1041.12 Q90.2975 1041.12 88.4688 1044.69 Q86.6632 1048.23 86.6632 1055.36 Q86.6632 1062.47 88.4688 1066.03 Q90.2975 1069.57 93.9086 1069.57 Q97.5428 1069.57 99.3483 1066.03 Q101.177 1062.47 101.177 1055.36 Q101.177 1048.23 99.3483 1044.69 Q97.5428 1041.12 93.9086 1041.12 M93.9086 1037.42 Q99.7187 1037.42 102.774 1042.03 Q105.853 1046.61 105.853 1055.36 Q105.853 1064.09 102.774 1068.69 Q99.7187 1073.28 93.9086 1073.28 Q88.0984 1073.28 85.0197 1068.69 Q81.9642 1064.09 81.9642 1055.36 Q81.9642 1046.61 85.0197 1042.03 Q88.0984 1037.42 93.9086 1037.42 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M124.07 1041.12 Q120.459 1041.12 118.631 1044.69 Q116.825 1048.23 116.825 1055.36 Q116.825 1062.47 118.631 1066.03 Q120.459 1069.57 124.07 1069.57 Q127.705 1069.57 129.51 1066.03 Q131.339 1062.47 131.339 1055.36 Q131.339 1048.23 129.51 1044.69 Q127.705 1041.12 124.07 1041.12 M124.07 1037.42 Q129.881 1037.42 132.936 1042.03 Q136.015 1046.61 136.015 1055.36 Q136.015 1064.09 132.936 1068.69 Q129.881 1073.28 124.07 1073.28 Q118.26 1073.28 115.182 1068.69 Q112.126 1064.09 112.126 1055.36 Q112.126 1046.61 115.182 1042.03 Q118.26 1037.42 124.07 1037.42 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M66.5939 649.764 L54.7884 668.213 L66.5939 668.213 L66.5939 649.764 M65.367 645.69 L71.2466 645.69 L71.2466 668.213 L76.1772 668.213 L76.1772 672.102 L71.2466 672.102 L71.2466 680.25 L66.5939 680.25 L66.5939 672.102 L50.9921 672.102 L50.9921 667.588 L65.367 645.69 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M93.9086 648.769 Q90.2975 648.769 88.4688 652.334 Q86.6632 655.876 86.6632 663.005 Q86.6632 670.112 88.4688 673.676 Q90.2975 677.218 93.9086 677.218 Q97.5428 677.218 99.3483 673.676 Q101.177 670.112 101.177 663.005 Q101.177 655.876 99.3483 652.334 Q97.5428 648.769 93.9086 648.769 M93.9086 645.065 Q99.7187 645.065 102.774 649.672 Q105.853 654.255 105.853 663.005 Q105.853 671.732 102.774 676.338 Q99.7187 680.922 93.9086 680.922 Q88.0984 680.922 85.0197 676.338 Q81.9642 671.732 81.9642 663.005 Q81.9642 654.255 85.0197 649.672 Q88.0984 645.065 93.9086 645.065 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M124.07 648.769 Q120.459 648.769 118.631 652.334 Q116.825 655.876 116.825 663.005 Q116.825 670.112 118.631 673.676 Q120.459 677.218 124.07 677.218 Q127.705 677.218 129.51 673.676 Q131.339 670.112 131.339 663.005 Q131.339 655.876 129.51 652.334 Q127.705 648.769 124.07 648.769 M124.07 645.065 Q129.881 645.065 132.936 649.672 Q136.015 654.255 136.015 663.005 Q136.015 671.732 132.936 676.338 Q129.881 680.922 124.07 680.922 Q118.26 680.922 115.182 676.338 Q112.126 671.732 112.126 663.005 Q112.126 654.255 115.182 649.672 Q118.26 645.065 124.07 645.065 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M64.3254 268.753 Q61.1773 268.753 59.3254 270.906 Q57.4967 273.059 57.4967 276.809 Q57.4967 280.536 59.3254 282.712 Q61.1773 284.864 64.3254 284.864 Q67.4735 284.864 69.3022 282.712 Q71.1541 280.536 71.1541 276.809 Q71.1541 273.059 69.3022 270.906 Q67.4735 268.753 64.3254 268.753 M73.6077 254.101 L73.6077 258.36 Q71.8485 257.527 70.0429 257.087 Q68.2606 256.647 66.5013 256.647 Q61.8717 256.647 59.418 259.772 Q56.9875 262.897 56.6402 269.216 Q58.006 267.203 60.0662 266.138 Q62.1263 265.05 64.6032 265.05 Q69.8115 265.05 72.8207 268.221 Q75.8531 271.369 75.8531 276.809 Q75.8531 282.133 72.705 285.351 Q69.5568 288.568 64.3254 288.568 Q58.33 288.568 55.1588 283.985 Q51.9875 279.378 51.9875 270.652 Q51.9875 262.457 55.8764 257.596 Q59.7652 252.712 66.3161 252.712 Q68.0754 252.712 69.8578 253.059 Q71.6633 253.406 73.6077 254.101 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M93.9086 256.416 Q90.2975 256.416 88.4688 259.98 Q86.6632 263.522 86.6632 270.652 Q86.6632 277.758 88.4688 281.323 Q90.2975 284.864 93.9086 284.864 Q97.5428 284.864 99.3483 281.323 Q101.177 277.758 101.177 270.652 Q101.177 263.522 99.3483 259.98 Q97.5428 256.416 93.9086 256.416 M93.9086 252.712 Q99.7187 252.712 102.774 257.318 Q105.853 261.902 105.853 270.652 Q105.853 279.378 102.774 283.985 Q99.7187 288.568 93.9086 288.568 Q88.0984 288.568 85.0197 283.985 Q81.9642 279.378 81.9642 270.652 Q81.9642 261.902 85.0197 257.318 Q88.0984 252.712 93.9086 252.712 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M124.07 256.416 Q120.459 256.416 118.631 259.98 Q116.825 263.522 116.825 270.652 Q116.825 277.758 118.631 281.323 Q120.459 284.864 124.07 284.864 Q127.705 284.864 129.51 281.323 Q131.339 277.758 131.339 270.652 Q131.339 263.522 129.51 259.98 Q127.705 256.416 124.07 256.416 M124.07 252.712 Q129.881 252.712 132.936 257.318 Q136.015 261.902 136.015 270.652 Q136.015 279.378 132.936 283.985 Q129.881 288.568 124.07 288.568 Q118.26 288.568 115.182 283.985 Q112.126 279.378 112.126 270.652 Q112.126 261.902 115.182 257.318 Q118.26 252.712 124.07 252.712 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><polyline clip-path="url(#clip912)" style="stroke:#009af9; stroke-linecap:round; stroke-linejoin:round; stroke-width:8; stroke-opacity:1; fill:none" points="
+  233.734,382.241 254.307,230.793 274.88,122.896 295.453,87.9763 316.026,100.924 336.599,136.432 357.172,192.538 377.745,221.376 398.318,241.779 418.891,258.65 
+  439.464,267.87 460.037,251.195 480.61,233.147 501.183,209.017 521.756,188.419 542.329,168.016 562.902,148.006 583.475,135.843 604.048,122.503 624.621,116.618 
+  645.194,108.182 665.768,108.771 686.341,126.427 706.914,148.006 727.487,181.945 748.06,216.668 768.633,271.009 789.206,308.283 809.779,327.508 830.352,327.116 
+  850.925,306.713 871.498,283.368 892.071,243.152 912.644,208.036 933.217,184.299 953.79,177.433 974.363,168.016 994.936,161.935 1015.51,181.16 1036.08,189.203 
+  1056.66,189.007 1077.23,183.122 1097.8,177.825 1118.37,173.902 1138.95,160.366 1159.52,163.897 1180.09,174.49 1200.67,171.548 1221.24,181.16 1241.81,207.84 
+  1262.39,221.573 1282.96,222.75 1303.53,218.434 1324.1,215.687 1344.68,210.194 1365.25,198.62 1385.82,209.214 1406.4,219.611 1426.97,202.74 1447.54,198.816 
+  1468.12,204.113 1488.69,198.62 1509.26,190.577 1529.83,182.926 1550.41,157.619 1570.98,137.02 1591.55,117.207 1612.13,119.953 1632.7,139.178 1653.27,161.935 
+  1673.85,171.155 1694.42,204.898 1714.99,244.918 1735.57,257.669 1756.14,275.914 1776.71,279.445 1797.28,261.397 1817.86,247.664 1838.43,250.214 1859,245.899 
+  1879.58,265.124 1900.15,275.129 1920.72,273.756 1941.3,259.042 1961.87,264.535 1982.44,268.459 2003.01,281.21 2023.59,289.254 2044.16,292.981 2064.73,275.717 
+  2085.31,260.416 2105.88,270.813 2126.45,266.301 2147.03,268.263 2167.6,248.645 2188.17,221.965 2208.74,196.658 2229.32,179.983 2249.89,168.016 2270.46,183.711 
+  2291.04,190.969 
+  "/>
+<polyline clip-path="url(#clip912)" style="stroke:#e26f46; stroke-linecap:round; stroke-linejoin:round; stroke-width:8; stroke-opacity:1; fill:none" points="
+  233.734,1369.21 254.307,1308.39 274.88,1192.65 295.453,1096.52 316.026,1057.29 336.599,1041.59 357.172,1004.32 377.745,1069.06 398.318,1074.94 418.891,1094.56 
+  439.464,1133.79 460.037,1174.99 480.61,1169.11 501.183,1157.34 521.756,1174.99 542.329,1208.34 562.902,1190.69 583.475,1174.99 604.048,1206.38 624.621,1186.76 
+  645.194,1167.14 665.768,1178.92 686.341,1129.87 706.914,1118.1 727.487,1104.37 748.06,1025.9 768.633,1020.01 789.206,1043.55 809.779,1061.21 830.352,1102.41 
+  850.925,1151.45 871.498,1167.14 892.071,1214.23 912.644,1204.42 933.217,1190.69 953.79,1153.41 974.363,1141.64 994.936,1141.64 1015.51,1114.18 1036.08,1149.49 
+  1056.66,1149.49 1077.23,1135.76 1097.8,1176.95 1118.37,1176.95 1138.95,1169.11 1159.52,1141.64 1180.09,1139.68 1200.67,1125.95 1221.24,1127.91 1241.81,1096.52 
+  1262.39,1074.94 1282.96,1127.91 1303.53,1120.06 1324.1,1145.57 1344.68,1161.26 1365.25,1143.6 1385.82,1123.99 1406.4,1137.72 1426.97,1139.68 1447.54,1120.06 
+  1468.12,1159.3 1488.69,1137.72 1509.26,1141.64 1529.83,1190.69 1550.41,1190.69 1570.98,1212.27 1591.55,1194.61 1612.13,1151.45 1632.7,1116.14 1653.27,1096.52 
+  1673.85,1071.02 1694.42,1088.67 1714.99,1035.71 1735.57,1108.29 1756.14,1131.83 1776.71,1127.91 1797.28,1127.91 1817.86,1137.72 1838.43,1112.22 1859,1108.29 
+  1879.58,1088.67 1900.15,1094.56 1920.72,1125.95 1941.3,1125.95 1961.87,1088.67 1982.44,1118.1 2003.01,1088.67 2023.59,1076.9 2044.16,1086.71 2064.73,1139.68 
+  2085.31,1112.22 2105.88,1108.29 2126.45,1114.18 2147.03,1137.72 2167.6,1131.83 2188.17,1151.45 2208.74,1204.42 2229.32,1178.92 2249.89,1133.79 2270.46,1139.68 
+  2291.04,1098.48 
+  "/>
+<polyline clip-path="url(#clip912)" style="stroke:#3da44d; stroke-linecap:round; stroke-linejoin:round; stroke-width:8; stroke-opacity:1; fill:none" points="
+  233.734,1439.83 254.307,1439.83 274.88,1439.83 295.453,1439.83 316.026,1439.83 336.599,1439.83 357.172,1439.83 377.745,1439.83 398.318,1437.87 418.891,1437.87 
+  439.464,1437.87 460.037,1439.83 480.61,1435.91 501.183,1435.91 521.756,1435.91 542.329,1433.95 562.902,1433.95 583.475,1433.95 604.048,1433.95 624.621,1437.87 
+  645.194,1435.91 665.768,1435.91 686.341,1431.98 706.914,1430.02 727.487,1430.02 748.06,1428.06 768.633,1430.02 789.206,1431.98 809.779,1431.98 830.352,1431.98 
+  850.925,1431.98 871.498,1431.98 892.071,1428.06 912.644,1428.06 933.217,1426.1 953.79,1430.02 974.363,1428.06 994.936,1433.95 1015.51,1431.98 1036.08,1435.91 
+  1056.66,1433.95 1077.23,1439.83 1097.8,1439.83 1118.37,1443.75 1138.95,1443.75 1159.52,1441.79 1180.09,1437.87 1200.67,1433.95 1221.24,1437.87 1241.81,1437.87 
+  1262.39,1439.83 1282.96,1441.79 1303.53,1443.75 1324.1,1443.75 1344.68,1443.75 1365.25,1443.75 1385.82,1443.75 1406.4,1445.72 1426.97,1445.72 1447.54,1445.72 
+  1468.12,1445.72 1488.69,1445.72 1509.26,1445.72 1529.83,1445.72 1550.41,1445.72 1570.98,1445.72 1591.55,1445.72 1612.13,1445.72 1632.7,1445.72 1653.27,1445.72 
+  
+  "/>
+<path clip-path="url(#clip910)" d="
+M1919.14 1438.47 L2280.06 1438.47 L2280.06 1231.11 L1919.14 1231.11  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip910)" style="stroke:#000000; stroke-linecap:round; stroke-linejoin:round; stroke-width:4; stroke-opacity:1; fill:none" points="
+  1919.14,1438.47 2280.06,1438.47 2280.06,1231.11 1919.14,1231.11 1919.14,1438.47 
+  "/>
+<polyline clip-path="url(#clip910)" style="stroke:#009af9; stroke-linecap:round; stroke-linejoin:round; stroke-width:8; stroke-opacity:1; fill:none" points="
+  1943.37,1282.95 2088.76,1282.95 
+  "/>
+<path clip-path="url(#clip910)" d="M2138.54 1295.3 L2138.54 1286.02 L2130.9 1286.02 L2130.9 1282.18 L2143.17 1282.18 L2143.17 1297.02 Q2140.46 1298.94 2137.2 1299.93 Q2133.94 1300.91 2130.23 1300.91 Q2122.13 1300.91 2117.55 1296.18 Q2112.99 1291.44 2112.99 1282.99 Q2112.99 1274.52 2117.55 1269.79 Q2122.13 1265.05 2130.23 1265.05 Q2133.61 1265.05 2136.64 1265.88 Q2139.7 1266.72 2142.27 1268.34 L2142.27 1273.31 Q2139.68 1271.11 2136.76 1270 Q2133.84 1268.89 2130.63 1268.89 Q2124.28 1268.89 2121.09 1272.43 Q2117.92 1275.98 2117.92 1282.99 Q2117.92 1289.98 2121.09 1293.52 Q2124.28 1297.06 2130.63 1297.06 Q2133.1 1297.06 2135.05 1296.65 Q2136.99 1296.21 2138.54 1295.3 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2166.55 1278.29 Q2165.83 1277.87 2164.98 1277.69 Q2164.14 1277.48 2163.13 1277.48 Q2159.52 1277.48 2157.57 1279.84 Q2155.65 1282.18 2155.65 1286.58 L2155.65 1300.23 L2151.37 1300.23 L2151.37 1274.31 L2155.65 1274.31 L2155.65 1278.34 Q2156.99 1275.98 2159.14 1274.84 Q2161.3 1273.68 2164.38 1273.68 Q2164.82 1273.68 2165.35 1273.75 Q2165.88 1273.8 2166.53 1273.92 L2166.55 1278.29 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2182.8 1287.2 Q2177.64 1287.2 2175.65 1288.38 Q2173.66 1289.56 2173.66 1292.41 Q2173.66 1294.68 2175.14 1296.02 Q2176.64 1297.34 2179.21 1297.34 Q2182.76 1297.34 2184.89 1294.84 Q2187.04 1292.32 2187.04 1288.15 L2187.04 1287.2 L2182.8 1287.2 M2191.3 1285.44 L2191.3 1300.23 L2187.04 1300.23 L2187.04 1296.3 Q2185.58 1298.66 2183.4 1299.79 Q2181.23 1300.91 2178.08 1300.91 Q2174.1 1300.91 2171.74 1298.68 Q2169.4 1296.44 2169.4 1292.69 Q2169.4 1288.31 2172.32 1286.09 Q2175.26 1283.87 2181.07 1283.87 L2187.04 1283.87 L2187.04 1283.45 Q2187.04 1280.51 2185.09 1278.92 Q2183.17 1277.29 2179.68 1277.29 Q2177.45 1277.29 2175.35 1277.83 Q2173.24 1278.36 2171.3 1279.42 L2171.3 1275.49 Q2173.64 1274.59 2175.83 1274.15 Q2178.03 1273.68 2180.12 1273.68 Q2185.74 1273.68 2188.52 1276.6 Q2191.3 1279.52 2191.3 1285.44 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2216.6 1275.07 L2216.6 1279.1 Q2214.79 1278.17 2212.85 1277.71 Q2210.9 1277.25 2208.82 1277.25 Q2205.65 1277.25 2204.05 1278.22 Q2202.48 1279.19 2202.48 1281.14 Q2202.48 1282.62 2203.61 1283.48 Q2204.75 1284.31 2208.17 1285.07 L2209.63 1285.4 Q2214.17 1286.37 2216.07 1288.15 Q2217.99 1289.91 2217.99 1293.08 Q2217.99 1296.69 2215.12 1298.8 Q2212.27 1300.91 2207.27 1300.91 Q2205.19 1300.91 2202.92 1300.49 Q2200.67 1300.1 2198.17 1299.29 L2198.17 1294.89 Q2200.53 1296.11 2202.83 1296.74 Q2205.12 1297.34 2207.36 1297.34 Q2210.37 1297.34 2211.99 1296.32 Q2213.61 1295.28 2213.61 1293.41 Q2213.61 1291.67 2212.43 1290.74 Q2211.27 1289.82 2207.32 1288.96 L2205.83 1288.61 Q2201.88 1287.78 2200.12 1286.07 Q2198.36 1284.33 2198.36 1281.32 Q2198.36 1277.67 2200.95 1275.67 Q2203.54 1273.68 2208.31 1273.68 Q2210.67 1273.68 2212.76 1274.03 Q2214.84 1274.38 2216.6 1275.07 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2241.3 1275.07 L2241.3 1279.1 Q2239.49 1278.17 2237.55 1277.71 Q2235.6 1277.25 2233.52 1277.25 Q2230.35 1277.25 2228.75 1278.22 Q2227.18 1279.19 2227.18 1281.14 Q2227.18 1282.62 2228.31 1283.48 Q2229.45 1284.31 2232.87 1285.07 L2234.33 1285.4 Q2238.87 1286.37 2240.76 1288.15 Q2242.69 1289.91 2242.69 1293.08 Q2242.69 1296.69 2239.82 1298.8 Q2236.97 1300.91 2231.97 1300.91 Q2229.89 1300.91 2227.62 1300.49 Q2225.37 1300.1 2222.87 1299.29 L2222.87 1294.89 Q2225.23 1296.11 2227.52 1296.74 Q2229.82 1297.34 2232.06 1297.34 Q2235.07 1297.34 2236.69 1296.32 Q2238.31 1295.28 2238.31 1293.41 Q2238.31 1291.67 2237.13 1290.74 Q2235.97 1289.82 2232.01 1288.96 L2230.53 1288.61 Q2226.57 1287.78 2224.82 1286.07 Q2223.06 1284.33 2223.06 1281.32 Q2223.06 1277.67 2225.65 1275.67 Q2228.24 1273.68 2233.01 1273.68 Q2235.37 1273.68 2237.45 1274.03 Q2239.54 1274.38 2241.3 1275.07 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><polyline clip-path="url(#clip910)" style="stroke:#e26f46; stroke-linecap:round; stroke-linejoin:round; stroke-width:8; stroke-opacity:1; fill:none" points="
+  1943.37,1334.79 2088.76,1334.79 
+  "/>
+<path clip-path="url(#clip910)" d="M2135.23 1318.65 L2135.23 1323.21 Q2132.57 1321.94 2130.21 1321.31 Q2127.85 1320.69 2125.65 1320.69 Q2121.83 1320.69 2119.75 1322.17 Q2117.69 1323.65 2117.69 1326.38 Q2117.69 1328.67 2119.05 1329.85 Q2120.44 1331.01 2124.28 1331.73 L2127.11 1332.31 Q2132.34 1333.3 2134.82 1335.82 Q2137.32 1338.32 2137.32 1342.54 Q2137.32 1347.56 2133.94 1350.15 Q2130.58 1352.75 2124.08 1352.75 Q2121.62 1352.75 2118.84 1352.19 Q2116.09 1351.63 2113.13 1350.55 L2113.13 1345.73 Q2115.97 1347.33 2118.71 1348.14 Q2121.44 1348.95 2124.08 1348.95 Q2128.08 1348.95 2130.26 1347.38 Q2132.43 1345.8 2132.43 1342.88 Q2132.43 1340.34 2130.86 1338.9 Q2129.31 1337.47 2125.74 1336.75 L2122.89 1336.19 Q2117.66 1335.15 2115.33 1332.93 Q2112.99 1330.71 2112.99 1326.75 Q2112.99 1322.17 2116.21 1319.53 Q2119.45 1316.89 2125.12 1316.89 Q2127.55 1316.89 2130.07 1317.33 Q2132.59 1317.77 2135.23 1318.65 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2165.97 1336.43 L2165.97 1352.07 L2161.71 1352.07 L2161.71 1336.57 Q2161.71 1332.88 2160.28 1331.06 Q2158.84 1329.23 2155.97 1329.23 Q2152.52 1329.23 2150.53 1331.43 Q2148.54 1333.63 2148.54 1337.42 L2148.54 1352.07 L2144.26 1352.07 L2144.26 1316.06 L2148.54 1316.06 L2148.54 1330.18 Q2150.07 1327.84 2152.13 1326.68 Q2154.21 1325.52 2156.92 1325.52 Q2161.39 1325.52 2163.68 1328.3 Q2165.97 1331.06 2165.97 1336.43 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2196.64 1338.05 L2196.64 1340.13 L2177.06 1340.13 Q2177.34 1344.53 2179.7 1346.84 Q2182.08 1349.13 2186.32 1349.13 Q2188.77 1349.13 2191.07 1348.53 Q2193.38 1347.93 2195.65 1346.73 L2195.65 1350.75 Q2193.36 1351.73 2190.95 1352.24 Q2188.54 1352.75 2186.07 1352.75 Q2179.86 1352.75 2176.23 1349.13 Q2172.62 1345.52 2172.62 1339.37 Q2172.62 1333 2176.04 1329.27 Q2179.49 1325.52 2185.33 1325.52 Q2190.56 1325.52 2193.59 1328.9 Q2196.64 1332.26 2196.64 1338.05 M2192.39 1336.8 Q2192.34 1333.3 2190.42 1331.22 Q2188.52 1329.13 2185.37 1329.13 Q2181.81 1329.13 2179.65 1331.15 Q2177.52 1333.16 2177.2 1336.82 L2192.39 1336.8 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2225.81 1338.05 L2225.81 1340.13 L2206.23 1340.13 Q2206.51 1344.53 2208.87 1346.84 Q2211.25 1349.13 2215.49 1349.13 Q2217.94 1349.13 2220.23 1348.53 Q2222.55 1347.93 2224.82 1346.73 L2224.82 1350.75 Q2222.52 1351.73 2220.12 1352.24 Q2217.71 1352.75 2215.23 1352.75 Q2209.03 1352.75 2205.39 1349.13 Q2201.78 1345.52 2201.78 1339.37 Q2201.78 1333 2205.21 1329.27 Q2208.66 1325.52 2214.49 1325.52 Q2219.72 1325.52 2222.76 1328.9 Q2225.81 1332.26 2225.81 1338.05 M2221.55 1336.8 Q2221.51 1333.3 2219.58 1331.22 Q2217.69 1329.13 2214.54 1329.13 Q2210.97 1329.13 2208.82 1331.15 Q2206.69 1333.16 2206.37 1336.82 L2221.55 1336.8 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2236.92 1348.19 L2236.92 1361.94 L2232.64 1361.94 L2232.64 1326.15 L2236.92 1326.15 L2236.92 1330.08 Q2238.26 1327.77 2240.3 1326.66 Q2242.36 1325.52 2245.21 1325.52 Q2249.93 1325.52 2252.87 1329.27 Q2255.83 1333.02 2255.83 1339.13 Q2255.83 1345.25 2252.87 1349 Q2249.93 1352.75 2245.21 1352.75 Q2242.36 1352.75 2240.3 1351.63 Q2238.26 1350.5 2236.92 1348.19 M2251.41 1339.13 Q2251.41 1334.44 2249.47 1331.77 Q2247.55 1329.09 2244.17 1329.09 Q2240.79 1329.09 2238.84 1331.77 Q2236.92 1334.44 2236.92 1339.13 Q2236.92 1343.83 2238.84 1346.52 Q2240.79 1349.18 2244.17 1349.18 Q2247.55 1349.18 2249.47 1346.52 Q2251.41 1343.83 2251.41 1339.13 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><polyline clip-path="url(#clip910)" style="stroke:#3da44d; stroke-linecap:round; stroke-linejoin:round; stroke-width:8; stroke-opacity:1; fill:none" points="
+  1943.37,1386.63 2088.76,1386.63 
+  "/>
+<path clip-path="url(#clip910)" d="M2112.99 1369.35 L2117.71 1369.35 L2124.98 1398.57 L2132.22 1369.35 L2137.48 1369.35 L2144.75 1398.57 L2151.99 1369.35 L2156.74 1369.35 L2148.06 1403.91 L2142.18 1403.91 L2134.89 1373.91 L2127.52 1403.91 L2121.64 1403.91 L2112.99 1369.35 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2170.02 1380.97 Q2166.6 1380.97 2164.61 1383.66 Q2162.62 1386.32 2162.62 1390.97 Q2162.62 1395.63 2164.58 1398.31 Q2166.58 1400.97 2170.02 1400.97 Q2173.43 1400.97 2175.42 1398.29 Q2177.41 1395.6 2177.41 1390.97 Q2177.41 1386.37 2175.42 1383.68 Q2173.43 1380.97 2170.02 1380.97 M2170.02 1377.36 Q2175.58 1377.36 2178.75 1380.97 Q2181.92 1384.59 2181.92 1390.97 Q2181.92 1397.34 2178.75 1400.97 Q2175.58 1404.59 2170.02 1404.59 Q2164.45 1404.59 2161.27 1400.97 Q2158.13 1397.34 2158.13 1390.97 Q2158.13 1384.59 2161.27 1380.97 Q2164.45 1377.36 2170.02 1377.36 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2188.98 1367.9 L2193.24 1367.9 L2193.24 1403.91 L2188.98 1403.91 L2188.98 1367.9 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /><path clip-path="url(#clip910)" d="M2215.28 1367.9 L2215.28 1371.44 L2211.2 1371.44 Q2208.91 1371.44 2208.01 1372.36 Q2207.13 1373.29 2207.13 1375.7 L2207.13 1377.99 L2214.14 1377.99 L2214.14 1381.3 L2207.13 1381.3 L2207.13 1403.91 L2202.85 1403.91 L2202.85 1381.3 L2198.77 1381.3 L2198.77 1377.99 L2202.85 1377.99 L2202.85 1376.18 Q2202.85 1371.85 2204.86 1369.89 Q2206.88 1367.9 2211.25 1367.9 L2215.28 1367.9 Z" fill="#000000" fill-rule="evenodd" fill-opacity="1" /></svg>
+<h2 id="Package:-Ecosystem.jl"><a class="docs-heading-anchor" href="#Package:-Ecosystem.jl">Package: <code>Ecosystem.jl</code></a><a id="Package:-Ecosystem.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Package:-Ecosystem.jl" title="Permalink"></a></h2><p>In the main section of this lab you will create your own <code>Ecosystem.jl</code> package to organize <em>and test (!)</em> the code that we have written so far.</p><h3 id="PkgTemplates.jl"><a class="docs-heading-anchor" href="#PkgTemplates.jl"><code>PkgTemplates.jl</code></a><a id="PkgTemplates.jl-1"></a><a class="docs-heading-anchor-permalink" href="#PkgTemplates.jl" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>The simplest way to create a new package in Julia is to use <code>PkgTemplates.jl</code>. <code>]add PkgTemplates</code> to your global julia env and create a new package by running:</p><pre><code class="language-julia hljs">using PkgTemplates
+Template(interactive=true)(&quot;Ecosystem&quot;)</code></pre><p>to interactively specify various options for your new package or use the following snippet to generate it programmatically:</p><pre><code class="language-julia hljs">using PkgTemplates
+
+# define the package template
+template = Template(;
+    user = &quot;GithubUserName&quot;,            # github user name
+    authors = [&quot;Author1&quot;, &quot;Author2&quot;],   # list of authors
+    dir = &quot;/path/to/folder/&quot;,           # dir in which the package will be created
+    julia = v&quot;1.8&quot;,                     # compat version of Julia
+    plugins = [
+        !CompatHelper,                  # disable CompatHelper
+        !TagBot,                        # disable TagBot
+        Readme(; inline_badges = true), # added readme file with badges
+        Tests(; project = true),        # added Project.toml file for unit tests
+        Git(; manifest = false),        # add manifest.toml to .gitignore
+        License(; name = &quot;MIT&quot;)         # addedMIT licence
+    ],
+)
+
+# execute the package template (this creates all files/folders)
+template(&quot;Ecosystem&quot;)</code></pre></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>This should have created a new folder <code>Ecosystem</code> which looks like below.</p><pre><code class="nohighlight hljs">.
+├── LICENSE
+├── Project.toml
+├── README.md
+├── src
+│   └── Ecosystem.jl
+└── test
+    ├── Manifest.toml
+    ├── Project.toml
+    └── runtests.jl</code></pre><p>If you <code>]activate /path/to/Ecosystem</code> you should be able to run <code>]test</code> to run the autogenerated test (which is not doing anything) and get the following output:</p><pre><code class="nohighlight hljs">(Ecosystem) pkg&gt; test
+     Testing Ecosystem
+      Status `/private/var/folders/6h/l9_skfms2v3dt8z3zfnd2jr00000gn/T/jl_zd5Uai/Project.toml`
+  [e77cd98c] Ecosystem v0.1.0 `~/repos/Ecosystem`
+  [8dfed614] Test `@stdlib/Test`
+      Status `/private/var/folders/6h/l9_skfms2v3dt8z3zfnd2jr00000gn/T/jl_zd5Uai/Manifest.toml`
+  [e77cd98c] Ecosystem v0.1.0 `~/repos/Ecosystem`
+  [2a0f44e3] Base64 `@stdlib/Base64`
+  [b77e0a4c] InteractiveUtils `@stdlib/InteractiveUtils`
+  [56ddb016] Logging `@stdlib/Logging`
+  [d6f4376e] Markdown `@stdlib/Markdown`
+  [9a3f8284] Random `@stdlib/Random`
+  [ea8e919c] SHA v0.7.0 `@stdlib/SHA`
+  [9e88b42a] Serialization `@stdlib/Serialization`
+  [8dfed614] Test `@stdlib/Test`
+     Testing Running tests...
+Test Summary: |Time
+Ecosystem.jl  | None  0.0s
+     Testing Ecosystem tests passed </code></pre></p></details><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>From now on make sure that you <strong>always</strong> have the <code>Ecosystem</code> enviroment enabled. Otherwise you will not end up with the correct dependencies in your packages</p></div></div><h3 id="Adding-content-to-Ecosystem.jl"><a class="docs-heading-anchor" href="#Adding-content-to-Ecosystem.jl">Adding content to <code>Ecosystem.jl</code></a><a id="Adding-content-to-Ecosystem.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-content-to-Ecosystem.jl" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>Next, let&#39;s add the types and functions we have defined so far. You can use <code>include(&quot;path/to/file.jl&quot;)</code> in the main module file at <code>src/Ecosystem.jl</code> to bring some structure in your code. An exemplary file structure could look like below.</p><pre><code class="nohighlight hljs">.
+├── LICENSE
+├── Manifest.toml
+├── Project.toml
+├── README.md
+├── src
+│   ├── Ecosystem.jl
+│   ├── animal.jl
+│   ├── plant.jl
+│   └── world.jl
+└── test
+    └── runtests.jl</code></pre><p>While you are adding functionality to your package you can make great use of <code>Revise.jl</code>.  Loading <code>Revise.jl</code> before your <code>Ecosystem.jl</code> will automatically recompile (and invalidate old methods!) while you develop.  You can install it in your global environment and and create a <code>$HOME/.config/startup.jl</code> which always loads <code>Revise</code>. It can look like this:</p><pre><code class="language-julia hljs"># try/catch block to make sure you can start julia if Revise should not be installed
 try
     using Revise
 catch e
     @warn(e.msg)
-end</code></pre></li><li><p>Note that you either have to <code>import</code> a method to overload it or define your functions like <code>Ecosystem.function_name</code> e.g.:</p><pre><code class="language-julia hljs">EcosystemCore.eats(::Animal{Sheep}, ::Plant{Mushroom}) = true</code></pre><p>which is often the preferred way of doing it.</p></li><li><p>Export all types and functions that should be accessible from outside your package.  This should include at least <code>agent_count</code>, <code>simulate!</code>, <code>every_nth</code>, all species types, and the <code>World</code>.</p></li></ol></div></div>
+end</code></pre></div></div><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>At some point along the way you should run into problems with the <code>sample</code> functions or when trying <code>using StatsBase</code>. This is normal, because you have not added the package to the <code>Ecosystem</code> environment yet. Adding it is as easy as <code>]add StatsBase</code>. Your <code>Ecosystem</code> environment should now look like this:</p><pre><code class="nohighlight hljs">(Ecosystem) pkg&gt; status
+Project Ecosystem v0.1.0
+Status `~/repos/Ecosystem/Project.toml`
+  [2913bbd2] StatsBase v0.33.21</code></pre></div></div><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>In order to use your new types/functions like below</p><pre><code class="language-julia hljs">using Ecosystem
+
+Sheep(2)</code></pre><p>you have to <code>export</code> them from your module. Add exports for all important types and functions.</p></div></div>
 <details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p><p>Now you can run one of your simulation scripts like below</p><pre><code class="language-julia hljs"># only load the Ecosystem package which depends on EcosystemCore
-using Ecosystem
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs"># src/Ecosystem.jl
+module Ecosystem
 
-n_grass       = 500
-regrowth_time = 17.0
-# ...
+using StatsBase
 
-world = World([...])
+export World
+export Species, PlantSpecies, AnimalSpecies, Grass, Sheep, Wolf
+export Agent, Plant, Animal
+export agent_step!, eat!, eats, find_food, reproduce!, world_step!, agent_count
 
-# ...
-simulate!(world,100)</code></pre><p>You can put your simulation scripts in the same package in a new folder called <code>scripts</code> or <code>examples</code> if you like. It often makes sense to have a separate <code>Project.toml</code> in this folder, because it forces you think about which functions you need to export and which additional packages are necessary e.g. for visualization of your results.</p></p></details><h2 id="Testing-the-Ecosystem"><a class="docs-heading-anchor" href="#Testing-the-Ecosystem">Testing the Ecosystem</a><a id="Testing-the-Ecosystem-1"></a><a class="docs-heading-anchor-permalink" href="#Testing-the-Ecosystem" title="Permalink"></a></h2><p>Every well maintained package should contain tests. In Julia the tests have to be located in the <code>test</code> folder in the package root. The <code>test</code> folder has to contain at least one file called <code>runtests.jl</code> which can <code>include</code> more files. A minimal package structure can look like below.</p><pre><code class="nohighlight hljs">.
-├── Project.toml
-├── README.md
-├── scripts
-│   └── run.jl
-├── src
-│   └── Ecosystem.jl
-└── test
-    └── runtests.jl</code></pre><p>To start testing we need Julia&#39;s <code>Test</code> package which you can install via <code>]add Test</code>. We do not want <code>Test</code> in the dependencies of <code>Ecosystem.jl</code>, which we can achieve by creating new <code>[extras]</code> and <code>[target]</code> sections in the <code>Project.toml</code>:</p><pre><code class="nohighlight hljs">name = &quot;Ecosystem&quot;
-uuid = &quot;some-uuid&quot;
-authors = [&quot;Your Name &lt;yourname@email.com&gt;&quot;]
-version = &quot;0.1.0&quot;
+# ....
 
-[deps]
-EcosystemCore = &quot;3e0d8730-8ea0-4ee2-afe6-c85384c618a2&quot;
-
-[extras]
-Test = &quot;8dfed614-e22c-5e08-85e1-65c5234f0b40&quot;
-
-[targets]
-test = [&quot;Test&quot;]</code></pre><p>Alternatively, you can create another <code>Project.toml</code> in your <code>test</code> folder. With <code>Test.jl</code> as an extra dependency you can start writing your <code>test/runtests.jl</code> file.</p><pre><code class="language-julia hljs">using Test
-# using Ecosystem  # in your code this line as to be uncommented ;)
-
-@testset &quot;agent_count&quot; begin
-    @test agent_count(Mushroom(1,1,1)) == 1
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Test Summary: | <span class="sgr32">Pass  </span><span class="sgr36">Total  </span>Time</span>
-agent_count   | <span class="sgr32">   1  </span><span class="sgr36">    1  </span>0.5s</code></pre><div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body"><p>Create a <code>@testset</code> and fill it with tests for <code>agent_count</code> that cover all of its four methods.</p><p><em>Hint</em>: You can use <code>isapprox</code> or <code>≈</code> to test equaity of real numbers.</p></div></div>
+end</code></pre></p></details><h3 id="Unit-tests"><a class="docs-heading-anchor" href="#Unit-tests">Unit tests</a><a id="Unit-tests-1"></a><a class="docs-heading-anchor-permalink" href="#Unit-tests" title="Permalink"></a></h3><p>Every package should have tests which verify the correctness of your implementation, such that you can make changes to your codebase and remain confident that you did not break anything.</p><p>Julia&#39;s <code>Test</code> package provides you functionality to easily write <a href="https://docs.julialang.org/en/v1/stdlib/Test/">unit tests</a>.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>In the file <code>test/runtests.jl</code>, create a new <code>@testset</code> and write three <code>@test</code>s which check that the <code>show</code> methods we defined for <code>Grass</code>, <code>Sheep</code>, and <code>Wolf</code> work as expected.</p><p>The function <code>repr(x) == &quot;some string&quot;</code> to check if the string representation we defined in the <code>Base.show</code> overload returns what you expect.</p></div></div>
 <details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">@testset &quot;agent_count&quot; begin
-    grass1 = Grass(1,1,5)
-    grass2 = Grass(2,2,5)
-    sheep  = Sheep(3,1,1,1,1)
-    wolf   = Wolf(5,2,2,2,2)
-    world  = World([sheep,grass1,grass2,wolf])
-
-    @test agent_count(grass1) ≈ 0.2
-    @test agent_count(sheep) == 1
-    @test agent_count([grass2,grass1]) ≈ 0.6
-    res = agent_count(world)
-    tst = Dict(:Sheep=&gt;1,:Wolf=&gt;1,:Grass=&gt;0.6)
-    for (k,_) in res
-        @test res[k] ≈ tst[k]
-    end
-end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Test Summary: | <span class="sgr32">Pass  </span><span class="sgr36">Total  </span>Time</span>
-agent_count   | <span class="sgr32">   6  </span><span class="sgr36">    6  </span>0.3s</code></pre></p></details><h2 id="Github-and-Continuous-Integration"><a class="docs-heading-anchor" href="#Github-and-Continuous-Integration">Github &amp; Continuous Integration</a><a id="Github-and-Continuous-Integration-1"></a><a class="docs-heading-anchor-permalink" href="#Github-and-Continuous-Integration" title="Permalink"></a></h2><p>Another good standard is to use a versioning tool like <code>git</code>. It will save you tons of headaches and you will never have to worry again that you could loose some of your work.</p><div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body"><p>Create a new repository called <code>Ecosystem.jl</code> on Github (public or private, however you want). A good repo should also contain a <code>README.md</code> file which briefly describes what it is about.</p><p>If you have never used <code>git</code> before you can check out the <a href="https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/installation/tutorial/">tutorial</a> of our Bachelor Course on Julia.</p></div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p><p>You can turn a folder into a git repo by running <code>git init</code>. After you created a new repo on Github you can connect your local repo to the empty Github repo like below</p><pre><code class="nohighlight hljs"># turn folder into git repo
-git init
-# point local repo to empty github repo
-git remote add origin https://github.com/username/Ecosystem.jl.git
-# rename master branch-&gt;main
-git branch -M main
-# create your initial commit
-git add .
-git commit -m &quot;init commit&quot;
-# push your contents
-git push -u origin main</code></pre></p></details><p>As a last step, we will add a <em>Github Action</em> to your repository, which will run your test on every commit to the <code>main</code> branch (or for every pull request).</p><div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body"><p>Create a file (in a hidden subdirectory) <code>.github/workflows/RunTests.yml</code> with the contents below</p><pre><code class="language-julia hljs">name: Run tests
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-
-jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        julia-version: [&#39;1.6&#39;]
-        julia-arch: [x64]
-        os: [ubuntu-latest]
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@v1
-        with:
-          version: ${{ matrix.julia-version }}
-      - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-runtest@v1</code></pre><p>Pushing this file to your repository should result in Github automatically running your julia tests.</p><p>You can add a status badge to your README by copying the status badge string from the Github Actions tab.</p></div></div><h2 id="Code-coverage"><a class="docs-heading-anchor" href="#Code-coverage">Code coverage</a><a id="Code-coverage-1"></a><a class="docs-heading-anchor-permalink" href="#Code-coverage" title="Permalink"></a></h2><p>If you still have time you can add code coverage reports to your repository. They will show you which parts of your repo have been covered by a test and which have not. To get coverage reports you have to give <code>codecov.io</code> access to your repository and add a few steps to your <code>RunTests.yml</code> that upload the coverage report during the Github Action.</p><div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise (optional)</header>
-<div class="admonition-body"><ol><li><p>Log into <code>codecov.io</code> with your Github user name and give codecov access to your new repository.</p></li><li><p>Add the codecov steps below to your <code>RunTests.yml</code>.  Note that <strong>code coverage does not mean that your code is properly tested</strong>!  It is simply measuring which lines have been hit during the execution of your tests, which does not mean that your code (or your tests) are correct.</p></li><li><p>Add the codecov status badge to your README.</p></li></ol><pre><code class="language-julia hljs">steps:
-  - uses: julia-actions/julia-processcoverage@v1
-  - uses: codecov/codecov-action@v2
-    with:
-      file: lcov.info</code></pre></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Friday 9 December 2022 17:44">Friday 9 December 2022</span>. Using Julia version 1.8.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # using Ecosystem
+       using Test</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @testset &quot;Base.show&quot; begin
+           g = Grass(1,1,1)
+           s = Animal{Sheep}(2,1,1,1,1,male)
+           w = Animal{Wolf}(3,1,1,1,1,female)
+           @test repr(g) == &quot;🌿  #1 100% grown&quot;
+           @test repr(s) == &quot;🐑♂ #2 E=1.0 ΔE=1.0 pr=1.0 pf=1.0&quot;
+           @test repr(w) == &quot;🐺♀ #3 E=1.0 ΔE=1.0 pr=1.0 pf=1.0&quot;
+       end</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr1">Test Summary: | <span class="sgr32">Pass  </span><span class="sgr36">Total  </span>Time</span>
+Base.show     | <span class="sgr32">   3  </span><span class="sgr36">    3  </span>0.2s
+Test.DefaultTestSet(&quot;Base.show&quot;, Any[], 3, false, false, true, 1.670608678015938e9, 1.670608678232194e9)</code></pre></p></details><h3 id="Github-CI"><a class="docs-heading-anchor" href="#Github-CI">Github CI</a><a id="Github-CI-1"></a><a class="docs-heading-anchor-permalink" href="#Github-CI" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>If you want you can upload you package to Github and add the <code>julia-runtest</code> <a href="https://github.com/julia-actions/julia-runtest">Github Action</a> to automatically test your code for every new push you make to the repository.</p></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Friday 9 December 2022 18:00">Friday 9 December 2022</span>. Using Julia version 1.8.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
