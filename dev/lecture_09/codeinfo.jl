@@ -1,5 +1,3 @@
-(VERSION < v"1.8.0") && error("tested with julia version 1.8.1")
-
 using Dictionaries
 include("loggingprofiler.jl")
 
@@ -10,9 +8,9 @@ function retrieve_code_info(sigtypes, world = Base.get_world_counter())
         @info("method $(sigtypes) does not exist")
         return(nothing)
     end
-    type_signature, raw_static_params, method = last(_methods)
-    mi = Core.Compiler.specialize_method(method, type_signature, raw_static_params)
-    ci = Base.hasgenerator(mi) ? Core.Compiler.get_staged(mi) : Base.uncompressed_ast(method)
+    type_signature, raw_static_params, method = _methods[1]
+    mi = Core.Compiler.specialize_method(method, type_signature, raw_static_params, false)
+    ci = Base.isgenerated(mi) ? Core.Compiler.get_staged(mi) : Base.uncompressed_ast(method)
     Base.Meta.partially_inline!(ci.code, [], method.sig, Any[raw_static_params...], 0, 0, :propagate)
     ci
 end
@@ -122,7 +120,6 @@ overdub(f::Core.Builtin, args...) = f(args...)
     new_ci
     new_ci.inferred = false
     new_ci.ssavaluetypes = length(new_ci.code)
-    new_ci.ssaflags = fill(0x00, new_ci.ssavaluetypes)
     # new_ci
     return(new_ci)
 end
@@ -132,12 +129,6 @@ new_ci = overdub(sin, 1.0)
 LoggingProfiler.to
 
 function foo(x, y)
-   z =  x * y
-   z + sin(y)
-end
-
-function foo2(x, y)
-   foo(x, y)
    z =  x * y
    z + sin(y)
 end
@@ -153,8 +144,4 @@ end
 
 LoggingProfiler.reset!()
 @record foo(1.0, 1.0)
-LoggingProfiler.to
-
-LoggingProfiler.reset!()
-@record foo2(1.0, 1.0)
 LoggingProfiler.to

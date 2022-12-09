@@ -37,7 +37,7 @@ profile_fun(f::Core.Builtin, args...) = f(args...)
         recursable(st.expr) || continue
         ir[x] = xcall(profile_fun, st.expr.args...)
     end
-    recurse!(ir)
+    # recurse!(ir)
     return ir
 end
 
