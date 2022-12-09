@@ -95,6 +95,7 @@ lecture_09 = [
 lecture_10 = [
     "Lecture" => "./lecture_10/lecture.md"
     "Lab" => "./lecture_10/lab.md"
+    "Homework" => "./lecture_10/hw.md"
 ]
 
 
