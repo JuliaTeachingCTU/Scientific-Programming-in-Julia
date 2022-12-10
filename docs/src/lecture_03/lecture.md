@@ -103,7 +103,7 @@ But fields are still accessible:
 ```julia
 grass.size = 10000
 ```
-Recall that ```grass.size=1000``` is a syntax of ```setproperty!(grass,:size,1000), which can be redefined:
+Recall that ```grass.size=1000``` is a syntax of ```setproperty!(grass,:size,1000)```, which can be redefined:
 ```julia
 function Base.setproperty!(obj::Grass, sym::Symbol, val)
     if sym==:size
