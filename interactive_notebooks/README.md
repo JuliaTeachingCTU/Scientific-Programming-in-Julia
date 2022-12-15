@@ -1,5 +1,5 @@
 # Info  
-**Till end of lab only empty (without solutions) notebooks will be available.**
+**Only empty (without solutions) notebooks will be available until the end of the lab.**
 <br/><br/>
 # Usage instructions
 All interactive notebooks are Jupyter notebooks. 
