@@ -464,7 +464,9 @@ a[:a] === b[:a]
 end
 @everywhere show_secret()
 
-remotecall_fetch(g -> eval(:(g = $(g))), 2, g)
+for i in workers()
+	remotecall_fetch(g -> eval(:(g = $(g))), i, g)
+end
 @everywhere show_secret()
 ```
 which is implemented in the `ParallelDataTransfer.jl` with other variants, but in general, this construct should be avoided.
@@ -480,7 +482,7 @@ end
 Our advices earned by practice are:
 - to have shared directory (shared home) with code and to share the location of packages
 - to place all code for workers to one file, let's call it `worker.jl` (author of this includes the code for master as well).
-- put to the beggining of `worker.jl` code activating specified environment as 
+- put to the beggining of `worker.jl` code activating specified environment as (or specify environmnet for all workers in environment variable as `export JULIA_PROJECT="$PWD"`)
 ```julia
 using Pkg
 Pkg.activate(@__DIR__)
@@ -550,7 +552,7 @@ end
 with benchmark
 ```
 julia> 	@btime juliaset_static(-0.79, 0.15, 1000);
-  16.206 ms (26 allocations: 978.42 KiB)
+  15.751 ms (27 allocations: 978.75 KiB)
 ```
 Although we have used four-threads, and the communication overhead should be next to zero, the speed improvement is ``2.4``. Why is that? 
 
@@ -560,7 +562,7 @@ using LoggingProfiler
 function juliaset_static(x, y, n=1000)
     c = x + y*im
     img = Array{UInt8,2}(undef,n,n)
-    Threads.@threads for j in 1:n
+    Threads.@threads :dynamic for j in 1:n
         LoggingProfiler.@recordfun juliaset_column!(img, c, n, j)
     end
     return img
@@ -577,7 +579,9 @@ LoggingProfiler.export2luxor("profile.png")
 ![profile.png](profile.png)
 From the visualization of the profiler we can see not all threads were working the same time. Thread 1 and 4 were working less that Thread 2 and 3. The reason is that the static scheduller partition the total number of columns (1000) into equal parts, where the total number of parts is equal to the number of threads, and assign each to a single thread. In our case, we will have four parts each of size 250. Since execution time of computing value of each pixel is not the same, threads with a lot zero iterations will finish considerably faster. This is the incarnation of one of the biggest problems in multi-threadding / schedulling. A contemprary approach is to switch to  dynamic schedulling, which divides the problem into smaller parts, and when a thread is finished with one part, it assigned new not-yet computed part.
 
-Dynamic scheduller is supported using `Threads.@spawn` macro. The prototypical approach is the fork-join model, where one recursivelly partitions the problems and wait in each thread for the other
+From 1.5, one can specify the scheduller for `Threads.@thread [scheduller] for` construct to be either `:static` and / or `:dynamic`. The `:dynamic` is compatible with the `partr` dynamic scheduller. From `1.8`, `:dynamic` is default, but the range is dividided into `nthreads()` parts, which is the reason why we do not see an improvement.
+
+Dynamic scheduller is also supported using by `Threads.@spawn` macro. The prototypical approach used for invocation is the fork-join model, where one recursivelly partitions the problems and wait in each thread for the other
 ```julia
 function juliaset_recspawn!(img, c, n, lo=1, hi=n, ntasks=128)
     if hi - lo > n/ntasks-1
@@ -605,6 +609,8 @@ end
 julia> @btime juliaset_forkjoin(-0.79, 0.15);
   10.326 ms (142 allocations: 986.83 KiB)
 ```
+This is so far our fastest construction with speedup `38.932 / 10.326 = 3.77×`.
+
 Unfortunatelly, the `LoggingProfiler` does not handle task migration at the moment, which means that we cannot visualize the results. Due to task switching overhead, increasing the granularity might not pay off.
 ```julia
 4 tasks: 16.262 ms (21 allocations: 978.05 KiB)
@@ -628,10 +634,10 @@ function juliaset_folds(x, y, n=1000, basesize = 2)
     return img
 end
 
-julia> @btime juliaset(-0.79, 0.15, 1000, juliaset_folds);
-  10.575 ms (52 allocations: 980.12 KiB)
+julia> @btime juliaset_folds(-0.79, 0.15, 1000);
+  10.253 ms (3960 allocations: 1.24 MiB)
 ```
-where `basesize` is the size of the part, in this case 2 columns.
+where `basesize` is the size of the smallest part allocated to a single thread, in this case 2 columns.
 ```julia
 julia> @btime juliaset_folds(-0.79, 0.15, 1000);
   10.575 ms (52 allocations: 980.12 KiB)
@@ -649,6 +655,29 @@ end
 julia> @btime juliaset_folds(-0.79, 0.15, 1000);
   10.421 ms (3582 allocations: 1.20 MiB)
 ```
+
+We can identify the best smallest size of the work `basesize` and measure its influence on the time
+```julia
+map(2 .^ (0:7)) do bs 
+	t = @belapsed juliaset_folds(-0.79, 0.15, 1000, $(bs));
+	(;basesize = bs, time = t)
+end |> DataFrame
+```
+
+```julia
+ Row │ basesize  time
+     │ Int64     Float64
+─────┼─────────────────────
+   1 │        1  0.0106803
+   2 │        2  0.010267
+   3 │        4  0.0103081
+   4 │        8  0.0101652
+   5 │       16  0.0100204
+   6 │       32  0.0100097
+   7 │       64  0.0103293
+   8 │      128  0.0105411
+```
+We observe that the minimum is for `basesize = 32`, for which we got `3.8932×` speedup. 
 
 ## Garbage collector is single-threadded
 Keep reminded that while threads are very easy very convenient to use, there are use-cases where you might be better off with proccess, even though there will be some communication overhead. One such case happens when you need to allocate and free a lot of memory. This is because Julia's garbage collector is single-threadded. Imagine a task of making histogram of bytes in a directory.
@@ -688,9 +717,9 @@ using Transducers
 end
 files = filter(isfile, readdir("/Users/tomas.pevny/Downloads/", join = true))
 @elapsed foldxd(mergewith(+), files |> Map(histfile))
-36.224765744
+86.44577969
 @elapsed foldxt(mergewith(+), files |> Map(histfile))
-23.257072067
+105.32969331
 ```
 is much better.
 
