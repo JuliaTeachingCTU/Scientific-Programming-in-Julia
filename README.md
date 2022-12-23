@@ -11,3 +11,9 @@ This repository contains all the course materials for the master course
 _**Scientific Programming in Julia**_ taught at the Czech Techincal University
 in Prague. You can find more information on the official
 [course website](https://juliateachingctu.github.io/Scientific-Programming-in-Julia/dev).
+
+## Before joining the course
+Consider reading these two blog post to figure out if Julia is the language in which you want to invest your time.
+- [What is good about Julia](https://viralinstruction.com/posts/goodjulia/)
+- [What is bad about Julia](https://viralinstruction.com/posts/badjulia/)
+
