@@ -184,7 +184,7 @@ is about `315` μs, which still 160x faster.
 	    NVTX.@range "julia set" juliaset_pixel.(cis, cjs, n);
     end
     ```
-    for better orientation in the code. Note that if nvtx information does not show up in the trace we have to add it to the tracing running the profiler with `--trace=cuda,nvtx`.
+    for better orientation in the code. Note that if nvtx information does not show up in the trace we have to add it to the tracing running the profiler with `--trace=cuda,nvtx`. [for more sophisticated example click here](profile_nn.jl)
     Lastly it is recommended to run a kernel twice in a profile trace as the first execution of the kernel in a profiler incurs some overhead, even though the code has been already compiled.    
 
 In the output of the profiler we see that there is a lot of overhead caused by launching the kernel itself and then, the execution is relatively fast. 
