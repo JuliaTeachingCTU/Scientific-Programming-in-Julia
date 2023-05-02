@@ -1533,8 +1533,8 @@ Base.getindex(x::TrackedArray, args...) = getindex(x.data,args...)
 # pretty print TrackedArray
 Base.show(io::IO, x::TrackedArray) = print(io, &quot;Tracked $(x.data)&quot;)
 Base.print_array(io::IO, x::TrackedArray) = Base.print_array(io, x.data)</code></pre></p></details><p>Creating a <code>TrackedArray</code> should work like this:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; track(rand(2,2))</code><code class="nohighlight hljs ansi" style="display:block;">2×2 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
- 0.494268   0.0205255
- 0.0186184  0.456585</code></pre><pre><code class="language-julia hljs">function accum!(x::Union{TrackedReal,TrackedArray})
+ 0.965065  0.940539
+ 0.172857  0.00786824</code></pre><pre><code class="language-julia hljs">function accum!(x::Union{TrackedReal,TrackedArray})
     if isnothing(x.grad)
         x.grad = sum(λ(accum!(Δ)) for (Δ,λ) in x.children)
     end
@@ -1550,19 +1550,19 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     Y.children[Z] = Δ -&gt; X.data&#39; * Δ
     Z
 end</code></pre></p></details><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; X = rand(2,3) |&gt; track</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
- 0.0542444  0.185693  0.353962
- 0.441805   0.491877  0.321349</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Y = rand(3,2) |&gt; track</code><code class="nohighlight hljs ansi" style="display:block;">3×2 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
- 0.183241   0.410988
- 0.0781018  0.549854
- 0.275906   0.686977</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Z = X*Y</code><code class="nohighlight hljs ansi" style="display:block;">2×2 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
- 0.122103  0.367562
- 0.208035  0.672797</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; f = X.children[Z]</code><code class="nohighlight hljs ansi" style="display:block;">#3 (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ω̄ = ones(size(Z)...)</code><code class="nohighlight hljs ansi" style="display:block;">2×2 Matrix{Float64}:
+ 0.5347    0.450521  0.525266
+ 0.754393  0.552967  0.305351</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Y = rand(3,2) |&gt; track</code><code class="nohighlight hljs ansi" style="display:block;">3×2 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
+ 0.958215  0.456988
+ 0.33941   0.472696
+ 0.59746   0.932418</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Z = X*Y</code><code class="nohighlight hljs ansi" style="display:block;">2×2 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
+ 0.979094  0.947079
+ 1.09299   0.89085</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; f = X.children[Z]</code><code class="nohighlight hljs ansi" style="display:block;">#3 (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ω̄ = ones(size(Z)...)</code><code class="nohighlight hljs ansi" style="display:block;">2×2 Matrix{Float64}:
  1.0  1.0
  1.0  1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; f(Ω̄)</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Matrix{Float64}:
- 0.594229  0.627956  0.962884
- 0.594229  0.627956  0.962884</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ω̄*Y.data&#39;</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Matrix{Float64}:
- 0.594229  0.627956  0.962884
- 0.594229  0.627956  0.962884</code></pre><div class="admonition is-category-exercise">
+ 1.4152  0.812107  1.52988
+ 1.4152  0.812107  1.52988</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ω̄*Y.data&#39;</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Matrix{Float64}:
+ 1.4152  0.812107  1.52988
+ 1.4152  0.812107  1.52988</code></pre><div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body"><p>Implement rules for <code>sum</code>, <code>+</code>, <code>-</code>, and  <code>abs2</code>.</p></div></div>
 <details class = "solution-body">
@@ -1634,4 +1634,4 @@ function Base.hcat(xs::TrackedArray...)
         end
     end
     y
-end</code></pre><p>You can see a full implementation of our tracing based AD <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/ReverseDiff.jl">here</a> and a simple implementation of a Neural Network that can learn an approximation to the function <code>g</code> <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_08/reverse-nn.jl">here</a>. Running the latter script will produce an animation that shows how the network is learning.</p><p><img src="../anim.gif" alt="anim"/></p><p>This lab is heavily inspired by <a href="https://rufflewind.com/2016-12-30/reverse-mode-automatic-differentiation">Rufflewind</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Friday 13 January 2023 22:02">Friday 13 January 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><p>You can see a full implementation of our tracing based AD <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/ReverseDiff.jl">here</a> and a simple implementation of a Neural Network that can learn an approximation to the function <code>g</code> <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_08/reverse-nn.jl">here</a>. Running the latter script will produce an animation that shows how the network is learning.</p><p><img src="../anim.gif" alt="anim"/></p><p>This lab is heavily inspired by <a href="https://rufflewind.com/2016-12-30/reverse-mode-automatic-differentiation">Rufflewind</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Tuesday 2 May 2023 05:38">Tuesday 2 May 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
