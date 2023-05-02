@@ -96,6 +96,7 @@ Consider reading these two blog post to figure out if Julia is the language in w
 ## References
 
 - [Official documentation](https://docs.julialang.org/en/v1/)
+- [Workflow tips, and what is new in v1.9](https://www.youtube.com/watch?v=qM9NtiYlXck)
 - [Think Julia: How to Think Like a Computer Scientist](https://benlauwens.github.io/ThinkJulia.jl/latest/book.html#chap01)
 - [From Zero to Julia!](https://techytok.com/from-zero-to-julia/)
 - [WikiBooks](https://en.wikibooks.org/wiki/Introducing_Julia)
