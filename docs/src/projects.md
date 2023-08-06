@@ -39,11 +39,11 @@ by the tasks in the papers).  Finally, you will implement functionality that
 can transform the learned model into a symbolic, human readable, and exectuable
 Julia expression.
 
+### Learning Large Language Models with reduced precition
+Large Language Models ((Chat) GPT, LLama, Falcon, Palm, ...) are huge. A recent trend is to perform optimization in reduced precision, for example in `int8` instead of `Float32`. Such feature is currently missing in Julia ecosystem and this project should be about bringing this to the community (for an introduction, read these blogs [*LLM-int8 and emergent features**](https://timdettmers.com/2022/08/17/llm-int8-and-emergent-features/), [*A gentle introduction to 8-bit Matrix Multiplication](https://huggingface.co/blog/hf-bitsandbytes-integration)). The goal would be to implement this as an additional type of Number / Matrix and overload multiplication on CPU (and ideally on GPU) to make it transparent for neural networks? **What I will learn?** In this project, you will learn a lot about the (simplicity of) implementation of deep learning libraries and you will practice abstraction of Julia's types. You can furthermore learn about GPU Kernel programming and `Transformers.jl` library.
+
 ### Planning algorithms
 Extend [SymbolicPlanners.jl](https://github.com/JuliaPlanners/SymbolicPlanners.jl) with the mm-ϵ variant of the bi-directional search [MM: A bidirectional search algorithm that is guaranteed to meet in the middle](https://www.sciencedirect.com/science/article/pii/S0004370217300905). This [pull request](https://github.com/JuliaPlanners/SymbolicPlanners.jl/pull/8) might be very helpful in understanding better the library.
-
-### Logging profiler
-In our class, we have implemented a simple version of the profiler recording beggining and end of exection of function calls. This might be very useful for observing behavior of multi-threaded application. A sketch of logging profiler is implemented [here](https://github.com/pevnak/LoggingProfiler.jl). Your goal would to try to finish it into a workable lib or identify boundaries, why it cannot be implemented.
 
 ### A Rule Learning Algorithms
 [Rule-based models](https://christophm.github.io/interpretable-ml-book/rules.html)
