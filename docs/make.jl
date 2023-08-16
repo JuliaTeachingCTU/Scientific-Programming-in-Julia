@@ -35,63 +35,6 @@ for theme in ["light", "dark"]
     end
 end
 
-# documentation
-lecture_01 = [
-    "Motivation" => "./lecture_01/motivation.md",
-    "Basics" => "./lecture_01/basics.md",
-    "Examples" => "./lecture_01/demo.md",
-    "Outline" => "./lecture_01/outline.md",
-    "Lab" => "./lecture_01/lab.md",
-    "Homework" => "./lecture_01/hw.md",
-]
-
-lecture_02 = [
-    "Lecture" => "./lecture_02/lecture.md"
-    "Lab" => "./lecture_02/lab.md"
-    "Homework" => "./lecture_02/hw.md"
-]
-
-lecture_03 = [
-    "Lecture" => "./lecture_03/lecture.md"
-    "Lab" => "./lecture_03/lab.md"
-    "Homework" => "./lecture_03/hw.md"
-]
-
-lecture_04 = [
-    "Lecture" => "./lecture_04/lecture.md"
-    "Lab" => "./lecture_04/lab.md"
-    "Homework" => "./lecture_04/hw.md"
-]
-
-lecture_05 = [
-    "Lecture" => "./lecture_05/lecture.md"
-    "Lab" => "./lecture_05/lab.md"
-    "Homework" => "./lecture_05/hw.md"
-]
-
-lecture_06 = [
-    "Lecture" => "./lecture_06/lecture.md"
-    "Lab" => "./lecture_06/lab.md"
-    "Homework" => "./lecture_06/hw.md"
-]
-
-lecture_07 = [
-    "Lecture" => "./lecture_07/lecture.md"
-    "Lab" => "./lecture_07/lab.md"
-    "Homework" => "./lecture_07/hw.md"
-]
-
-lecture_08 = [
-    "Lecture" => "./lecture_08/lecture.md"
-    "Lab" => "./lecture_08/lab.md"
-    "Homework" => "./lecture_08/hw.md"
-]
-
-lecture_09 = [
-    "Lecture" => "./lecture_09/lecture.md"
-    "Lab" => "./lecture_09/lab.md"
-]
-
 
 makedocs(;
     modules = [Scientific_Programming_in_Julia],
@@ -109,15 +52,6 @@ makedocs(;
         "Home" => "index.md",
         "Installation" => "installation.md", 
         "Projects" => "projects.md",
-        "1: Introduction" => lecture_01,
-        "2: The power of Type System & multiple dispatch" => lecture_02,
-        "3: Design Patterns" => lecture_03,
-        "4: Package development, Unit test & CI" => lecture_04,
-        "5: Performance Benchmarking" => lecture_05,
-        "6: Language introspection" => lecture_06,
-        "7: Macros" => lecture_07,
-        "8: Automatic differentiation" => lecture_08,
-        "9: Intermediate representation" => lecture_09,
     ],
 )
 

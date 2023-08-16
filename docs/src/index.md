@@ -21,6 +21,14 @@ course we will show you how to make use of the tools and advantages that
 *jit-compiled* Julia provides over *dynamic*, high-level languages like Python
 or lower level languages like C++.
 
+
+```@raw html
+<figure>
+  <img src="assets/dual.svg" alt="my alt text"/>
+  <figcaption>Learn the power of abstraction. Example: The essence of forward mode automatic differentiation.</figcaption>
+</figure>
+```
+
 ## What will you learn?
 
 First and foremost you will learn how to _**think julia**_ - meaning how write

@@ -1,22 +1,13 @@
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
-CompTime = "0fb5dd42-039a-4ca4-a1d7-89a96eae6d39"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
-FiniteDifferences = "26cc04aa-876d-5657-8c51-4c34ba976000"
 GraphRecipes = "bd48cda9-67a9-57be-86fa-5b3c104eda73"
-IRTools = "7869d1d1-7146-5819-86e3-90919afe41df"
-MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
-Mods = "7475f97c-0381-53b1-977b-4c60186c8d62"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-ProfileSVG = "132c30aa-f267-4189-9183-c8a63c7e05e6"
 Scientific_Programming_in_Julia = "ff288558-a322-4c39-84bc-85bf6acf7e03"
-SoftPosit = "0775deef-a35f-56d7-82da-cfc52f91364d"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-Umlaut = "92992a2b-8ce5-4a9c-bb9d-58be9a7dc841"
-Yota = "cd998857-8626-517d-b929-70ad188a48f0"
 
 [compat]
 julia = "1.6"
