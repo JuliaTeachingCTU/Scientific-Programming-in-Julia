@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_12/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/><link href="../../assets/onlinestats.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design Patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Package development, Unit test &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Performance Benchmarking</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-12" type="checkbox"/><label class="tocitem" for="menuitem-12"><span class="docs-label">9: Intermediate representation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_09/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_09/lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-13" type="checkbox"/><label class="tocitem" for="menuitem-13"><span class="docs-label">10: Parallel programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_10/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_10/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_10/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-14" type="checkbox"/><label class="tocitem" for="menuitem-14"><span class="docs-label">11: GPU programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_11/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_11/lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-15" type="checkbox" checked/><label class="tocitem" for="menuitem-15"><span class="docs-label">12: Uncertainty propagation in ODE</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#Euler-ODE-Solver"><span>Euler ODE Solver</span></a></li><li><a class="tocitem" href="#Automating-GaussNums"><span>Automating <code>GaussNum</code>s</span></a></li><li class="toplevel"><a class="tocitem" href="#References"><span>References</span></a></li></ul></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">12: Uncertainty propagation in ODE</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2023W/docs/src/lecture_12/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="lab12"><a class="docs-heading-anchor" href="#lab12">Lab 12 - Differential Equations</a><a id="lab12-1"></a><a class="docs-heading-anchor-permalink" href="#lab12" title="Permalink"></a></h1><p>In this lab you will implement a simple solver for <em>ordinary differential equations</em> (ODE) as well as a less verbose version of the <code>GaussNum</code>s that were introduced in the lecture.</p><h2 id="Euler-ODE-Solver"><a class="docs-heading-anchor" href="#Euler-ODE-Solver">Euler ODE Solver</a><a id="Euler-ODE-Solver-1"></a><a class="docs-heading-anchor-permalink" href="#Euler-ODE-Solver" title="Permalink"></a></h2><p>In this first part you will implement your own, simple, ODE framwork (feel free to make it a package;) in which you can easily specify different ODE solvers. The API is heavily inspired by <a href="https://diffeq.sciml.ai/stable/"><code>DifferentialEquations.jl</code></a>, so if you ever need to use it, you will already have a feeling for how it works.</p><p>Like in the lecture, we want to be able to specify an ODE like below.</p><pre><code class="language-julia hljs">function lotkavolterra(x,θ)
+    α, β, γ, δ = θ
+    x₁, x₂ = x
+
+    dx₁ = α*x₁ - β*x₁*x₂
+    dx₂ = δ*x₁*x₂ - γ*x₂
+
+    [dx₁, dx₂]
+end</code></pre><p>In the lecture we then solved it with a <code>solve</code> function that received all necessary arguments to fully specify how the ODE should be solved. The number of necessary arguments to <code>solve</code> can quickly become very large, so we will introduce a new API for <code>solve</code> which will always take only two arguments: <code>solve(::ODEProblem, ::ODESolver)</code>. The <code>solve</code> function will only do some book-keeping and call the solver until the ODE is solved for the full <code>tspan</code>.</p><p>The <code>ODEProblem</code> will contain all necessary parameters to fully specify the ODE that should be solved. In our case that is the function <code>f</code> that defines the ODE itself, initial conditions <code>u0</code>, ODE parameters <code>θ</code>, and the time domain of the ODE <code>tspan</code>:</p><pre><code class="language-julia hljs">struct ODEProblem{F,T&lt;:Tuple{Number,Number},U&lt;:AbstractVector,P&lt;:AbstractVector}
+    f::F
+    tspan::T
+    u0::U
+    θ::P
+end</code></pre><p>The solvers will all be subtyping the abstract type <code>ODESolver</code>. The <code>Euler</code> solver from the lecture will need one field <code>dt</code> which specifies its time step:</p><pre><code class="language-julia hljs">abstract type ODESolver end
+
+struct Euler{T} &lt;: ODESolver
+    dt::T
+end</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Overload the call-method of <code>Euler</code></p><pre><code class="language-julia hljs">(solver::Euler)(prob::ODEProblem, u, t)</code></pre><p>such that calling the solver with an <code>ODEProblem</code> will perform one step of the Euler solver and return updated ODE varialbes <code>u1</code> and the corresponding timestep <code>t1</code>.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function (solver::Euler)(prob::ODEProblem, u, t)
+    f, θ, dt  = prob.f, prob.θ, solver.dt
+    (u + dt*f(u,θ), t+dt)
+end</code></pre></p></details><pre><code class="language-julia hljs"># define ODEProblem
+θ = [0.1,0.2,0.3,0.2]
+u0 = [1.0,1.0]
+tspan = (0.,100.)
+prob = ODEProblem(lotkavolterra,tspan,u0,θ)
+
+# run one solver step
+solver = Euler(0.2)
+(u1,t1) = solver(prob,u0,0.)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">([0.98, 0.98], 0.2)</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement the function <code>solve(::ODEProblem,::ODESolver)</code> which calls the solver as many times as are necessary to solve the ODE for the full time domain. <code>solve</code> should return a vector of timesteps and a corresponding matrix of variables.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function solve(prob::ODEProblem, solver::ODESolver)
+    t = prob.tspan[1]; u = prob.u0
+    us = [u]; ts = [t]
+    while t &lt; prob.tspan[2]
+        (u,t) = solver(prob, u, t)
+        push!(us,u)
+        push!(ts,t)
+    end
+    ts, reduce(hcat,us)
+end</code></pre></p></details><p>You can load the true solution and compare it in a plot like below.  The file that contains the correct solution is located here: <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_12/lotkadata.jld2"><code>lotkadata.jld2</code></a>.</p><pre><code class="language- hljs">using JLD2
+using Plots
+
+true_data = load(&quot;lotkadata.jld2&quot;)
+
+p1 = plot(true_data[&quot;t&quot;], true_data[&quot;u&quot;][1,:], lw=4, ls=:dash, alpha=0.7, color=:gray, label=&quot;x Truth&quot;)
+plot!(p1, true_data[&quot;t&quot;], true_data[&quot;u&quot;][2,:], lw=4, ls=:dash, alpha=0.7, color=:gray, label=&quot;y Truth&quot;)
+
+(t,X) = solve(prob, Euler(0.2))
+
+plot!(p1,t,X[1,:], color=1, lw=3, alpha=0.8, label=&quot;x Euler&quot;)
+plot!(p1,t,X[2,:], color=2, lw=3, alpha=0.8, label=&quot;y Euler&quot;)</code></pre><p>As you can see in the plot above, the Euler method quickly becomes quite inaccurate because we make a step in the direction of the tangent which inevitably leads us away from the perfect solution as shown in the plot below. <img src="../euler.jpg" alt="euler"/></p><p>In the <a href="../hw/#hw12">homework</a> you will implement a Runge-Kutta solver to get a much better accuracy with the same step size.</p><h2 id="Automating-GaussNums"><a class="docs-heading-anchor" href="#Automating-GaussNums">Automating <code>GaussNum</code>s</a><a id="Automating-GaussNums-1"></a><a class="docs-heading-anchor-permalink" href="#Automating-GaussNums" title="Permalink"></a></h2><p>Next you will implement your own uncertainty propagation. In the lecture you have already seen the new number type that we need for this:</p><pre><code class="language-julia hljs">struct GaussNum{T&lt;:Real} &lt;: Real
+    μ::T
+    σ::T
+end</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise (tiny)</header>
+<div class="admonition-body"><p>Overload the <code>±</code> (type: <code>\pm&lt;tab&gt;</code>) symbol to define <code>GaussNum</code>s like this: <code>2.0 ± 1.0</code>. Additionally, overload the <code>show</code> function such that <code>GaussNum</code>s are printed with the <code>±</code> as well.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">±(x,y) = GaussNum(x,y)
+Base.show(io::IO, x::GaussNum) = print(io, &quot;$(x.μ) ± $(x.σ)&quot;)</code></pre></p></details><p>Recall, that for a function <span>$f(\bm x)$</span> with <span>$N$</span> inputs, the uncertainty <span>$\sigma_f$</span> is defined by</p><p class="math-container">\[\sigma_f = \sqrt{\sum_{i=1}^N \left( \frac{df}{dx_i}\sigma_i \right)^2}\]</p><p>To make <code>GaussNum</code>s work for arithmetic operations we could manually implement all desired functions as we started doing in the lecture. With the autodiff package <code>Zygote</code> we can automate the generation of these functions. In the next two exercises you will implement a macro <code>@register</code> that takes a function and defines the corresponding uncertainty propagation rule according to the equation above.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement a helper function <code>uncertain(f, args::GaussNum...)</code> which takes a function <code>f</code> and its <code>args</code> and returns the resulting <code>GaussNum</code> with an uncertainty defined by the equation above.</p><p><strong>Hint</strong>: You can compute the gradient of a function with Zygote, for example:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using Zygote;</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: ArgumentError: Package Zygote not found in current path.
+- Run `import Pkg; Pkg.add(&quot;Zygote&quot;)` to install the Zygote package.</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; f(x,y) = x*y;</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Zygote.gradient(f, 2., 3.)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `Zygote` not defined</code></pre></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function uncertain(f, args::GaussNum...)
+    μs  = [x.μ for x in args]
+    dfs = Zygote.gradient(f,μs...)
+    σ   = map(zip(dfs,args)) do (df,x)
+        (df * x.σ)^2
+    end |&gt; sum |&gt; sqrt
+    GaussNum(f(μs...), σ)
+end</code></pre></p></details><p>Now you can propagate uncertainties through any function like this:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; x1 = 2.0 ± 2.0</code><code class="nohighlight hljs ansi" style="display:block;">2.0 ± 2.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; x2 = 2.0 ± 2.0</code><code class="nohighlight hljs ansi" style="display:block;">2.0 ± 2.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; uncertain(*, x1, x2)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `Zygote` not defined</code></pre><p>You can verify the correctness of your implementation by comparing to the manual implementation from the lecture.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>For convenience, implement the macro <code>@register</code> which will define the uncertainty propagation rule for a given function. E.g. for the function <code>*</code> the macro should generate code like below</p><pre><code class="language-julia hljs">Base.:*(args::GaussNum...) = uncertain(*, args...)</code></pre><p><strong>Hint</strong>: If you run into trouble with module names of functions you can make use of</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; getmodule(f) = first(methods(f)).module</code><code class="nohighlight hljs ansi" style="display:block;">getmodule (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; getmodule(*)</code><code class="nohighlight hljs ansi" style="display:block;">Base</code></pre></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function _register(func::Symbol)
+    mod = getmodule(eval(func))
+    :($(mod).$(func)(args::GaussNum...) = uncertain($func, args...))
+end
+
+function _register(funcs::Expr)
+    Expr(:block, map(_register, funcs.args)...)
+end
+
+macro register(funcs)
+    _register(funcs)
+end</code></pre></p></details><p>Lets register some arithmetic functions and see if they work</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @register *</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; x1 * x2</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `Zygote` not defined</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @register - +</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; x1 + x2</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `Zygote` not defined</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; x1 - x2</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `Zygote` not defined</code></pre><p>To finalize the definition of our new <code>GaussNum</code> we can define conversion and promotion rules such that we do not have to define things like</p><pre><code class="language-julia hljs">+(x::GaussNum, y::Real) = ...
++(x::Real, y::GaussNum) = ...</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Define <code>convert</code> and <code>promote_rule</code>s such that you can perform arithmetic operations on <code>GaussNum</code>s and other <code>Real</code>s.</p><p><strong>Hint</strong>: When converting a normal number to a <code>GaussNum</code> you can set the standard deviation to zero.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">Base.convert(::Type{T}, x::T) where T&lt;:GaussNum = x
+Base.convert(::Type{GaussNum{T}}, x::Number) where T = GaussNum(x,zero(T))
+Base.promote_rule(::Type{GaussNum{T}}, ::Type{S}) where {T,S} = GaussNum{T}
+Base.promote_rule(::Type{GaussNum{T}}, ::Type{GaussNum{T}}) where T = GaussNum{T}</code></pre></p></details><p>You can test if everything works by adding/multiplying floats to <code>GuassNum</code>s.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; 1.0±1.0 + 2.0</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `Zygote` not defined</code></pre><h3 id="Propagating-Uncertainties-through-ODEs"><a class="docs-heading-anchor" href="#Propagating-Uncertainties-through-ODEs">Propagating Uncertainties through ODEs</a><a id="Propagating-Uncertainties-through-ODEs-1"></a><a class="docs-heading-anchor-permalink" href="#Propagating-Uncertainties-through-ODEs" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>With our newly defined <code>GaussNum</code> we can easily propagate uncertainties through our ODE solvers without changing a single line of their code. Try it!</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language- hljs">θ = [0.1±0.001, 0.2, 0.3, 0.2]
+u0 = [1.0±0.1, 1.0±0.1]
+tspan = (0.,100.)
+dt = 0.1
+prob = ODEProblem(lotkavolterra,tspan,u0,θ)
+
+t,X=solve(prob, Euler(0.1))</code></pre></p></details><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Create a plot that takes a <code>Vector{&lt;:GaussNum}</code> and plots the mean surrounded by the uncertainty.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; mu(x::GaussNum) = x.μ</code><code class="nohighlight hljs ansi" style="display:block;">mu (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sig(x::GaussNum) = x.σ</code><code class="nohighlight hljs ansi" style="display:block;">sig (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; function uncertainplot(t, x::Vector{&lt;:GaussNum})
+           p = plot(
+               t,
+               mu.(x) .+ sig.(x),
+               xlabel = &quot;x&quot;,
+               ylabel = &quot;y&quot;,
+               fill = (mu.(x) .- sig.(x), :lightgray, 0.5),
+               linecolor = nothing,
+               primary = false, # no legend entry
+           )
+       
+           # add the data to the plots
+           plot!(p, t, mu.(X[1,:]))
+       
+           return p
+       end</code><code class="nohighlight hljs ansi" style="display:block;">uncertainplot (generic function with 1 method)</code></pre></p></details><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; uncertainplot(t, X[1,:])</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `t` not defined</code></pre><p>Unfortunately, with this approach, we would have to define things like <code>uncertainplot!</code> by hand. To make plotting <code>GaussNum</code>s more pleasant we can make use of the <code>@recipe</code> macro from <code>Plots.jl</code>. It allows to define plot recipes for custom types (without having to depend on Plots.jl). Additionally, it makes it easiert to support all the different ways of creating plots (e.g. via <code>plot</code> or <code>plot!</code>, and with support for all keyword args) without having to overload tons of functions manually. If you want to read more about plot recipies in the docs of <a href="http://juliaplots.org/RecipesBase.jl/stable/"><code>RecipesBase.jl</code></a>. An example of a recipe for vectors of <code>GaussNum</code>s could look like this:</p><pre><code class="language- hljs">@recipe function plot(ts::AbstractVector, xs::AbstractVector{&lt;:GaussNum})
+    # you can set a default value for an attribute with `--&gt;`
+    # and force an argument with `:=`
+    μs = [x.μ for x in xs]
+    σs = [x.σ for x in xs]
+    @series begin
+        :seriestype := :path
+        # ignore series in legend and color cycling
+        primary := false
+        linecolor := nothing
+        fillcolor := :lightgray
+        fillalpha := 0.5
+        fillrange := μs .- σs
+        # ensure no markers are shown for the error band
+        markershape := :none
+        # return series data
+        ts, μs .+ σs
+    end
+    ts, μs
+end
+
+# now we can easily plot multiple things on to of each other
+p1 = plot(t, X[1,:], label=&quot;x&quot;, lw=3)
+plot!(p1, t, X[2,:], label=&quot;y&quot;, lw=3)</code></pre><h1 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h1><ul><li><a href="https://ocw.mit.edu/courses/mathematics/18-330-introduction-to-numerical-analysis-spring-2012/lecture-notes/MIT18_330S12_Chapter5.pdf">MIT18-330S12: Chapter 5</a></li><li><a href="https://web.mit.edu/10.001/Web/Course_Notes/Differential_Equations_Notes/node5.html">RK2 derivation</a></li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Wednesday 16 August 2023 18:13">Wednesday 16 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

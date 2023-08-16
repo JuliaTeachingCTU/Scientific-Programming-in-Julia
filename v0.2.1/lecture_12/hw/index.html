@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Homework · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_12/hw/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/><link href="../../assets/onlinestats.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design Patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Package development, Unit test &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Performance Benchmarking</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Language introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-12" type="checkbox"/><label class="tocitem" for="menuitem-12"><span class="docs-label">9: Intermediate representation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_09/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_09/lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-13" type="checkbox"/><label class="tocitem" for="menuitem-13"><span class="docs-label">10: Parallel programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_10/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_10/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_10/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-14" type="checkbox"/><label class="tocitem" for="menuitem-14"><span class="docs-label">11: GPU programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_11/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_11/lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-15" type="checkbox" checked/><label class="tocitem" for="menuitem-15"><span class="docs-label">12: Uncertainty propagation in ODE</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li><a class="tocitem" href="../lab/">Lab</a></li><li class="is-active"><a class="tocitem" href>Homework</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">12: Uncertainty propagation in ODE</a></li><li class="is-active"><a href>Homework</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Homework</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2023W/docs/src/lecture_12/hw.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="hw12"><a class="docs-heading-anchor" href="#hw12">Homework 12 - The Runge-Kutta ODE Solver</a><a id="hw12-1"></a><a class="docs-heading-anchor-permalink" href="#hw12" title="Permalink"></a></h1><p>There exist many different ODE solvers. To demonstrate how we can get significantly better results with a simple update to <code>Euler</code>, you will implement the second order Runge-Kutta method <code>RK2</code>:</p><p class="math-container">\[\begin{align*}
+\tilde x_{n+1} &amp;= x_n + hf(x_n, t_n)\\
+       x_{n+1} &amp;= x_n + \frac{h}{2}(f(x_n,t_n)+f(\tilde x_{n+1},t_{n+1}))
+\end{align*}\]</p><p><code>RK2</code> is a 2nd order method. It uses not only <span>$f$</span> (the slope at a given point), but also <span>$f&#39;$</span> (the derivative of the slope). With some clever manipulations you can arrive at the equations above with make use of <span>$f&#39;$</span> without needing an explicit expression for it (if you want to know how, see <a href="https://web.mit.edu/10.001/Web/Course_Notes/Differential_Equations_Notes/node5.html">here</a>). Essentially, <code>RK2</code> computes an initial guess <span>$\tilde x_{n+1}$</span> to then average the slopes at the current point <span>$x_n$</span> and at the guess <span>$\tilde x_{n+1}$</span> which is illustarted below. <img src="../rk2.png" alt="rk2"/></p><p>The code from the lab that you will need for this homework is given below. As always, put all your code in a file called <code>hw.jl</code>, zip it, and upload it to BRUTE.</p><pre><code class="language-julia hljs">struct ODEProblem{F,T&lt;:Tuple{Number,Number},U&lt;:AbstractVector,P&lt;:AbstractVector}
+    f::F
+    tspan::T
+    u0::U
+    θ::P
+end
+
+
+abstract type ODESolver end
+
+struct Euler{T} &lt;: ODESolver
+    dt::T
+end
+
+function (solver::Euler)(prob::ODEProblem, u, t)
+    f, θ, dt  = prob.f, prob.θ, solver.dt
+    (u + dt*f(u,θ), t+dt)
+end
+
+
+function solve(prob::ODEProblem, solver::ODESolver)
+    t = prob.tspan[1]; u = prob.u0
+    us = [u]; ts = [t]
+    while t &lt; prob.tspan[2]
+        (u,t) = solver(prob, u, t)
+        push!(us,u)
+        push!(ts,t)
+    end
+    ts, reduce(hcat,us)
+end
+
+
+# Define &amp; Solve ODE
+
+function lotkavolterra(x,θ)
+    α, β, γ, δ = θ
+    x₁, x₂ = x
+
+    dx₁ = α*x₁ - β*x₁*x₂
+    dx₂ = δ*x₁*x₂ - γ*x₂
+
+    [dx₁, dx₂]
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">lotkavolterra (generic function with 1 method)</code></pre><div class="admonition is-category-homework">
+<header class="admonition-header">Homework (2 points)</header>
+<div class="admonition-body"><p>Implement the 2nd order Runge-Kutta solver according to the equations given above by overloading the call method of a new type <code>RK2</code>.</p><pre><code class="language-julia hljs">(solver::RK2)(prob::ODEProblem, u, t)</code></pre></div></div><p>You should be able to use it exactly like our <code>Euler</code> solver before:</p><pre><code class="language- hljs">using Plots
+using JLD2
+
+# Define ODE
+function lotkavolterra(x,θ)
+    α, β, γ, δ = θ
+    x₁, x₂ = x
+
+    dx₁ = α*x₁ - β*x₁*x₂
+    dx₂ = δ*x₁*x₂ - γ*x₂
+
+    [dx₁, dx₂]
+end
+
+θ = [0.1,0.2,0.3,0.2]
+u0 = [1.0,1.0]
+tspan = (0.,100.)
+prob = ODEProblem(lotkavolterra,tspan,u0,θ)
+
+# load correct data
+true_data = load(&quot;lotkadata.jld2&quot;)
+
+# create plot
+p1 = plot(true_data[&quot;t&quot;], true_data[&quot;u&quot;][1,:], lw=4, ls=:dash, alpha=0.7,
+          color=:gray, label=&quot;x Truth&quot;)
+plot!(p1, true_data[&quot;t&quot;], true_data[&quot;u&quot;][2,:], lw=4, ls=:dash, alpha=0.7,
+      color=:gray, label=&quot;y Truth&quot;)
+
+# Euler solve
+(t,X) = solve(prob, Euler(0.2))
+plot!(p1,t,X[1,:], color=3, lw=3, alpha=0.8, label=&quot;x Euler&quot;, ls=:dot)
+plot!(p1,t,X[2,:], color=4, lw=3, alpha=0.8, label=&quot;y Euler&quot;, ls=:dot)
+
+# RK2 solve
+(t,X) = solve(prob, RK2(0.2))
+plot!(p1,t,X[1,:], color=1, lw=3, alpha=0.8, label=&quot;x RK2&quot;)
+plot!(p1,t,X[2,:], color=2, lw=3, alpha=0.8, label=&quot;y RK2&quot;)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lab/">« Lab</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Wednesday 16 August 2023 18:13">Wednesday 16 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
