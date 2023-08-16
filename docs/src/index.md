@@ -24,7 +24,7 @@ or lower level languages like C++.
 
 ```@raw html
 <figure>
-  <img src="assets/dual.svg" alt="my alt text"/>
+  <img src="assets/dual.png"; max-width: 100%; height: auto;/>
   <figcaption>
     Learn the power of abstraction.
     Example: The essence of <a href="https://juliadiff.org/ForwardDiff.jl/dev/dev/how_it_works/">forward mode</a> automatic differentiation.
