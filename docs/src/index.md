@@ -25,9 +25,18 @@ or lower level languages like C++.
 ```@raw html
 <figure>
   <img src="assets/dual.svg" alt="my alt text"/>
-  <figcaption>Learn the power of abstraction. Example: The essence of forward mode automatic differentiation.</figcaption>
+  <figcaption>
+    Learn the power of abstraction.
+    Example: The essence of <a href="https://juliadiff.org/ForwardDiff.jl/dev/dev/how_it_works/">forward mode</a> automatic differentiation.
+  </figcaption>
 </figure>
 ```
+
+Before joining the course, consider reading the following two blog posts to figure out if Julia is
+a language in which you want to invest your time.
+- What is [*great*](https://viralinstruction.com/posts/goodjulia/) about Julia.
+- What is [*bad*](https://viralinstruction.com/posts/badjulia/) about Julia.
+
 
 ## What will you learn?
 
@@ -95,11 +104,6 @@ the standard grading scale below.
 There are no hard requirements to take the course, but if you are not at all familiar
 with Julia we recommend you to take [Julia for Optimization and Learning](https://github.com/JuliaTeachingCTU/Julia-for-Optimization-and-Learning) before enrolling in this course. The [Functional Programming](https://cw.fel.cvut.cz/b202/courses/fup/start) course also contains
 some helpful concepts for this course. And knowledge about computer hardware, namely basics of how CPU works, how it interacts with memory through caches, and basics of multi-threadding certainly helps.
-
-## Before joining the course
-Consider reading these two blog post to figure out if Julia is the language in which you want to invest your time.
-- [What is good about Julia](https://viralinstruction.com/posts/goodjulia/)
-- [What is bad about Julia](https://viralinstruction.com/posts/badjulia/)
 
 ## References
 

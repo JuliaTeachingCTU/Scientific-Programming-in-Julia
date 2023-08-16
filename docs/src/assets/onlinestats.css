@@ -86,3 +86,7 @@ h1, h2, h3, h4, h5, h6 {
 .docs-version-selector {
     border-top: 0px !important;
 }
+
+.content p {
+    text-align: justify;
+}
