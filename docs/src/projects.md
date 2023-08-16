@@ -9,7 +9,16 @@ The project should be of sufficient complexity that verify your skill of the lan
 
 Below, we list some potential projects for inspiration.
 
-## The Equation Learner And Its Symbolic Representation
+
+## Improving documentation
+Improve documentation of one of these projects
+- [SymbolicPlanners.jl](https://github.com/JuliaPlanners/SymbolicPlanners.jl)
+- [DaggerFlux.jl](https://github.com/FluxML/DaggerFlux.jl) for model-based parallelization of large Neural Networks (see [JuliaCon 2022 for exposition of the package](https://www.youtube.com/watch?v=176c4S6LqT8))
+- [FluxDistributed.jl](https://github.com/DhairyaLGandhi/FluxDistributed.jl) for data-based parallelization of large Neural Networks (see [JuliaCon 2022 for exposition of the package](https://www.youtube.com/watch?v=176c4S6LqT8))
+
+## Implementing new things
+
+### The Equation Learner And Its Symbolic Representation
 
 In many scientific and engineering one searches for interpretable (i.e.
 human-understandable) models instead of the black-box function approximators
@@ -30,44 +39,34 @@ by the tasks in the papers).  Finally, you will implement functionality that
 can transform the learned model into a symbolic, human readable, and exectuable
 Julia expression.
 
-## An Evolutionary Algorithm Applied To Julia's AST
+### Learning Large Language Models with reduced precition
+Large Language Models ((Chat) GPT, LLama, Falcon, Palm, ...) are huge. A recent trend is to perform optimization in reduced precision, for example in `int8` instead of `Float32`. Such feature is currently missing in Julia ecosystem and this project should be about bringing this to the community (for an introduction, read these blogs [*LLM-int8 and emergent features**](https://timdettmers.com/2022/08/17/llm-int8-and-emergent-features/), [*A gentle introduction to 8-bit Matrix Multiplication](https://huggingface.co/blog/hf-bitsandbytes-integration)). The goal would be to implement this as an additional type of Number / Matrix and overload multiplication on CPU (and ideally on GPU) to make it transparent for neural networks? **What I will learn?** In this project, you will learn a lot about the (simplicity of) implementation of deep learning libraries and you will practice abstraction of Julia's types. You can furthermore learn about GPU Kernel programming and `Transformers.jl` library.
 
-Most of the approaches to equation learning have to be differentiable by default
-in order to use the traditional machinery of stochastic gradient descent with
-backpropagation. This often leads to equations with too many terms, requiring 
-special techniques for enforcing sparsity for terms with low weights.
+### Planning algorithms
+Extend [SymbolicPlanners.jl](https://github.com/JuliaPlanners/SymbolicPlanners.jl) with the mm-ϵ variant of the bi-directional search [MM: A bidirectional search algorithm that is guaranteed to meet in the middle](https://www.sciencedirect.com/science/article/pii/S0004370217300905). This [pull request](https://github.com/JuliaPlanners/SymbolicPlanners.jl/pull/8) might be very helpful in understanding better the library.
 
-In Julia we can however use a different learning paradigm of evolutionary 
-algorithms, which can work on discrete set of expressions. The goal is to 
-write mutation and recombination - the basic operators of a genetic algorithm,
-but applied on top of Julia AST.
-
-Data: AI Feyman [database](https://space.mit.edu/home/tegmark/aifeynman.html) on symbolic regression (from [article](https://arxiv.org/pdf/1905.11481.pdf)/[code](https://github.com/SJ001/AI-Feynman))
-Inspiration: 
-- Logic Guided Genetic Algorithms [article](https://arxiv.org/pdf/2010.11328.pdf)/[code](https://github.com/DhananjayAshok/LGGA)
-- AI Feynman 2.0: Pareto-optimal symbolic regression exploiting graph modularity [article](https://arxiv.org/pdf/2006.10782)
-- Genetic Programming for Julia: fast performance and parallel island model implementation [report](http://courses.csail.mit.edu/18.337/2015/projects/MorganFrank/projectReport.pdf)
-
-## Distributed Optimization Package
-
-One click distributed optimization is at the heart of other machine learning 
-and optimization libraries such as pytorch, however some equivalents are 
-missing in the Julia's Flux ecosystem. The goal of this project is to explore,
-implement and compare at least two state-of-the-art methods of distributed 
-gradient descent on data that will be provided for you.
-
-Some of the work has already been done in this area by one of our former students, 
-see [link](https://dspace.cvut.cz/handle/10467/97057).
-
-## A Rule Learning Algorithm
-
+### A Rule Learning Algorithms
 [Rule-based models](https://christophm.github.io/interpretable-ml-book/rules.html)
 are simple and very interpretable models that have been around for a long time
 and are gaining popularity again.
-The goal of this project is to implement a
-[sequential covering](https://christophm.github.io/interpretable-ml-book/rules.html#sequential-covering)
+The goal of this project is to implement one of these algorithms
+* [sequential covering](https://christophm.github.io/interpretable-ml-book/rules.html#sequential-covering)
 algorithm called [`RIPPER`](http://www.cs.utsa.edu/~bylander/cs6243/cohen95ripper.pdf)
 and evaluate it on a number of datasets.
+* [Learning Certifiably Optimal Rule Lists for Categorical Data](https://arxiv.org/abs/1704.01701)
+* [Boolean decision rules via column generation](https://proceedings.neurips.cc/paper/2018/file/743394beff4b1282ba735e5e3723ed74-Paper.pdf)
+* [Learning Optimal Decision Trees with SAT](https://proceedings.neurips.cc/paper/2021/file/4e246a381baf2ce038b3b0f82c7d6fb4-Paper.pdf)
+* [A SAT-based approach to learn explainable decision sets](www.t-news.cn/Floc2018/FLoC2018-pages/proceedings_paper_441.pdf)
+To increase the impact of the project, consider interfacing it with [MLJ.jl](https://alan-turing-institute.github.io/MLJ.jl/dev/)
+
+### Parallel optimization
+Implement one of the following algorithms to train neural networks in parallel. Can be implemented in a separate package or consider extending [FluxDistributed.jl](https://github.com/DhairyaLGandhi/FluxDistributed.jl). Do not forget to verify that the method actually works!!!
+* [Hogwild!](https://proceedings.neurips.cc/paper/2011/file/218a0aefd1d1a4be65601cc6ddc1520e-Paper.pdf)
+* [Local sgd with periodic averaging: Tighter analysis and adaptive synchronization](https://proceedings.neurips.cc/paper/2019/file/c17028c9b6e0c5deaad29665d582284a-Paper.pdf)
+* [Distributed optimization for deep learning with gossip exchange](Distributed optimization for deep learning with gossip exchange)
+
+### Improving support for multi-threadding functions in NNLib
+[NNlib.jl](https://github.com/FluxML/NNlib.jl) is a workhorse library for deep learning in Julia (it powers Flux.jl). Yet most of their functions are single-threaded. The task is to choose few of them (e.g. `logitcrossentropy` or application of non-linearity) and make them multi-threaded. Ideally, you should make a workable pull request that will be accepted by the community. **Warning: this will require interaction with the Flux community**
 
 
 # Project requirements

@@ -35,7 +35,6 @@ for theme in ["light", "dark"]
     end
 end
 
-
 makedocs(;
     modules = [Scientific_Programming_in_Julia],
     authors = "JuliaTeachingCTU",
