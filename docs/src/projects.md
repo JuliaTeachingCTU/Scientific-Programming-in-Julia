@@ -10,12 +10,6 @@ The project should be of sufficient complexity that verify your skill of the lan
 Below, we list some potential projects for inspiration.
 
 
-## Improving documentation
-Improve documentation of one of these projects
-- [SymbolicPlanners.jl](https://github.com/JuliaPlanners/SymbolicPlanners.jl)
-- [DaggerFlux.jl](https://github.com/FluxML/DaggerFlux.jl) for model-based parallelization of large Neural Networks (see [JuliaCon 2022 for exposition of the package](https://www.youtube.com/watch?v=176c4S6LqT8))
-- [FluxDistributed.jl](https://github.com/DhairyaLGandhi/FluxDistributed.jl) for data-based parallelization of large Neural Networks (see [JuliaCon 2022 for exposition of the package](https://www.youtube.com/watch?v=176c4S6LqT8))
-
 ## Implementing new things
 
 ### The Equation Learner And Its Symbolic Representation
@@ -38,6 +32,9 @@ The equation learners should be tested on a few toy problems (possibly inspired
 by the tasks in the papers).  Finally, you will implement functionality that
 can transform the learned model into a symbolic, human readable, and exectuable
 Julia expression.
+
+### Architecture visualizer
+Write a tool that will take model written in Flux / Lux and visualize network architecture for publication. 
 
 ### Learning Large Language Models with reduced precition
 Large Language Models ((Chat) GPT, LLama, Falcon, Palm, ...) are huge. A recent trend is to perform optimization in reduced precision, for example in `int8` instead of `Float32`. Such feature is currently missing in Julia ecosystem and this project should be about bringing this to the community (for an introduction, read these blogs [*LLM-int8 and emergent features**](https://timdettmers.com/2022/08/17/llm-int8-and-emergent-features/), [*A gentle introduction to 8-bit Matrix Multiplication](https://huggingface.co/blog/hf-bitsandbytes-integration)). The goal would be to implement this as an additional type of Number / Matrix and overload multiplication on CPU (and ideally on GPU) to make it transparent for neural networks? **What I will learn?** In this project, you will learn a lot about the (simplicity of) implementation of deep learning libraries and you will practice abstraction of Julia's types. You can furthermore learn about GPU Kernel programming and `Transformers.jl` library.
