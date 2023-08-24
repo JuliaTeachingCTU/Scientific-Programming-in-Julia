@@ -12,7 +12,7 @@ Key requirements for a Scientific programming language:
 
 ```@raw html
 <figure>
-  <img src="../assets/julia-set.png"; max-width: 100%; height: auto;/>
+  <img src="../../assets/julia-set.png"; max-width: 100%; height: auto;/>
   <figcaption>
     <a href="https://en.wikipedia.org/wiki/Julia_set">Julia set</a>.
     Shamelessly stolen from

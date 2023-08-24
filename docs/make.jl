@@ -53,7 +53,7 @@ makedocs(;
     repo = "https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/{commit}{path}#{line}",
     sitename = "Scientific Programming in Julia",
     format = Documenter.HTML(;
-        prettyurls = get(ENV, "CI", "false") == "true",
+        prettyurls = true,
         canonical = "https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia",
         assets = ["assets/favicon.ico", "assets/onlinestats.css"],
         collapselevel = 1,
