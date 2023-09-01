@@ -1,5 +1,7 @@
 # Lab 01: Introduction to Julia
-This lab should get everyone up to speed in the basics of Julia's installation, syntax and basic coding. For more detailed introduction you can check out Lectures 1-3 of the bachelor [course](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/).
+This lab should get everyone up to speed in the basics of Julia's installation, syntax and basic
+coding. For more detailed introduction you can check out Lectures 1-3 of the bachelor
+[course](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/).
 
 ## Testing Julia installation (custom setup)
 In order to proceed further let's run a simple [script](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_01/test_setup.jl) to see, that the setup described in chapter [Installation](@ref install) is working properly.
