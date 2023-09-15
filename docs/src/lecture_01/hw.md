@@ -42,6 +42,13 @@ Nothing to see here.
 </p></details>
 ```
 
+# How to submit?
+
+Put all the code for the exercise above in a file called `hw.jl` and upload it to
+[BRUTE](https://cw.felk.cvut.cz/brute/).
+If you have any questions, write an email to one of the [lab instructors](@ref emails) of the course.
+
+# Voluntary
 
 ```@raw html
 <div class="admonition is-category-exercise">
@@ -78,6 +85,7 @@ pkg> ? add
   pkg> add git@github.com:JuliaLang/Example.jl.git          # same as above but using the ssh protocol
   pkg> add Example=7876af07-990d-54b4-ab0e-23690620f79a     # when there are multiple pkgs with the same name
 ```
+
 As the both `Plots` and `GraphRecipes` are registered and we don't have any version requirements, we will use the first option.
 ```julia
 pkg> add Plots
@@ -101,6 +109,3 @@ graphplot(A) #hide
 ```@raw html
 </p></details>
 ```
-
-# How to submit?
-Isolate the code of the compulsory task into a script named `hw.jl` alongside with the `Project.toml` and `Manifest.toml` of the environment. Create a zipfile of the folder and send it to the lab instructor, who has assigned the task, via email (contact emails are located on the [homepage](@ref emails) of the course).

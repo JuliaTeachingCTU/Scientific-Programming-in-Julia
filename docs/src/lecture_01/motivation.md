@@ -15,7 +15,7 @@ Key requirements for a Scientific programming language:
   <img src="../../assets/julia-set.png"; max-width: 100%; height: auto;/>
   <figcaption>
     <a href="https://en.wikipedia.org/wiki/Julia_set">Julia set</a>.
-    Shamelessly stolen from
+    Stolen from
     <a href="https://juliagraphics.github.io/ColorSchemes.jl/stable/images/">Colorschemes.jl</a>.
   </figcaption>
 </figure>
