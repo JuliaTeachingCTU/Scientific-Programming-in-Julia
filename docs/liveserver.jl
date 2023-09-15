@@ -17,6 +17,7 @@ LiveServer.servedocs(;
     # Documentation root where make.jl and src/ are located
     foldername = joinpath(repo_root, "docs"),
     # Extra source folder to watch for changes
+    skip_dirs = ["src/assets"],
     include_dirs = [
         # Watch the src folder so docstrings can be Revise'd
         joinpath(repo_root, "src"),

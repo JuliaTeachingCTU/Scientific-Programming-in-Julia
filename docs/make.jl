@@ -15,25 +15,25 @@ DocMeta.setdocmeta!(
 # download and compile theme
 assetsdir(args...) = joinpath(@__DIR__, "src", "assets", args...)
 site = "https://github.com/JuliaTeachingCTU/JuliaCTUGraphics/raw/main/"
-force = false
+force = true
 
-# mkpath(assetsdir("themes"))
-# mv(download("$(site)logo/CTU-logo-dark.svg"), assetsdir("logo-dark.svg"); force)
-# mv(download("$(site)logo/CTU-logo.svg"), assetsdir("logo.svg"); force)
-# mv(download("$(site)icons/favicon.ico"), assetsdir("favicon.ico"); force)
-# 
-# for theme in ["light", "dark"]
-#     mktemp(@__DIR__) do path, io
-#         write(io, join([
-#             read(joinpath(HTMLWriter.ASSETS_THEMES, "documenter-$(theme).css"), String),
-#             read(download("$(site)assets/lectures-$(theme).css"), String)
-#         ], "\n"))
-#         Themes.compile(
-#             path,
-#             joinpath(@__DIR__, assetsdir("themes", "documenter-$(theme).css"))
-#         )
-#     end
-# end
+mkpath(assetsdir("themes"))
+mv(download("$(site)logo/CTU-logo-dark.svg"), assetsdir("logo-dark.svg"); force)
+mv(download("$(site)logo/CTU-logo.svg"), assetsdir("logo.svg"); force)
+mv(download("$(site)icons/favicon.ico"), assetsdir("favicon.ico"); force)
+
+for theme in ["light", "dark"]
+    mktemp(@__DIR__) do path, io
+        write(io, join([
+            read(joinpath(HTMLWriter.ASSETS_THEMES, "documenter-$(theme).css"), String),
+            read(download("$(site)assets/lectures-$(theme).css"), String)
+        ], "\n"))
+        Themes.compile(
+            path,
+            joinpath(@__DIR__, assetsdir("themes", "documenter-$(theme).css"))
+        )
+    end
+end
 
 
 # documentation
