@@ -39,7 +39,7 @@ Repetition of functional programming:
 ```julia 
 function mymap(f::Function,a::AbstractArray)
     b = similar(a)
-    for i=1:length(a)
+    for i in eachindex(a)
         b[i]=f(a[i])
     end
     b
