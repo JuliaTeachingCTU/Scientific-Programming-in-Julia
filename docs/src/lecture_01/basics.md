@@ -47,7 +47,7 @@ end
 ```
 
 Allows for anonymous functions:
-```
+```julia
 mymap(x->x^2+2,[1.0,2.0])
 ```
 
@@ -62,18 +62,18 @@ Function properties:
 ### Different style of writing code
 
 Definitions of multiple small functions and their composition
-```
+```julia
 fsum(x) = x
 fsum(x,p...) = x+fsum(p[1],p[2:end]...)
 ```
 a single methods may not be sufficient to understand the full algorithm. In procedural language, you may write:
 ```matlab
 function out=fsum(x,varargin)
-if nargin==2 # TODO: better treatment
-    out=x
-else
-    out = fsum(varargin{1},varargin{2:end})
-end
+    if nargin==2 # TODO: better treatment
+        out=x
+    else
+        out = fsum(varargin{1},varargin{2:end})
+    end
 ```
 The need to build intuition for function composition.
 
@@ -93,6 +93,11 @@ Dispatch is easier to optimize by the compiler.
 | A.n|	getproperty|
 | A.n = x	|setproperty!|
 
+```julia
+struct Foo end
+
+Base.getproperty(a::Foo, x::Symbol) = x == :a ? 5 : error("does not have property $(x)")
+```
 
 Can be redefined and overloaded for different input types. The ```getproperty``` method can define access to the memory structure.
 
