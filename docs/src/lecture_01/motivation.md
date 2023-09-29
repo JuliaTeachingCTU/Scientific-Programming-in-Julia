@@ -145,7 +145,7 @@ Design principle: abstraction should have *zero* runtime  cost
 Function recursion with arbitrary number of arguments:
 ```julia
 fsum(x) = x
-fsum(x,p...) = x+fsum(p[1],p[2:end]...)
+fsum(x,p...) = x+fsum(p...)
 ```
 Defines essentially a sum of inputs. Nice generic and abstract concept.
 
