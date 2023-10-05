@@ -31,6 +31,7 @@ struct Sheep
 end
 ````
 
+
 This allows us to define functions applicable only to the corresponding type
 
 ````@example lecture
@@ -46,7 +47,7 @@ that `howl(sheep)` and `baa(wolf)` never happen.
 baa(Sheep("Karl",3))
 baa(Wolf("Karl",3))
 ```
-Notice the type of error of the latter call `baa(Wolf("Karl",3))`. Julia raises `MethodError` which states that there is no function `baa` for the type `Wolf` (but there is a function `baa` for type `Sheep`).
+Notice the type of error of the latter call `baa(Wolf("Karl",3))`. Julia raises `MethodError` which states that it has failed to find a function `baa` for the type `Wolf` (but there is a function `baa` for type `Sheep`).
 
 For comparison, consider an alternative definition which does not have specified types
 
@@ -60,7 +61,7 @@ programmer which inevitably leads to errors (note that severely constrained
 type systems are difficult to use).
 
 ## Intention of use and restrictions on compilers
-Types plays an important role in generating efficient code by a compiler, because they tells the compiler which operations are permitted and prohibited, and possibly about costants. If compiler knows that something is constant, it can expoit such information. As an example, consider the following two
+Types play an important role in generating efficient code by a compiler, because they tells the compiler which operations are permitted, prohibited, and can indicate invariants of type (e.g. constant size of an array). If compiler knows that something is invariant (constant), it can expoit such information. As an example, consider the following two
 alternatives to represent a set of animals:
 
 ````@example lecture
@@ -158,15 +159,19 @@ At `int.jl:87`
 (+)(x::T, y::T) where {T<:BitInteger} = add_int(x, y)
 ```
 we see that `+` of integers is calling the function `add_int(x, y)`, which is defined in the core
-part of the compiler in `Intrinsics.cpp` (yes, in C++).
+part of the compiler in `Intrinsics.cpp` (yes, in C++), exposed in `Core.Intrinsics`
 
 From Julia docs: *Core is the module that contains all identifiers considered "built in" to
 the language, i.e. part of the core language and not libraries. Every module implicitly
 specifies using Core, since you can't do anything without those definitions.*
 
-Primitive types are rarely used, and they will not be used in this course. We mention them
-for the sake of completeness and refer the reader to the official Documentation (and source code
-of Julia).
+Primitive types are rarely used, and they will not be used in this course. We mention them for the sake of completeness and refer the reader to the official Documentation (and source code of Julia).
+
+An example of use of primitive type is a definition of one-hot vector in the library `PrimitiveOneHot` as 
+```julia
+primitive type OneHot{K} <: AbstractOneHotArray{1} 32 end
+```
+where `K` is the dimension of the one-hot vector. 
 
 ### Abstract types
 
@@ -280,41 +285,9 @@ using BenchmarkTools
 move(a,b) = typeof(a)(a.x+b.x, a.y+b.y)
 x = [PositionF64(rand(), rand()) for _ in 1:100]
 y = [VaguePosition(rand(), rand()) for _ in 1:100]
-<<<<<<< HEAD
-```
-```julia
-@benchmark reduce(move, x)
-```
-```
-BenchmarkTools.Trial: 10000 samples with 950 evaluations.
- Range (min … max):   96.184 ns …  2.682 μs  ┊ GC (min … max): 0.00% … 96.11%
- Time  (median):      97.281 ns              ┊ GC (median):    0.00%
- Time  (mean ± σ):   100.516 ns ± 58.347 ns  ┊ GC (mean ± σ):  1.41% ±  2.35%
-
-  ▇██▆▄▄▄▄▅▄▃▃▃▄▃▃▂▂▂▁▁                                        ▂
-  █████████████████████▇█▇▇▇▅▆▆▇▇▇▇▇▇▇▆▆▆▇▇▆▆▇▇▆▆▆▅▆▆▄▅▆▅▃▅▅▅▆ █
-  96.2 ns       Histogram: log(frequency) by time       120 ns <
-
- Memory estimate: 32 bytes, allocs estimate: 1.
-```
-```julia
-@benchmark reduce(move, y)
-=======
 @benchmark reduce(move, $(x))
 @benchmark reduce(move, $(y))
->>>>>>> 59e5094 (local changes commited)
-```
-```
-BenchmarkTools.Trial: 10000 samples with 9 evaluations.
- Range (min … max):  2.245 μs … 428.736 μs  ┊ GC (min … max): 0.00% … 99.35%
- Time  (median):     2.306 μs               ┊ GC (median):    0.00%
- Time  (mean ± σ):   2.538 μs ±   8.488 μs  ┊ GC (mean ± σ):  6.68% ±  1.99%
-
-       █                                                       
-  ▁▂▄▂▆█▇▇▃▂▁▁▁▂▂▁▂▂▂▁▂▂▃▂▂▂▂▂▂▂▃▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▂
-  2.25 μs         Histogram: frequency by time        2.75 μs <
-
- Memory estimate: 3.12 KiB, allocs estimate: 199.
+nothing # hide
 ```
 
 Giving fields of a composite type an abstract type does not really solve the problem of the compiler not knowing the type. In this example, it still does not know, if it should use instructions for `Float64` or `Int8`.
@@ -324,22 +297,10 @@ struct LessVaguePosition
   x::Real
   y::Real
 end
-```
-```julia
+
 z = [LessVaguePosition(rand(), rand()) for _ in 1:100];
 @benchmark reduce(move, $(z))
-```
-```
-BenchmarkTools.Trial: 10000 samples with 1 evaluation.
- Range (min … max):  16.542 μs …  5.043 ms  ┊ GC (min … max): 0.00% … 99.57%
- Time  (median):     16.959 μs              ┊ GC (median):    0.00%
- Time  (mean ± σ):   17.903 μs ± 50.271 μs  ┊ GC (mean ± σ):  2.80% ±  1.00%
-
-   ▆▇███▇▅▃▂▁▂▃▄▂▄▄▄▄▃▃▂▁▁                     ▁▁ ▁▁▁ ▁       ▂
-  ███████████████████████████▇▇▄▇▇▇▇▆▄▆▇▇▇▆▇▇▇▇█████████▇▇▇▆▅ █
-  16.5 μs      Histogram: log(frequency) by time      21.3 μs <
-
- Memory estimate: 9.31 KiB, allocs estimate: 496.
+nothing #hide
 ```
 
 From the perspective of generating optimal code, both definitions are equally uninformative to the compiler as it cannot assume anything about the code. However, the  `LessVaguePosition` will ensure that the position will contain only numbers, hence catching trivial errors like instantiating `VaguePosition` with non-numeric types for which arithmetic operators will not be defined (recall the discussion on the  beginning of the lecture).
@@ -380,20 +341,17 @@ struct PositionT{T}
 end
 u = [PositionT(rand(), rand()) for _ in 1:100]
 u = [PositionT(rand(Float32), rand(Float32)) for _ in 1:100]
+
 @benchmark reduce(move, $(u))
-```
-```
-  116.285 ns (1 allocation: 32 bytes)
+nothing # hide
 ```
 
 Notice that the compiler can take advantage of specializing for different types (which does not have an effect here as in modern processors addition of `Float` and `Int` takes the same time).
 
 ```julia
 v = [PositionT(rand(1:100), rand(1:100)) for _ in 1:100]
-@btime reduce(move, v)
-```
-```
-  116.892 ns (1 allocation: 32 bytes)
+@benchmark reduce(move, v)
+nothing #hide
 ```
 
 The above definition suffers the same problem as `VaguePosition`, which is that it allows us to instantiate the `PositionT` with non-numeric types, e.g. `String`. We solve this by restricting the types `T` to be children of some supertype, in this case `Real`
@@ -520,8 +478,9 @@ move(a, by)
 3. The compiler identifies all `move`-methods with arguments of type `(Position{Float64}, Position{Float64})`:
 
 ````@repl lecture
-Base.method_instances(move, (typeof(a), typeof(by)))
-m = Base.method_instances(move, (typeof(a), typeof(by))) |> first
+wc = Base.get_world_counter()
+m = Base.method_instances(move, (typeof(a), typeof(by)), wc)
+m = first(m)
 ````
 
 4a. If the method has been specialized (compiled), then the arguments are prepared and the method is invoked. The compiled specialization can be seen from
@@ -678,7 +637,7 @@ foo(a::Vector{Real}) = println("Vector{Real}")
 foo([1.0,2,3])
 ````
 
-Julia's type system is **invariant**, which means that `Vector{Real}` is different from `Vector{Float64}` and from `Vector{Float32}`, even though `Float64` and `Float32` are sub-types of `Real`. Therefore `typeof([1.0,2,3])` isa `Vector{Float64}` which is not subtype of `Vector{Real}.` For **covariant** languages, this would be true. For more information on variance in computer languages, [see here](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)). If de above definition of `foo` should be applicable to all vectors which has elements of subtype of `Real` we have define it as
+Julia's type system is **invariant**, which means that `Vector{Real}` is different from `Vector{Float64}` and from `Vector{Float32}`, even though `Float64` and `Float32` are sub-types of `Real`. Therefore `typeof([1.0,2,3])` isa `Vector{Float64}` which is not subtype of `Vector{Real}.` For **covariant** languages, this would be true. For more information on variance in computer languages, [see here](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)). If the above definition of `foo` should be applicable to all vectors which has elements of subtype of `Real` we have define it as
 
 ````@example lecture
 foo(a::Vector{T}) where {T<:Real} = println("Vector{T} where {T<:Real}")
