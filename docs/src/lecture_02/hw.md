@@ -2,7 +2,7 @@
 
 In this lab you will continue working on your agent simulation. If you did not
 manage to finish the homework, do not worry, you can use [this
-script](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2022W/docs/src/lecture_02/Lab02Ecosystem.jl)
+script](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2023W/docs/src/lecture_02/Lab02Ecosystem.jl)
 which contains all the functionality we developed in the lab.
 ```@setup hw02
 projdir = dirname(Base.active_project())

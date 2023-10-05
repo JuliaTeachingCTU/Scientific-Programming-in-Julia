@@ -132,11 +132,11 @@ a probability to reproduce $p_r$.c
 Solution for `Sheep`
 ```@example block
 mutable struct Sheep <: Animal
-    id::Int
-    energy::Float64
+    const id::Int
+    const energy::Float64
     Δenergy::Float64
-    reprprob::Float64
-    foodprob::Float64
+    const reprprob::Float64
+    const foodprob::Float64
 end
 
 Sheep(id, e=4.0, Δe=0.2, pr=0.8, pf=0.6) = Sheep(id,e,Δe,pr,pf)
