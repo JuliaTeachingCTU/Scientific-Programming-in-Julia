@@ -489,7 +489,7 @@ end
 - Use `sum` to collect the resulting array into `accumulator` variable or directly into the `return` command.
 
 **BONUS:**
-There is even shorter way how to write this using one line function syntax and recently added options to the `sum` function. See entry in the help mode `?`.
+Can you figure out how to use the `mapreduce` function here? See entry in the help mode `?`.
 ```@raw html
 </div></div>
 <details class = "solution-body">
@@ -512,7 +512,7 @@ nothing #hide
 Using the default syntax for `map` and storing the anonymous into a variable
 ```@example lab01_base
 function polynomial(a, x)
-    polypow = ia -> x^(ia[1]-1) * ia[2] # 
+    polypow(i,aᵢ) = x^(i-1) * aᵢ
     powers = map(polypow, enumerate(a))
     return sum(powers)
 end
@@ -520,9 +520,10 @@ nothing #hide
 ```
 
 As the function `polypow` is used only once, there is no need to assign it to a local variable.
+Note the sightly awkward additional parenthesis in the argument of the lambda function.
 ```@example lab01_base
 function polynomial(a, x)
-    powers = map(ia -> x^(ia[1]-1) * ia[2], enumerate(a))
+    powers = map(((i,aᵢ),) -> x^(i-1) * aᵢ, enumerate(a))
     sum(powers)
 end
 nothing #hide
@@ -540,7 +541,25 @@ polynomial(ac, x)
 polynomial(ag, x)
 ```
 
-**BONUS:** Using one line function definition and the recently added option of a function in the first argument of sum:
+**BONUS:** You may have noticed that in the example above, the `powers` variable is allocating an
+additional, unnecessary vector. With the current, scalar `x`, this is not such a big deal. But in
+your homework you will generalize this function to matrix inputs of `x`, which means that `powers`
+becomes a vector of (potentially very large) matrices. This is a very natural use case for the
+`mapreduce`:
+function:
+```@example lab01_base
+polynomial(a, x) = mapreduce(+, enumerate(a), init=zero(x)) do (i, aᵢ)
+    x^(i-1) * aᵢ
+end
+
+polynomial(a, x)
+```
+Let's unpack what is happening here. If the function `mapreduce(f, op, itr)` is called with `op=+`
+it returns the same result as `sum(map(f, itr))`.  In contrast to `sum(map(f, itr))` (which
+allocates a vector as a result of `map` and **then** sums) `mapreduce` applies `f` to an element in
+`itr` and **immediately accumulates** the result with the given `op=+`.
+
+
 ```@repl lab01_base
 polynomial(a, x) = sum(ia -> x^(ia[1]-1) * ia[2], enumerate(a))
 nothing #hide
