@@ -8,7 +8,7 @@
 
 
 This repository contains all the course materials for the master course
-_**Scientific Programming in Julia**_ taught at the Czech Techincal University
+_**Scientific Programming in Julia**_ taught at the Czech Technical University
 in Prague. You can find more information on the official
 [course website](https://juliateachingctu.github.io/Scientific-Programming-in-Julia/dev).
 
