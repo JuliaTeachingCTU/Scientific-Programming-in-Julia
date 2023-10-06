@@ -22,7 +22,7 @@ is one approach that can identify concise equations that describe a given
 dataset.
 
 The EQL is essentially a neural network with different unary or binary
-activation functions at each indiviual unit. The network weights are
+activation functions at each individual unit. The network weights are
 regularized during training to obtain a sparse model which hopefully results in
 a model that represents a simple equation.
 
@@ -30,13 +30,13 @@ The goal of this project is to implement the EQL, and if there is enough time
 the [*improved equation learner*](https://arxiv.org/abs/2105.06331) (iEQL).
 The equation learners should be tested on a few toy problems (possibly inspired
 by the tasks in the papers).  Finally, you will implement functionality that
-can transform the learned model into a symbolic, human readable, and exectuable
+can transform the learned model into a symbolic, human readable, and executable
 Julia expression.
 
 ### Architecture visualizer
 Write a tool that will take model written in Flux / Lux and visualize network architecture for publication. 
 
-### Learning Large Language Models with reduced precition
+### Learning Large Language Models with reduced precision
 Large Language Models ((Chat) GPT, LLama, Falcon, Palm, ...) are huge. A recent trend is to perform optimization in reduced precision, for example in `int8` instead of `Float32`. Such feature is currently missing in Julia ecosystem and this project should be about bringing this to the community (for an introduction, read these blogs [*LLM-int8 and emergent features**](https://timdettmers.com/2022/08/17/llm-int8-and-emergent-features/), [*A gentle introduction to 8-bit Matrix Multiplication](https://huggingface.co/blog/hf-bitsandbytes-integration)). The goal would be to implement this as an additional type of Number / Matrix and overload multiplication on CPU (and ideally on GPU) to make it transparent for neural networks? **What I will learn?** In this project, you will learn a lot about the (simplicity of) implementation of deep learning libraries and you will practice abstraction of Julia's types. You can furthermore learn about GPU Kernel programming and `Transformers.jl` library.
 
 ### Planning algorithms
@@ -96,7 +96,7 @@ Only after all this we may look at the extent of the project and it's difficulty
 Nice to have things, which are not strictly required but obviously improves the score.
 - Ideally the project should be hosted on GitHub, which could have the continuous integration/testing set up.
 - Include some benchmark and profiling code in your examples, which can show us how well you have dealt with the question of performance.
-- Some parallelization attempts either by multi-processing, multi-threadding, or CUDA. Do not forget to show the improvement.
+- Some parallelization attempts either by multi-processing, multi-threading, or CUDA. Do not forget to show the improvement.
 - Documentation with a webpage using Documenter.jl.
 
 Here are some examples of how the project could look like:
