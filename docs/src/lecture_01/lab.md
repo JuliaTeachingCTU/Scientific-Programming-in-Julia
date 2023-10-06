@@ -206,7 +206,7 @@ Looking at mathematical operators `+`, `*`, we can see that in Julia they are al
 +
 *
 ```
-The main difference from our `polynomial` function is that there are multiple methods, for each of these functions. Each one of the methods coresponds to a specific combination of arguments, for which the function can be specialized to using *multiple dispatch*. You can see the list by calling a `methods` function:
+The main difference from our `polynomial` function is that there are multiple methods, for each of these functions. Each one of the methods corresponds to a specific combination of arguments, for which the function can be specialized to using *multiple dispatch*. You can see the list by calling a `methods` function:
 ```julia
 julia> methods(+)
 # 190 methods for generic function "+":                                                                               
