@@ -45,7 +45,7 @@ fast, extensible, reusable, and easy-to-read code using things like *optional
 typing*, *multiple dispatch*, and functional programming concepts.  The later
 part of the course will teach you how to use more advanced concepts like
 *language introspection*, *metaprogramming*, and *symbolic computing*.
-Amonst others you will _**implement your own automatic differetiation**_ (the
+Amonst others you will _**implement your own automatic differentiation**_ (the
 backbone of modern machine learning) package based on these advanced techniques
 that can transform intermediate representations of Julia code.
 
@@ -103,7 +103,7 @@ the standard grading scale below.
 
 There are no hard requirements to take the course, but if you are not at all familiar
 with Julia we recommend you to take [Julia for Optimization and Learning](https://github.com/JuliaTeachingCTU/Julia-for-Optimization-and-Learning) before enrolling in this course. The [Functional Programming](https://cw.fel.cvut.cz/b202/courses/fup/start) course also contains
-some helpful concepts for this course. And knowledge about computer hardware, namely basics of how CPU works, how it interacts with memory through caches, and basics of multi-threadding certainly helps.
+some helpful concepts for this course. And knowledge about computer hardware, namely basics of how CPU works, how it interacts with memory through caches, and basics of multi-threading certainly helps.
 
 ## References
 
