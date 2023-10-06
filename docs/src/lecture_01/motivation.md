@@ -48,7 +48,7 @@ Very simple for a user, very complicated for a programmer. The program should:
  - pick the right optimization method (easy by config-like approach)
  - compute gradient (Hessian) of a *user* function
 
-## Classical approach: create a *fast* library and flexible calling enviroment
+## Classical approach: create a *fast* library and flexible calling environment
 
 Crucial algorithms (sort, least squares...) are relatively small and well defined. Application of these algorithms to real-world problem is typically not well defined and requires more code. Iterative development. 
 
@@ -57,7 +57,7 @@ Think of a problem of repeated execution of similar jobs with different options.
 - binary executable with configuration file
 - scripting language/environment (Read-Eval-Print Loop)
 
-It is not a strict boundary, increasing expresivity of the configuration file will create a new scripting language.
+It is not a strict boundary, increasing expressivity of the configuration file will create a new scripting language.
 
 Ending up in the *2 language problem*. 
 
@@ -208,7 +208,7 @@ The simplification was not achieved by the compiler alone.
 
 Such tools allow building a very convenient user experience on abstract level, and reaching very efficient code.
 
-## Reproducibile research
+## Reproducible research
 
 Think about a code that was written some time ago. To run it, you often need to be able to have the same version of the language it was written for. 
 
