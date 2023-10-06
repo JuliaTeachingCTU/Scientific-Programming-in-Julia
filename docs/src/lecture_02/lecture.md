@@ -80,8 +80,7 @@ energy(animals) = mapreduce(x -> x.energy, +, animals)
 nothing # hide
 ````
 
-A good compiler makes use of the information provided by the type system to generate effiecint code
-which we can verify by inspecting the compiled code using `@code_native` macro
+A good compiler makes use of the information provided by the type system to generate efficient code which we can verify by inspecting the compiled code using `@code_native` macro
 
 ````@repl lecture; ansicolor=true
 @code_native debuginfo=:none energy(a)
@@ -331,6 +330,23 @@ a
 
 Note, that the memory layout of mutable structures is different, as fields now contain references to memory locations, where the actual values are stored (such structures cannot be allocated on stack, which increases the pressure on Garbage Collector).
 
+The difference can be seen from 
+```
+a, b = PositionF64(1,2), PositionF64(1,2)
+@code_native debuginfo=:none move(a,b)
+a, b = MutablePosition(1,2), MutablePosition(1,2)
+@code_native debuginfo=:none move(a,b)
+```
+Why there is just one addition?
+
+Also, the mutability is costly.
+```julia
+x = [PositionF43(rand(), rand()) for _ in 1:100];
+z = [MutablePosition(rand(), rand()) for _ in 1:100];
+@benchmark reduce(move, $(x))
+@benchmark reduce(move, $(z))
+```
+
 ### Parametric types
 So far, we had to trade-off flexibility for generality in type definitions. Can we have both? The answer is affirmative. The way to achieve this  **flexibility** in definitions of the type while being  able to generate optimal code is to  **parametrize** the type definition. This is achieved by replacing types with a parameter (typically a single uppercase character) and decorating in definition by specifying different type in curly brackets. For example
 
@@ -378,6 +394,18 @@ struct PositionXY{X<:Real, Y<:Real}
   y::Y
 end
 ```
+
+The type can be parametrized by a concrete types. This is usefuyl to communicate the compiler some useful informations, for example size of arrays. 
+
+```julia
+struct PositionZ{T<:Real,Z}
+  x::T
+  y::T
+end
+
+PositionZ{Int64,1}(1,2)
+```
+
 
 ### Abstract parametric types
 Like Composite types, Abstract types can also have parameters. These parameters define types that are common for all child types. A very good example is Julia's definition of arrays of arbitrary dimension `N` and type `T` of its items as
