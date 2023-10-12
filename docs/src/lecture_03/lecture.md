@@ -31,6 +31,7 @@ Is julia OOP or FP? It is different from both, based on:
 - types system (polymorphic)
 - multiple dispatch (extending single dispatch of OOP)
 - functions as first class 
+- decoupling of data and functions
 - macros
 
 Any guidelines to solve real-world problems?
