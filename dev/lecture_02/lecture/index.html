@@ -153,17 +153,17 @@ end</code></pre><p>You can verify that the above general function can be compile
 @code_native debuginfo=:none mapreduce(*,+, [1,2,3], [1,2,3])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">	.text
 	.file	&quot;mapreduce&quot;
 	.section	.rodata.cst32,&quot;aM&quot;,@progbits,<span class="sgr33">32</span>
-	.p2align	<span class="sgr33">5</span>                               <span class="sgr90"># -- Begin function julia_mapreduce_4169</span>
+	.p2align	<span class="sgr33">5</span>                               <span class="sgr90"># -- Begin function julia_mapreduce_4117</span>
 <span class="sgr91">.LCPI0_0:</span>
-	.quad	<span class="sgr33">139656866721056</span>                 <span class="sgr90"># 0x7f0465ee6d20</span>
-	.quad	<span class="sgr33">139656846413552</span>                 <span class="sgr90"># 0x7f0464b88ef0</span>
-	.quad	<span class="sgr33">139656845023056</span>                 <span class="sgr90"># 0x7f0464a35750</span>
-	.quad	<span class="sgr33">139656845006704</span>                 <span class="sgr90"># 0x7f0464a31770</span>
+	.quad	<span class="sgr33">140058592963872</span>                 <span class="sgr90"># 0x7f61eeae6d20</span>
+	.quad	<span class="sgr33">140058572656368</span>                 <span class="sgr90"># 0x7f61ed788ef0</span>
+	.quad	<span class="sgr33">140058571265872</span>                 <span class="sgr90"># 0x7f61ed635750</span>
+	.quad	<span class="sgr33">140058571249520</span>                 <span class="sgr90"># 0x7f61ed631770</span>
 	.text
-	.globl	julia_mapreduce_4169
+	.globl	julia_mapreduce_4117
 	.p2align	<span class="sgr33">4</span>, <span class="sgr33">0x90</span>
-	.type	julia_mapreduce_4169,@function
-<span class="sgr91">julia_mapreduce_4169:</span>                   <span class="sgr90"># @julia_mapreduce_4169</span>
+	.type	julia_mapreduce_4117,@function
+<span class="sgr91">julia_mapreduce_4117:</span>                   <span class="sgr90"># @julia_mapreduce_4117</span>
 	.cfi_startproc
 <span class="sgr90"># %bb.0:                                # %top</span>
 	<span class="sgr96"><span class="sgr1">pushq</span></span>	%rbp
@@ -177,8 +177,8 @@ end</code></pre><p>You can verify that the above general function can be compile
 	<span class="sgr96"><span class="sgr1">vmovups</span></span>	%ymm0, <span class="sgr33">-48(</span>%rbp<span class="sgr33">)</span>
 	<span class="sgr96"><span class="sgr1">movq</span></span>	%rdi, <span class="sgr33">-16(</span>%rbp<span class="sgr33">)</span>
 	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsi, <span class="sgr33">-8(</span>%rbp<span class="sgr33">)</span>
-	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$&quot;j1_#mapreduce#801_4171&quot;</span>, %rax
-	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr33">$139656923001952</span>, %rdi          <span class="sgr90"># imm = 0x7F0469493460</span>
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$&quot;j1_#mapreduce#801_4119&quot;</span>, %rax
+	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr33">$140058649244768</span>, %rdi          <span class="sgr90"># imm = 0x7F61F2093460</span>
 	<span class="sgr96"><span class="sgr1">leaq</span></span>	<span class="sgr33">-48(</span>%rbp<span class="sgr33">)</span>, %rsi
 	<span class="sgr96"><span class="sgr1">movl</span></span>	<span class="sgr33">$6</span>, %edx
 	<span class="sgr96"><span class="sgr1">vzeroupper</span></span>
@@ -189,16 +189,16 @@ end</code></pre><p>You can verify that the above general function can be compile
 	.cfi_def_cfa %rsp, <span class="sgr33">8</span>
 	<span class="sgr96"><span class="sgr1">retq</span></span>
 <span class="sgr91">.Lfunc_end0:</span>
-	.size	julia_mapreduce_4169, .Lfunc_end0-julia_mapreduce_4169
+	.size	julia_mapreduce_4117, .Lfunc_end0-julia_mapreduce_4117
 	.cfi_endproc
                                         <span class="sgr90"># -- End function</span>
 	.section	&quot;.note.GNU-stack&quot;,&quot;&quot;,@progbits</code></pre><h2 id="More-on-the-use-of-types-in-function-definitions"><a class="docs-heading-anchor" href="#More-on-the-use-of-types-in-function-definitions">More on the use of types in function definitions</a><a id="More-on-the-use-of-types-in-function-definitions-1"></a><a class="docs-heading-anchor-permalink" href="#More-on-the-use-of-types-in-function-definitions" title="Permalink"></a></h2><h3 id="Terminology"><a class="docs-heading-anchor" href="#Terminology">Terminology</a><a id="Terminology-1"></a><a class="docs-heading-anchor-permalink" href="#Terminology" title="Permalink"></a></h3><p>A <em>function</em> refers to a set of &quot;methods&quot; for a different combination of type parameters (the term function can be therefore considered as refering to a mere <strong>name</strong>). <em>Methods</em> define different behavior for different types of arguments for a given function. For example</p><pre><code class="language-julia hljs">move(a::Position, b::Position) = Position(a.x + b.x, a.y + b.y)
 move(a::Vector{&lt;:Position}, b::Vector{&lt;:Position}) = move.(a,b)</code></pre><p><code>move</code> refers to a function with methods <code>move(a::Position, b::Position)</code> and <code>move(a::Vector{&lt;:Position}, b::Vector{&lt;:Position})</code>. When different behavior on different types is defined by a programmer, as shown above, it is also called <em>implementation specialization</em>. There is another type of specialization, called <em>compiler specialization</em>, which occurs when the compiler generates different functions for you from a single method. For example for</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; move(Position(1,1), Position(2,2))</code><code class="nohighlight hljs ansi" style="display:block;">Main.Position{Int64}(3, 3)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; move(Position(1.0,1.0), Position(2.0,2.0))</code><code class="nohighlight hljs ansi" style="display:block;">Main.Position{Float64}(3.0, 3.0)</code></pre><p>the compiler generates two methods, one for <code>Position{Int64}</code> and the other for <code>Position{Float64}</code>. Notice that inside generated functions, the compiler needs to use different intrinsic operations, which can be viewed from</p><pre><code class="language-julia hljs">@code_native debuginfo=:none move(Position(1,1), Position(2,2))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">	.text
 	.file	&quot;move&quot;
-	.globl	julia_move_4211                 <span class="sgr90"># -- Begin function julia_move_4211</span>
+	.globl	julia_move_4159                 <span class="sgr90"># -- Begin function julia_move_4159</span>
 	.p2align	<span class="sgr33">4</span>, <span class="sgr33">0x90</span>
-	.type	julia_move_4211,@function
-<span class="sgr91">julia_move_4211:</span>                        <span class="sgr90"># @julia_move_4211</span>
+	.type	julia_move_4159,@function
+<span class="sgr91">julia_move_4159:</span>                        <span class="sgr90"># @julia_move_4159</span>
 	.cfi_startproc
 <span class="sgr90"># %bb.0:                                # %top</span>
 	<span class="sgr96"><span class="sgr1">pushq</span></span>	%rbp
@@ -206,23 +206,23 @@ move(a::Vector{&lt;:Position}, b::Vector{&lt;:Position}) = move.(a,b)</code></pr
 	.cfi_offset %rbp, <span class="sgr33">-16</span>
 	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsp, %rbp
 	.cfi_def_cfa_register %rbp
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rdi, %rax
 	<span class="sgr96"><span class="sgr1">vmovdqu</span></span>	<span class="sgr33">(</span>%rdx<span class="sgr33">)</span>, %xmm0
 	<span class="sgr96"><span class="sgr1">vpaddq</span></span>	<span class="sgr33">(</span>%rsi<span class="sgr33">)</span>, %xmm0, %xmm0
-	<span class="sgr96"><span class="sgr1">movq</span></span>	%rdi, %rax
 	<span class="sgr96"><span class="sgr1">vmovdqu</span></span>	%xmm0, <span class="sgr33">(</span>%rdi<span class="sgr33">)</span>
 	<span class="sgr96"><span class="sgr1">popq</span></span>	%rbp
 	.cfi_def_cfa %rsp, <span class="sgr33">8</span>
 	<span class="sgr96"><span class="sgr1">retq</span></span>
 <span class="sgr91">.Lfunc_end0:</span>
-	.size	julia_move_4211, .Lfunc_end0-julia_move_4211
+	.size	julia_move_4159, .Lfunc_end0-julia_move_4159
 	.cfi_endproc
                                         <span class="sgr90"># -- End function</span>
 	.section	&quot;.note.GNU-stack&quot;,&quot;&quot;,@progbits</code></pre><p>and</p><pre><code class="language-julia hljs">@code_native debuginfo=:none move(Position(1.0,1.0), Position(2.0,2.0))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">	.text
 	.file	&quot;move&quot;
-	.globl	julia_move_4213                 <span class="sgr90"># -- Begin function julia_move_4213</span>
+	.globl	julia_move_4161                 <span class="sgr90"># -- Begin function julia_move_4161</span>
 	.p2align	<span class="sgr33">4</span>, <span class="sgr33">0x90</span>
-	.type	julia_move_4213,@function
-<span class="sgr91">julia_move_4213:</span>                        <span class="sgr90"># @julia_move_4213</span>
+	.type	julia_move_4161,@function
+<span class="sgr91">julia_move_4161:</span>                        <span class="sgr90"># @julia_move_4161</span>
 	.cfi_startproc
 <span class="sgr90"># %bb.0:                                # %top</span>
 	<span class="sgr96"><span class="sgr1">pushq</span></span>	%rbp
@@ -230,15 +230,15 @@ move(a::Vector{&lt;:Position}, b::Vector{&lt;:Position}) = move.(a,b)</code></pr
 	.cfi_offset %rbp, <span class="sgr33">-16</span>
 	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsp, %rbp
 	.cfi_def_cfa_register %rbp
+	<span class="sgr96"><span class="sgr1">movq</span></span>	%rdi, %rax
 	<span class="sgr96"><span class="sgr1">vmovupd</span></span>	<span class="sgr33">(</span>%rsi<span class="sgr33">)</span>, %xmm0
 	<span class="sgr96"><span class="sgr1">vaddpd</span></span>	<span class="sgr33">(</span>%rdx<span class="sgr33">)</span>, %xmm0, %xmm0
-	<span class="sgr96"><span class="sgr1">movq</span></span>	%rdi, %rax
 	<span class="sgr96"><span class="sgr1">vmovupd</span></span>	%xmm0, <span class="sgr33">(</span>%rdi<span class="sgr33">)</span>
 	<span class="sgr96"><span class="sgr1">popq</span></span>	%rbp
 	.cfi_def_cfa %rsp, <span class="sgr33">8</span>
 	<span class="sgr96"><span class="sgr1">retq</span></span>
 <span class="sgr91">.Lfunc_end0:</span>
-	.size	julia_move_4213, .Lfunc_end0-julia_move_4213
+	.size	julia_move_4161, .Lfunc_end0-julia_move_4161
 	.cfi_endproc
                                         <span class="sgr90"># -- End function</span>
 	.section	&quot;.note.GNU-stack&quot;,&quot;&quot;,@progbits</code></pre><p>Notice that <code>move</code> works on <code>Posits</code> defined in 3rd party libas well</p><pre><code class="nohighlight hljs">move(Position(Posit8(1),Posit8(1)), Position(Posit8(2),Posit8(2)))</code></pre><h2 id="Intermezzo:-How-does-the-Julia-compiler-work?"><a class="docs-heading-anchor" href="#Intermezzo:-How-does-the-Julia-compiler-work?">Intermezzo: How does the Julia compiler work?</a><a id="Intermezzo:-How-does-the-Julia-compiler-work?-1"></a><a class="docs-heading-anchor-permalink" href="#Intermezzo:-How-does-the-Julia-compiler-work?" title="Permalink"></a></h2><p>Let&#39;s walk through an example. Consider the following definitions</p><pre><code class="language-julia hljs">move(a::Position, by::Position) = Position(a.x + by.x, a.y + by.y)
@@ -248,7 +248,7 @@ move(a::Vector{&lt;:Position}, by::Vector{&lt;:Position}) = move.(a, by)
 move(a::Vector{&lt;:Position}, by::Position) = move.(a, by)</code></pre><p>and a function call</p><pre><code class="language-julia hljs">a = Position(1.0, 1.0)
 by = Position(2.0, 2.0)
 move(a, by)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Main.Position{Float64}(3.0, 3.0)</code></pre><ol><li>The compiler knows that you call the function <code>move</code>.</li><li>The compiler infers the type of the arguments. You can view the result with</li></ol><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; (typeof(a),typeof(by))</code><code class="nohighlight hljs ansi" style="display:block;">(Main.Position{Float64}, Main.Position{Float64})</code></pre><ol><li>The compiler identifies all <code>move</code>-methods with arguments of type <code>(Position{Float64}, Position{Float64})</code>:</li></ol><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; wc = Base.get_world_counter()</code><code class="nohighlight hljs ansi" style="display:block;">0x00000000000083e5</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; m = Base.method_instances(move, (typeof(a), typeof(by)), wc)</code><code class="nohighlight hljs ansi" style="display:block;">1-element Vector{Core.MethodInstance}:
- MethodInstance for Main.move(::Main.Position{Float64}, ::Main.Position{Float64})</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; m = first(m)</code><code class="nohighlight hljs ansi" style="display:block;">MethodInstance for Main.move(::Main.Position{Float64}, ::Main.Position{Float64})</code></pre><p>4a. If the method has been specialized (compiled), then the arguments are prepared and the method is invoked. The compiled specialization can be seen from</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; m.cache</code><code class="nohighlight hljs ansi" style="display:block;">Core.CodeInstance(MethodInstance for Main.move(::Main.Position{Float64}, ::Main.Position{Float64}), #undef, 0x00000000000083da, 0xffffffffffffffff, Main.Position{Float64}, #undef, UInt8[0x04, 0x00, 0x0a, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x08  …  0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x09, 0x01, 0x00, 0x00], 0x00000ce0, 0x00000ce0, nothing, true, true, 0x00, Ptr{Nothing} @0x00007f0454b88fa0, Ptr{Nothing} @0x00007f0454b88f80)</code></pre><p>4b. If the method has not been specialized (compiled), the method is compiled for the given type of arguments and continues as in step 4a. A compiled function is therefore  a &quot;blob&quot; of <strong>native code</strong> living in a particular memory location. When Julia calls a function, it needs to pick the right block corresponding to a function with particular type of parameters.</p><p>If the compiler cannot narrow the types of arguments to concrete types, it has to perform the above procedure inside the called function, which has negative effects on performance, as the type resulution and identification of the methods can be slow, especially for methods with many arguments (e.g. 30ns for a method with one argument, 100 ns for method with two arguements). <strong>You always want to avoid run-time resolution inside the performant loop!!!</strong> Recall the above example</p><pre><code class="language-julia hljs">wolfpack_a =  [Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Wolf(&quot;3&quot;, 3)]
+ MethodInstance for Main.move(::Main.Position{Float64}, ::Main.Position{Float64})</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; m = first(m)</code><code class="nohighlight hljs ansi" style="display:block;">MethodInstance for Main.move(::Main.Position{Float64}, ::Main.Position{Float64})</code></pre><p>4a. If the method has been specialized (compiled), then the arguments are prepared and the method is invoked. The compiled specialization can be seen from</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; m.cache</code><code class="nohighlight hljs ansi" style="display:block;">Core.CodeInstance(MethodInstance for Main.move(::Main.Position{Float64}, ::Main.Position{Float64}), #undef, 0x00000000000083da, 0xffffffffffffffff, Main.Position{Float64}, #undef, UInt8[0x04, 0x00, 0x0a, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x08  …  0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x09, 0x01, 0x00, 0x00], 0x00000ce0, 0x00000ce0, nothing, true, true, 0x00, Ptr{Nothing} @0x00007f61dc56ef50, Ptr{Nothing} @0x00007f61dc56ef30)</code></pre><p>4b. If the method has not been specialized (compiled), the method is compiled for the given type of arguments and continues as in step 4a. A compiled function is therefore  a &quot;blob&quot; of <strong>native code</strong> living in a particular memory location. When Julia calls a function, it needs to pick the right block corresponding to a function with particular type of parameters.</p><p>If the compiler cannot narrow the types of arguments to concrete types, it has to perform the above procedure inside the called function, which has negative effects on performance, as the type resulution and identification of the methods can be slow, especially for methods with many arguments (e.g. 30ns for a method with one argument, 100 ns for method with two arguements). <strong>You always want to avoid run-time resolution inside the performant loop!!!</strong> Recall the above example</p><pre><code class="language-julia hljs">wolfpack_a =  [Wolf(&quot;1&quot;, 1), Wolf(&quot;2&quot;, 2), Wolf(&quot;3&quot;, 3)]
 @benchmark energy($(wolfpack_a))</code></pre><pre><code class="nohighlight hljs">BenchmarkTools.Trial: 10000 samples with 991 evaluations.
  Range (min … max):  40.195 ns … 66.641 ns  ┊ GC (min … max): 0.00% … 0.00%
  Time  (median):     40.742 ns              ┊ GC (median):    0.00%
