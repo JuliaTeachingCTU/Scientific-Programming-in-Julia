@@ -385,6 +385,8 @@ Now, we can define methods dispatching on parameters of the main type.
 
 Composition is simpler in such a general case. Composition over inheritance. 
 
+A simple example of parametric approach will be demonstarted in the lab.
+
 ## Interfaces: inheritance/subtyping without a hierarchy tree
 
 In OOP languages such as Java, interfaces have a dedicated keyword such that compiler can check correctes of the interface implementation. 
