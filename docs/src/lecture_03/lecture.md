@@ -73,6 +73,9 @@ Classical OOP languages define classes that bind processing functions to the dat
 !!! tip "Encapsulation"
     Refers to bundling of data with the methods that operate on that data, or the restricting of direct access to some of an object's components. Encapsulation is used to hide the values or state of a structured data object inside a class, preventing direct access to them by clients in a way that could expose hidden implementation details or violate state invariance maintained by the methods. 
 
+!!! tip "Making Julia to mimic OOP
+    There are many discussions how to make Julia to behave like an OOP. The best implementation to our knowledge is [ObjectOriented](https://github.com/Suzhou-Tongyuan/ObjectOriented.jl)
+
 ### Encapsulation Advantage: Consistency and Validity 
 With fields of data structure freely accessible, the information may become inconsistent.
 ```
