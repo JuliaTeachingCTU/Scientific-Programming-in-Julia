@@ -471,6 +471,13 @@ Many packages automating this with more structure:
 - https://github.com/mauro3/SimpleTraits.jl
 - https://github.com/tk3369/BinaryTraits.jl
 
+## Functional tools: Partial evaluation
+It is common to create a new function which "just" specify some parameters.
+```
+_prod(x) = reduce(*,x)
+_sum(x) = reduce(+,x)
+``` 
+
 ## Functional tools: Closures
 
 !!! tip "Closure (lexical closure, function closure)"
