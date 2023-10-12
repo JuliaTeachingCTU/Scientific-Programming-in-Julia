@@ -473,6 +473,13 @@ Many packages automating this with more structure:
 - https://github.com/mauro3/SimpleTraits.jl
 - https://github.com/tk3369/BinaryTraits.jl
 
+## Functional tools: Partial evaluation
+It is common to create a new function which "just" specify some parameters.
+```
+_prod(x) = reduce(*,x)
+_sum(x) = reduce(+,x)
+``` 
+
 ## Functional tools: Closures
 
 !!! tip "Closure (lexical closure, function closure)"
@@ -579,3 +586,7 @@ Usage of closures:
 !!! theorem "Beware: Performance of captured variables"
     Inference of types may be difficult in closures:
     https://github.com/JuliaLang/julia/issues/15276    
+
+
+## Aditional materials
+ * (Functional desighn pattersn)[https://www.youtube.com/watch?v=srQt1NAHYC0]
