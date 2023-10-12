@@ -586,3 +586,7 @@ Usage of closures:
 !!! theorem "Beware: Performance of captured variables"
     Inference of types may be difficult in closures:
     https://github.com/JuliaLang/julia/issues/15276    
+
+
+## Aditional materials
+ * (Functional desighn pattersn)[https://www.youtube.com/watch?v=srQt1NAHYC0]
