@@ -67,6 +67,14 @@ Implement one of the following algorithms to train neural networks in parallel. 
 
 ## Solve issues in existing projects:
 
+### Create Yao backend for quantum simulation (mentor Niklas Heim)
+
+Yao is a quantum computing environment in Julia. The goal is to map API calls of a general high-level Python library to use Yao as a backend.
+
+If it sounds interesting, talk to Niklas.
+
+
+
 ### Address issues in MDP (mentor Jan Mrkos)
 
 - Already started PR that has to be remade based on the discussion there: https://github.com/sisl/D3Trees.jl/pull/27; the good thing is there is not much more new/external knowledge needed
