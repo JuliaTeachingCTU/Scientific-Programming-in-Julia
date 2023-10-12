@@ -91,6 +91,9 @@ These are open source toolboxes that are used internally in Avast. Lots of gener
 - refactor the codebase using package extensions (e.g. for FillArrays)
 - improve compilation time (tracking down bottlenecks with SnoopCompile and using precompile directives from PrecompileTools.jl)
 
+Or study new metric learning approach on application in animation description
+- apply machine learning on slides within presentation provide by PowToon
+
 If it sounds interesting, get in touch with lecturer/lab assistant, who will connect you with Simon Mandlik.
 
 
