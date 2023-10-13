@@ -17,6 +17,8 @@ Below, we list some potential projects for inspiration.
 Life. Implement a Julia version. For example, you could focus either on performance compared to the
 python version, or build nice visualizations with [Makie.jl](https://docs.makie.org/stable/).
 
+Nice tutorial [from Conway to Lenia](https://colab.research.google.com/github/OpenLenia/Lenia-Tutorial/blob/main/Tutorial_From_Conway_to_Lenia.ipynb)
+
 ### The Equation Learner And Its Symbolic Representation
 
 In many scientific and engineering one searches for interpretable (i.e.
