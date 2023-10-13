@@ -114,5 +114,6 @@ some helpful concepts for this course. And knowledge about computer hardware, na
 - [WikiBooks](https://en.wikibooks.org/wiki/Introducing_Julia)
 - [Justin Krumbiel's](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/) excellent introduction to the package manager.
 - [juliadatascience.io](https://juliadatascience.io) contains an excellent introduction to plotting with Makie.
+- The art of [multiple dispatch](https://scientificcoder.com/the-art-of-multiple-dispatch)
 - MIT Course: [Julia Computation](https://github.com/mitmath/JuliaComputation)
 - Tim Holy's [Advanced Scientific Computing](https://github.com/timholy/AdvancedScientificComputing)
