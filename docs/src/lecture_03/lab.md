@@ -189,7 +189,7 @@ abstract away a lot of repetitive work into the type system. We can implement
 <div class="admonition-body">
 ```
 Implement `Base.show(io::IO, a::Animal)` with a single method for all `Animal`s.
-You can get the pretty (unicode) printing of the `Sex` and `Species` types with
+You can get the pretty (unicode) printing of the `Species` types with
 another overload like this: `Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")`
 ```@raw html
 </div></div>
@@ -207,7 +207,7 @@ function Base.show(io::IO, a::Animal{A}) where {A<:AnimalSpecies}
 end
 
 # note that for new species/sexes we will only have to overload `show` on the
-# abstract species/sex types like below!
+# abstract species types like below!
 Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")
 Base.show(io::IO, ::Type{Wolf}) = print(io,"🐺")
 ```
