@@ -34,15 +34,15 @@ can transform the learned model into a symbolic, human readable, and exectuable
 Julia expression.
 
 ### Architecture visualizer
-Write a tool that will take model written in Flux / Lux and visualize network architecture for publication. 
+Create an extension of Flux / Lux and to visualize architecture of a neural network suitable for publication. Something akin [PlotNeuralNet](https://github.com/HarisIqbal88/PlotNeuralNet).
 
-### Learning Large Language Models with reduced precition
-Large Language Models ((Chat) GPT, LLama, Falcon, Palm, ...) are huge. A recent trend is to perform optimization in reduced precision, for example in `int8` instead of `Float32`. Such feature is currently missing in Julia ecosystem and this project should be about bringing this to the community (for an introduction, read these blogs [*LLM-int8 and emergent features**](https://timdettmers.com/2022/08/17/llm-int8-and-emergent-features/), [*A gentle introduction to 8-bit Matrix Multiplication](https://huggingface.co/blog/hf-bitsandbytes-integration)). The goal would be to implement this as an additional type of Number / Matrix and overload multiplication on CPU (and ideally on GPU) to make it transparent for neural networks? **What I will learn?** In this project, you will learn a lot about the (simplicity of) implementation of deep learning libraries and you will practice abstraction of Julia's types. You can furthermore learn about GPU Kernel programming and `Transformers.jl` library.
+### Learning Large Language Models with reduced precition (Mentor: Tomas Pevny)
+Large Language Models ((Chat) GPT, LLama, Falcon, Palm, ...) are huge. A recent trend is to perform optimization in reduced precision, for example in `int8` instead of `Float32`. Such feature is currently missing in Julia ecosystem and this project should be about bringing this to the community (for an introduction, read these blogs [*LLM-int8 and emergent features*](https://timdettmers.com/2022/08/17/llm-int8-and-emergent-features/), [*A gentle introduction to 8-bit Matrix Multiplication*](https://huggingface.co/blog/hf-bitsandbytes-integration)). The goal would be to implement this as an additional type of Number / Matrix and overload multiplication on CPU (and ideally on GPU) to make it transparent for neural networks? **What I will learn?** In this project, you will learn a lot about the (simplicity of) implementation of deep learning libraries and you will practice abstraction of Julia's types. You can furthermore learn about GPU Kernel programming and `Transformers.jl` library.
 
-### Planning algorithms
+### Planning algorithms (Mentor: Tomas Pevny)
 Extend [SymbolicPlanners.jl](https://github.com/JuliaPlanners/SymbolicPlanners.jl) with the mm-ϵ variant of the bi-directional search [MM: A bidirectional search algorithm that is guaranteed to meet in the middle](https://www.sciencedirect.com/science/article/pii/S0004370217300905). This [pull request](https://github.com/JuliaPlanners/SymbolicPlanners.jl/pull/8) might be very helpful in understanding better the library.
 
-### A Rule Learning Algorithms
+### A Rule Learning Algorithms (Mentor: Tomas Pevny)
 [Rule-based models](https://christophm.github.io/interpretable-ml-book/rules.html)
 are simple and very interpretable models that have been around for a long time
 and are gaining popularity again.
@@ -56,14 +56,11 @@ and evaluate it on a number of datasets.
 * [A SAT-based approach to learn explainable decision sets](www.t-news.cn/Floc2018/FLoC2018-pages/proceedings_paper_441.pdf)
 To increase the impact of the project, consider interfacing it with [MLJ.jl](https://alan-turing-institute.github.io/MLJ.jl/dev/)
 
-### Parallel optimization
+### Parallel optimization (Mentor: Tomas Pevny)
 Implement one of the following algorithms to train neural networks in parallel. Can be implemented in a separate package or consider extending [FluxDistributed.jl](https://github.com/DhairyaLGandhi/FluxDistributed.jl). Do not forget to verify that the method actually works!!!
 * [Hogwild!](https://proceedings.neurips.cc/paper/2011/file/218a0aefd1d1a4be65601cc6ddc1520e-Paper.pdf)
 * [Local sgd with periodic averaging: Tighter analysis and adaptive synchronization](https://proceedings.neurips.cc/paper/2019/file/c17028c9b6e0c5deaad29665d582284a-Paper.pdf)
 * [Distributed optimization for deep learning with gossip exchange](Distributed optimization for deep learning with gossip exchange)
-
-### Improving support for multi-threadding functions in NNLib
-[NNlib.jl](https://github.com/FluxML/NNlib.jl) is a workhorse library for deep learning in Julia (it powers Flux.jl). Yet most of their functions are single-threaded. The task is to choose few of them (e.g. `logitcrossentropy` or application of non-linearity) and make them multi-threaded. Ideally, you should make a workable pull request that will be accepted by the community. **Warning: this will require interaction with the Flux community**
 
 ## Solve issues in existing projects:
 
@@ -75,14 +72,17 @@ If it sounds interesting, talk to Niklas.
 
 
 
-### Address issues in MDP (mentor Jan Mrkos)
+### Address issues in markov decision processes (mentor Jan Mrkos)
 
 - Already started PR that has to be remade based on the discussion there: https://github.com/sisl/D3Trees.jl/pull/27; the good thing is there is not much more new/external knowledge needed
 - Fix type stability issue generated by JET in https://github.com/JuliaPOMDP/MCTS.jl, prepare benchmarks, and evaluate the impact of the changes. This is https://github.com/JuliaPOMDP/MCTS.jl/issues/59 and an issue I would have to create based on some unpushed stuff I have on my PC
 -And also "Contribution opportunities" here but I did not create those https://github.com/JuliaPOMDP/POMDPs.jl/issues
-- Simple finite horizon MDP algorithmic PRs if you would be interested in those.
+- Simple finite horizon markov decision processes algorithmic PRs if you would be interested in those.
 
 If it sounds interesting, get in touch with lecturer/lab assistant, who will connect you with Jan Mrkos.
+
+### Extend HMil library with Retentative networks (mentor Tomas Pevny)
+[Retentative networks](https://arxiv.org/abs/2307.08621) were recently proposed as a low-cost  alternative to Transformer models without sacrificing performance (according to authors). By implementing Retentative Networks, te HMil library will be able to learn sequences (not just sets), which might nicely extend its applicability.
 
 ### Address issues in HMil/JsonGrinder library (mentor Simon Mandlik)
 

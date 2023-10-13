@@ -121,15 +121,15 @@ Function `setfield!` can not be overloaded.
 Julia has *partial encapsulation* via a mechanism for consistency checks. 
 
 !!! warn "Array in unmutable struct can be mutated"
-The mutability applies to the structure and not to encapsulated structures.
-```julia
-struct Foo
-    x::Float64
-    y::Vector{Float64}
-    z::Dict{Int,Int}
-end
-```
-In the structure `Foo`, `x` cannot be mutated, but fields of `y` and key-value pairs of `z` can be mutated, because they are mutable containers. But I cannot replace `y` with a different `Vector`.
+    The mutability applies to the structure and not to encapsulated structures.
+    ```julia
+    struct Foo
+        x::Float64
+        y::Vector{Float64}
+        z::Dict{Int,Int}
+    end
+    ```
+    In the structure `Foo`, `x` cannot be mutated, but fields of `y` and key-value pairs of `z` can be mutated, because they are mutable containers. But I cannot replace `y` with a different `Vector`.
 
 
 ### Encapsulation Disadvantage: the Expression Problem 
