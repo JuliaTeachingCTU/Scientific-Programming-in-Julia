@@ -107,8 +107,6 @@ REPL of Julia is a module called "Main".
   ```REPL.activate(TestPackage)```
 
 
-
-
 ### Revise.jl
 
 The fact that Julia can redefine a function in a Module by importing it is used by package `Revise.jl` to synchronize REPL with a module or file.
@@ -146,6 +144,7 @@ for def in setdiff(newexprs, oldexprs)
 end
 ```
 
+See [Modern Julia Workflows](https://modernjuliaworkflows.github.io) for more hints
 
 
 ## Namespaces & scoping
@@ -204,6 +203,28 @@ for _ = 1:1
 end
 @show x;
 ```
+
+Notice that if does not introduce new scope
+```julia
+if true 
+  branch_taken = true 
+else
+  branch_not_taken = true 
+end
+```
+
+!!! tip "do-block"
+  Let's assume a function, which takes as a first argument a function
+  ```julia
+    g(f::Function, args...) = println("f called on $(args) evaluates to ", f(args...))
+  ```
+  We can use `g` as `g(+, 1, 2)`, or with a lambda function `g(x -> x^2, 2).` But sometimes, 
+  it might be useful to the lambda function to span multiple lines. This can be achieved by a `do` block as 
+  ```julia
+  g(1,2,3) do a,b,c
+    a*b + c
+  end
+  ```
 
 ## Packages
 
@@ -468,7 +489,7 @@ Faster code can be achieved by the `precompile` directive:
 module FSum
 
 fsum(x) = x
-fsum(x,p...) = x+fsum(p[1],p[2:end]...)
+fsum(x,p...) = x+fsum(p...)
 
 precompile(fsum,(Float64,Float64,Float64))
 end
@@ -490,5 +511,7 @@ Useful packages:
 
 
 
-
 - `AutoSysimages.jl` allows easy generation of precompiles images - reduces package loading
+
+## Additional material
+[^1]: [Modern Julia Workflows](https://modernjuliaworkflows.github.io)
