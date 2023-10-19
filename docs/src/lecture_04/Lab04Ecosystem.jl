@@ -186,13 +186,10 @@ agent_count(::Animal) = 1
 agent_count(as::Vector{<:Agent}) = sum(agent_count,as)
 
 function agent_count(w::World)
-    function op(d::Dict,a::A) where A<:Agent
-        if A in keys(d)
-            d[A] += agent_count(a)
-        else
-            d[A] = agent_count(a)
-        end
+    function op(d::Dict,a::Agent{S}) where S<:Species
+        n = nameof(S)
+        d[n] = haskey(d,n) ? d[n]+agent_count(a) : agent_count(a)
         return d
     end
-    foldl(op, w.agents |> values |> collect, init=Dict())
+    reduce(op, w.agents |> values, init=Dict{Symbol,Float64}())
 end
