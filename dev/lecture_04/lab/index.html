@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab 04: Packaging · Scientific Programming in Julia</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_04/lab/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/><link href="../../assets/onlinestats.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of Type System &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design Patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Package development, Unit test &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Lab 04: Packaging</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab 04: Packaging</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2023W/docs/src/lecture_04/lab.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Lab-04:-Packaging"><a class="docs-heading-anchor" href="#Lab-04:-Packaging">Lab 04: Packaging</a><a id="Lab-04:-Packaging-1"></a><a class="docs-heading-anchor-permalink" href="#Lab-04:-Packaging" title="Permalink"></a></h1><h2 id="Warmup-Stepping-through-time"><a class="docs-heading-anchor" href="#Warmup-Stepping-through-time">Warmup - Stepping through time</a><a id="Warmup-Stepping-through-time-1"></a><a class="docs-heading-anchor-permalink" href="#Warmup-Stepping-through-time" title="Permalink"></a></h2><p>We now have all necessary functions in place to make agents perform one step of our simulation.  At the beginning of each step an animal looses energy. Afterwards it tries to find some food, which it will subsequently eat. If the animal then has less than zero energy it dies and is removed from the world. If it has positive energy it will try to reproduce.</p><p>Plants have a simpler life. They simply grow if they have not reached their maximal size.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><ol><li>Implement a method <code>agent_step!(::Animal,::World)</code> which performs the following steps:<ul><li>Decrement <span>$E$</span> of agent by <code>1.0</code>.</li><li>With <span>$p_f$</span>, try to find some food and eat it.</li><li>If <span>$E&lt;0$</span>, the animal dies.</li><li>With <span>$p_r$</span>, try to reproduce.</li></ul></li><li>Implement a method <code>agent_step!(::Plant,::World)</code> which performs the following steps:<ul><li>If the size of the plant is smaller than <code>max_size</code>, increment the plant&#39;s size by one.</li></ul></li></ol></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function agent_step!(p::Plant, w::World)
+    if p.size &lt; p.max_size
+        p.size += 1
+    end
+end
+
+function agent_step!(a::Animal, w::World)
+    a.energy -= 1
+    if rand() &lt;= a.foodprob
+        dinner = find_food(a,w)
+        eat!(a, dinner, w)
+    end
+    if a.energy &lt; 0
+        kill_agent!(a,w)
+        return
+    end
+    if rand() &lt;= a.reprprob
+        reproduce!(a,w)
+    end
+end</code></pre></p></details><p>An <code>agent_step!</code> of a sheep in a world with a single grass should make it consume the grass, let it reproduce, and eventually die if there is no more food and its energy is at zero:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sheep = Sheep(1,2.0,2.0,1.0,1.0,male);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; grass = Grass(2,2,2);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world = World([sheep, grass])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🌿  #2 100% grown
+  🐑♂ #1 E=2.0 ΔE=2.0 pr=1.0 pf=1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; agent_step!(sheep, world); world</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Agent}
+  🌿  #2 0% grown
+  🐑♂ #1 E=5.0 ΔE=2.0 pr=1.0 pf=1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; # NOTE: The second agent step leads to an error.
+       # Can you figure out what is the problem here?
+       agent_step!(sheep, world); world</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching eat!(::Main.Animal{🐑}, ::Nothing, ::Main.World{Main.Agent})
+
+Closest candidates are:
+  eat!(::Main.Animal{🐑}, <span class="sgr91">::Main.Plant{🌿}</span>, ::Main.World)
+<span class="sgr90">   @</span> <span class="sgr32">Main</span> <span class="sgr90">~/work/Scientific-Programming-in-Julia/Scientific-Programming-in-Julia/docs/src/lecture_03/<span class="sgr4">Lab03Ecosystem.jl:106</span></span>
+  eat!(<span class="sgr91">::Main.Animal{🐺}</span>, <span class="sgr91">::Main.Animal{🐑}</span>, ::Main.World)
+<span class="sgr90">   @</span> <span class="sgr32">Main</span> <span class="sgr90">~/work/Scientific-Programming-in-Julia/Scientific-Programming-in-Julia/docs/src/lecture_03/<span class="sgr4">Lab03Ecosystem.jl:110</span></span></code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>Finally, lets implement a function <code>world_step!</code> which performs one <code>agent_step!</code> for each agent.  Note that simply iterating over all agents could lead to problems because we are mutating the agent dictionary.  One solution for this is to iterate over a copy of all agent IDs that are present when starting to iterate over agents.  Additionally, it could happen that an agent is killed by another one before we apply <code>agent_step!</code> to it. To solve this you can check if a given ID is currently present in the <code>World</code>.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs"># make it possible to eat nothing
+eat!(::Animal, ::Nothing, ::World) = nothing
+
+function world_step!(world::World)
+    # make sure that we only iterate over IDs that already exist in the
+    # current timestep this lets us safely add agents
+    ids = copy(keys(world.agents))
+
+    for id in ids
+        # agents can be killed by other agents, so make sure that we are
+        # not stepping dead agents forward
+        !haskey(world.agents,id) &amp;&amp; continue
+
+        a = world.agents[id]
+        agent_step!(a,world)
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world_step! (generic function with 1 method)</code></pre></p></details><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; w = World([Sheep(1), Sheep(2), Wolf(3)])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐑♂ #2 E=4.0 ΔE=0.2 pr=0.8 pf=0.6
+  🐺♂ #3 E=10.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♀ #1 E=4.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐑♀ #4 E=1.5 ΔE=0.2 pr=0.8 pf=0.6
+  🐺♂ #3 E=21.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♀ #1 E=3.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐑♀ #4 E=0.5 ΔE=0.2 pr=0.8 pf=0.6
+  🐺♂ #3 E=20.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♀ #1 E=2.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐺♂ #3 E=35.0 ΔE=8.0 pr=0.1 pf=0.2</code></pre><p>Finally, lets run a few simulation steps and plot the solution</p><pre><code class="language- hljs">n_grass  = 1_000
+n_sheep  = 40
+n_wolves = 4
+
+gs = [Grass(id) for id in 1:n_grass]
+ss = [Sheep(id) for id in (n_grass+1):(n_grass+n_sheep)]
+ws = [Wolf(id) for id in (n_grass+n_sheep+1):(n_grass+n_sheep+n_wolves)]
+w  = World(vcat(gs,ss,ws))
+
+counts = Dict(n=&gt;[c] for (n,c) in agent_count(w))
+for _ in 1:100
+    world_step!(w)
+    for (n,c) in agent_count(w)
+        push!(counts[n],c)
+    end
+end
+
+using Plots
+plt = plot()
+tolabel(::Type{Animal{Sheep}}) = &quot;Sheep&quot;
+tolabel(::Type{Animal{Wolf}}) = &quot;Wolf&quot;
+tolabel(::Type{Plant{Grass}}) = &quot;Grass&quot;
+for (A,c) in counts
+    plot!(plt, c, label=tolabel(A), lw=2)
+end
+plt</code></pre><h2 id="Package:-Ecosystem.jl"><a class="docs-heading-anchor" href="#Package:-Ecosystem.jl">Package: <code>Ecosystem.jl</code></a><a id="Package:-Ecosystem.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Package:-Ecosystem.jl" title="Permalink"></a></h2><p>In the main section of this lab you will create your own <code>Ecosystem.jl</code> package to organize <em>and test (!)</em> the code that we have written so far.</p><h3 id="PkgTemplates.jl"><a class="docs-heading-anchor" href="#PkgTemplates.jl"><code>PkgTemplates.jl</code></a><a id="PkgTemplates.jl-1"></a><a class="docs-heading-anchor-permalink" href="#PkgTemplates.jl" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>The simplest way to create a new package in Julia is to use <code>PkgTemplates.jl</code>. <code>]add PkgTemplates</code> to your global julia env and create a new package by running:</p><pre><code class="language-julia hljs">using PkgTemplates
+Template(interactive=true)(&quot;Ecosystem&quot;)</code></pre><p>to interactively specify various options for your new package or use the following snippet to generate it programmatically:</p><pre><code class="language-julia hljs">using PkgTemplates
+
+# define the package template
+template = Template(;
+    user = &quot;GithubUserName&quot;,            # github user name
+    authors = [&quot;Author1&quot;, &quot;Author2&quot;],   # list of authors
+    dir = &quot;/path/to/folder/&quot;,           # dir in which the package will be created
+    julia = v&quot;1.8&quot;,                     # compat version of Julia
+    plugins = [
+        !CompatHelper,                  # disable CompatHelper
+        !TagBot,                        # disable TagBot
+        Readme(; inline_badges = true), # added readme file with badges
+        Tests(; project = true),        # added Project.toml file for unit tests
+        Git(; manifest = false),        # add manifest.toml to .gitignore
+        License(; name = &quot;MIT&quot;)         # addedMIT licence
+    ],
+)
+
+# execute the package template (this creates all files/folders)
+template(&quot;Ecosystem&quot;)</code></pre></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>This should have created a new folder <code>Ecosystem</code> which looks like below.</p><pre><code class="nohighlight hljs">.
+├── LICENSE
+├── Project.toml
+├── README.md
+├── src
+│   └── Ecosystem.jl
+└── test
+    ├── Manifest.toml
+    ├── Project.toml
+    └── runtests.jl</code></pre><p>If you <code>]activate /path/to/Ecosystem</code> you should be able to run <code>]test</code> to run the autogenerated test (which is not doing anything) and get the following output:</p><pre><code class="nohighlight hljs">(Ecosystem) pkg&gt; test
+     Testing Ecosystem
+      Status `/private/var/folders/6h/l9_skfms2v3dt8z3zfnd2jr00000gn/T/jl_zd5Uai/Project.toml`
+  [e77cd98c] Ecosystem v0.1.0 `~/repos/Ecosystem`
+  [8dfed614] Test `@stdlib/Test`
+      Status `/private/var/folders/6h/l9_skfms2v3dt8z3zfnd2jr00000gn/T/jl_zd5Uai/Manifest.toml`
+  [e77cd98c] Ecosystem v0.1.0 `~/repos/Ecosystem`
+  [2a0f44e3] Base64 `@stdlib/Base64`
+  [b77e0a4c] InteractiveUtils `@stdlib/InteractiveUtils`
+  [56ddb016] Logging `@stdlib/Logging`
+  [d6f4376e] Markdown `@stdlib/Markdown`
+  [9a3f8284] Random `@stdlib/Random`
+  [ea8e919c] SHA v0.7.0 `@stdlib/SHA`
+  [9e88b42a] Serialization `@stdlib/Serialization`
+  [8dfed614] Test `@stdlib/Test`
+     Testing Running tests...
+Test Summary: |Time
+Ecosystem.jl  | None  0.0s
+     Testing Ecosystem tests passed </code></pre></p></details><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>From now on make sure that you <strong>always</strong> have the <code>Ecosystem</code> enviroment enabled. Otherwise you will not end up with the correct dependencies in your packages</p></div></div><h3 id="Adding-content-to-Ecosystem.jl"><a class="docs-heading-anchor" href="#Adding-content-to-Ecosystem.jl">Adding content to <code>Ecosystem.jl</code></a><a id="Adding-content-to-Ecosystem.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-content-to-Ecosystem.jl" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>Next, let&#39;s add the types and functions we have defined so far. You can use <code>include(&quot;path/to/file.jl&quot;)</code> in the main module file at <code>src/Ecosystem.jl</code> to bring some structure in your code. An exemplary file structure could look like below.</p><pre><code class="nohighlight hljs">.
+├── LICENSE
+├── Manifest.toml
+├── Project.toml
+├── README.md
+├── src
+│   ├── Ecosystem.jl
+│   ├── animal.jl
+│   ├── plant.jl
+│   └── world.jl
+└── test
+    └── runtests.jl</code></pre><p>While you are adding functionality to your package you can make great use of <code>Revise.jl</code>.  Loading <code>Revise.jl</code> before your <code>Ecosystem.jl</code> will automatically recompile (and invalidate old methods!) while you develop.  You can install it in your global environment and and create a <code>$HOME/.config/startup.jl</code> which always loads <code>Revise</code>. It can look like this:</p><pre><code class="language-julia hljs"># try/catch block to make sure you can start julia if Revise should not be installed
+try
+    using Revise
+catch e
+    @warn(e.msg)
+end</code></pre></div></div><div class="admonition is-warning"><header class="admonition-header">Warning</header><div class="admonition-body"><p>At some point along the way you should run into problems with the <code>sample</code> functions or when trying <code>using StatsBase</code>. This is normal, because you have not added the package to the <code>Ecosystem</code> environment yet. Adding it is as easy as <code>]add StatsBase</code>. Your <code>Ecosystem</code> environment should now look like this:</p><pre><code class="nohighlight hljs">(Ecosystem) pkg&gt; status
+Project Ecosystem v0.1.0
+Status `~/repos/Ecosystem/Project.toml`
+  [2913bbd2] StatsBase v0.33.21</code></pre></div></div><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>In order to use your new types/functions like below</p><pre><code class="language-julia hljs">using Ecosystem
+
+Sheep(2)</code></pre><p>you have to <code>export</code> them from your module. Add exports for all important types and functions.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs"># src/Ecosystem.jl
+module Ecosystem
+
+using StatsBase
+
+export World
+export Species, PlantSpecies, AnimalSpecies, Grass, Sheep, Wolf
+export Agent, Plant, Animal
+export agent_step!, eat!, eats, find_food, reproduce!, world_step!, agent_count
+
+# ....
+
+end</code></pre></p></details><h3 id="Unit-tests"><a class="docs-heading-anchor" href="#Unit-tests">Unit tests</a><a id="Unit-tests-1"></a><a class="docs-heading-anchor-permalink" href="#Unit-tests" title="Permalink"></a></h3><p>Every package should have tests which verify the correctness of your implementation, such that you can make changes to your codebase and remain confident that you did not break anything.</p><p>Julia&#39;s <code>Test</code> package provides you functionality to easily write <a href="https://docs.julialang.org/en/v1/stdlib/Test/">unit tests</a>.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>In the file <code>test/runtests.jl</code>, create a new <code>@testset</code> and write three <code>@test</code>s which check that the <code>show</code> methods we defined for <code>Grass</code>, <code>Sheep</code>, and <code>Wolf</code> work as expected.</p><p>The function <code>repr(x) == &quot;some string&quot;</code> to check if the string representation we defined in the <code>Base.show</code> overload returns what you expect.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # using Ecosystem
+       using Test</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @testset &quot;Base.show&quot; begin
+           g = Grass(1,1,1)
+           s = Animal{Sheep}(2,1,1,1,1,male)
+           w = Animal{Wolf}(3,1,1,1,1,female)
+           @test repr(g) == &quot;🌿  #1 100% grown&quot;
+           @test repr(s) == &quot;🐑♂ #2 E=1.0 ΔE=1.0 pr=1.0 pf=1.0&quot;
+           @test repr(w) == &quot;🐺♀ #3 E=1.0 ΔE=1.0 pr=1.0 pf=1.0&quot;
+       end</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr1">Test Summary: | <span class="sgr32">Pass  </span><span class="sgr36">Total  </span>Time</span>
+Base.show     | <span class="sgr32">   3  </span><span class="sgr36">    3  </span>0.3s
+Test.DefaultTestSet(&quot;Base.show&quot;, Any[], 3, false, false, true, 1.697700563486736e9, 1.697700563785498e9, false)</code></pre></p></details><h3 id="Github-CI"><a class="docs-heading-anchor" href="#Github-CI">Github CI</a><a id="Github-CI-1"></a><a class="docs-heading-anchor-permalink" href="#Github-CI" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise:</header>
+<div class="admonition-body"><p>If you want you can upload you package to Github and add the <code>julia-runtest</code> <a href="https://github.com/julia-actions/julia-runtest">Github Action</a> to automatically test your code for every new push you make to the repository.</p></div></div></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 19 October 2023 07:29">Thursday 19 October 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
