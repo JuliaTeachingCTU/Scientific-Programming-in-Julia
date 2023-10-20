@@ -214,17 +214,16 @@ end
 ```
 
 !!! tip "do-block"
-  Let's assume a function, which takes as a first argument a function
-  ```julia
-    g(f::Function, args...) = println("f called on $(args) evaluates to ", f(args...))
-  ```
-  We can use `g` as `g(+, 1, 2)`, or with a lambda function `g(x -> x^2, 2).` But sometimes, 
-  it might be useful to the lambda function to span multiple lines. This can be achieved by a `do` block as 
-  ```julia
-  g(1,2,3) do a,b,c
-    a*b + c
-  end
-  ```
+    Let's assume a function, which takes as a first argument a function
+    ```julia
+      g(f::Function, args...) = println("f called on $(args) evaluates to ", f(args...))
+    ```
+    We can use `g` as `g(+, 1, 2)`, or with a lambda function `g(x -> x^2, 2).` But sometimes, it might be useful to the lambda function to span multiple lines. This can be achieved by a `do` block as 
+    ```julia
+    g(1,2,3) do a,b,c
+      a*b + c
+    end
+    ```
 
 ## Packages
 
@@ -255,6 +254,15 @@ Many other optional directories:
 - directory scripts/, examples/,... (optional)
 
 
+!!! tip "Type-Piracy"
+    "Type piracy" refers to the practice of extending or redefining methods in Base or other packages on types that you have not defined. In extreme cases, you can crash Julia (e.g. if your method extension or redefinition causes invalid input to be passed to a ccall). Type piracy can complicate reasoning about code, and may introduce incompatibilities that are hard to predict and diagnose.
+    ```julia
+    module A
+    import Base.*
+    *(x::Symbol, y::Symbol) = Symbol(x,y)
+    end
+    ```
+  
 The package typically loads other modules that form package dependencies.
 
 ## Project environments

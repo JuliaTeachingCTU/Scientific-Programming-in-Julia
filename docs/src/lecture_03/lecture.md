@@ -589,4 +589,4 @@ Usage of closures:
 
 
 ## Aditional materials
- * (Functional desighn pattersn)[https://www.youtube.com/watch?v=srQt1NAHYC0]
+ * [Functional desighn pattersn](https://www.youtube.com/watch?v=srQt1NAHYC0)
