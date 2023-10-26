@@ -15,6 +15,51 @@ Though recall the most important rule of thumb: **Never optimize code from the v
 - you might end-up optimizing wrong thing, i.e. you will not optimize performance bottleneck, but something very different
 - optimized code can be difficult to read and reason about, which means it is more difficult to make it right.
 
+## Optimize for your mode of operation
+Let's for fun measure a difference in computation of a simple polynomial over elements of arrays
+between numpy, jax, default Julia, and Julia with `LoopVectorization` library. 
+```python
+import numpy as np
+import jax
+from jax import jit
+import jax.numpy as jnp
+jax.config.update("jax_enable_x64", True)
+
+@jit
+def f(x):
+    return 3*x**3 + 2*x**2 + x + 1
+
+def g(x):
+    return 3*x**3 + 2*x**2 + x + 1
+
+x = np.random.rand(10)
+f(x)
+x = random.uniform(key, shape=(10,), dtype=jnp.float64)
+g(x)
+```
+
+```julia
+function f(x)
+    @. 3*x^3 + 2*x^2 + x + 1
+end
+
+using LoopVectorization
+function f_turbo(x)
+    @turbo @. 3*x^3 + 2*x^2 + x + 1
+end
+
+function f_tturbo(x)
+    @tturbo @. 3*x^3 + 2*x^2 + x + 1
+end
+
+x = rand(10)
+f(x)
+```
+A complete implementations can be found here: [Julia](jax-numpy-julia/poly-julia.jl) and [Python](jax-numpy-julia/poly-npjax.py). Julia should be executed with multithreaded support, in the case of below image it used four threads on MacBook PRO with M1 processor with four performant and four energy efficient cores. Below figure shows the minimum execution time with respect to the
+
+![figure](jax-numpy-julia/bench.png)
+
+
 It frequently happens that Julia newbies asks on forum that their code in Julia is slow in comparison to the same code in Python (numpy). Most of the time, they make trivial mistakes and it is very educative to go over their mistakes
 
 ## Numpy 10x faster than julia what am i doing wrong? (solved julia faster now) [^1]
@@ -48,7 +93,7 @@ Let's first use Profiler to identify, where the function spends most time.
 	## Julia's built-in profiler
 
 	Julia's built-in profiler is part of the standard library in the `Profile` module implementing a fairly standard sampling based profiler. It a nutshell it asks at regular intervals, where the code execution is currently and marks it and collects this information in some statistics. This allows us to analyze, where these "probes" have occurred most of the time which implies those parts are those, where the execution of your function spends most of the time. As such, the profiler has two "controls", which is the `delay` between two consecutive probes and the maximum number of probes `n` (if the profile code takes a long time, you might need to increase it).
-	```
+	```julia
 	using Profile
 	Profile.init(; n = 989680, delay = 0.001))
 	@profile g(p,n)
@@ -104,7 +149,7 @@ and
  [0  cos(t1) + 1im*sin(t1)]]
 ```
 
-Julia 1.8 now offers a memory profiler, which helps to identify parts of the code allocating memory on heap. Unfortunately, `ProfileSVG` does not currently visualize its output, hence we are going to use `PProf`.
+Since version 1.8, Julia offers a memory profiler, which helps to identify parts of the code allocating memory on heap. Unfortunately, `ProfileSVG` does not currently visualize its output, hence we are going to use `PProf`.
 ```julia
 using Profile, PProf
 Profile.Allocs.@profile g(p,n)
@@ -487,7 +532,7 @@ BenchmarkTools.Trial: 42 samples with 1 evaluation.
 	The optimization of small unions is a big deal. It simplifies implementation of arrays with missing values, or allows to signal that result has not been produced by returning `missing`. In case of arrays with missing values, the type of element is `Union{Missing,T}` where `T` is the type of non-missing element.
 
 
-We can tell Julia that it is safe to vectorize the code
+We can tell Julia that it is safe to vectorize the code. Julia tries to vectorize anyway, but @simd macro allows more aggressive operations, such as instruction reordering, which might change the output due imprecision of representation of real numbers in Floats.
 ```julia
 function simd_sum(x)
     s = zero(eltype(x))
