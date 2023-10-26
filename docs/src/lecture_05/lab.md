@@ -586,9 +586,9 @@ with one entry for each type of agent. Our world would then look like this:
 ```julia
 # pseudocode:
 world ≈ (
-    :Grass = Dict{Int, Plant{Grass}}(...),
-    :Sheep = Dict{Int, Animal{Sheep}}(...),
-    :Wolf = Dict{Int, Animal{Wolf}}(...)
+    :Grass => Dict{Int, Plant{Grass}}(...),
+    :Sheep => Dict{Int, Animal{Sheep}}(...),
+    :Wolf => Dict{Int, Animal{Wolf}}(...)
 )
 ```
 In order to make this work we have to touch our ecosystem code in a number of
@@ -641,11 +641,11 @@ into a parametric type. Our world would then look like below:
 ```julia
 # pseudocode:
 world ≈ (
-    :Grass = Dict{Int, Plant{Grass}}(...),
-    :SheepFemale = Dict{Int, Animal{Sheep,Female}}(...),
-    :SheepMale = Dict{Int, Animal{Sheep,Male}}(...),
-    :WolfFemale = Dict{Int, Animal{Wolf,Female}}(...)
-    :WolfMale = Dict{Int, Animal{Wolf,Male}}(...)
+    :Grass => Dict{Int, Plant{Grass}}(...),
+    :SheepFemale => Dict{Int, Animal{Sheep,Female}}(...),
+    :SheepMale => Dict{Int, Animal{Sheep,Male}}(...),
+    :WolfFemale => Dict{Int, Animal{Wolf,Female}}(...)
+    :WolfMale => Dict{Int, Animal{Wolf,Male}}(...)
 )
 ```
 This should give us a lot of speedup in the `reproduce!` function, because we
