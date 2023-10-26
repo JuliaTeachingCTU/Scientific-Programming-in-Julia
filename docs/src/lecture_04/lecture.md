@@ -522,4 +522,4 @@ Useful packages:
 - `AutoSysimages.jl` allows easy generation of precompiles images - reduces package loading
 
 ## Additional material
-[^1]: [Modern Julia Workflows](https://modernjuliaworkflows.github.io)
+- [Modern Julia Workflows](https://modernjuliaworkflows.github.io)

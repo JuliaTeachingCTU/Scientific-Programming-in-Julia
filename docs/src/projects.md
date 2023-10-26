@@ -60,14 +60,14 @@ and evaluate it on a number of datasets.
 * [Learning Certifiably Optimal Rule Lists for Categorical Data](https://arxiv.org/abs/1704.01701)
 * [Boolean decision rules via column generation](https://proceedings.neurips.cc/paper/2018/file/743394beff4b1282ba735e5e3723ed74-Paper.pdf)
 * [Learning Optimal Decision Trees with SAT](https://proceedings.neurips.cc/paper/2021/file/4e246a381baf2ce038b3b0f82c7d6fb4-Paper.pdf)
-* [A SAT-based approach to learn explainable decision sets](www.t-news.cn/Floc2018/FLoC2018-pages/proceedings_paper_441.pdf)
+* [A SAT-based approach to learn explainable decision sets](https://link.springer.com/content/pdf/10.1007/978-3-319-94205-6_41.pdf)
 To increase the impact of the project, consider interfacing it with [MLJ.jl](https://alan-turing-institute.github.io/MLJ.jl/dev/)
 
 ### Parallel optimization (Mentor: Tomas Pevny)
 Implement one of the following algorithms to train neural networks in parallel. Can be implemented in a separate package or consider extending [FluxDistributed.jl](https://github.com/DhairyaLGandhi/FluxDistributed.jl). Do not forget to verify that the method actually works!!!
 * [Hogwild!](https://proceedings.neurips.cc/paper/2011/file/218a0aefd1d1a4be65601cc6ddc1520e-Paper.pdf)
 * [Local sgd with periodic averaging: Tighter analysis and adaptive synchronization](https://proceedings.neurips.cc/paper/2019/file/c17028c9b6e0c5deaad29665d582284a-Paper.pdf)
-* [Distributed optimization for deep learning with gossip exchange](Distributed optimization for deep learning with gossip exchange)
+* [Distributed optimization for deep learning with gossip exchange](https://arxiv.org/abs/1804.01852)
 
 ## Solve issues in existing projects:
 
