@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><meta name="title" content="Lab · Scientific Programming in Julia"/><meta property="og:title" content="Lab · Scientific Programming in Julia"/><meta property="twitter:title" content="Lab · Scientific Programming in Julia"/><meta name="description" content="Documentation for Scientific Programming in Julia."/><meta property="og:description" content="Documentation for Scientific Programming in Julia."/><meta property="twitter:description" content="Documentation for Scientific Programming in Julia."/><meta property="og:url" content="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_07/lab/"/><meta property="twitter:url" content="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_07/lab/"/><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_07/lab/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/><link href="../../assets/onlinestats.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of type system &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Package development, unit tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Performance benchmarking</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Lanuage introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox" checked/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#Show-macro"><span>Show macro</span></a></li><li><a class="tocitem" href="#Repeat-macro"><span>Repeat macro</span></a></li><li><a class="tocitem" href="#lab07_polymacro"><span>Polynomial macro</span></a></li><li><a class="tocitem" href="#Ecosystem-macros"><span>Ecosystem macros</span></a></li><li><a class="tocitem" href="#Resources"><span>Resources</span></a></li></ul></li><li><a class="tocitem" href="../hw/">Homework</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">7: Macros</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2023W/docs/src/lecture_07/lab.md#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="macro_lab"><a class="docs-heading-anchor" href="#macro_lab">Lab 07: Macros</a><a id="macro_lab-1"></a><a class="docs-heading-anchor-permalink" href="#macro_lab" title="Permalink"></a></h1><p>A little reminder from the <a href="../lecture/#macro_lecture">lecture</a>, a macro in its essence is a function, which </p><ol><li>takes as an input an expression (parsed input)</li><li>modifies the expressions in arguments</li><li>inserts the modified expression at the same place as the one that is parsed.</li></ol><p>In this lab we are going to use what we have learned about manipulation of expressions and explore avenues of where macros can be useful</p><ul><li>convenience (<code>@repeat</code>, <code>@show</code>)</li><li>performance critical code generation (<code>@poly</code>)</li><li>alleviate tedious code generation (<code>@species</code>, <code>@eats</code>)</li><li>just as a syntactic sugar (<code>@ecosystem</code>)</li></ul><h2 id="Show-macro"><a class="docs-heading-anchor" href="#Show-macro">Show macro</a><a id="Show-macro-1"></a><a class="docs-heading-anchor-permalink" href="#Show-macro" title="Permalink"></a></h2><p>Let&#39;s start with dissecting &quot;simple&quot; <code>@show</code> macro, which allows us to demonstrate advanced concepts of macros and expression manipulation.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; x = 1</code><code class="nohighlight hljs ansi" style="display:block;">1</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @show x + 1</code><code class="nohighlight hljs ansi" style="display:block;">x + 1 = 2
+2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; let y = x + 1       # creates a temporary local variable
+           println(&quot;x + 1 = &quot;, y)
+           y               # show macro also returns the result
+       end</code><code class="nohighlight hljs ansi" style="display:block;">x + 1 = 2
+2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; # assignments should create the variable
+       @show x = 3</code><code class="nohighlight hljs ansi" style="display:block;">x = 3 = 3
+3</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; let y = x = 2
+           println(&quot;x = 2 = &quot;, y)
+           y
+       end</code><code class="nohighlight hljs ansi" style="display:block;">x = 2 = 2
+2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; x                   # should be equal to 2</code><code class="nohighlight hljs ansi" style="display:block;">2</code></pre><p>The original Julia&#39;s <a href="https://github.com/JuliaLang/julia/blob/ae8452a9e0b973991c30f27beb2201db1b0ea0d3/base/show.jl#L946-L959">implementation</a> is not dissimilar to the following macro definition:</p><pre><code class="language-julia hljs">macro myshow(ex)
+    quote
+        println($(QuoteNode(ex)), &quot; = &quot;, repr(begin local value = $(esc(ex)) end))
+        value
+    end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">@myshow (macro with 1 method)</code></pre><p>Testing it gives us the expected behavior</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @myshow xx = 1 + 1</code><code class="nohighlight hljs ansi" style="display:block;">xx = 1 + 1 = 2
+2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; xx                  # should be defined</code><code class="nohighlight hljs ansi" style="display:block;">2</code></pre><p>In this &quot;simple&quot; example, we had to use the following concepts mentioned already in the <a href="../lecture/#macro_lecture">lecture</a>:</p><ul><li><code>QuoteNode(ex)</code> is used to wrap the expression inside another layer of quoting, such that when it is interpolated into <code>:()</code> it stays being a piece of code instead of the value it represents - <a href="../lecture/#lec7_quotation"><strong>TRUE QUOTING</strong></a></li><li><code>esc(ex)</code> is used in case that the expression contains an assignment, that has to be evaluated in the top level module <code>Main</code> (we are <code>esc</code>aping the local context) - <a href="../lecture/#lec7_hygiene"><strong>ESCAPING</strong></a></li><li><code>$(QuoteNode(ex))</code> and <code>$(esc(ex))</code> is used to evaluate an expression into another expression. <a href="../lecture/#lec7_quotation"><strong>INTERPOLATION</strong></a></li><li><code>local value =</code> is used in order to return back the result after evaluation</li></ul><p>Lastly, let&#39;s mention that we can use <code>@macroexpand</code> to see how the code is manipulated in the <code>@myshow</code> macro</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @macroexpand @show x + 1</code><code class="nohighlight hljs ansi" style="display:block;">quote
+    Base.println(&quot;x + 1 = &quot;, Base.repr(begin
+                <span class="sgr90">#= show.jl:1128 =#</span>
+                local var&quot;#298#value&quot; = x + 1
+            end))
+    var&quot;#298#value&quot;
+end</code></pre><h2 id="Repeat-macro"><a class="docs-heading-anchor" href="#Repeat-macro">Repeat macro</a><a id="Repeat-macro-1"></a><a class="docs-heading-anchor-permalink" href="#Repeat-macro" title="Permalink"></a></h2><p>In the profiling/performance <a href="../../lecture_05/lab/#perf_lab">labs</a> we have sometimes needed to run some code multiple times in order to gather some samples and we have tediously written out simple for loops inside functions such as this</p><pre><code class="language-julia hljs">function run_polynomial(n, a, x)
+    for _ in 1:n
+        polynomial(a, x)
+    end
+end</code></pre><p>We can remove this boilerplate code by creating a very simple macro that does this for us.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Define macro <code>@repeat</code> that takes two arguments, first one being the number of times a code is to be run and the other being the actual code.</p><pre><code class="language-julia hljs">julia&gt; @repeat 3 println(&quot;Hello!&quot;)
+Hello!
+Hello!
+Hello!</code></pre><p>Before defining the macro, it is recommended to write the code manipulation functionality into a helper function <code>_repeat</code>, which helps in organization and debugging of macros.</p><pre><code class="language-julia hljs">_repeat(3, :(println(&quot;Hello!&quot;))) # testing &quot;macro&quot; without defining it</code></pre><p><strong>HINTS</strong>:</p><ul><li>use <code>$</code> interpolation into a for loop expression; for example given <code>ex = :(1+x)</code> we can interpolate it into another expression <code>:($ex + y)</code> -&gt; <code>:(1 + x + y)</code></li><li>if unsure what gets interpolated use round brackets <code>:($(ex) + y)</code></li><li>macro is a function that <em>creates</em> code that does what we want</li></ul><p><strong>BONUS</strong>: What happens if we call <code>@repeat 3 x = 2</code>? Is <code>x</code> defined?</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; macro repeat(n::Int, ex)
+           return _repeat(n, ex)
+       end</code><code class="nohighlight hljs ansi" style="display:block;">@repeat (macro with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; function _repeat(n::Int, ex)
+           :(for _ in 1:$n
+               $ex
+            end)
+       end</code><code class="nohighlight hljs ansi" style="display:block;">_repeat (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; _repeat(3, :(println(&quot;Hello!&quot;)))</code><code class="nohighlight hljs ansi" style="display:block;">:(for _ = 1:3
+      <span class="sgr90">#= REPL[2]:3 =#</span>
+      println(&quot;Hello!&quot;)
+      <span class="sgr90">#= REPL[2]:4 =#</span>
+  end)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @repeat 3 println(&quot;Hello!&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">Hello!
+Hello!
+Hello!</code></pre><p>Even if we had used escaping the expression <code>x = 2</code> won&#39;t get evaluated properly due to the induced scope of the for loop. In order to resolve this we would have to specially match that kind of expression and generate a proper syntax withing the for loop <code>global $ex</code>. However we may just warn the user in the docstring that the usage is disallowed. </p></p></details><p>Note that this kind of repeat macro is also defined in the <a href="https://fluxml.ai/"><code>Flux.jl</code></a> machine learning framework, wherein it&#39;s called <code>@epochs</code> and is used for creating training <a href="https://fluxml.ai/Flux.jl/stable/training/training/#Datasets">loop</a>.</p><h2 id="lab07_polymacro"><a class="docs-heading-anchor" href="#lab07_polymacro">Polynomial macro</a><a id="lab07_polymacro-1"></a><a class="docs-heading-anchor-permalink" href="#lab07_polymacro" title="Permalink"></a></h2><p>This is probably the last time we are rewriting the <code>polynomial</code> function, though not quite in the same way. We have seen in the last <a href="../../lecture_06/lab/#introspection_lab">lab</a>, that some optimizations occur automatically, when the compiler can infer the length of the coefficient array, however with macros we can <em>generate</em> optimized code directly (not on the same level - we are essentially preparing already unrolled/inlined code).</p><p>Ideally we would like to write some macro <code>@poly</code> that takes a polynomial in a mathematical notation and spits out an anonymous function for its evaluation, where the loop is unrolled. </p><p><em>Example usage</em>:</p><pre><code class="language-julia hljs">p = @poly x 3x^2+2x^1+10x^0  # the first argument being the independent variable to match
+p(2) # return the value</code></pre><p>However in order to make this happen, let&#39;s first consider much simpler case of creating the same but without the need for parsing the polynomial as a whole and employ the fact that macro can have multiple arguments separated by spaces.</p><pre><code class="language-julia hljs">p = @poly 3 2 10
+p(2)</code></pre><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Create macro <code>@poly</code> that takes multiple arguments and creates an anonymous function that constructs the unrolled code. Instead of directly defining the macro inside the macro body, create helper function <code>_poly</code> with the same signature that can be reused outside of it.</p><p>Recall Horner&#39;s method polynomial evaluation from previous <a href="../../lecture_05/lab/#horner">labs</a>:</p><pre><code class="language-julia hljs">function polynomial(a, x)
+    accumulator = a[end] * one(x)
+    for i in length(a)-1:-1:1
+        accumulator = accumulator * x + a[i]
+        #= accumulator = muladd(x, accumulator, a[i]) =# # equivalent
+    end
+    accumulator  
+end</code></pre><p><strong>HINTS</strong>:</p><ul><li>you can use <code>muladd</code> function as replacement for <code>ac * x + a[i]</code></li><li>think of the <code>accumulator</code> variable as the mathematical expression that is incrementally built (try to write out the Horner&#39;s method<sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup> to see it)</li><li>you can nest expression arbitrarily</li><li>the order of coefficients has different order than in previous labs (going from high powers of <code>x</code> last to them being first)</li><li>use <code>evalpoly</code> to check the correctness</li></ul><pre><code class="language-julia hljs">using Test
+p = @poly 3 2 10
+@test p(2) == evalpoly(2, [10,2,3]) # reversed coefficients</code></pre></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; macro poly(a...)
+           return _poly(a...)
+       end</code><code class="nohighlight hljs ansi" style="display:block;">@poly (macro with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; function _poly(a...)
+           N = length(a)
+           ex = :($(a[1]))
+           for i in 2:N
+               ex = :(muladd(x, $ex, $(a[i]))) # equivalent of :(x * $ex + $(a[i]))
+           end
+           :(x -&gt; $ex)
+       end</code><code class="nohighlight hljs ansi" style="display:block;">_poly (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = @poly 3 2 10</code><code class="nohighlight hljs ansi" style="display:block;">#1 (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p(2) == evalpoly(2, [10,2,3])</code><code class="nohighlight hljs ansi" style="display:block;">true</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_lowered p(2) # can show the generated code</code><code class="nohighlight hljs ansi" style="display:block;">CodeInfo(
+<span class="sgr90">1 ─</span> %1 = Main.muladd(x, 3, 2)
+<span class="sgr90">│  </span> %2 = Main.muladd(x, %1, 10)
+<span class="sgr90">└──</span>      return %2
+)</code></pre></p></details><p>Moving on to the first/harder case, where we need to parse the mathematical expression.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Create macro <code>@poly</code> that takes two arguments first one being the independent variable and second one being the polynomial written in mathematical notation. As in the previous case this macro should define an anonymous function that constructs the unrolled code. </p><pre><code class="language-julia hljs">julia&gt; p = @poly x 3x^2+2x^1+10x^0  # the first argument being the independent variable to match</code></pre><p><strong>HINTS</strong>:</p><ul><li>though in general we should be prepared for some edge cases, assume that we are really strict with the syntax allowed (e.g. we really require spelling out x^0, even though it is mathematically equivalent to <code>1</code>)</li><li>reuse the <code>_poly</code> function from the previous exercise</li><li>use the <code>MacroTools.jl</code> to match/capture <code>a_*$v^(n_)</code>, where <code>v</code> is the symbol of independent variable, this is going to be useful in the following steps<ol><li>get maximal rank of the polynomial</li><li>get coefficient for each power</li></ol></li></ul><div class="admonition is-info"><header class="admonition-header">`MacroTools.jl`</header><div class="admonition-body"><p>Though not the most intuitive, <a href="https://fluxml.ai/MacroTools.jl/stable/"><code>MacroTools.jl</code></a> pkg help us with writing custom macros. We will use two utilities</p><h4><code>@capture</code></h4><p>This macro is used to match a pattern in a <em>single</em> expression and return values of particular spots. For example</p><pre><code class="language-julia hljs">julia&gt; using MacroTools
+julia&gt; @capture(:[1, 2, 3, 4, 5, 6, 7], [1, a_, 3, b__, c_])
+true
+
+julia&gt; a, b, c
+(2,[4,5,6],7)</code></pre><h4><code>postwalk</code>/<code>prewalk</code></h4><p>In order to extend <code>@capture</code> to more complicated expression trees, we can used either <code>postwalk</code> or <code>prewalk</code> to walk the AST and match expression along the way. For example</p><pre><code class="language-julia hljs">julia&gt; using MacroTools: prewalk, postwalk
+julia&gt; ex = quote
+     x = f(y, g(z))
+     return h(x)
+   end
+
+julia&gt; postwalk(ex) do x
+        @capture(x, fun_(arg_)) &amp;&amp; println(&quot;Function: &quot;, fun, &quot; with argument: &quot;, arg)
+        x
+    end;
+Function: g with argument: z
+Function: h with argument: x</code></pre><p>Note that the <code>x</code> or the iteration is required, because by default postwalk/prewalk replaces currently read expression with the output of the body of <code>do</code> block.</p></div></div></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">using MacroTools
+using MacroTools: postwalk, prewalk
+
+macro poly(v::Symbol, p::Expr)
+    a = Tuple(reverse(_get_coeffs(v, p)))
+    return _poly(a...)
+end
+
+function _max_rank(v, p)
+    mr = 0
+    postwalk(p) do x
+        if @capture(x, a_*$v^(n_))
+            mr = max(mr, n)
+        end
+        x
+    end
+    mr
+end
+
+function _get_coeffs(v, p)
+    N = _max_rank(v, p) + 1
+    coefficients = zeros(N)
+    postwalk(p) do x
+        if @capture(x, a_*$v^(n_))
+            coefficients[n+1] = a
+        end
+        x
+    end
+    coefficients
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">_get_coeffs (generic function with 1 method)</code></pre><p>Let&#39;s test it.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = @poly x 3x^2+2x^1+10x^0</code><code class="nohighlight hljs ansi" style="display:block;">#7 (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p(2) == evalpoly(2, [10,2,3])</code><code class="nohighlight hljs ansi" style="display:block;">true</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_lowered p(2) # can show the generated code</code><code class="nohighlight hljs ansi" style="display:block;">CodeInfo(
+<span class="sgr90">1 ─</span> %1 = Main.muladd(x, 3.0, 2.0)
+<span class="sgr90">│  </span> %2 = Main.muladd(x, %1, 10.0)
+<span class="sgr90">└──</span>      return %2
+)</code></pre></p></details><h2 id="Ecosystem-macros"><a class="docs-heading-anchor" href="#Ecosystem-macros">Ecosystem macros</a><a id="Ecosystem-macros-1"></a><a class="docs-heading-anchor-permalink" href="#Ecosystem-macros" title="Permalink"></a></h2><p>There are at least two ways how we can make our life simpler when using our <code>Ecosystem</code> and <code>EcosystemCore</code> pkgs. Firstly, recall that in order to test our simulation we always had to write something like this:</p><pre><code class="language-julia hljs">function create_world()
+    n_grass       = 500
+    regrowth_time = 17.0
+
+    n_sheep         = 100
+    Δenergy_sheep   = 5.0
+    sheep_reproduce = 0.5
+    sheep_foodprob  = 0.4
+
+    n_wolves       = 8
+    Δenergy_wolf   = 17.0
+    wolf_reproduce = 0.03
+    wolf_foodprob  = 0.02
+
+    gs = [Grass(id, regrowth_time) for id in 1:n_grass];
+    ss = [Sheep(id, 2*Δenergy_sheep, Δenergy_sheep, sheep_reproduce, sheep_foodprob) for id in n_grass+1:n_grass+n_sheep];
+    ws = [Wolf(id, 2*Δenergy_wolf, Δenergy_wolf, wolf_reproduce, wolf_foodprob) for id in n_grass+n_sheep+1:n_grass+n_sheep+n_wolves];
+    World(vcat(gs, ss, ws))
+end
+world = create_world();</code></pre><p>which includes the tedious process of defining the agent counts, their parameters and last but not least the unique id manipulation. As part of the <a href="../hw/#hw07">HW</a> for this lecture you will be tasked to define a simple DSL, which can be used to define a world in a few lines.</p><p>Secondly, the definition of a new <code>Animal</code> or <code>Plant</code>, that did not have any special behavior currently requires quite a bit of repetitive code. For example defining a new plant type <code>Broccoli</code> goes as follows</p><pre><code class="language-julia hljs">abstract type Broccoli &lt;: PlantSpecies end
+Base.show(io::IO,::Type{Broccoli}) = print(io,&quot;🥦&quot;)
+
+EcosystemCore.eats(::Animal{Sheep},::Plant{Broccoli}) = true</code></pre><p>and definition of a new animal like a <code>Rabbit</code> looks very similar</p><pre><code class="language-julia hljs">abstract type Rabbit &lt;: AnimalSpecies end
+Base.show(io::IO,::Type{Rabbit}) = print(io,&quot;🐇&quot;)
+
+EcosystemCore.eats(::Animal{Rabbit},p::Plant{Grass}) = size(p) &gt; 0
+EcosystemCore.eats(::Animal{Rabbit},p::Plant{Broccoli}) = size(p) &gt; 0</code></pre><p>In order to make this code &quot;clearer&quot; (depends on your preference) we will create two macros, which can be called at one place to construct all the relations.</p><h3 id="New-Animal/Plant-definition"><a class="docs-heading-anchor" href="#New-Animal/Plant-definition">New Animal/Plant definition</a><a id="New-Animal/Plant-definition-1"></a><a class="docs-heading-anchor-permalink" href="#New-Animal/Plant-definition" title="Permalink"></a></h3><p>Our goal is to be able to define new plants and animal species, while having a clear idea about their relations. For this we have proposed the following macros/syntax:</p><pre><code class="language-julia hljs">@species Plant Broccoli 🥦
+@species Animal Rabbit 🐇
+@eats Rabbit [Grass =&gt; 0.5, Broccoli =&gt; 1.0, Mushroom =&gt; -1.0]</code></pre><p>Unfortunately the current version of <code>Ecosystem</code> and <code>EcosystemCore</code>, already contains some definitions of species such as <code>Sheep</code>, <code>Wolf</code> and <code>Mushroom</code>, which may collide with definitions during prototyping, therefore we have created a modified version of those pkgs, which will be provided in the lab.</p><div class="admonition is-info"><header class="admonition-header">Testing relations</header><div class="admonition-body"><p>We can test the current definition with the following code that constructs &quot;eating matrix&quot;</p><pre><code class="language-julia hljs">using Ecosystem
+using Ecosystem.EcosystemCore
+
+function eating_matrix()
+    _init(ps::Type{&lt;:PlantSpecies}) = ps(1, 10.0)
+    _init(as::Type{&lt;:AnimalSpecies}) = as(1, 10.0, 1.0, 0.8, 0.7)
+    function _check(s1, s2)
+        try
+            if s1 !== s2
+                EcosystemCore.eats(_init(s1), _init(s2)) ? &quot;✅&quot; : &quot;❌&quot;
+            else
+                return &quot;❌&quot;
+            end
+        catch e
+            if e isa MethodError
+                return &quot;❔&quot;
+            else
+                throw(e)
+            end
+        end
+    end
+
+    animal_species = subtypes(AnimalSpecies)
+    plant_species = subtypes(PlantSpecies)
+    species = vcat(animal_species, plant_species)
+    em = [_check(s, ss) for (s,ss) in Iterators.product(animal_species, species)]
+    string.(hcat([&quot;🌍&quot;, animal_species...], vcat(permutedims(species), em)))
+end
+eating_matrix()
+ 🌍  🐑  🐺  🌿  🍄
+ 🐑  ❌  ❌  ✅  ✅
+ 🐺  ✅  ❌  ❌  ❌</code></pre></div></div><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Based on the following example syntax, </p><pre><code class="language-julia hljs">@species Plant Broccoli 🥦
+@species Animal Rabbit 🐇</code></pre><p>write macro <code>@species</code> inside <code>Ecosystem</code> pkg, which defines the abstract type, its show function and exports the type. For example <code>@species Plant Broccoli 🥦</code> should generate code:</p><pre><code class="language-julia hljs">abstract type Broccoli &lt;: PlantSpecies end
+Base.show(io::IO,::Type{Broccoli}) = print(io,&quot;🥦&quot;)
+export Broccoli</code></pre><p>Define first helper function <code>_species</code> to inspect the macro&#39;s output. This is indispensable, as we are defining new types/constants and thus we may otherwise encounter errors during repeated evaluation (though only if the type signature changed).</p><pre><code class="language-julia hljs">_species(:Plant, :Broccoli, :🥦)
+_species(:Animal, :Rabbit, :🐇)</code></pre><p><strong>HINTS</strong>:</p><ul><li>use <code>QuoteNode</code> in the show function just like in the <code>@myshow</code> example</li><li>escaping <code>esc</code> is needed for the returned in order to evaluate in the top most module (<code>Ecosystem</code>/<code>Main</code>)</li><li>ideally these changes should be made inside the modified <code>Ecosystem</code> pkg provided in the lab (though not everything can be refreshed with <code>Revise</code>) - there is a file <code>ecosystem_macros.jl</code> just for this purpose</li><li>multiple function definitions can be included into a <code>quote end</code> block</li><li>interpolation works with any expression, e.g. <code>$(typ == :Animal ? AnimalSpecies : PlantSpecies)</code></li></ul><p><strong>BONUS</strong>: Based on <code>@species</code> define also macros <code>@animal</code> and <code>@plant</code> with two arguments instead of three, where the species type is implicitly carried in the macro&#39;s name.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>Macro <code>@species</code></p><pre><code class="language-julia hljs">macro species(typ, name, icon)
+    esc(_species(typ, name, icon))
+end
+
+function _species(typ, name, icon)
+    quote
+        abstract type $name &lt;: $(typ == :Animal ? AnimalSpecies : PlantSpecies) end
+        Base.show(io::IO, ::Type{$name}) = print(io, $(QuoteNode(icon)))
+        export $name
+    end
+end
+
+_species(:Plant, :Broccoli, :🥦)
+_species(:Animal, :Rabbit, :🐇)</code></pre><p>And the bonus macros <code>@plant</code> and <code>@animal</code></p><pre><code class="language-julia hljs">macro plant(name, icon)
+    return :(@species Plant $name $icon)
+end
+
+macro animal(name, icon)
+    return :(@species Animal $name $icon)
+end</code></pre></p></details><p>The next exercise applies macros to the agents eating behavior.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Define macro <code>@eats</code> inside <code>Ecosystem</code> pkg that assigns particular species their eating habits via <code>eat!</code> and <code>eats</code> functions. The macro should process the following example syntax</p><pre><code class="language-julia hljs">@eats Rabbit [Grass =&gt; 0.5, Broccoli =&gt; 1.0],</code></pre><p>where <code>Grass =&gt; 0.5</code> defines the behavior of the <code>eat!</code> function. The coefficient is used here as a multiplier for the energy balance, in other words the <code>Rabbit</code> should get only <code>0.5</code> of energy for a piece of <code>Grass</code>.</p><p><strong>HINTS</strong>:</p><ul><li>ideally these changes should be made inside the modified <code>Ecosystem</code> pkg provided in the lab (though not everything can be refreshed with <code>Revise</code>) - there is a file <code>ecosystem_macros.jl</code> just for this purpose</li><li>escaping <code>esc</code> is needed for the returned in order to evaluate in the top most module (<code>Ecosystem</code>/<code>Main</code>)</li><li>you can create an empty <code>quote end</code> block with <code>code = Expr(:block)</code> and push new expressions into its <code>args</code> incrementally</li><li>use dispatch to create specific code for the different combinations of agents eating other agents (there may be catch in that we have to first <code>eval</code> the symbols before calling in order to know if they are animals or plants)</li></ul><div class="admonition is-info"><header class="admonition-header">Reminder of `EcosystemCore` `eat!` and `eats` functionality</header><div class="admonition-body"><p>In order to define that an <code>Wolf</code> eats <code>Sheep</code>, we have to define two methods</p><pre><code class="nohighlight hljs">EcosystemCore.eats(::Animal{Wolf}, ::Animal{Sheep}) = true
+
+function EcosystemCore.eat!(ae::Animal{Wolf}, af::Animal{Sheep}, w::World)
+    incr_energy!(ae, $(multiplier)*energy(af)*Δenergy(ae))
+    kill_agent!(af, w)
+end</code></pre><p>In order to define that an <code>Sheep</code> eats <code>Grass</code>, we have to define two methods</p><pre><code class="nohighlight hljs">EcosystemCore.eats(::Animal{Sheep}, p::Plant{Grass}) = size(p)&gt;0
+
+function EcosystemCore.eat!(a::Animal{Sheep}, p::Plant{Grass}, w::World)
+    incr_energy!(a, $(multiplier)*size(p)*Δenergy(a))
+    p.size = 0
+end</code></pre></div></div><p><strong>BONUS</strong>: You can try running the simulation with the newly added agents.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">macro eats(species::Symbol, foodlist::Expr)
+    return esc(_eats(species, foodlist))
+end
+
+
+function _generate_eat(eater::Type{&lt;:AnimalSpecies}, food::Type{&lt;:PlantSpecies}, multiplier)
+    quote
+        EcosystemCore.eats(::Animal{$(eater)}, p::Plant{$(food)}) = size(p)&gt;0
+        function EcosystemCore.eat!(a::Animal{$(eater)}, p::Plant{$(food)}, w::World)
+            incr_energy!(a, $(multiplier)*size(p)*Δenergy(a))
+            p.size = 0
+        end
+    end
+end
+
+function _generate_eat(eater::Type{&lt;:AnimalSpecies}, food::Type{&lt;:AnimalSpecies}, multiplier)
+    quote
+        EcosystemCore.eats(::Animal{$(eater)}, ::Animal{$(food)}) = true
+        function EcosystemCore.eat!(ae::Animal{$(eater)}, af::Animal{$(food)}, w::World)
+            incr_energy!(ae, $(multiplier)*energy(af)*Δenergy(ae))
+            kill_agent!(af, w)
+        end
+    end
+end
+
+_parse_eats(ex) = Dict(arg.args[2] =&gt; arg.args[3] for arg in ex.args if arg.head == :call &amp;&amp; arg.args[1] == :(=&gt;))
+
+function _eats(species, foodlist)
+    cfg = _parse_eats(foodlist)
+    code = Expr(:block)
+    for (k,v) in cfg
+        push!(code.args, _generate_eat(eval(species), eval(k), v))
+    end
+    code
+end
+
+species = :Rabbit 
+foodlist = :([Grass =&gt; 0.5, Broccoli =&gt; 1.0])
+_eats(species, foodlist)</code></pre></p></details><hr/><h2 id="Resources"><a class="docs-heading-anchor" href="#Resources">Resources</a><a id="Resources-1"></a><a class="docs-heading-anchor-permalink" href="#Resources" title="Permalink"></a></h2><ul><li>macros in Julia <a href="https://docs.julialang.org/en/v1/manual/metaprogramming/#man-macros">documentation</a></li></ul><h3 id="Type{T}-type-selectors"><a class="docs-heading-anchor" href="#Type{T}-type-selectors"><code>Type{T}</code> type selectors</a><a id="Type{T}-type-selectors-1"></a><a class="docs-heading-anchor-permalink" href="#Type{T}-type-selectors" title="Permalink"></a></h3><p>We have used <code>::Type{T}</code> signature<sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup> at few places in the <code>Ecosystem</code> family of packages (and it will be helpful in the HW as well), such as in the <code>show</code> methods</p><pre><code class="language-julia hljs">Base.show(io::IO,::Type{World}) = print(io,&quot;🌍&quot;)</code></pre><p>This particular example defines a method where the second argument is the <code>World</code> type itself and not an instance of a <code>World</code> type. As a result we are able to dispatch on specific types as values. </p><p>Furthermore we can use subtyping operator to match all types in a hierarchy, e.g. <code>::Type{&lt;:AnimalSpecies}</code> matches all animal species</p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Explanation of the Horner schema can be found on <a href="https://en.wikipedia.org/wiki/Horner%27s_method">https://en.wikipedia.org/wiki/Horner%27s_method</a>.</li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a><a href="https://docs.julialang.org/en/v1/manual/types/#man-typet-type">https://docs.julialang.org/en/v1/manual/types/#man-typet-type</a></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.2 on <span class="colophon-date" title="Thursday 9 November 2023 17:24">Thursday 9 November 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
