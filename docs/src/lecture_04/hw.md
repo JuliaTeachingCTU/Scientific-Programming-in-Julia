@@ -1,4 +1,4 @@
-# Homework 4
+# [Homework 4](@id hw4)
 
 In this homework you will have to write two additional `@testset`s for the
 Ecosystem.  One testset should be contained in a file `test/sheep.jl` and verify
