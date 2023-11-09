@@ -34,7 +34,7 @@ Inspecting the lowered code
 ```julia
 Meta.@lower @replace_sin( 1 + sin(x))
 ```
-We obeserve that there is no trace of macro in lowered code (compare to `Meta.@lower 1 + cos(x)`, which demonstrates that the macro has been expanded after the code has been parsed but before it has been lowered. In this sense macros are indispensible, as you cannot replace them simply by the combination of `Meta.parse` end `eval`. You might object that in the above example it is possible, which is true, but only because the effect of the macro is in the global scope.
+We observe that there is no trace of macro in lowered code (compare to `Meta.@lower 1 + cos(x)`, which demonstrates that the macro has been expanded after the code has been parsed but before it has been lowered. In this sense macros are indispensible, as you cannot replace them simply by the combination of `Meta.parse` end `eval`. You might object that in the above example it is possible, which is true, but only because the effect of the macro is in the global scope.
 ```julia
 ex = Meta.parse("cosp1(x) = 1 + sin(x)")
 ex = replace_sin(ex)
@@ -187,11 +187,11 @@ In contrast to the behavior of `:()` (or `quote ... end`, true quotation would n
 )
 ```
 
-```jula
+```julia
 for (v, f) in [(:sin, :foo_sin)]
 	quote
 		$(f)(x) = $(v)(x)
-	end |> dump
+	end |> Base.remove_linenums! |> dump
 end
 ```
 
@@ -200,6 +200,7 @@ When we need true quoting, i.e. we need something to stay quoted, we can use `Qu
 macro true_quote(e)
     QuoteNode(e)
 end
+
 let y = :x
     (
         @true_quote(1 + $y),
@@ -207,11 +208,19 @@ let y = :x
     )
 end
 ```
-At first glance, `QuoteNode` wrapper seems to be useless. But `QuoteNode` has clear value when it's used inside a macro to indicate that something should stay quoted even after the macro finishes its work. Also notice that the expression received by macro are quoted, not quasiquoted, since in the latter case `$y` would be replaced. We can demonstate it using the `@showarg` macro introduced earlier, as
-```julia
-@showarg(1 + $x)
+At first glance, `QuoteNode` wrapper seems to be useless. But `QuoteNode` has clear value when it's used inside a macro to indicate that something should stay quoted even after the macro finishes its work. Also notice that the expression received by macro are quoted, not quasiquoted, since in the latter case `$y` would be replaced. 
+
+We can demonstrate it by defining a new macro `no_quote` which will just return the expression as is 
 ```
-The error is raised after the macro was evaluated and the output has been inserted to parsed AST.
+macro no_quote(ex)
+    ex
+end
+
+let y = :x
+    @no_quote(1 + $y)
+end
+```
+The error code snippet errors telling us that the expression `"$"` is outside of a quote block. This is because the macro `@no_quote` has returned a block with `$` occuring outside of `quote` or string definition.
 
 !!! info
     Some macros like `@eval` (recall last example)
@@ -240,7 +249,7 @@ Instead, when a macro is given an expression with $ in it, it assumes you're goi
 	```
 
 ## [Macro hygiene](@id lec7_hygiene)
-Macro hygiene is a term coined in 1986. The problem it addresses is following: if you're automatically generating code, it's possible that you will introduce variable names in your generated code that will clash with existing variable names in the scope in which a macro is called. These clashes might cause your generated code to read from or write to variables that you should not be interacting with. A macro is hygienic when it does not interact with existing variables, which means that when macro is evaluated, it should not have any effect on the surrounding code. 
+Macro hygiene is a term coined in 1986 addressing the following problem: if you're automatically generating code, it's possible that you will introduce variable names in your generated code that will clash with existing variable names in the scope in which a macro is called. These clashes might cause your generated code to read from or write to variables that you should not be interacting with. A macro is hygienic when it does not interact with existing variables, which means that when macro is evaluated, it should not have any effect on the surrounding code. 
 
 By default, all macros in Julia are hygienic which means that variables introduced in the macro have automatically generated names, where Julia ensures they will not collide with user's variable. These variables are created by `gensym` function / macro. 
 
@@ -450,7 +459,7 @@ which means that macros are expanded in the order from the outer most to inner m
 also notice that the escaping is only partial (running `@macroexpand @m2 @m1 1 + sin(1)` would not change the results).
 
 ## Write @exfiltrate macro
-Since Julia's debugger is a complicated story, people have been looking for tools, which would simplify the debugging. One of them is a macro `@exfiltrate`, which copies all variables in a given scope to a afe place, from where they can be collected later on. This helps you in evaluating the function. F
+Since Julia's debugger is a complicated story, people have been looking for tools, which would simplify the debugging. One of them is a macro `@exfiltrate`, which copies all variables in a given scope to a safe place, from where they can be collected later on. This helps you in evaluating the function. F
 
 Whyle a full implementation is provided in package [`Infiltrator.jl`](https://github.com/JuliaDebug/Infiltrator.jl), we can implement such functionality by outselves.
 - We collect names and values of variables in a given scope using the macro `Base.@locals`
