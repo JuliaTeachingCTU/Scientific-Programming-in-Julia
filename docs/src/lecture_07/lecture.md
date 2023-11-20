@@ -164,6 +164,11 @@ end
 
 Observe that macro dispatch is based on the types of AST that are handed to the macro, not the types that the AST evaluates to at runtime.
 
+List of all defined versions of macro
+```julia
+methods(var"@showarg")
+```
+
 ## [Notes on quotation](@id lec7_quotation)
 In the previous lecture we have seen that we can *quote a block of code*, which tells the compiler to treat the input as a data and parse it. We have talked about three ways of quoting code.
 1.  `:(quoted code)`
@@ -280,7 +285,7 @@ let
 	@show tstart
 end
 ```
-We see that variable `r` has not been assigned during the evaluation of macro. We have also used `let` block in orders not to define any variables in the global scope.
+We see that variable `r` has not been assigned during the evaluation of macro. We have also used `let` block in orders not to define any variables in the global scope. The problem with the above is that it cannot be nested.
 Why is that?
 Let's observe how the macro was expanded
 ```julia
