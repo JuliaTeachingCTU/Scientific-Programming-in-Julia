@@ -117,7 +117,7 @@ makedocs(;
         "6: Lanuage introspection" => lecture_06,
         "7: Macros" => lecture_07,
         "8: Automatic differentiation" => lecture_08,
-        "9: Intermediate representation" => lecture_09,
+        # "9: Intermediate representation" => lecture_09,
     ],
 )
 

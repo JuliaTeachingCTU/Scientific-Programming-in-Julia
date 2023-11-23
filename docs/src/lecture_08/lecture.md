@@ -6,9 +6,9 @@ using Plots
 ## Motivation
 
 - It supports a lot of modern machine learning by allowing quick differentiation of complex mathematical functions. The 1st order optimization methods are ubiquitous in finding parameters of functions (not only in  deep learning).
-- AD is interesting to study from the implementation perspective. There are different takes on it with different trade-offs and Julia offers many implementations (some of them are not maintained anymore).
-- We (authors of this course) believe that it is good to understand (at least roughly), how the methods work in order to use them effectively in our work.
-- Julia is unique in the effort separating definitions of AD rules from AD engines that use those rules to perform the AD. This allows authors of generic libraries to add new rules that would be compatible with many frameworks. See [juliadiff.org](https://juliadiff.org/) for a list.
+- AD is interesting to study from both mathermatical and implementation perspective, since  different approaches comes with different trade-offs. Julia offers many implementations (some of them are not maintained anymore), as it showed to implement (simple) AD is relatively simple.
+- We (authors of this course) believe that it is good to understand (at least roughly), how the methods work in order to use them effectively in your work.
+- Julia is unique in the effort separating definitions of AD rules from AD engines that use those rules to perform the AD and the backend which executes the rules This allows authors of generic libraries to add new rules that would be compatible with many frameworks. See [juliadiff.org](https://juliadiff.org/) for a list.
 
 ## Theory
 
@@ -19,7 +19,7 @@ The differentiation is routine process, as most of the time we break complicated
 f(x) = f_1(f_2(f_3(\ldots f_n(x)))) = (f_1 \circ f_2 \circ \ldots \circ f_n)(x)
 ``` 
 
-which is computed by chainrule. Before we dive into the details, let's define the notation, which for the sake of clarity needs to be precise. The gradient of function ``f(x)`` with respect to ``x`` at point ``x_0`` will be denoted as 
+which is computed by chainrule. Before we dive into the details, let's define the notation, which for the sake of clarity needs to be precise. The gradient of function ``f(x)`` with respect to ``x`` at point ``x_0`` is denoted as
 ``\left.\frac{\partial f}{\partial x}\right|_{x^0}``
 
 For a composed function ``f(x)`` the gradient with respect to ``x`` at point ``x_0`` is equal to
@@ -355,22 +355,36 @@ import Base: +, *
 function *(A::TrackedMatrix, B::TrackedMatrix)
     a, b = value.((A, B))
     C = TrackedArray(a * b, "($(A.string_tape) * $(B.string_tape))")
-    push!(A.tape, (C, Δ -> Δ * b'))
-    push!(B.tape, (C, Δ -> a' * Δ))
+    push!(A.tape, (C, ∂C -> ∂C * b'))
+    push!(B.tape, (C, ∂C -> a' * ∂C))
+    C
+end
+
+function *(A::TrackedMatrix, B::AbstractMatrix)
+    a, b = value.((A, B))
+    C = TrackedArray(a * b, "($(A.string_tape) * B)")
+    push!(A.tape, (C, ∂C -> ∂C * b'))
+    C
+end
+
+function *(A::Matrix, B::TrackedMatrix)
+    a, b = value.((A, B))
+    C = TrackedArray(a * b, "A * $(B.string_tape)")
+    push!(A.tape, (C, ∂C -> ∂C * b'))
     C
 end
 
 function +(A::TrackedMatrix, B::TrackedMatrix)
     C = TrackedArray(value(A) + value(B), "($(A.string_tape) + $(B.string_tape))")
-    push!(A.tape, (C, Δ -> Δ))
-    push!(B.tape, (C, Δ -> Δ))
+    push!(A.tape, (C, ∂C -> ∂C))
+    push!(B.tape, (C, ∂C -> ∂C))
     C
 end
 
 function msin(A::TrackedMatrix)
     a = value(A)
     C = TrackedArray(sin.(a), "sin($(A.string_tape))")
-    push!(A.tape, (C, Δ -> cos.(a) .* Δ))
+    push!(A.tape, (C, ∂C -> cos.(a) .* ∂C))
     C
 end
 ```
@@ -437,30 +451,18 @@ To make the above AD system really useful, we would need to
 1. Add support for `TrackedReal`, which is straightforward (we might skip the anonymous function, as the derivative of a scalar function is always a number).
 2. We would need to add a lot of rules, how to work with basic values. This is why the the approach is called **operator overloading** since you need to overload a lot of functions (or methods or operators).
 
-For example to add all combinations for `+` and `*`, we would need to add following rules.
+For example to add all combinations for `+`, we would need to add following rules.
 ```julia
-function *(A::TrackedMatrix, B::AbstractMatrix)
-   C = TrackedArray(value(A) * B, "($(A.string_tape) * B)")
-   push!(A.tape, (C, Δ -> Δ * B'))
-   C
-end
-
-function *(A::AbstractMatrix, B::TrackedMatrix)
-   C = TrackedArray(value(A) * value(B), "($(A.string_tape) * $(B.string_tape))")
-   push!(B.tape, (C, Δ -> A' * Δ))
-   C
-end
-
 function +(A::TrackedMatrix, B::TrackedMatrix)
    C = TrackedArray(value(A) + value(B), "($(A.string_tape) + $(B.string_tape))")
-   push!(A.tape, (C, Δ -> Δ ))
-   push!(B.tape, (C, Δ -> Δ))
+   push!(A.tape, (C, ∂C -> ∂C ))
+   push!(B.tape, (C, ∂C -> ∂C))
    C
 end
 
 function +(A::AbstractMatrix, B::TrackedMatrix)
    C = TrackedArray(A * value(B), "(A + $(B.string_tape))")
-   push!(B.tape, (C, Δ -> Δ))
+   push!(B.tape, (C, ∂C -> ∂C))
    C
 end
 ```
@@ -471,6 +473,7 @@ Advantages:
 
 Disadvantages:
 - The computation graph is created and differentiated during every computation, which might be costly. In most deep learning applications, this overhead is negligible in comparison to time of needed to perform the operations itself (`ReverseDiff.jl` allows to compile the tape).
+- The compiler has limited options for optimization, since the tape is created during the execution.
 - Since computation graph is dynamic, it cannot be optimized as the static graph, the same holds for the memory allocations. 
 
 A more complete example which allow to train feed-forward neural network on GPU can be found [here](ffnn.jl).
@@ -480,7 +483,7 @@ A more complete example which allow to train feed-forward neural network on GPU 
 
 
 ## ChainRules
-From our discussions about AD systems so far we see that while the basic, *engine*, part is relatively straightforward, it devil is in writing the rules prescribing the computation of gradients. These rules are needed for every system whether it is graph based, tracking, or Wengert list based. ForwardDiff also needs a rule system, but rules are a bit different (as they are pushing the gradient forward rather than pulling it back). It is obviously a waste of effort for each AD system to have its own set of rules. Therefore the community (initiated by Catherine Frames White backed by [Invenia](https://github.com/invenia)) have started to work on a unified system to express differentiation rules, such that they can be shared between systems. So far, they are supported by `Zygote.jl`, `Nabla.jl`, `ReverseDiff.jl` and `Diffractor.jl`, suggesting that the unification approach is working.
+From our discussions about AD systems so far we see that while the basic, *engine*, part is relatively straightforward, the devil is in writing the rules prescribing the computation of gradients. These rules are needed for every system whether it is graph based, tracking, or Wengert list based. ForwardDiff also needs a rule system, but rules are a bit different (as they are pushing the gradient forward rather than pulling it back). It is obviously a waste of effort for each AD system to have its own set of rules. Therefore the community (initiated by Catherine Frames White backed by [Invenia](https://github.com/invenia)) have started to work on a unified system to express differentiation rules, such that they can be shared between systems. So far, they are supported by `Zygote.jl`, `Nabla.jl`, `ReverseDiff.jl` and `Diffractor.jl`, suggesting that the unification approach is working (but not by `Enzyme.jl`).
 
 The definition of reverse diff rules follows the idea we have nailed above (we refer readers interested in forward diff rules [to official documentation](https://juliadiff.org/ChainRulesCore.jl)).
 
@@ -494,7 +497,7 @@ end
 where
 - the first argument `::typeof(foo)` allows to dispatch on the function for which the rules is written
 - the output of function `foo(args...)` is returned as the first argument
-- `pullback(Δy)` takes the gradient of upstream functions with respect to the output of `foo(args)` and returns it multiplied by the jacobian of the output of `foo(args)` with respect to parameters of the function itself (recall the function can have paramters, as it can be a closure or a functor), and with respect to the arguments.
+- `pullback(Δy)` takes the gradient of upstream functions with respect to the output of `foo(args)` and returns it multiplied by the jacobian of the output of `foo(args)` with respect to parameters of the function itself (recall the function can have parameters, as it can be a closure or a functor), and with respect to the arguments.
 ```julia
 function pullback(Δy)
     ...
@@ -577,84 +580,6 @@ This form is particularly nice for automatic differentiation, as we have on the 
 What if we somehow be able to talk to the compiler and get this form from him?
 
 * [simplest viable implementation](https://juliadiff.org/ChainRulesCore.jl/dev/autodiff/operator_overloading.html#ReverseDiffZero)
-
-## ChainRules
-From our discussions about AD systems so far we see that while the basic, *engine*, part is relatively straightforward, it devil is in writing the rules prescribing the computation of gradients. These rules are needed for every system whether it is graph based, tracking, or wengert list based. ForwardDiff also needs a rule system, but rules are a bit different (as they are pushing the gradient forward rather than pulling it back). It is obviously a waste of effort for each AD system to have its own set of rules. Hence the community (initiated by Lyndon White and hence probably funded mainly by Invenia) have started to work on a unified system to express differentiation rules, such that they can be shared between systems. So far, they are supported by `Zygote.jl`, `Nabla.jl`, `ReverseDiff.jl` and `Diffractor.jl`, hence the approach seems to work.
-
-The definition of reverse diff rules follows the idea we have nailed above (we refer readers interested in forward diff rules [to official documentation](https://juliadiff.org/ChainRulesCore.jl)).
-
-`ChainRules` defines the reverse rules for function `foo` in a function `rrule` with the following signature
-```julia
-function rrule(::typeof(foo), args...; kwargs...)
-    ...
-    return y, pullback
-end
-```
-where
-- the first argument `::typeof(foo)` allows to dispatch on the function for which the rules is written
-- the output of function `foo(args...)` is returned as the first argument
-- `pullback(Δy)` takes the gradient of upstream functions with respect to the output of `foo(args)` and returns it multiplied by the jacobian of the output of `foo(args)` with respect to parameters of the function itself (recall the function can have paramters, as it can be a closure or a functor), and with respect to the arguments.
-```julia
-function pullback(Δy)
-    ...
-    return ∂self, ∂args...
-end
-```
-Notice that key-word arguments are not differentiated. This is a design decision with the explanation that parametrize the function, but most of the time, they are not differentiable.
-
-`ChainRules.jl` provides support for lazy (delayed) computation using `Thunk`. Its argument is a function, which is not evaluated until `unthunk` is called. There is also a support to signal that gradient is zero using `ZeroTangent` (which can save valuable memory) or to signal that the gradient does not exist using `NoTangent`. 
-
-How can we use ChainRules to define rules for our AD system?
-Let's first observe the output
-```julia
-using ChainRulesCore, ChainRules
-r, g = rrule(*, rand(2,2), rand(2,2))
-g(r)
-```
-
-With that, we can extend our AD system as follows
-```julia
-import Base: *, +, -
-for f in [:*, :+, :-]
-    @eval function $(f)(A::TrackedMatrix, B::AbstractMatrix)
-       C, pullback = rrule($(f), value(A), B)
-       C = track(C)
-       push!(A.tape, (C, Δ -> pullback(Δ)[2]))
-       C
-    end
-
-    @eval function $(f)(A::AbstractMatrix, B::TrackedMatrix)
-       C, pullback = rrule($(f), A, value(B))
-       C = track(C)
-       push!(B.tape, (C, Δ -> pullback(Δ)[3]))
-       C
-    end
-
-    @eval function $(f)(A::TrackedMatrix, B::TrackedMatrix)
-       C, pullback = rrule($(f), value(A), value(B))
-       C = track(C)
-       push!(A.tape, (C, Δ -> pullback(Δ)[2]))
-       push!(B.tape, (C, Δ -> pullback(Δ)[3]))
-       C
-    end
-end
-```
-and we need to modify our `accum!` code to `unthunk` if needed
-```julia
-function accum!(A::TrackedArray)
-    isempty(A.tape) && return(A.deriv)
-    A.deriv .= sum(unthunk(g(accum!(r))) for (r, g) in A.tape)
-end
-```
-
-```
-A = track(rand(4,4))
-B = rand(4,1)
-C = rand(4,1)
-R = A * B + C
-R.deriv .= 1
-accum!(A)
-```
 
 ### Sources for this lecture
 * Mike Innes' [diff-zoo](https://github.com/MikeInnes/diff-zoo)
