@@ -7,7 +7,7 @@ using InteractiveUtils: @code_typed, @code_lowered, code_lowered
 ## Generated functions
 Sometimes it is convenient to generate function once types of arguments are known. For example if we have function `foo(args...)`, we can generate different body for different length of `Tuple` and types in `args`. Do we really need such thing, or it is just wish of curious programmer? Not really, as 
 - we can deal with variability of `args` using normal control-flow logic `if length(args) == 1 elseif ...`
-- we can (automatically) generate (a possibly infinite) set of functions `foo` specialized for each length of `args` (or combination of types of `args`) and let multiple dispatch to deal with this
+- we can (automatically) generate (a possibly very large) set of functions `foo` specialized for each length of `args` (or combination of types of `args`) and let multiple dispatch to deal with this
 - we cannot deal with this situation with macros, because macros do not see types, only parsed AST, which is in this case always the same.
 
 Generated functions allow to specialize the code for a given type of argumnets. They are like macros in the sense that they **return expressions** and not **results**. But unlike macros, the input is not expression or value of arguments, but their types (the arguments are of type `Type`). They are also called when compiler needs (which means at least once for each combination of arguments, but possibly more times due to code invalidation).
@@ -70,6 +70,7 @@ x = (a = 1, b = 2, c = 3)
 y = (a = 4, b = 5, c = 6)
 map(+, x, y)
 ```
+
 The same does not work with permuted names:
 ```@repl lec09
 x = (a = 1, b = 2, c = 3)
@@ -79,8 +80,8 @@ map(+, x, y)
 How to fix this? The usual approach would be to iterate over the keys in named tuples:
 ```@example lec09
 function permuted_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY}
-    @assert issubset(KX,KY)
-    NamedTuple{KX}(map(k -> f(x[k], y[k]), KX))
+    ks = tuple(intersect(KX,KY)...)
+    NamedTuple{ks}(map(k -> f(x[k], y[k]), ks))
 end
 nothing # hide
 ```
@@ -108,10 +109,10 @@ _get(name, k) = :(getfield($(name), $(QuoteNode(k))))
 with that, we proceed to a nicer two argument function which we have desired:
 ```@repl lec09
 @generated function unrolled_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY} 
-    @assert issubset(KX,KY)
+    ks = tuple(intersect(KX,KY)...)
     _get(name, k) = :(getfield($(name), $(QuoteNode(k))))
-    vals = [:(f($(_get(:x, k)), $(_get(:y, k)))) for k in KX]
-    :(NamedTuple{$(KX)}(($(vals...),)))
+    vals = [:(f($(_get(:x, k)), $(_get(:y, k)))) for k in ks]
+    :(NamedTuple{$(ks)}(($(vals...),)))
 end
 nothing # hide
 ```
@@ -128,7 +129,7 @@ which is not shown here for the sake of conciseness.
 For fun, we can create a version which replaces the `Symbol` arguments directly by position numbers
 ```julia
 @generated function unrolled_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY} 
-    @assert issubset(KX,KY)
+    ks = tuple(intersect(KX,KY)...)
     _get(name, k, KS) = :(getfield($(name), $(findfirst(k .== KS))))
     vals = [:(f($(_get(:x, k, KX)), $(_get(:y, k, KY)))) for k in KX]
     :(NamedTuple{$(KX)}(($(vals...),)))
@@ -158,7 +159,7 @@ which is a function with an if-condition, where the first branch `$(Expr(:genera
 ## Contextual dispatch / overdubbing
 Imagine that under some circumstances (context), you would like to use alternative implementations of some functions. One of the most cited motivations for this is automatic differentiation, where you would like to take the code **as-is** and calculate gradients with respect to some variables. Other use cases of this approach are mentioned in `Cassette.jl`:
 
-"*Downstream applications for Cassette include dynamic code analysis (e.g. profiling, rr-style debugging, etc.), JIT compilation to new hardware/software backends, automatic differentiation, interval constraint programming, automatic parallelization/rescheduling, automatic memoization, lightweight multistage programming, graph extraction, and more.*"
+"*Downstream applications for Cassette include dynamic code analysis (e.g. profiling,  record and replay style debugging, etc.), JIT compilation to new hardware/software backends, automatic differentiation, interval constraint programming, automatic parallelization/rescheduling, automatic memoization, lightweight multistage programming, graph extraction, and more.*"
 
 In theory, we can do all the above by directly modifying the code or introducing new types, but that may require a lot of coding and changing of foreign libraries.
 
@@ -292,6 +293,32 @@ function Base.resize!(calls::Calls, n::Integer)
   resize!(calls.event, n)
   resize!(calls.startstop, n)
 end
+
+
+exportname(ex::GlobalRef) = QuoteNode(ex.name)
+exportname(ex::Symbol) = QuoteNode(ex)
+exportname(ex::Expr) = exportname(ex.args[1])
+exportname(i::Int) = QuoteNode(Symbol("Int(",i,")"))
+
+function overdubbable(ex::Expr)
+    ex.head != :call && return(false)
+    a = ex.args[1]
+    a != GlobalRef && return(true)
+    a.mod != Core
+end 
+overdubbable(ex) = false 
+
+
+function timable(ex::Expr) 
+    ex.head != :call && return(false)
+    length(ex.args) < 2 && return(false)
+    ex.args[1] isa Core.GlobalRef && return(true)
+    ex.args[1] isa Symbol && return(true)
+    return(false)
+end
+timable(ex) = false
+
+export timable, exportname, overdubbable
 end
 ```
 
@@ -348,6 +375,7 @@ and we can check the correctness by
 Equipped with that, we start rewriting the code of `foo(x, y)`. We start by a small preample, where we assign values of `args...` to `x`, and `y`. For the sake of simplicity, we map the slotnames to either `Core.SlotNumber` or to `Core.SSAValues` which simplifies the rewriting logic a bit.
 ```julia
 newci_no = 0
+args = (Float64, Float64)
 for i in 1:length(args)
     newci_no +=1
     push!(new_ci.code, Expr(:call, Base.getindex, Core.SlotNumber(3), i))
@@ -565,8 +593,21 @@ function timable(ex::Expr)
 end
 timable(ex) = false
 
-recursable(gr::GlobalRef) = gr.name ∉ [:profile_fun, :record_start, :record_end]
-recursable(ex::Expr) = ex.head == :call && recursable(ex.args[1])
+function recursable_fun(ex::GlobalRef)
+    ex.name ∈ (:profile_fun, :record_start, :record_end) && return(false)
+    iswhite(recursable_list, ex) && return(true)
+    isblack(recursable_list, ex) && return(false)
+    return(isempty(recursable_list) ? true : false)
+end
+
+recursable_fun(ex::IRTools.Inner.Variable) = true
+
+function recursable(ex::Expr) 
+    ex.head != :call && return(false)
+    isempty(ex.args) && return(false)
+    recursable(ex.args[1])
+end
+
 recursable(ex) = false
 
 exportname(ex::GlobalRef) = QuoteNode(ex.name)
@@ -712,9 +753,6 @@ Zygote implements this inside the generated function, such that whatever is adde
 We now obtain the value and the pullback of function `foo` as 
 ```julia
 julia> v, pb = forward(foo, 1.0, 1.0);
-
-julia> pb(1.0)
-(0, 1.0, 1.5403023058681398)
 ```
 - The pullback contains in `data` field with individual jacobians that have been collected in `ret` in `primal` function.
 ```julia
