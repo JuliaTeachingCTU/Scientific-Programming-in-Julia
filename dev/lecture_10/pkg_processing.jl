@@ -6,7 +6,7 @@ Returns root folders of all installed packages in the system. Package version is
 function sample_all_installed_pkgs(path::AbstractString)
 	pkgs = readdir(path)
 	# [rand(readdir(joinpath(path, p), join=true)) for p in pkgs] # sampling version
-	[readdir(joinpath(path, p), join=true)[1] for p in pkgs if isdir(p)]    # deterministic version
+	[readdir(joinpath(path, p), join=true)[1] for p in pkgs if isdir(joinpath(path, p))]    # deterministic version
 end
 
 """
