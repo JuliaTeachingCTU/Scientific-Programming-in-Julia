@@ -480,6 +480,7 @@ Alternatively, you can overwrite a global variable
 	function set_g(x) 
 		global g
 		g = x
+		nothing
 	end
 end
 
