@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Lab · Scientific Programming in Julia</title><meta name="title" content="Lab · Scientific Programming in Julia"/><meta property="og:title" content="Lab · Scientific Programming in Julia"/><meta property="twitter:title" content="Lab · Scientific Programming in Julia"/><meta name="description" content="Documentation for Scientific Programming in Julia."/><meta property="og:description" content="Documentation for Scientific Programming in Julia."/><meta property="twitter:description" content="Documentation for Scientific Programming in Julia."/><meta property="og:url" content="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_10/lab/"/><meta property="twitter:url" content="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_10/lab/"/><link rel="canonical" href="https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia/lecture_10/lab/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/><link href="../../assets/onlinestats.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="Scientific Programming in Julia logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="Scientific Programming in Julia logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Scientific Programming in Julia</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../installation/">Installation</a></li><li><a class="tocitem" href="../../projects/">Projects</a></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">1: Introduction</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_01/motivation/">Motivation</a></li><li><a class="tocitem" href="../../lecture_01/basics/">Basics</a></li><li><a class="tocitem" href="../../lecture_01/demo/">Examples</a></li><li><a class="tocitem" href="../../lecture_01/outline/">Outline</a></li><li><a class="tocitem" href="../../lecture_01/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_01/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox"/><label class="tocitem" for="menuitem-5"><span class="docs-label">2: The power of type system &amp; multiple dispatch</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_02/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_02/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_02/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-6" type="checkbox"/><label class="tocitem" for="menuitem-6"><span class="docs-label">3: Design patterns</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_03/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_03/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_03/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7" type="checkbox"/><label class="tocitem" for="menuitem-7"><span class="docs-label">4: Package development, unit tests &amp; CI</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_04/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_04/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_04/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-8" type="checkbox"/><label class="tocitem" for="menuitem-8"><span class="docs-label">5: Performance benchmarking</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_05/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_05/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_05/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-9" type="checkbox"/><label class="tocitem" for="menuitem-9"><span class="docs-label">6: Lanuage introspection</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_06/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_06/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_06/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-10" type="checkbox"/><label class="tocitem" for="menuitem-10"><span class="docs-label">7: Macros</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_07/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_07/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_07/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-11" type="checkbox"/><label class="tocitem" for="menuitem-11"><span class="docs-label">8: Automatic differentiation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_08/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_08/lab/">Lab</a></li><li><a class="tocitem" href="../../lecture_08/hw/">Homework</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-12" type="checkbox"/><label class="tocitem" for="menuitem-12"><span class="docs-label">9: Intermediate representation</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../lecture_09/lecture/">Lecture</a></li><li><a class="tocitem" href="../../lecture_09/lab/">Lab</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-13" type="checkbox" checked/><label class="tocitem" for="menuitem-13"><span class="docs-label">10: Parallel programming</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../lecture/">Lecture</a></li><li class="is-active"><a class="tocitem" href>Lab</a><ul class="internal"><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li><li><a class="tocitem" href="#Process-based-parallelism"><span>Process based parallelism</span></a></li><li><a class="tocitem" href="#lab10_thread"><span>Threading</span></a></li><li><a class="tocitem" href="#Task-switching"><span>Task switching</span></a></li><li class="toplevel"><a class="tocitem" href="#Resources"><span>Resources</span></a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">10: Parallel programming</a></li><li class="is-active"><a href>Lab</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Lab</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2023W/docs/src/lecture_10/lab.md#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="parallel_lab"><a class="docs-heading-anchor" href="#parallel_lab">Lab 10: Parallel computing</a><a id="parallel_lab-1"></a><a class="docs-heading-anchor-permalink" href="#parallel_lab" title="Permalink"></a></h1><p>In this lab we are going to introduce tools that Julia&#39;s ecosystem offers for different ways of parallel computing. As an ilustration for how capable Julia was/is consider the fact that it has joined (alongside C,C++ and Fortran) the so-called &quot;PetaFlop club&quot;<sup class="footnote-reference"><a id="citeref-1" href="#footnote-1">[1]</a></sup>, a list of languages capable of running at over 1PFLOPS.</p><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>Nowadays there is no need to convince anyone about the advantages of having more cores available for your computation be it on a laptop, workstation or a cluster. The trend can be nicely illustrated in the figure bellow: <img src="../42-years-processor-trend.png" alt="42-cpu-trend"/> Image source<sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup></p><p>However there are some shortcomings when going from sequential programming, that we have to note</p><ul><li>We don&#39;t think in parallel</li><li>We learn to write and reason about programs serially</li><li>The desire for parallelism often comes <em>after</em> you&#39;ve written your algorithm (and found it too slow!)</li><li>Harder to reason and therefore harder to debug</li><li>The number of cores is increasing, thus knowing how the program scales is crucial (not just that it runs better)</li><li>Benchmarking parallel code, that tries to exhaust the processor pool is much more affected by background processes</li></ul><div class="admonition is-warning"><header class="admonition-header">Shortcomings of parallelism</header><div class="admonition-body"><p>Parallel computing brings its own set of problems and not an insignificant overhead with data manipulation and communication, therefore try always to optimize your serial code as much as you can before advancing to parallel acceleration.</p></div></div><div class="admonition is-warning"><header class="admonition-header">Disclaimer</header><div class="admonition-body"><p>With the increasing complexity of computer HW some statements may become outdated. Moreover we won&#39;t cover as many tips that you may encounter on a parallel programming specific course, which will teach you more in the direction of how to think in parallel, whereas here we will focus on the tools that you can use to realize the knowledge gained therein.</p></div></div><h2 id="Process-based-parallelism"><a class="docs-heading-anchor" href="#Process-based-parallelism">Process based parallelism</a><a id="Process-based-parallelism-1"></a><a class="docs-heading-anchor-permalink" href="#Process-based-parallelism" title="Permalink"></a></h2><p>As the name suggest process based parallelism is builds on the concept of running code on multiple processes, which can run even on multiple machines thus allowing to scale computing from a local machine to a whole network of machines - a major difference from the other parallel concept of threads. In Julia this concept is supported within standard library <code>Distributed</code> and the scaling to cluster can be realized by 3rd party library <a href="https://github.com/JuliaParallel/ClusterManagers.jl"><code>ClusterManagers.jl</code></a>.</p><p>Let&#39;s start simply with knowing how to start up additional Julia processes. There are two ways:</p><ul><li>by adding processes using cmd line argument <code>-p ##</code></li></ul><pre><code class="language-bash hljs">julia -p 4</code></pre><ul><li>by adding processes after startup using the <code>addprocs(##)</code> function from std library <code>Distributed</code></li></ul><pre><code class="language-julia hljs">julia&gt; using Distributed
+julia&gt; addprocs(4) # returns a list of ids of individual processes
+4-element Vector{Int64}:
+ 2
+ 3
+ 4
+ 5
+julia&gt; nworkers()  # returns number of workers
+4
+julia&gt; nprocs()    # returns number of processes `nworkers() + 1`
+5</code></pre><p>The result shown in a process manager such as <code>htop</code>:</p><pre><code class="language-bash hljs">.../julia-1.6.2/bin/julia --project                                                                                     
+.../julia-1.6.2/bin/julia -Cnative -J/home/honza/Apps/julia-1.6.2/lib/julia/sys.so -g1 --bind-to 127.0.0.1 --worker
+.../julia-1.6.2/bin/julia -Cnative -J/home/honza/Apps/julia-1.6.2/lib/julia/sys.so -g1 --bind-to 127.0.0.1 --worker
+.../julia-1.6.2/bin/julia -Cnative -J/home/honza/Apps/julia-1.6.2/lib/julia/sys.so -g1 --bind-to 127.0.0.1 --worker
+.../julia-1.6.2/bin/julia -Cnative -J/home/honza/Apps/julia-1.6.2/lib/julia/sys.so -g1 --bind-to 127.0.0.1 --worker</code></pre><p>Both of these result in total of 5 running processes - 1 controller, 4 workers - with their respective ids accessible via <code>myid()</code> function call. Note that the controller process has always id 1 and other processes are assigned subsequent integers, see for yourself with <code>@everywhere</code> macro, which runs easily code on all or a subset of processes.</p><pre><code class="language-julia hljs">@everywhere println(myid())
+@everywhere [2,3] println(myid()) # select a subset of workers</code></pre><p>The same way that we have added processes we can also remove them</p><pre><code class="language-julia hljs">julia&gt; workers()   # returns array of worker ids
+4-element Vector{Int64}:
+ 2
+ 3
+ 4
+ 5
+julia&gt; rmprocs(2)  # kills worker with id 2
+Task (done) @0x00007ff2d66a5e40
+julia&gt; workers()
+3-element Vector{Int64}:
+ 3
+ 4
+ 5</code></pre><p>As we have seen from the <code>htop/top</code> output, added processes start with specific cmd line arguments, however they are not shared with any aliases that we may have defined, e.g. <code>julia</code> ~ <code>julia --project=.</code>. Therefore in order to use an environment, we have to first activate it on all processes</p><pre><code class="language-julia hljs">@everywhere begin
+  using Pkg; Pkg.activate(@__DIR__) # @__DIR__ equivalent to a call to pwd()
+end</code></pre><p>or we can load files containing this line on all processes with cmdline option <code>-L ###.jl</code> together with <code>-p ##</code>.</p><p>There are generally two ways of working with multiple processes</p><ul><li><p>using low level functionality - we specify what/where is loaded, what/where is being run and when we fetch results</p><ul><li><code>@everywhere</code> to run everywhere and wait for completion</li><li><code>@spawnat</code> and <code>remotecall</code> to run at specific process and return <code>Future</code> (a reference to a future result - remote reference)</li><li><code>fetch</code> - fetching remote reference</li><li><code>pmap</code> - for easily mapping a function over a collection</li></ul></li><li><p>using high level functionality - define only simple functions and apply them on collections</p><ul><li><a href="https://github.com/JuliaParallel/DistributedArrays.jl"><code>DistributedArrays</code></a>&#39; with <code>DArray</code>s</li><li><a href="https://github.com/JuliaFolds/Transducers.jl"><code>Transducers.jl</code></a> pipelines</li><li><a href="https://github.com/JuliaParallel/Dagger.jl"><code>Dagger.jl</code></a> out-of-core and parallel computing</li></ul></li></ul><h3 id="Sum-with-processes"><a class="docs-heading-anchor" href="#Sum-with-processes">Sum with processes</a><a id="Sum-with-processes-1"></a><a class="docs-heading-anchor-permalink" href="#Sum-with-processes" title="Permalink"></a></h3><p>Writing your own sum of an array function is a good way to show all the potential problems, you may encounter with parallel programming. For comparison here is the naive version that uses <code>zero</code> for initialization and <code>@inbounds</code> for removing boundschecks.</p><pre><code class="language-julia hljs">function naive_sum(a)
+    r = zero(eltype(a))
+    for aᵢ in a
+        r += aᵢ
+    end
+    r
+end</code></pre><p>Its performance will serve us as a sequential baseline.</p><pre><code class="language-julia hljs">julia&gt; using BenchmarkTools
+julia&gt; a = rand(10_000_000); # 10^7
+julia&gt; sum(a) ≈ naive_sum(a)
+true
+julia&gt; @btime sum($a)
+5.011 ms (0 allocations: 0 bytes)
+julia&gt; @btime naive_sum($a)
+11.786 ms (0 allocations: 0 bytes)</code></pre><p>Note that the built-in <code>sum</code> exploits single core parallelism with Single instruction, multiple data (SIMD instructions) and is thus faster.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Write a distributed/multiprocessing version of <code>sum</code> function <code>dist_sum(a, np=nworkers())</code> without the help of <code>DistributedArrays</code>. Measure the speed up when doubling the number of workers (up to the number of logical cores - see <a href="#lab10_thread">note</a> on hyper threading).</p><p><strong>HINTS</strong>:</p><ul><li>map builtin <code>sum</code> over chunks of the array using <code>pmap</code></li><li>there are built in partition iterators <code>Iterators.partition(array, chunk_size)</code></li><li><code>chunk_size</code> should relate to the number of available workers</li><li><code>pmap</code> has the option to pass the ids of workers as the second argument <code>pmap(f, WorkerPool([2,4]), collection)</code></li><li><code>pmap</code> collects the partial results to the controller where it can be collected with another <code>sum</code></li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">using Distributed
+addprocs(4)
+
+@everywhere begin
+    using Pkg; Pkg.activate(@__DIR__)
+end
+
+function dist_sum(a, np=nworkers())
+    chunk_size = div(length(a), np)
+    sum(pmap(sum, WorkerPool(workers()[1:np]), Iterators.partition(a, chunk_size)))
+end
+
+dist_sum(a) ≈ sum(a)
+@btime dist_sum($a)
+
+@time dist_sum(a, 1) # 74ms 
+@time dist_sum(a, 2) # 46ms
+@time dist_sum(a, 4) # 49ms
+@time dist_sum(a, 8) # 35ms</code></pre></p></details><p>As you can see the built-in <code>pmap</code> already abstracts quite a lot from the process and all the data movement is handled internally, however in order to show off how we can abstract even more, let&#39;s use the <code>DistributedArrays.jl</code> pkg.</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Write a distributed/multiprocessing version of <code>sum</code> function <code>dist_sum_lib(a, np=nworkers())</code> with the help of <code>DistributedArrays</code>. Measure the speed up when doubling the number of workers (up to the number of logical cores - see note on hyper threading).</p><p><strong>HINTS</strong>:</p><ul><li>chunking and distributing the data can be handled for us using the <code>distribute</code> function on an array (creates a <code>DArray</code>)</li><li><code>distribute</code> has an option to specify on which workers should an array be distributed to</li><li><code>sum</code> function has a method for <code>DArray</code></li><li>remember to run <code>using DistributedArrays</code> on every process</li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>Setting up.</p><pre><code class="language-julia hljs">using Distributed
+addprocs(8)
+
+@everywhere begin
+    using Pkg; Pkg.activate(@__DIR__)
+end
+
+@everywhere begin
+    using DistributedArrays
+end </code></pre><p>And the actual computation.</p><pre><code class="language-julia hljs">adist = distribute(a)       # distribute array to workers |&gt; typeof - DArray
+@time adist = distribute(a) # we should not disregard this time
+@btime sum($adist)          # call the built-in function (dispatch on DArrray)
+
+function dist_sum_lib(a, np=nworkers())
+    adist = distribute(a, procs = workers()[1:np])
+    sum(adist)
+end
+
+dist_sum_lib(a) ≈ sum(a)
+@btime dist_sum_lib($a)
+
+@time dist_sum_lib(a, 1) # 80ms 
+@time dist_sum_lib(a, 2) # 54ms
+@time dist_sum_lib(a, 4) # 48ms
+@time dist_sum_lib(a, 8) # 33ms</code></pre></p></details><p>In both previous examples we have included the data transfer time from the controller process, in practice however distributed computing is used in situations where the data may be stored on individual local machines. As a general rule of thumb we should always send only instruction what to do and not the actual data to be processed. This will be more clearly demonstrated in the next more practical example.</p><h3 id="lab10_dist_file_p"><a class="docs-heading-anchor" href="#lab10_dist_file_p">Distributed file processing</a><a id="lab10_dist_file_p-1"></a><a class="docs-heading-anchor-permalink" href="#lab10_dist_file_p" title="Permalink"></a></h3><p><code>Distributed</code> is often used in processing of files, such as the commonly encountered <code>mapreduce</code> jobs with technologies like <a href="https://hadoop.apache.org/"><code>Hadoop</code></a>, <a href="http://spark.apache.org/"><code>Spark</code></a>, where the files live on a distributed file system and a typical job requires us to map over all the files and gather some statistics such as histograms, sums and others. We will simulate this situation with the Julia&#39;s pkg codebase, which on a typical user installation can contain up to hundreds of thousand of <code>.jl</code> files (depending on how extensively one uses Julia).</p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Write a distributed pipeline for computing a histogram of symbols found in AST by parsing Julia source files in your <code>.julia/packages/</code> directory. We have already implemented most of the code that you will need (available as source code <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_10/pkg_processing.jl">here</a>).</p><details>
+<summary>pkg_processing.jl</summary><p><pre><code class="language-julia hljs">code</code></pre><div class="markdown"><pre><code class="language-julia">&quot;&quot;&quot;
+	sample_all_installed_pkgs&#40;path::AbstractString&#41;
+
+Returns root folders of all installed packages in the system. Package version is sampled.
+&quot;&quot;&quot;
+function sample_all_installed_pkgs&#40;path::AbstractString&#41;
+	pkgs &#61; readdir&#40;path&#41;
+	# &#91;rand&#40;readdir&#40;joinpath&#40;path, p&#41;, join&#61;true&#41;&#41; for p in pkgs&#93; # sampling version
+	&#91;readdir&#40;joinpath&#40;path, p&#41;, join&#61;true&#41;&#91;1&#93; for p in pkgs&#93;    # deterministic version
+end
+
+&quot;&quot;&quot;
+	filter_jl&#40;path&#41;
+
+Recursively walks the directory structure to obtain all &#96;.jl&#96; files.
+&quot;&quot;&quot;
+filter_jl&#40;path&#41; &#61; reduce&#40;vcat, joinpath.&#40;rootpath, filter&#40;endswith&#40;&quot;.jl&quot;&#41;, files&#41;&#41; for &#40;rootpath, dirs, files&#41; in walkdir&#40;path&#41;&#41;
+
+&quot;&quot;&quot;
+	tokenize&#40;jl_path&#41;
+
+Parses a &quot;.jl&quot; file located at &#96;jl_path&#96; and extracts all symbols and expression heads from the extracted AST.
+&quot;&quot;&quot;
+function tokenize&#40;jl_path&#41;
+	_extract_symbols&#40;x&#41; &#61; Symbol&#91;&#93;
+	_extract_symbols&#40;x::Symbol&#41; &#61; &#91;x&#93;
+	function _extract_symbols&#40;x::Expr&#41; 
+		if length&#40;x.args&#41; &gt; 0
+			Symbol.&#40;vcat&#40;x.head, reduce&#40;vcat, _extract_symbols&#40;arg&#41; for arg in x.args&#41;&#41;&#41;
+		else
+			Symbol&#91;&#93;
+		end
+	end
+	
+	scode &#61; &quot;begin\n&quot; * read&#40;jl_path, String&#41; * &quot;end\n&quot;
+	try 
+		code &#61; Meta.parse&#40;scode&#41;
+		_extract_symbols&#40;code&#41;
+	catch e
+		if ~isa&#40;e, Meta.ParseError&#41;
+			rethrow&#40;e&#41;		
+		end
+		Symbol&#91;&#93;
+	end
+end</code></pre>
+</div></p></details><p>Your task is to write a function that does the <code>map</code> and <code>reduce</code> steps, that will create and gather the dictionaries from different workers. There are two ways to do a map</p><ul><li>either over directories inside <code>.julia/packages/</code> - call it <code>distributed_histogram_pkgwise</code></li><li>or over all files obtained by concatenation of <code>filter_jl</code> outputs (<em>NOTE</em> that this might not be possible if the listing itself is expensive - speed or memory requirements) - call it <code>distributed_histogram_filewise</code></li></ul><p>Measure if the speed up scales linearly with the number of processes by restricting the number of workers inside a <code>pmap</code>.</p><p><strong>HINTS</strong>:</p><ul><li>for each file path apply <code>tokenize</code> to extract symbols and follow it with the update of a local histogram</li><li>try writing sequential version first</li><li>either load <code>./pkg_processing.jl</code> on startup with <code>-L</code> and <code>-p</code> options or <code>include(&quot;./pkg_processing.jl&quot;)</code> inside <code>@everywhere</code></li><li>use <code>pmap</code> to easily iterate in parallel over a collection - the result should be an array of histogram, which has to be merged on the controller node (use builtin <code>mergewith!</code> function in conjunction with <code>reduce</code>)</li><li><code>pmap</code> supports <code>do</code> syntax</li></ul><pre><code class="language-julia hljs">pmap(collection) do item
+    do_something(item)
+end</code></pre><ul><li>pkg directory can be obtained with <code>joinpath(DEPOT_PATH[1], &quot;packages&quot;)</code></li></ul><p><strong>BONUS</strong>: What is the most frequent symbol in your codebase?</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>Let&#39;s implement first a sequential version as it is much easier to debug.</p><pre><code class="language-julia hljs">include(&quot;./pkg_processing.jl&quot;)
+
+using ProgressMeter
+function sequential_histogram(path)
+    h = Dict{Symbol, Int}()
+    @showprogress for pkg_dir in sample_all_installed_pkgs(path)
+        for jl_path in filter_jl(pkg_dir)
+            syms = tokenize(jl_path)
+            for s in syms
+                v = get!(h, s, 0)
+                h[s] += 1
+            end
+        end
+    end
+    h
+end
+path = joinpath(DEPOT_PATH[1], &quot;packages&quot;) # usually the first entry
+@time h = sequential_histogram(path) # 87s</code></pre><p>First we try to distribute over package folders. <strong>TODO</strong> add the ability to run it only on some workers</p><pre><code class="language-julia hljs">using Distributed
+addprocs(8)
+
+@everywhere begin
+  using Pkg; Pkg.activate(@__DIR__)
+  # we have to realize that the code that workers have access to functions we have defined
+  include(&quot;./pkg_processing.jl&quot;) 
+end
+
+&quot;&quot;&quot;
+    merge_with!(h1, h2)
+
+Merges count dictionary `h2` into `h1` by adding the counts. Equivalent to `Base.mergewith!(+)`.
+&quot;&quot;&quot;
+function merge_with!(h1, h2)
+    for s in keys(h2)
+        get!(h1, s, 0)
+        h1[s] += h2[s]
+    end
+    h1
+end
+
+using ProgressMeter
+function distributed_histogram_pkgwise(path, np=nworkers())
+    r = @showprogress pmap(WorkerPool(workers()[1:np]), sample_all_installed_pkgs(path)) do pkg_dir
+        h = Dict{Symbol, Int}()
+        for jl_path in filter_jl(pkg_dir)
+            syms = tokenize(jl_path)
+            for s in syms
+                v = get!(h, s, 0)
+                h[s] += 1
+            end
+        end
+        h
+    end
+    reduce(merge_with!, r)
+end
+path = joinpath(DEPOT_PATH[1], &quot;packages&quot;)
+
+@time h = distributed_histogram_pkgwise(path, 2) # 41.5s
+@time h = distributed_histogram_pkgwise(path, 4) # 24.0s
+@time h = distributed_histogram_pkgwise(path, 8) # 24.0s</code></pre><p>Second we try to distribute over all files.</p><pre><code class="language-julia hljs">function distributed_histogram_filewise(path, np=nworkers())
+    jl_files = reduce(vcat, filter_jl(pkg_dir) for pkg_dir in sample_all_installed_pkgs(path))
+    r = @showprogress pmap(WorkerPool(workers()[1:np]), jl_files) do jl_path
+        h = Dict{Symbol, Int}()
+        syms = tokenize(jl_path)
+        for s in syms
+            v = get!(h, s, 0)
+            h[s] += 1
+        end
+        h
+    end
+    reduce(merge_with!, r)
+end
+path = joinpath(DEPOT_PATH[1], &quot;packages&quot;)
+@time h = distributed_histogram_pkgwise(path, 2) # 46.9s
+@time h = distributed_histogram_pkgwise(path, 4) # 24.8s
+@time h = distributed_histogram_pkgwise(path, 8) # 20.4s</code></pre><p>Here we can see that we have improved the timings a bit by increasing granularity of tasks.</p><p><strong>BONUS</strong>: You can do some analysis with <code>DataFrames</code></p><pre><code class="language-julia hljs">using DataFrames
+df = DataFrame(:sym =&gt; collect(keys(h)), :count =&gt; collect(values(h)));
+sort!(df, :count, rev=true);
+df[1:50,:]</code></pre></p></details><h2 id="lab10_thread"><a class="docs-heading-anchor" href="#lab10_thread">Threading</a><a id="lab10_thread-1"></a><a class="docs-heading-anchor-permalink" href="#lab10_thread" title="Permalink"></a></h2><p>The number of threads for a Julia process can be set up in an environmental variable <code>JULIA_NUM_THREADS</code> or directly on Julia startup with cmd line option <code>-t ##</code> or <code>--threads ##</code>. If both are specified the latter takes precedence.</p><pre><code class="language-bash hljs">julia -t 8</code></pre><p>In order to find out how many threads are currently available, there exist the <code>nthreads</code> function inside <code>Base.Threads</code> library. There is also an analog to the Distributed <code>myid</code> example, called <code>threadid</code>.</p><pre><code class="language-julia hljs">julia&gt; using Base.Threads
+julia&gt; nthreads()
+8
+julia&gt; threadid()
+1</code></pre><p>As opposed to distributed/multiprocessing programming, threads have access to the whole memory of Julia&#39;s process, therefore we don&#39;t have to deal with separate environment manipulation, code loading and data transfers. However we have to be aware of the fact that memory can be modified from two different places and that there may be some performance penalties of accessing memory that is physically further from a given core (e.g. caches of different core or different NUMA<sup class="footnote-reference"><a id="citeref-3" href="#footnote-3">[3]</a></sup> nodes). Another significant difference from distributed computing is that we cannot spawn additional threads on the fly in the same way that we have been able to do with <code>addprocs</code> function.</p><div class="admonition is-info"><header class="admonition-header">Hyper threads</header><div class="admonition-body"><p>In most of today&#39;s CPUs the number of threads is larger than the number of physical cores. These additional threads are usually called hyper threads<sup class="footnote-reference"><a id="citeref-4" href="#footnote-4">[4]</a></sup> or when talking about cores - logical cores. The technology relies on the fact, that for a given &quot;instruction&quot; there may be underutilized parts of the CPU core&#39;s machinery (such as one of many arithmetic units) and if a suitable work/instruction comes in it can be run simultaneously. In practice this means that adding more threads than physical cores may not be accompanied with the expected speed up.</p></div></div><p>The easiest (not always yielding the correct result) way how to turn a code into multi threaded code is putting the <code>@threads</code> macro in front of a for loop, which instructs Julia to run the body on separate threads.</p><pre><code class="language-julia hljs">julia&gt; A = Array{Union{Int,Missing}}(missing, nthreads());
+julia&gt; for i in 1:nthreads()
+    A[threadid()] = threadid()
+end
+julia&gt; A # only the first element is filled
+8-element Vector{Union{Missing, Int64}}:
+ 1
+  missing
+  missing
+  missing
+  missing
+  missing
+  missing
+  missing</code></pre><pre><code class="language-julia hljs">julia&gt; A = Array{Union{Int,Missing}}(missing, nthreads());
+julia&gt; @threads for i in 1:nthreads()
+    A[threadid()] = threadid()
+end
+julia&gt; A # the expected results
+8-element Vector{Union{Missing, Int64}}:
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8</code></pre><h3 id="Multithreaded-sum"><a class="docs-heading-anchor" href="#Multithreaded-sum">Multithreaded sum</a><a id="Multithreaded-sum-1"></a><a class="docs-heading-anchor-permalink" href="#Multithreaded-sum" title="Permalink"></a></h3><p>Armed with this knowledge let&#39;s tackle the problem of the simple <code>sum</code>.</p><pre><code class="language-julia hljs">function threaded_sum_naive(a)
+    r = zero(eltype(a))
+    @threads for i in eachindex(a)
+        @inbounds r += a[i]
+    end
+    return r
+end</code></pre><p>Comparing this with the built-in sum we see not an insignificant discrepancy (one that cannot be explained by reordering of computation) and moreover the timings show us some ridiculous overhead.</p><pre><code class="language-julia hljs">julia&gt; using BenchmarkTools
+julia&gt; a = rand(10_000_000); # 10^7
+julia&gt; sum(a), threaded_sum_naive(a)
+(5.000577175855193e6, 625888.2270955174)
+julia&gt; @btime sum($a)
+  4.861 ms (0 allocations: 0 bytes)
+julia&gt; @btime threaded_sum_naive($a)
+  163.379 ms (20000042 allocations: 305.18 MiB)</code></pre><p>Recalling what has been said above we have to be aware of the fact that the data can be accessed from multiple threads at once, which if not taken into an account means that each thread reads possibly outdated value and overwrites it with its own updated state. </p><p>There are two solutions which we will tackle in the next two exercises. </p><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement <code>threaded_sum_atom</code>, which uses <code>Atomic</code> wrapper around the accumulator variable <code>r</code> in order to ensure correct locking of data access. </p><p><strong>HINTS</strong>:</p><ul><li>use <code>atomic_add!</code> as a replacement of <code>r += A[i]</code></li><li>&quot;collect&quot; the result by dereferencing variable <code>r</code> with empty bracket operator <code>[]</code></li></ul><div class="admonition is-info"><header class="admonition-header">Side note on dereferencing</header><div class="admonition-body"><p>In Julia we can create references to a data types, which are guarranteed to point to correct and allocated type in memory, as long as a reference exists the memory is not garbage collected. These are constructed with <code>Ref(x)</code>, <code>Ref(a, 7)</code> or <code>Ref{T}()</code> for reference to variable <code>x</code>, <code>7</code>th element of array <code>a</code> and an empty reference respectively. Dereferencing aka asking about the underlying value is done using empty bracket operator <code>[]</code>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; x = 1       # integer</code><code class="nohighlight hljs ansi" style="display:block;">1</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; rx = Ref(x) # reference to that particular integer `x`</code><code class="nohighlight hljs ansi" style="display:block;">Base.RefValue{Int64}(1)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; x == rx[]   # dereferencing yields the same value</code><code class="nohighlight hljs ansi" style="display:block;">true</code></pre><p>There also exist unsafe references/pointers <code>Ptr</code>, however we should not really come into a contact with those.</p></div></div><p><strong>BONUS</strong>: Try chunking the array and calling sum on individual chunks to obtain some real speedup.</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function threaded_sum_atom(a)
+    r = Atomic{eltype(a)}(zero(eltype(a)))
+    @threads for i in eachindex(a)
+        @inbounds atomic_add!(r, a[i])
+    end
+    return r[]
+end
+
+julia&gt; sum(a) ≈ threaded_sum_atom(a)
+true
+julia&gt; @btime threaded_sum_atom($a)
+  661.502 ms (42 allocations: 3.66 KiB)</code></pre><p>That&#39;s better but far from the performance we need. </p><p><strong>BONUS</strong>: There is a fancier and faster way to do this by chunking the array</p><pre><code class="language-julia hljs">function threaded_sum_fancy_atom(a)
+    r = Atomic{eltype(a)}(zero(eltype(a)))
+    len, rem = divrem(length(a), nthreads())
+    @threads for t in 1:nthreads()
+        rₜ = zero(eltype(a))
+        @simd for i in (1:len) .+ (t-1)*len
+            @inbounds rₜ += a[i]
+        end
+        atomic_add!(r, rₜ)
+    end
+    # catch up any stragglers
+    result = r[]
+    @simd for i in length(a)-rem+1:length(a)
+        @inbounds result += a[i]
+    end
+    return result
+end
+
+julia&gt; sum(a) ≈ threaded_sum_fancy_atom(a)
+true
+julia&gt; @btime threaded_sum_fancy_atom($a)
+  2.983 ms (42 allocations: 3.67 KiB)</code></pre><p>Finally we have beaten the &quot;sequential&quot; sum. The quotes are intentional, because the <code>Base</code>&#39;s implementation of a sum uses Single instruction, multiple data (SIMD) instructions as well, which allow to process multiple elements at once.</p></p></details><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Implement <code>threaded_sum_buffer</code>, which uses an array of length <code>nthreads()</code> (we will call this buffer) for local aggregation of results of individual threads. </p><p><strong>HINTS</strong>:</p><ul><li>use <code>threadid()</code> to index the buffer array</li><li>sum the buffer array to obtain final result</li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">function threaded_sum_buffer(a)
+    R = zeros(eltype(a), nthreads())
+    @threads for i in eachindex(a)
+        @inbounds R[threadid()] += a[i]
+    end
+    r = zero(eltype(a))
+    # sum the partial results from each thread
+    for i in eachindex(R)
+        @inbounds r += R[i]
+    end
+    return r
+end
+
+julia&gt; sum(a) ≈ threaded_sum_buffer(a)
+true
+julia&gt; @btime threaded_sum_buffer($a)
+  2.750 ms (42 allocations: 3.78 KiB)</code></pre><p>Though this implementation is cleaner and faster, there is possible drawback with this implementation, as the buffer <code>R</code> lives in a continuous part of the memory and each thread that accesses it brings it to its caches as a whole, thus invalidating the values for the other threads, which it in the same way.</p></p></details><p>Seeing how multithreading works on a simple example, let&#39;s apply it on the &quot;more practical&quot; case of the Symbol histogram from exercise <a href="#lab10_dist_file_p">above</a>.</p><h3 id="lab10_dist_file_t"><a class="docs-heading-anchor" href="#lab10_dist_file_t">Multithreaded file processing</a><a id="lab10_dist_file_t-1"></a><a class="docs-heading-anchor-permalink" href="#lab10_dist_file_t" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Write a multithreaded analog of the file processing pipeline from <a href="#lab10_dist_file_p">exercise</a> above. Again the task is to write the <code>map</code> and <code>reduce</code> steps, that will create and gather the dictionaries from different workers. There are two ways to map</p><ul><li>either over directories inside <code>.julia/packages/</code> - <code>threaded_histogram_pkgwise</code></li><li>or over all files obtained by concatenation of <code>filter_jl</code> outputs - <code>threaded_histogram_filewise</code></li></ul><p>Compare the speedup with the version using process based parallelism.</p><p><strong>HINTS</strong>:</p><ul><li>create a separate dictionary for each thread in order to avoid the need for atomic operations</li><li></li></ul><p><strong>BONUS</strong>: In each of the cases count how many files/pkgs each thread processed. Would the dynamic scheduler help us in this situation?</p></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><p>Setup is now much simpler.</p><pre><code class="language-julia hljs">using Base.Threads
+include(&quot;./pkg_processing.jl&quot;) 
+path = joinpath(DEPOT_PATH[1], &quot;packages&quot;)</code></pre><p>Firstly the version with folder-wise parallelism.</p><pre><code class="language-julia hljs">function threaded_histogram_pkgwise(path)
+    ht = [Dict{Symbol, Int}() for _ in 1:nthreads()]
+    @threads for pkg_dir in sample_all_installed_pkgs(path)
+        h = ht[threadid()]
+        for jl_path in filter_jl(pkg_dir)
+            syms = tokenize(jl_path)
+            for s in syms
+                v = get!(h, s, 0)
+                h[s] += 1
+            end
+        end
+    end
+    reduce(mergewith!(+), ht)
+end
+
+julia&gt; @time h = threaded_histogram_pkgwise(path)
+ 26.958786 seconds (81.69 M allocations: 10.384 GiB, 4.58% gc time)</code></pre><p>Secondly the version with file-wise parallelism.</p><pre><code class="language-julia hljs">function threaded_histogram_filewise(path)
+    jl_files = reduce(vcat, filter_jl(pkg_dir) for pkg_dir in sample_all_installed_pkgs(path))
+    ht = [Dict{Symbol, Int}() for _ in 1:nthreads()]
+    @threads for jl_path in jl_files
+        h = ht[threadid()]
+        syms = tokenize(jl_path)
+        for s in syms
+            v = get!(h, s, 0)
+            h[s] += 1
+        end
+    end
+    reduce(mergewith!(+), ht)
+end
+
+julia&gt; @time h = threaded_histogram_filewise(path)
+ 29.677184 seconds (81.66 M allocations: 10.411 GiB, 4.13% gc time)</code></pre></p></details><h2 id="Task-switching"><a class="docs-heading-anchor" href="#Task-switching">Task switching</a><a id="Task-switching-1"></a><a class="docs-heading-anchor-permalink" href="#Task-switching" title="Permalink"></a></h2><p>There is a way how to run &quot;multiple&quot; things at once, which does not necessarily involve either threads or processes. In Julia this concept is called task switching or asynchronous programming, where we fire off our requests in a short time and let the cpu/os/network handle the distribution. As an example which we will try today is querying a web API, which has some variable latency. In the usuall sequantial fashion we can always post queries one at a time, however generally the APIs can handle multiple request at a time, therefore in order to better utilize them, we can call them asynchronously and fetch all results later, in some cases this will be faster.</p><div class="admonition is-info"><header class="admonition-header">Burst requests</header><div class="admonition-body"><p>It is a good practice to check if an API supports some sort of batch request, because making a burst of single request might lead to a worse performance for others and a possible blocking of your IP/API key.</p></div></div><p>Consider following functions</p><pre><code class="language-julia hljs">function a()
+    for i in 1:10
+        sleep(1)
+    end
+end
+
+function b()
+    for i in 1:10
+        @async sleep(1)
+    end
+end
+
+function c()
+    @sync for i in 1:10
+        @async sleep(1)
+    end
+end</code></pre><p>How much time will the execution of each of them take?</p><details class = "solution-body">
+<summary class = "solution-header">Solution</summary><p><pre><code class="language-julia hljs">@time a() # 10s
+@time b() # ~0s
+@time c() # &gt;~1s</code></pre></p></details><div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body"><p>Choose one of the free web APIs and query its endpoint using the <code>HTTP.jl</code> library. Implement both sequential and asynchronous version. Compare them on an burst of 10 requests.</p><p><strong>HINTS</strong>:</p><ul><li>use <code>HTTP.request</code> for <code>GET</code> requests on your chosen API, e.g. <code>r = HTTP.request(&quot;GET&quot;, &quot;https://catfact.ninja/fact&quot;)</code> for random cat fact</li><li>converting body of a response can be done simply by constructing a <code>String</code> out of it - <code>String(r.body)</code></li><li>in order to parse a json string use <code>JSON.jl</code>&#39;s parse function</li><li>Julia offers <code>asyncmap</code> - asynchronous <code>map</code></li></ul></div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p><pre><code class="language-julia hljs">using HTTP, JSON
+
+function query_cat_fact()
+    r = HTTP.request(&quot;GET&quot;, &quot;https://catfact.ninja/fact&quot;)
+    j = String(r.body)
+    d = JSON.parse(j)
+    d[&quot;fact&quot;]
+end
+
+# without asyncmap
+function get_cat_facts_async(n)
+    facts = Vector{String}(undef, n)
+    @sync for i in 1:10
+        @async facts[i] = query_cat_fact()
+    end
+    facts
+end
+
+get_cat_facts_async(n) = asyncmap(x -&gt; query_cat_fact(), Base.OneTo(n))
+get_cat_facts(n) = map(x -&gt; query_cat_fact(), Base.OneTo(n))
+
+@time get_cat_facts_async(10)   # ~0.15s
+@time get_cat_facts(10)         # ~1.1s</code></pre></p></details><h1 id="Resources"><a class="docs-heading-anchor" href="#Resources">Resources</a><a id="Resources-1"></a><a class="docs-heading-anchor-permalink" href="#Resources" title="Permalink"></a></h1><ul><li>parallel computing <a href="https://juliacomputing.com/resources/webinars/">course</a> by Julia Computing</li></ul><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Blogpost &quot;Julia Joins Petaflop Club&quot; <a href="https://juliacomputing.com/media/2017/09/julia-joins-petaflop-club/">https://juliacomputing.com/media/2017/09/julia-joins-petaflop-club/</a></li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a>Performance metrics trend of CPUs in the last 42years: <a href="https://www.karlrupp.net/2018/02/42-years-of-microprocessor-trend-data/">https://www.karlrupp.net/2018/02/42-years-of-microprocessor-trend-data/</a></li><li class="footnote" id="footnote-3"><a class="tag is-link" href="#citeref-3">3</a>NUMA - <a href="https://en.wikipedia.org/wiki/Non-uniform_memory_access">https://en.wikipedia.org/wiki/Non-uniform_memory_access</a></li><li class="footnote" id="footnote-4"><a class="tag is-link" href="#citeref-4">4</a>Hyperthreading - <a href="https://en.wikipedia.org/wiki/Hyper-threading">https://en.wikipedia.org/wiki/Hyper-threading</a></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.2 on <span class="colophon-date" title="Friday 8 December 2023 07:58">Friday 8 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
