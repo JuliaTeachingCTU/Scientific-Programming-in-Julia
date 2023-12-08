@@ -560,7 +560,7 @@ Let's now try to speed-up the calculation using multi-threadding. `Julia v0.5` h
 function juliaset_static(x, y, n=1000)
     c = x + y*im
     img = Array{UInt8,2}(undef,n,n)
-    Threads.@threads for j in 1:n
+    Threads.@threads :static for j in 1:n
         juliaset_column!(img, c, n, j)
     end
     return img
@@ -697,7 +697,7 @@ end |> DataFrame
 We observe that the minimum is for `basesize = 32`, for which we got `3.8932×` speedup. 
 
 ## Garbage collector is single-threadded
-Keep reminded that while threads are very easy very convenient to use, there are use-cases where you might be better off with proccess, even though there will be some communication overhead. One such case happens when you need to allocate and free a lot of memory. This is because Julia's garbage collector is single-threadded. Imagine a task of making histogram of bytes in a directory.
+Keep reminded that while threads are very easy very convenient to use, there are use-cases where you might be better off with proccess, even though there will be some communication overhead. One such case happens when you need to allocate and free a lot of memory. This is because Julia's garbage collector is single-threadded (in 1.10 it is now partially multi-threaded). Imagine a task of making histogram of bytes in a directory.
 For a fair comparison, we will use `Transducers`, since they offer thread and process based paralelism
 ```julia
 using Transducers
