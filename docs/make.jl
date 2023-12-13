@@ -99,6 +99,12 @@ lecture_10 = [
     "Homework" => "./lecture_10/hw.md"
 ]
 
+lecture_12 = [
+    "Lecture" => "./lecture_12/lecture.md"
+    "Lab" => "./lecture_12/lab.md"
+    "Homework" => "./lecture_12/hw.md"
+]
+
 makedocs(;
     modules = [Scientific_Programming_in_Julia],
     authors = "JuliaTeachingCTU",
@@ -125,6 +131,7 @@ makedocs(;
         "8: Automatic differentiation" => lecture_08,
         "9: Intermediate representation" => lecture_09,
         "10: Parallel programming" => lecture_10,
+        "12: Ordinary Differential Equations" => lecture_12,
     ],
 )
 

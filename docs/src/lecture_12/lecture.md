@@ -62,7 +62,7 @@ Is simple and working (with sufficienty small ``dt``):
 ![](lotka.svg)
 
 ODE of this kind is an example of a "complex" simulation code that we may want to use, interact with, modify or incorporate into a more complex scheme.
-- we will test how to re-define the elemnetary oeprations using custom types, automatic differnetiation and automatic code generation
+- we will test how to re-define the elementary operations using custom types, automatic differentiation and automatic code generation
 - we will redefine the plotting operation to display the new type correctly
 - we will use composition to incorporate the ODE into a more complex solver
 
@@ -126,9 +126,9 @@ import Base: +, *
 
 For the ODE we need multiplication of two Gaussians. Using Taylor expansion and neglecting covariances:
 ```math
-g(x_1,x_2)=N\left(g(\mu_1,\mu_2), \sqrt{\left(\frac{dg}{dx_1}(\mu_1,\mu_2)\sigma_1\right)^2 + \left(\frac{dg}{dx_1}(\mu_1,\mu_2)\sigma_1\right)^2}\right)
+g(x_1,x_2)=N\left(g(\mu_1,\mu_2), \sqrt{\left(\frac{dg}{dx_1}(\mu_1,\mu_2)\sigma_1\right)^2 + \left(\frac{dg}{dx_2}(\mu_1,\mu_2)\sigma_2\right)^2}\right)
 ```
-which trivially applies to sum: ``x_1+x_2=N(\mu_1+\mu_2, \sqrt{\sigma_1^2 + \sigma_1^2})``
+which trivially applies to sum: ``x_1+x_2=N(\mu_1+\mu_2, \sqrt{\sigma_1^2 + \sigma_2^2})``
 
 ```julia
 +(x1::GaussNum{T},x2::GaussNum{T}) where T =GaussNum(x1.μ+x2.μ,sqrt(x1.σ.^2 + x2.σ.^2))
@@ -175,7 +175,7 @@ The result does not correspond to the ensemble version above.
 
 
 ## Vector uncertainty
-The previous simple approach ignores the covariances between variables. Even if we tract covariances linearnly in the same fashion (``Measurements.jl``), the approach will suffer from a loss of precision under non-linearity. 
+The previous simple approach ignores the covariances between variables. Even if we tract covariances linearly in the same fashion (``Measurements.jl``), the approach will suffer from a loss of precision under non-linearity. 
 
 
 ![](https://photos1.blogger.com/blogger/5955/293/1600/unscented-transform-explained.jpg)
