@@ -217,9 +217,9 @@ Zygote.gradient(f, 2., 3.)
 function uncertain(f, args::GaussNum...)
     μs  = [x.μ for x in args]
     dfs = Zygote.gradient(f,μs...)
-    σ   = map(zip(dfs,args)) do (df,x)
+    σ = mapreduce(+, zip(dfs,args)) do (df,x)
         (df * x.σ)^2
-    end |> sum |> sqrt
+    end |> sqrt
     GaussNum(f(μs...), σ)
 end
 nothing # hide
@@ -318,6 +318,7 @@ Base.promote_rule(::Type{GaussNum{T}}, ::Type{GaussNum{T}}) where T = GaussNum{T
 You can test if everything works by adding/multiplying floats to `GuassNum`s.
 ```@repl lab
 1.0±1.0 + 2.0
+[1.0±0.001, 2.0]
 ```
 
 ### Propagating Uncertainties through ODEs
@@ -341,7 +342,7 @@ tspan = (0.,100.)
 dt = 0.1
 prob = ODEProblem(lotkavolterra,tspan,u0,θ)
 
-t,X=solve(prob, Euler(0.1))
+t, X = solve(prob, Euler(0.1))
 ```
 ```@raw html
 </p></details>

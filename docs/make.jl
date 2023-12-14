@@ -1,16 +1,9 @@
-using Scientific_Programming_in_Julia
 using Documenter
 
 using Downloads: download
 using Documenter.Writers: HTMLWriter
 using DocumenterTools.Themes
 
-DocMeta.setdocmeta!(
-    Scientific_Programming_in_Julia,
-    :DocTestSetup,
-    :(using Scientific_Programming_in_Julia);
-    recursive = true
-)
 
 # download and compile theme
 assetsdir(args...) = joinpath(@__DIR__, "src", "assets", args...)
@@ -106,7 +99,6 @@ lecture_12 = [
 ]
 
 makedocs(;
-    modules = [Scientific_Programming_in_Julia],
     authors = "JuliaTeachingCTU",
     repo = "https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/{commit}{path}#{line}",
     sitename = "Scientific Programming in Julia",
