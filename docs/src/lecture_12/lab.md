@@ -215,12 +215,14 @@ Zygote.gradient(f, 2., 3.)
 ```
 ```@example lab
 function uncertain(f, args::GaussNum...)
-    μs  = [x.μ for x in args]
-    dfs = Zygote.gradient(f,μs...)
-    σ = mapreduce(+, zip(dfs,args)) do (df,x)
+    μs  = (x.μ for x in args)
+    dfs = Zygote.gradient(f, μs...)
+
+    σ² = mapreduce(+, zip(dfs,args)) do (df,x)
         (df * x.σ)^2
-    end |> sqrt
-    GaussNum(f(μs...), σ)
+    end
+
+    GaussNum(f(μs...), sqrt(σ²))
 end
 nothing # hide
 ```
@@ -384,11 +386,11 @@ end
 ```@raw html
 </p></details>
 ```
-```@repl lab
+```@example lab
 uncertainplot(t, X[1,:])
 ```
 Unfortunately, with this approach, we would have to define things like `uncertainplot!`
-by hand.
+and `kwargs` to the function by hand.
 To make plotting `GaussNum`s more pleasant we can make use of the `@recipe`
 macro from `Plots.jl`. It allows to define plot recipes for custom types
 (without having to depend on Plots.jl). Additionally, it makes it easiert to
