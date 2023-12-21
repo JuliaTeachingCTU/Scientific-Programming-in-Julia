@@ -55,15 +55,15 @@ function Base.sin(x::TrackedReal)
     z
 end</code></pre></p></details><h3 id="Forward-and-Backward-Pass"><a class="docs-heading-anchor" href="#Forward-and-Backward-Pass">Forward &amp; Backward Pass</a><a id="Forward-and-Backward-Pass-1"></a><a class="docs-heading-anchor-permalink" href="#Forward-and-Backward-Pass" title="Permalink"></a></h3><p>To visualize that with reverse-mode AD we really do save computation we can visualize the computation graph at different stages. We start with the forward pass and keep observing <code>x</code></p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; x = track(2.0,&quot;x&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; y = track(3.0,&quot;y&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; a = x*y;</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; print_tree(x)</code><code class="nohighlight hljs ansi" style="display:block;">x data: 2.0 grad: nothing
 └─ * data: 6.0 grad: nothing</code></pre><p>We can see that we <code>x</code> now has one child <code>a</code> which has the value <code>2.0*3.0==6.0</code>. All the gradients are still <code>nothing</code>. Computing another value that depends on <code>x</code> will add another child.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; b = sin(x)</code><code class="nohighlight hljs ansi" style="display:block;">0.9092974268256817 (tracked sin)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; print_tree(x)</code><code class="nohighlight hljs ansi" style="display:block;">x data: 2.0 grad: nothing
-├─ sin data: 0.91 grad: nothing
-└─ * data: 6.0 grad: nothing</code></pre><p>In the final step we compute <code>z</code> which does not mutate the children of <code>x</code> because it does not depend directly on it. The result <code>z</code> is added as a child to both <code>a</code> and <code>b</code>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; z = a + b</code><code class="nohighlight hljs ansi" style="display:block;">6.909297426825682 (tracked +)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; print_tree(x)</code><code class="nohighlight hljs ansi" style="display:block;">x data: 2.0 grad: nothing
-├─ sin data: 0.91 grad: nothing
+├─ * data: 6.0 grad: nothing
+└─ sin data: 0.91 grad: nothing</code></pre><p>In the final step we compute <code>z</code> which does not mutate the children of <code>x</code> because it does not depend directly on it. The result <code>z</code> is added as a child to both <code>a</code> and <code>b</code>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; z = a + b</code><code class="nohighlight hljs ansi" style="display:block;">6.909297426825682 (tracked +)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; print_tree(x)</code><code class="nohighlight hljs ansi" style="display:block;">x data: 2.0 grad: nothing
+├─ * data: 6.0 grad: nothing
 │  └─ + data: 6.91 grad: nothing
-└─ * data: 6.0 grad: nothing
+└─ sin data: 0.91 grad: nothing
    └─ + data: 6.91 grad: nothing</code></pre><p>For the backward pass we have to seed the initial gradient value of <code>z</code> and call <code>accum!</code> on the variable that we are interested in.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; z.grad = 1.0</code><code class="nohighlight hljs ansi" style="display:block;">1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; dx = accum!(x)</code><code class="nohighlight hljs ansi" style="display:block;">2.5838531634528574</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; dx ≈ y.data + cos(x.data)</code><code class="nohighlight hljs ansi" style="display:block;">true</code></pre><p>By accumulating the gradients for <code>x</code>, the gradients in the sub-tree connected to <code>x</code> will be evaluated. The parts of the tree that are only connected to <code>y</code> stay untouched.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; print_tree(x)</code><code class="nohighlight hljs ansi" style="display:block;">x data: 2.0 grad: 2.5838531634528574
-├─ sin data: 0.91 grad: 1.0
+├─ * data: 6.0 grad: 1.0
 │  └─ + data: 6.91 grad: 1.0
-└─ * data: 6.0 grad: 1.0
+└─ sin data: 0.91 grad: 1.0
    └─ + data: 6.91 grad: 1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; print_tree(y)</code><code class="nohighlight hljs ansi" style="display:block;">y data: 3.0 grad: nothing
 └─ * data: 6.0 grad: 1.0
    └─ + data: 6.91 grad: 1.0</code></pre><p>If we now accumulate the gradients over <code>y</code> we re-use the gradients that are already computed. In larger computations this will save us <em>a lot</em> of effort!</p><div class="admonition is-info"><header class="admonition-header">Info</header><div class="admonition-body"><p>This also means that we have to re-build the graph for every new set of inputs!</p></div></div><h3 id="Optimizing-2D-Functions"><a class="docs-heading-anchor" href="#Optimizing-2D-Functions">Optimizing 2D Functions</a><a id="Optimizing-2D-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Optimizing-2D-Functions" title="Permalink"></a></h3><div class="admonition is-category-exercise">
@@ -79,7 +79,7 @@ end</code></pre></p></details><pre><code class="language-julia-repl hljs" style=
 
 using Plots
 color_scheme = cgrad(:RdYlBu_5, rev=true)
-contour(-4:0.1:4, -2:0.1:2, g, fill=true, c=color_scheme, xlabel=&quot;x&quot;, ylabel=&quot;y&quot;)</code></pre><img src="c71c248d.svg" alt="Example block output"/><p>We can find a local minimum of <span>$g$</span> by starting at an initial point <span>$(x_0,y_0)$</span> and taking small steps in the opposite direction of the gradient</p><p class="math-container">\[\begin{align}
+contour(-4:0.1:4, -2:0.1:2, g, fill=true, c=color_scheme, xlabel=&quot;x&quot;, ylabel=&quot;y&quot;)</code></pre><img src="cc60a7f3.svg" alt="Example block output"/><p>We can find a local minimum of <span>$g$</span> by starting at an initial point <span>$(x_0,y_0)$</span> and taking small steps in the opposite direction of the gradient</p><p class="math-container">\[\begin{align}
 x_{i+1} &amp;= x_i - \lambda \frac{\partial f}{\partial x_i} \\
 y_{i+1} &amp;= y_i - \lambda \frac{\partial f}{\partial y_i},
 \end{align}\]</p><p>where <span>$\lambda$</span> is the learning rate that has to be tuned manually.</p><div class="admonition is-category-exercise">
@@ -187,8 +187,8 @@ Base.getindex(x::TrackedArray, args...) = getindex(x.data,args...)
 # pretty print TrackedArray
 Base.show(io::IO, x::TrackedArray) = print(io, &quot;Tracked $(x.data)&quot;)
 Base.print_array(io::IO, x::TrackedArray) = Base.print_array(io, x.data)</code></pre></p></details><p>Creating a <code>TrackedArray</code> should work like this:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; track(rand(2,2))</code><code class="nohighlight hljs ansi" style="display:block;">2×2 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
- 0.522527  0.718882
- 0.313791  0.245961</code></pre><pre><code class="language-julia hljs">function accum!(x::Union{TrackedReal,TrackedArray})
+ 0.303674  0.0475612
+ 0.634275  0.736352</code></pre><pre><code class="language-julia hljs">function accum!(x::Union{TrackedReal,TrackedArray})
     if isnothing(x.grad)
         x.grad = sum(λ(accum!(Δ)) for (Δ,λ) in x.children)
     end
@@ -204,19 +204,19 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     Y.children[Z] = Δ -&gt; X.data&#39; * Δ
     Z
 end</code></pre></p></details><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; X = rand(2,3) |&gt; track</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
- 0.865375  0.42931   0.380619
- 0.823463  0.833136  0.635136</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Y = rand(3,2) |&gt; track</code><code class="nohighlight hljs ansi" style="display:block;">3×2 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
- 0.13503   0.947074
- 0.404891  0.700818
- 0.399567  0.651617</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Z = X*Y</code><code class="nohighlight hljs ansi" style="display:block;">2×2 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
- 0.442758  1.36846
- 0.7023    1.77762</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; f = X.children[Z]</code><code class="nohighlight hljs ansi" style="display:block;">#3 (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ω̄ = ones(size(Z)...)</code><code class="nohighlight hljs ansi" style="display:block;">2×2 Matrix{Float64}:
+ 0.882074  0.758589  0.888632
+ 0.735695  0.867995  0.726616</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Y = rand(3,2) |&gt; track</code><code class="nohighlight hljs ansi" style="display:block;">3×2 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
+ 0.103385  0.660732
+ 0.907618  0.0878507
+ 0.138318  0.274803</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Z = X*Y</code><code class="nohighlight hljs ansi" style="display:block;">2×2 Main.TrackedArray{Float64, 2, Matrix{Float64}}:
+ 0.902616  0.893656
+ 0.964372  0.762028</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; f = X.children[Z]</code><code class="nohighlight hljs ansi" style="display:block;">#3 (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ω̄ = ones(size(Z)...)</code><code class="nohighlight hljs ansi" style="display:block;">2×2 Matrix{Float64}:
  1.0  1.0
  1.0  1.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; f(Ω̄)</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Matrix{Float64}:
- 1.0821  1.10571  1.05118
- 1.0821  1.10571  1.05118</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ω̄*Y.data&#39;</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Matrix{Float64}:
- 1.0821  1.10571  1.05118
- 1.0821  1.10571  1.05118</code></pre><div class="admonition is-category-exercise">
+ 0.764117  0.995468  0.413122
+ 0.764117  0.995468  0.413122</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ω̄*Y.data&#39;</code><code class="nohighlight hljs ansi" style="display:block;">2×3 Matrix{Float64}:
+ 0.764117  0.995468  0.413122
+ 0.764117  0.995468  0.413122</code></pre><div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body"><p>Implement rules for <code>sum</code>, <code>+</code>, <code>-</code>, and  <code>abs2</code>.</p></div></div>
 <details class = "solution-body">
@@ -288,4 +288,4 @@ function Base.hcat(xs::TrackedArray...)
         end
     end
     y
-end</code></pre><p>You can see a full implementation of our tracing based AD <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/ReverseDiff.jl">here</a> and a simple implementation of a Neural Network that can learn an approximation to the function <code>g</code> <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_08/reverse-nn.jl">here</a>. Running the latter script will produce an animation that shows how the network is learning.</p><p><img src="../anim.gif" alt="anim"/></p><p>This lab is heavily inspired by <a href="https://rufflewind.com/2016-12-30/reverse-mode-automatic-differentiation">Rufflewind</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Thursday 21 December 2023 15:58">Thursday 21 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><p>You can see a full implementation of our tracing based AD <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/src/ReverseDiff.jl">here</a> and a simple implementation of a Neural Network that can learn an approximation to the function <code>g</code> <a href="https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_08/reverse-nn.jl">here</a>. Running the latter script will produce an animation that shows how the network is learning.</p><p><img src="../anim.gif" alt="anim"/></p><p>This lab is heavily inspired by <a href="https://rufflewind.com/2016-12-30/reverse-mode-automatic-differentiation">Rufflewind</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Thursday 21 December 2023 16:28">Thursday 21 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

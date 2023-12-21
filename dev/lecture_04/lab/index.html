@@ -55,16 +55,24 @@ function world_step!(world::World)
         agent_step!(a,world)
     end
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">world_step! (generic function with 1 method)</code></pre></p></details><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; w = World([Sheep(1), Sheep(2), Wolf(3)])</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
-  🐑♂ #2 E=4.0 ΔE=0.2 pr=0.8 pf=0.6
-  🐺♀ #3 E=10.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♀ #2 E=4.0 ΔE=0.2 pr=0.8 pf=0.6
+  🐺♂ #3 E=10.0 ΔE=8.0 pr=0.1 pf=0.2
   🐑♂ #1 E=4.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
-  🐑♂ #2 E=3.0 ΔE=0.2 pr=0.8 pf=0.6
-  🐺♀ #3 E=9.0 ΔE=8.0 pr=0.1 pf=0.2
-  🐑♂ #1 E=3.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
-  🐺♀ #3 E=24.0 ΔE=8.0 pr=0.1 pf=0.2
-  🐑♂ #1 E=2.0 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
-  🐺♀ #3 E=23.0 ΔE=8.0 pr=0.1 pf=0.2
-  🐑♂ #1 E=1.0 ΔE=0.2 pr=0.8 pf=0.6</code></pre><p>Finally, lets run a few simulation steps and plot the solution</p><pre><code class="language-julia hljs">n_grass  = 1_000
+  🐑♂ #5 E=1.5 ΔE=0.2 pr=0.8 pf=0.6
+  🐑♂ #4 E=1.5 ΔE=0.2 pr=0.8 pf=0.6
+  🐑♀ #2 E=1.5 ΔE=0.2 pr=0.8 pf=0.6
+  🐺♂ #3 E=9.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♂ #1 E=1.5 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐑♂ #5 E=0.25 ΔE=0.2 pr=0.8 pf=0.6
+  🐑♂ #4 E=0.25 ΔE=0.2 pr=0.8 pf=0.6
+  🐑♂ #6 E=0.25 ΔE=0.2 pr=0.8 pf=0.6
+  🐑♀ #7 E=0.25 ΔE=0.2 pr=0.8 pf=0.6
+  🐑♀ #2 E=0.25 ΔE=0.2 pr=0.8 pf=0.6
+  🐑♀ #9 E=0.25 ΔE=0.2 pr=0.8 pf=0.6
+  🐑♀ #8 E=0.25 ΔE=0.2 pr=0.8 pf=0.6
+  🐺♂ #3 E=8.0 ΔE=8.0 pr=0.1 pf=0.2
+  🐑♂ #1 E=0.25 ΔE=0.2 pr=0.8 pf=0.6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; world_step!(w); w</code><code class="nohighlight hljs ansi" style="display:block;">Main.World{Main.Animal}
+  🐺♂ #3 E=7.0 ΔE=8.0 pr=0.1 pf=0.2</code></pre><p>Finally, lets run a few simulation steps and plot the solution</p><pre><code class="language-julia hljs">n_grass  = 1_000
 n_sheep  = 40
 n_wolves = 4
 
@@ -86,7 +94,7 @@ plt = plot()
 for (n,c) in counts
     plot!(plt, c, label=string(n), lw=2)
 end
-plt</code></pre><img src="611e4a01.svg" alt="Example block output"/><h2 id="Package:-Ecosystem.jl"><a class="docs-heading-anchor" href="#Package:-Ecosystem.jl">Package: <code>Ecosystem.jl</code></a><a id="Package:-Ecosystem.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Package:-Ecosystem.jl" title="Permalink"></a></h2><p>In the main section of this lab you will create your own <code>Ecosystem.jl</code> package to organize <em>and test (!)</em> the code that we have written so far.</p><h3 id="PkgTemplates.jl"><a class="docs-heading-anchor" href="#PkgTemplates.jl"><code>PkgTemplates.jl</code></a><a id="PkgTemplates.jl-1"></a><a class="docs-heading-anchor-permalink" href="#PkgTemplates.jl" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+plt</code></pre><img src="a06c5214.svg" alt="Example block output"/><h2 id="Package:-Ecosystem.jl"><a class="docs-heading-anchor" href="#Package:-Ecosystem.jl">Package: <code>Ecosystem.jl</code></a><a id="Package:-Ecosystem.jl-1"></a><a class="docs-heading-anchor-permalink" href="#Package:-Ecosystem.jl" title="Permalink"></a></h2><p>In the main section of this lab you will create your own <code>Ecosystem.jl</code> package to organize <em>and test (!)</em> the code that we have written so far.</p><h3 id="PkgTemplates.jl"><a class="docs-heading-anchor" href="#PkgTemplates.jl"><code>PkgTemplates.jl</code></a><a id="PkgTemplates.jl-1"></a><a class="docs-heading-anchor-permalink" href="#PkgTemplates.jl" title="Permalink"></a></h3><div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise:</header>
 <div class="admonition-body"><p>The simplest way to create a new package in Julia is to use <code>PkgTemplates.jl</code>. <code>]add PkgTemplates</code> to your global julia env and create a new package by running:</p><pre><code class="language-julia hljs">using PkgTemplates
 Template(interactive=true)(&quot;Ecosystem&quot;)</code></pre><p>to interactively specify various options for your new package or use the following snippet to generate it programmatically:</p><pre><code class="language-julia hljs">using PkgTemplates
@@ -190,6 +198,6 @@ end</code></pre></p></details><h3 id="Unit-tests"><a class="docs-heading-anchor"
            @test repr(w) == &quot;🐺♀ #3 E=1.0 ΔE=1.0 pr=1.0 pf=1.0&quot;
        end</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr1">Test Summary: | <span class="sgr32">Pass  </span><span class="sgr36">Total  </span>Time</span>
 Base.show     | <span class="sgr32">   3  </span><span class="sgr36">    3  </span>0.2s
-Test.DefaultTestSet(&quot;Base.show&quot;, Any[], 3, false, false, true, 1.703174234065656e9, 1.703174234305326e9, false)</code></pre></p></details><h3 id="Github-CI"><a class="docs-heading-anchor" href="#Github-CI">Github CI</a><a id="Github-CI-1"></a><a class="docs-heading-anchor-permalink" href="#Github-CI" title="Permalink"></a></h3><div class="admonition is-category-exercise">
+Test.DefaultTestSet(&quot;Base.show&quot;, Any[], 3, false, false, true, 1.703176040994334e9, 1.70317604123382e9, false)</code></pre></p></details><h3 id="Github-CI"><a class="docs-heading-anchor" href="#Github-CI">Github CI</a><a id="Github-CI-1"></a><a class="docs-heading-anchor-permalink" href="#Github-CI" title="Permalink"></a></h3><div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise:</header>
-<div class="admonition-body"><p>If you want you can upload you package to Github and add the <code>julia-runtest</code> <a href="https://github.com/julia-actions/julia-runtest">Github Action</a> to automatically test your code for every new push you make to the repository.</p></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Thursday 21 December 2023 15:58">Thursday 21 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<div class="admonition-body"><p>If you want you can upload you package to Github and add the <code>julia-runtest</code> <a href="https://github.com/julia-actions/julia-runtest">Github Action</a> to automatically test your code for every new push you make to the repository.</p></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Thursday 21 December 2023 16:28">Thursday 21 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
