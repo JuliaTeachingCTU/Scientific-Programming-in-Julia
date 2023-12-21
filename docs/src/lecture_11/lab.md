@@ -2,7 +2,7 @@
 
 ```@raw html
 <figure>
-<img src="../assets/julia-gpu-logo.png"; max-width: 50%; height: auto; margin: "0 auto";/>
+<img src="../../assets/julia-gpu-logo.png"; style="max-width: 40%; height: auto;"/>
 </figure>
 ```
 
@@ -39,16 +39,29 @@ user facing functionalities
 - kernel based programming (more on this in the second half of the lab)
 
 Let's use this to inspect our GPU hardware.
-```@repl gpulab
-using Metal
-Metal.versioninfo()
+```julia
+julia> using Metal
+
+julia> Metal.versioninfo()
+macOS 14.2.1, Darwin 23.2.0
+
+Toolchain:
+- Julia: 1.9.4
+- LLVM: 14.0.6
+
+Julia packages: 
+- Metal.jl: 0.5.1
+- Metal_LLVM_Tools_jll: 0.5.1+0
+
+1 device:
+- Apple M1 Pro (2.608 GiB allocated)
 ```
 
 As we have already seen in the [lecture](@ref gpu_lecture_no_kernel), we can simply import e.g.
 `Metal.jl` define some arrays, move them to the GPU and do some computation. In the following code
 we define two matrices `1000x1000` filled with random numbers and multiply them using usual `x * y`
 syntax.
-```@example gpulab
+```julia
 using Metal
 
 x = randn(Float32, 60, 60)
@@ -58,14 +71,27 @@ mx = MtlArray(x)
 my = MtlArray(y)
 
 @info "" x*y ≈ Matrix(mx*my)
+
+┌ Info:
+└   x * y ≈ Matrix(mx * my) = true
 ```
 This may not be anything remarkable, as such functionality is available in many other languages
 albeit usually with a less mathematical notation like `x.dot(y)`. With Julia's multiple dispatch, we
 can simply dispatch the multiplication operator/function `*` to a specific method that works on
 `MtlArray` type. You can check with `@code_typed`:
-```@repl gpulab
-using InteractiveUtils # hide
-@code_typed mx * my
+```julia
+julia> @code_typed mx * my
+CodeInfo(
+1 ─ %1 = Base.getfield(A, :dims)::Tuple{Int64, Int64}
+│   %2 = Base.getfield(%1, 1, true)::Int64
+│   %3 = Base.getfield(B, :dims)::Tuple{Int64, Int64}
+│   %4 = Base.getfield(%3, 2, true)::Int64
+│   %5 = Core.tuple(%2, %4)::Tuple{Int64, Int64}
+│   %6 = LinearAlgebra.similar::typeof(similar)
+│   %7 = invoke Metal.:(var"#similar#30")($(QuoteNode(Metal.MTL.MTLResourceStorageModePrivate))::Metal.MTL.MTLResourceOptions, %6::typeof(similar), B::Metal.MtlMatrix{Float32, Metal.MTL.MTLResourceStorageModePrivate}, Float32::Type{Float32}, %5::Tuple{Int64, Int64})::Metal.MtlMatrix{Float32}
+│   %8 = LinearAlgebra.gemm_wrapper!(%7, 'N', 'N', A, B, $(QuoteNode(LinearAlgebra.MulAddMul{true, true, Bool, Bool}(true, false))))::Metal.MtlMatrix{Float32}
+└──      return %8
+) => Metal.MtlMatrix{Float32}
 ```
 
 Let's now explore what the we can do with this array programming paradigm on some practical examples.
