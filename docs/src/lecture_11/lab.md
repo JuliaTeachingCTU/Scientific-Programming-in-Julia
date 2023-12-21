@@ -15,6 +15,10 @@ four most important GPU vendors via four separate packages:
 - [Metal.jl](https://metal.juliagpu.org/stable/) (targets Apple's M-series chips)
 
 
+!!! note
+    [ Tim Besard - GPU Programming in Julia: What, Why and How? ](https://www.youtube.com/watch?v=Q8fj8QbVpZM)
+
+
 ## Array programming
 
 We can do quite a lot without even knowing that we are using GPU instead of CPU. This marvel is the
@@ -766,4 +770,58 @@ using BenchmarkTools
 
 
 ## GPU vendor agnostic code
-There is an interesting direction that is allowed with the high level abstraction of Julia - [`KernelAbstractions.jl`](https://github.com/JuliaGPU/KernelAbstractions.jl), which offer an overarching API over CUDA, AMD ROCM and Intel oneAPI frameworks.
+There is an interesting direction that is allowed with the high level abstraction of Julia -
+[`KernelAbstractions.jl`](https://github.com/JuliaGPU/KernelAbstractions.jl), which offer an
+overarching API over CUDA, AMD ROCM and Intel oneAPI frameworks.
+
+```julia
+using KernelAbstractions
+
+# Simple kernel for matrix multiplication
+@kernel function matmul_kernel!(a, b, c)
+    i, j = @index(Global, NTuple)
+
+    # creating a temporary sum variable for matrix multiplication
+    tmp_sum = zero(eltype(c))
+    for k = 1:size(a)[2]
+        tmp_sum += a[i,k] * b[k, j]
+    end
+
+    c[i,j] = tmp_sum
+end
+
+# Creating a wrapper kernel for launching with error checks
+function matmul!(a, b, c)
+    backend = KernelAbstractions.get_backend(a)
+    kernel! = matmul_kernel!(backend)
+    kernel!(a, b, c, ndrange=size(c))
+end
+
+using Metal
+a = rand(Float32, 1000, 1000)
+b = rand(Float32, 1000, 1000)
+ag = a |> MtlArray
+bg = b |> MtlArray
+c = similar(ag)
+matmul!(ag,bg,c)
+
+@assert a*b ≈ Matrix(c)
+```
+
+```@raw html
+<div class="admonition is-category-exercise">
+<header class="admonition-header">Exercise</header>
+<div class="admonition-body">
+```
+
+Rewrite the `vadd` kernel with `KernelAbstractions.jl`
+
+```@raw html
+</div></div>
+<details class = "solution-body">
+<summary class = "solution-header">Solution:</summary><p>
+```
+Fill out.
+```@raw html
+</p></details>
+```
