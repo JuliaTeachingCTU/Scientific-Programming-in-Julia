@@ -92,6 +92,11 @@ lecture_10 = [
     "Homework" => "./lecture_10/hw.md"
 ]
 
+lecture_11 = [
+    "Lecture" => "./lecture_11/lecture.md"
+    "Lab" => "./lecture_11/lab.md"
+]
+
 lecture_12 = [
     "Lecture" => "./lecture_12/lecture.md"
     "Lab" => "./lecture_12/lab.md"
@@ -123,6 +128,7 @@ makedocs(;
         "8: Automatic differentiation" => lecture_08,
         "9: Intermediate representation" => lecture_09,
         "10: Parallel programming" => lecture_10,
+        "11: GPU programming" => lecture_11,
         "12: Ordinary Differential Equations" => lecture_12,
     ],
 )
