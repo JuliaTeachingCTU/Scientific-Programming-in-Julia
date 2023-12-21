@@ -310,7 +310,7 @@ to zero.
 ```
 ```@example lab
 Base.convert(::Type{T}, x::T) where T<:GaussNum = x
-Base.convert(::Type{GaussNum{T}}, x::Number) where T = GaussNum(x,zero(T))
+Base.convert(::Type{GaussNum{T}}, x::Real) where T = GaussNum(x,zero(T))
 Base.promote_rule(::Type{GaussNum{T}}, ::Type{S}) where {T,S} = GaussNum{T}
 Base.promote_rule(::Type{GaussNum{T}}, ::Type{GaussNum{T}}) where T = GaussNum{T}
 ```
