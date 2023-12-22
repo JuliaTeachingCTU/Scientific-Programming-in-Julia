@@ -790,7 +790,7 @@ using KernelAbstractions
     c[i,j] = tmp_sum
 end
 
-# Creating a wrapper kernel for launching with error checks
+# Create a wrapper kernel which selects the correct backend
 function matmul!(a, b, c)
     backend = KernelAbstractions.get_backend(a)
     kernel! = matmul_kernel!(backend)
