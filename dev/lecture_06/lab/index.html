@@ -51,50 +51,50 @@
 <span class="sgr90">16 ─</span>       goto #17
 <span class="sgr90">17 ─</span>       return %3
 ) =&gt; Vector{Int64}</code></pre><ul><li>LLVM code generation</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_llvm f()</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr90">;  @ REPL[1]:1 within `f`</span>
-<span class="sgr95">define</span> <span class="sgr95">nonnull</span> <span class="sgr33">{}</span>* <span class="sgr93">@julia_f_6303</span><span class="sgr33">()</span> #0 <span class="sgr33">{</span>
+<span class="sgr95">define</span> <span class="sgr95">nonnull</span> <span class="sgr33">{}</span>* <span class="sgr93">@julia_f_5731</span><span class="sgr33">()</span> #0 <span class="sgr33">{</span>
 <span class="sgr91">top:</span>
-<span class="sgr90">; ┌ @ array.jl:787 within `collect`</span>
-<span class="sgr90">; │┌ @ array.jl:671 within `_array_for`</span>
-<span class="sgr90">; ││┌ @ abstractarray.jl:883 within `similar` @ abstractarray.jl:884</span>
+<span class="sgr90">; ┌ @ array.jl:839 within `collect`</span>
+<span class="sgr90">; │┌ @ array.jl:723 within `_array_for`</span>
+<span class="sgr90">; ││┌ @ abstractarray.jl:873 within `similar` @ abstractarray.jl:874</span>
 <span class="sgr90">; │││┌ @ boot.jl:486 within `Array` @ boot.jl:477</span>
-      %0 = <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr95">nonnull</span> <span class="sgr33">{}</span>* <span class="sgr95">inttoptr</span> <span class="sgr33">(</span><span class="sgr36">i64</span> <span class="sgr33">140446378911168</span> <span class="sgr95">to</span> <span class="sgr33">{}</span>* <span class="sgr33">({}</span>*, <span class="sgr36">i64</span><span class="sgr33">)</span>*<span class="sgr33">)({}</span>* <span class="sgr95">inttoptr</span> <span class="sgr33">(</span><span class="sgr36">i64</span> <span class="sgr33">140446038340704</span> <span class="sgr95">to</span> <span class="sgr33">{}</span>*<span class="sgr33">)</span>, <span class="sgr36">i64</span> <span class="sgr33">10)</span>
+      %0 = <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr95">nonnull</span> <span class="sgr33">{}</span>* <span class="sgr95">inttoptr</span> <span class="sgr33">(</span><span class="sgr36">i64</span> <span class="sgr33">140287221874384</span> <span class="sgr95">to</span> <span class="sgr33">{}</span>* <span class="sgr33">({}</span>*, <span class="sgr36">i64</span><span class="sgr33">)</span>*<span class="sgr33">)({}</span>* <span class="sgr95">inttoptr</span> <span class="sgr33">(</span><span class="sgr36">i64</span> <span class="sgr33">140286875258480</span> <span class="sgr95">to</span> <span class="sgr33">{}</span>*<span class="sgr33">)</span>, <span class="sgr36">i64</span> <span class="sgr33">10)</span>
 <span class="sgr90">; │└└└</span>
-<span class="sgr90">; │ @ array.jl:792 within `collect`</span>
-<span class="sgr90">; │┌ @ array.jl:817 within `collect_to_with_first!`</span>
-<span class="sgr90">; ││┌ @ array.jl:969 within `setindex!`</span>
+<span class="sgr90">; │ @ array.jl:844 within `collect`</span>
+<span class="sgr90">; │┌ @ array.jl:869 within `collect_to_with_first!`</span>
+<span class="sgr90">; ││┌ @ array.jl:1021 within `setindex!`</span>
      %1 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr33">{}</span>* %0 <span class="sgr95">to</span> <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>*
-     %2 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>, <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>* %1, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i32</span> <span class="sgr33">1</span>
-     %3 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %2, <span class="sgr95">align</span> <span class="sgr33">8</span>
-     %.not = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %3, <span class="sgr33">0</span>
-     <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %.not, <span class="sgr36">label</span> <span class="sgr91">%oob</span>, <span class="sgr36">label</span> <span class="sgr91">%idxend</span>
+     %arraylen_ptr = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>, <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>* %1, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i32</span> <span class="sgr33">1</span>
+     %arraylen = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %arraylen_ptr, <span class="sgr95">align</span> <span class="sgr33">8</span>
+     %inbounds.not = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %arraylen, <span class="sgr33">0</span>
+     <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %inbounds.not, <span class="sgr36">label</span> <span class="sgr91">%oob</span>, <span class="sgr36">label</span> <span class="sgr91">%idxend</span>
 
 <span class="sgr91">oob:</span>                                              <span class="sgr90">; preds = %top</span>
-     %4 = <span class="sgr96"><span class="sgr1">alloca</span></span> <span class="sgr36">i64</span>, <span class="sgr95">align</span> <span class="sgr33">8</span>
-     <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr36">i64</span> <span class="sgr33">1</span>, <span class="sgr36">i64</span>* %4, <span class="sgr95">align</span> <span class="sgr33">8</span>
-     <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr36">void</span> <span class="sgr93">@ijl_bounds_error_ints</span><span class="sgr33">({}</span>* %0, <span class="sgr36">i64</span>* <span class="sgr95">nonnull</span> %4, <span class="sgr36">i64</span> <span class="sgr33">1)</span>
+     %errorbox = <span class="sgr96"><span class="sgr1">alloca</span></span> <span class="sgr36">i64</span>, <span class="sgr95">align</span> <span class="sgr33">8</span>
+     <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr36">i64</span> <span class="sgr33">1</span>, <span class="sgr36">i64</span>* %errorbox, <span class="sgr95">align</span> <span class="sgr33">8</span>
+     <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr36">void</span> <span class="sgr93">@ijl_bounds_error_ints</span><span class="sgr33">({}</span>* %0, <span class="sgr36">i64</span>* <span class="sgr95">nonnull</span> %errorbox, <span class="sgr36">i64</span> <span class="sgr33">1)</span>
      <span class="sgr96"><span class="sgr1">unreachable</span></span>
 
 <span class="sgr91">idxend:</span>                                           <span class="sgr90">; preds = %top</span>
-     %5 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr33">{}</span>* %0 <span class="sgr95">to</span> <span class="sgr36">i64</span>**
-     %6 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">i64</span>*, <span class="sgr36">i64</span>** %5, <span class="sgr95">align</span> <span class="sgr33">8</span>
-     %7 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr36">i64</span>* %6 <span class="sgr95">to</span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>*
-     <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span> <span class="sgr33">&lt;</span><span class="sgr36">i64</span> <span class="sgr33">1</span>, <span class="sgr36">i64</span> <span class="sgr33">2</span>, <span class="sgr36">i64</span> <span class="sgr33">3</span>, <span class="sgr36">i64</span> <span class="sgr33">4&gt;</span>, <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>* %7, <span class="sgr95">align</span> <span class="sgr33">8</span>
+     %2 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr33">{}</span>* %0 <span class="sgr95">to</span> <span class="sgr36">i64</span>**
+     %arrayptr8 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">i64</span>*, <span class="sgr36">i64</span>** %2, <span class="sgr95">align</span> <span class="sgr33">8</span>
+     %3 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr36">i64</span>* %arrayptr8 <span class="sgr95">to</span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>*
+     <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span> <span class="sgr33">&lt;</span><span class="sgr36">i64</span> <span class="sgr33">1</span>, <span class="sgr36">i64</span> <span class="sgr33">2</span>, <span class="sgr36">i64</span> <span class="sgr33">3</span>, <span class="sgr36">i64</span> <span class="sgr33">4&gt;</span>, <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>* %3, <span class="sgr95">align</span> <span class="sgr33">8</span>
 <span class="sgr90">; ││└</span>
-<span class="sgr90">; ││ @ array.jl:818 within `collect_to_with_first!`</span>
-<span class="sgr90">; ││┌ @ array.jl:844 within `collect_to!`</span>
-<span class="sgr90">; │││┌ @ array.jl:969 within `setindex!`</span>
-      %8 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %6, <span class="sgr36">i64</span> <span class="sgr33">4</span>
-      %9 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr36">i64</span>* %8 <span class="sgr95">to</span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>*
-      <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span> <span class="sgr33">&lt;</span><span class="sgr36">i64</span> <span class="sgr33">5</span>, <span class="sgr36">i64</span> <span class="sgr33">6</span>, <span class="sgr36">i64</span> <span class="sgr33">7</span>, <span class="sgr36">i64</span> <span class="sgr33">8&gt;</span>, <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>* %9, <span class="sgr95">align</span> <span class="sgr33">8</span>
-      %10 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %6, <span class="sgr36">i64</span> <span class="sgr33">8</span>
-      %11 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr36">i64</span>* %10 <span class="sgr95">to</span> <span class="sgr33">&lt;2</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>*
-      <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr33">&lt;2</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span> <span class="sgr33">&lt;</span><span class="sgr36">i64</span> <span class="sgr33">9</span>, <span class="sgr36">i64</span> <span class="sgr33">10&gt;</span>, <span class="sgr33">&lt;2</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>* %11, <span class="sgr95">align</span> <span class="sgr33">8</span>
+<span class="sgr90">; ││ @ array.jl:870 within `collect_to_with_first!`</span>
+<span class="sgr90">; ││┌ @ array.jl:896 within `collect_to!`</span>
+<span class="sgr90">; │││┌ @ array.jl:1021 within `setindex!`</span>
+      %4 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %arrayptr8, <span class="sgr36">i64</span> <span class="sgr33">4</span>
+      %5 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr36">i64</span>* %4 <span class="sgr95">to</span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>*
+      <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span> <span class="sgr33">&lt;</span><span class="sgr36">i64</span> <span class="sgr33">5</span>, <span class="sgr36">i64</span> <span class="sgr33">6</span>, <span class="sgr36">i64</span> <span class="sgr33">7</span>, <span class="sgr36">i64</span> <span class="sgr33">8&gt;</span>, <span class="sgr33">&lt;4</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>* %5, <span class="sgr95">align</span> <span class="sgr33">8</span>
+      %6 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %arrayptr8, <span class="sgr36">i64</span> <span class="sgr33">8</span>
+      %7 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr36">i64</span>* %6 <span class="sgr95">to</span> <span class="sgr33">&lt;2</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>*
+      <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr33">&lt;2</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span> <span class="sgr33">&lt;</span><span class="sgr36">i64</span> <span class="sgr33">9</span>, <span class="sgr36">i64</span> <span class="sgr33">10&gt;</span>, <span class="sgr33">&lt;2</span> x <span class="sgr36">i64</span><span class="sgr33">&gt;</span>* %7, <span class="sgr95">align</span> <span class="sgr33">8</span>
 <span class="sgr90">; └└└└</span>
   <span class="sgr96"><span class="sgr1">ret</span></span> <span class="sgr33">{}</span>* %0
 <span class="sgr33">}</span></code></pre><ul><li>native code generation</li></ul><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_native f()</code><code class="nohighlight hljs ansi" style="display:block;">	.text
 	.file	&quot;f&quot;
 	.section	.rodata.cst32,&quot;aM&quot;,@progbits,<span class="sgr33">32</span>
-	.p2align	<span class="sgr33">5</span>                               <span class="sgr90"># -- Begin function julia_f_6340</span>
+	.p2align	<span class="sgr33">5</span>                               <span class="sgr90"># -- Begin function julia_f_5768</span>
 <span class="sgr91">.LCPI0_0:</span>
 	.quad	<span class="sgr33">1</span>                               <span class="sgr90"># 0x1</span>
 	.quad	<span class="sgr33">2</span>                               <span class="sgr90"># 0x2</span>
@@ -111,86 +111,79 @@
 	.quad	<span class="sgr33">9</span>                               <span class="sgr90"># 0x9</span>
 	.quad	<span class="sgr33">10</span>                              <span class="sgr90"># 0xa</span>
 	.text
-	.globl	julia_f_6340
+	.globl	julia_f_5768
 	.p2align	<span class="sgr33">4</span>, <span class="sgr33">0x90</span>
-	.type	julia_f_6340,@function
-<span class="sgr91">julia_f_6340:</span>                           <span class="sgr90"># @julia_f_6340</span>
+	.type	julia_f_5768,@function
+<span class="sgr91">julia_f_5768:</span>                           <span class="sgr90"># @julia_f_5768</span>
 <span class="sgr90">; ┌ @ REPL[1]:1 within `f`</span>
-	.cfi_startproc
 <span class="sgr90"># %bb.0:                                # %top</span>
-	<span class="sgr96"><span class="sgr1">pushq</span></span>	%rbp
-	.cfi_def_cfa_offset <span class="sgr33">16</span>
-	.cfi_offset %rbp, <span class="sgr33">-16</span>
-	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsp, %rbp
-	.cfi_def_cfa_register %rbp
-	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr33">$140446038340704</span>, %rdi          <span class="sgr90"># imm = 0x7FBC2439B460</span>
-	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr33">$140446378911168</span>, %rax          <span class="sgr90"># imm = 0x7FBC388665C0</span>
-<span class="sgr90">; │┌ @ array.jl:787 within `collect`</span>
-<span class="sgr90">; ││┌ @ array.jl:671 within `_array_for`</span>
-<span class="sgr90">; │││┌ @ abstractarray.jl:883 within `similar` @ abstractarray.jl:884</span>
+	<span class="sgr96"><span class="sgr1">push</span></span>	rbp
+	<span class="sgr96"><span class="sgr1">movabs</span></span>	rdi, <span class="sgr33">140286875258480</span>
+	<span class="sgr96"><span class="sgr1">movabs</span></span>	rax, <span class="sgr33">140287221874384</span>
+<span class="sgr90">; │┌ @ array.jl:839 within `collect`</span>
+<span class="sgr90">; ││┌ @ array.jl:723 within `_array_for`</span>
+<span class="sgr90">; │││┌ @ abstractarray.jl:873 within `similar` @ abstractarray.jl:874</span>
 <span class="sgr90">; ││││┌ @ boot.jl:486 within `Array` @ boot.jl:477</span>
-	<span class="sgr96"><span class="sgr1">movl</span></span>	<span class="sgr33">$10</span>, %esi
-	<span class="sgr96"><span class="sgr1">callq</span></span>	*%rax
+	<span class="sgr96"><span class="sgr1">mov</span></span>	esi, <span class="sgr33">10</span>
+	<span class="sgr96"><span class="sgr1">mov</span></span>	rbp, rsp
+	<span class="sgr96"><span class="sgr1">call</span></span>	rax
 <span class="sgr90">; ││└└└</span>
-<span class="sgr90">; ││ @ array.jl:792 within `collect`</span>
-<span class="sgr90">; ││┌ @ array.jl:817 within `collect_to_with_first!`</span>
-<span class="sgr90">; │││┌ @ array.jl:969 within `setindex!`</span>
-	<span class="sgr96"><span class="sgr1">cmpq</span></span>	<span class="sgr33">$0</span>, <span class="sgr33">8(</span>%rax<span class="sgr33">)</span>
+<span class="sgr90">; ││ @ array.jl:844 within `collect`</span>
+<span class="sgr90">; ││┌ @ array.jl:869 within `collect_to_with_first!`</span>
+<span class="sgr90">; │││┌ @ array.jl:1021 within `setindex!`</span>
+	<span class="sgr96"><span class="sgr1">cmp</span></span>	<span class="sgr95">qword</span> <span class="sgr95">ptr</span> <span class="sgr33">[</span>rax + <span class="sgr33">8]</span>, <span class="sgr33">0</span>
 	<span class="sgr96"><span class="sgr1">je</span></span>	.LBB0_1
 <span class="sgr90"># %bb.5:                                # %idxend</span>
-	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$.LCPI0_0</span>, %rdx
-	<span class="sgr96"><span class="sgr1">movq</span></span>	<span class="sgr33">(</span>%rax<span class="sgr33">)</span>, %rcx
-	<span class="sgr96"><span class="sgr1">vmovaps</span></span>	<span class="sgr33">(</span>%rdx<span class="sgr33">)</span>, %ymm0
-	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$.LCPI0_1</span>, %rdx
+	<span class="sgr96"><span class="sgr1">movabs</span></span>	rdx, <span class="sgr95">offset</span> .LCPI0_0
+	<span class="sgr96"><span class="sgr1">mov</span></span>	rcx, <span class="sgr95">qword</span> <span class="sgr95">ptr</span> <span class="sgr33">[</span>rax<span class="sgr33">]</span>
+	<span class="sgr96"><span class="sgr1">vmovaps</span></span>	ymm0, <span class="sgr95">ymmword</span> <span class="sgr95">ptr</span> <span class="sgr33">[</span>rdx<span class="sgr33">]</span>
+	<span class="sgr96"><span class="sgr1">movabs</span></span>	rdx, <span class="sgr95">offset</span> .LCPI0_1
 <span class="sgr90">; │││└</span>
-<span class="sgr90">; │││ @ array.jl:818 within `collect_to_with_first!`</span>
-<span class="sgr90">; │││┌ @ array.jl:844 within `collect_to!`</span>
-<span class="sgr90">; ││││┌ @ array.jl:969 within `setindex!`</span>
-	<span class="sgr96"><span class="sgr1">vmovaps</span></span>	<span class="sgr33">(</span>%rdx<span class="sgr33">)</span>, %ymm2
-	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$.LCPI0_2</span>, %rdx
-	<span class="sgr96"><span class="sgr1">vmovaps</span></span>	<span class="sgr33">(</span>%rdx<span class="sgr33">)</span>, %xmm1
+<span class="sgr90">; │││ @ array.jl:870 within `collect_to_with_first!`</span>
+<span class="sgr90">; │││┌ @ array.jl:896 within `collect_to!`</span>
+<span class="sgr90">; ││││┌ @ array.jl:1021 within `setindex!`</span>
+	<span class="sgr96"><span class="sgr1">vmovaps</span></span>	ymm2, <span class="sgr95">ymmword</span> <span class="sgr95">ptr</span> <span class="sgr33">[</span>rdx<span class="sgr33">]</span>
+	<span class="sgr96"><span class="sgr1">movabs</span></span>	rdx, <span class="sgr95">offset</span> .LCPI0_2
+	<span class="sgr96"><span class="sgr1">vmovaps</span></span>	xmm1, <span class="sgr95">xmmword</span> <span class="sgr95">ptr</span> <span class="sgr33">[</span>rdx<span class="sgr33">]</span>
 <span class="sgr90">; │││└└</span>
-<span class="sgr90">; │││ @ array.jl:817 within `collect_to_with_first!`</span>
-<span class="sgr90">; │││┌ @ array.jl:969 within `setindex!`</span>
-	<span class="sgr96"><span class="sgr1">vmovups</span></span>	%ymm0, <span class="sgr33">(</span>%rcx<span class="sgr33">)</span>
+<span class="sgr90">; │││ @ array.jl:869 within `collect_to_with_first!`</span>
+<span class="sgr90">; │││┌ @ array.jl:1021 within `setindex!`</span>
+	<span class="sgr96"><span class="sgr1">vmovups</span></span>	<span class="sgr95">ymmword</span> <span class="sgr95">ptr</span> <span class="sgr33">[</span>rcx<span class="sgr33">]</span>, ymm0
 <span class="sgr90">; │││└</span>
-<span class="sgr90">; │││ @ array.jl:818 within `collect_to_with_first!`</span>
-<span class="sgr90">; │││┌ @ array.jl:844 within `collect_to!`</span>
-<span class="sgr90">; ││││┌ @ array.jl:969 within `setindex!`</span>
-	<span class="sgr96"><span class="sgr1">vmovups</span></span>	%ymm2, <span class="sgr33">32(</span>%rcx<span class="sgr33">)</span>
-	<span class="sgr96"><span class="sgr1">vmovups</span></span>	%xmm1, <span class="sgr33">64(</span>%rcx<span class="sgr33">)</span>
+<span class="sgr90">; │││ @ array.jl:870 within `collect_to_with_first!`</span>
+<span class="sgr90">; │││┌ @ array.jl:896 within `collect_to!`</span>
+<span class="sgr90">; ││││┌ @ array.jl:1021 within `setindex!`</span>
+	<span class="sgr96"><span class="sgr1">vmovups</span></span>	<span class="sgr95">ymmword</span> <span class="sgr95">ptr</span> <span class="sgr33">[</span>rcx + <span class="sgr33">32]</span>, ymm2
+	<span class="sgr96"><span class="sgr1">vmovups</span></span>	<span class="sgr95">xmmword</span> <span class="sgr95">ptr</span> <span class="sgr33">[</span>rcx + <span class="sgr33">64]</span>, xmm1
 <span class="sgr90">; │└└└└</span>
-	<span class="sgr96"><span class="sgr1">movq</span></span>	%rbp, %rsp
-	<span class="sgr96"><span class="sgr1">popq</span></span>	%rbp
-	.cfi_def_cfa %rsp, <span class="sgr33">8</span>
+	<span class="sgr96"><span class="sgr1">mov</span></span>	rsp, rbp
+	<span class="sgr96"><span class="sgr1">pop</span></span>	rbp
 	<span class="sgr96"><span class="sgr1">vzeroupper</span></span>
-	<span class="sgr96"><span class="sgr1">retq</span></span>
+	<span class="sgr96"><span class="sgr1">ret</span></span>
 <span class="sgr91">.LBB0_1:</span>                                <span class="sgr90"># %oob</span>
-	.cfi_def_cfa %rbp, <span class="sgr33">16</span>
-	<span class="sgr96"><span class="sgr1">movl</span></span>	<span class="sgr33">$16</span>, %ecx
-<span class="sgr90">; │┌ @ array.jl:792 within `collect`</span>
-<span class="sgr90">; ││┌ @ array.jl:817 within `collect_to_with_first!`</span>
-<span class="sgr90">; │││┌ @ array.jl:969 within `setindex!`</span>
-	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsp, %rsi
-	<span class="sgr96"><span class="sgr1">subq</span></span>	%rcx, %rsi
-	<span class="sgr96"><span class="sgr1">cmpq</span></span>	%rsp, %rsi
+	<span class="sgr96"><span class="sgr1">mov</span></span>	ecx, <span class="sgr33">16</span>
+<span class="sgr90">; │┌ @ array.jl:844 within `collect`</span>
+<span class="sgr90">; ││┌ @ array.jl:869 within `collect_to_with_first!`</span>
+<span class="sgr90">; │││┌ @ array.jl:1021 within `setindex!`</span>
+	<span class="sgr96"><span class="sgr1">mov</span></span>	rsi, rsp
+	<span class="sgr96"><span class="sgr1">sub</span></span>	rsi, rcx
+	<span class="sgr96"><span class="sgr1">cmp</span></span>	rsi, rsp
 	<span class="sgr96"><span class="sgr1">jge</span></span>	.LBB0_4
 <span class="sgr91">.LBB0_3:</span>                                <span class="sgr90"># %oob</span>
                                         <span class="sgr90"># =&gt;This Inner Loop Header: Depth=1</span>
-	<span class="sgr96"><span class="sgr1">xorq</span></span>	<span class="sgr33">$0</span>, <span class="sgr33">(</span>%rsp<span class="sgr33">)</span>
-	<span class="sgr96"><span class="sgr1">subq</span></span>	<span class="sgr33">$4096</span>, %rsp                     <span class="sgr90"># imm = 0x1000</span>
-	<span class="sgr96"><span class="sgr1">cmpq</span></span>	%rsp, %rsi
+	<span class="sgr96"><span class="sgr1">xor</span></span>	<span class="sgr95">qword</span> <span class="sgr95">ptr</span> <span class="sgr33">[</span>rsp<span class="sgr33">]</span>, <span class="sgr33">0</span>
+	<span class="sgr96"><span class="sgr1">sub</span></span>	rsp, <span class="sgr33">4096</span>
+	<span class="sgr96"><span class="sgr1">cmp</span></span>	rsi, rsp
 	<span class="sgr96"><span class="sgr1">jl</span></span>	.LBB0_3
 <span class="sgr91">.LBB0_4:</span>                                <span class="sgr90"># %oob</span>
-	<span class="sgr96"><span class="sgr1">movq</span></span>	%rsi, %rsp
-	<span class="sgr96"><span class="sgr1">movabsq</span></span>	<span class="sgr93">$ijl_bounds_error_ints</span>, %rcx
-	<span class="sgr96"><span class="sgr1">movl</span></span>	<span class="sgr33">$1</span>, %edx
-	<span class="sgr96"><span class="sgr1">movq</span></span>	%rax, %rdi
-	<span class="sgr96"><span class="sgr1">movq</span></span>	<span class="sgr33">$1</span>, <span class="sgr33">(</span>%rsi<span class="sgr33">)</span>
-	<span class="sgr96"><span class="sgr1">callq</span></span>	*%rcx
+	<span class="sgr96"><span class="sgr1">mov</span></span>	rsp, rsi
+	<span class="sgr96"><span class="sgr1">movabs</span></span>	rcx, <span class="sgr95">offset</span> <span class="sgr93">ijl_bounds_error_ints</span>
+	<span class="sgr96"><span class="sgr1">mov</span></span>	edx, <span class="sgr33">1</span>
+	<span class="sgr96"><span class="sgr1">mov</span></span>	rdi, rax
+	<span class="sgr96"><span class="sgr1">mov</span></span>	<span class="sgr95">qword</span> <span class="sgr95">ptr</span> <span class="sgr33">[</span>rsi<span class="sgr33">]</span>, <span class="sgr33">1</span>
+	<span class="sgr96"><span class="sgr1">call</span></span>	rcx
 <span class="sgr91">.Lfunc_end0:</span>
-	.size	julia_f_6340, .Lfunc_end0-julia_f_6340
-	.cfi_endproc
+	.size	julia_f_5768, .Lfunc_end0-julia_f_5768
 <span class="sgr90">; └└└└</span>
                                         <span class="sgr90"># -- End function</span>
 	.type	.L_j_const1,@object             <span class="sgr90"># @_j_const1</span>
@@ -243,309 +236,293 @@ x = 2.0
 
 @code_lowered polynomial(a,x)       # cannot be seen here as optimizations are not applied
 @code_typed polynomial(a,x)         # loop unrolling is not part of type inference optimization</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_llvm polynomial(a,x)</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr90">;  @ lab.md:113 within `polynomial`</span>
-<span class="sgr95">define</span> <span class="sgr36">double</span> <span class="sgr93">@julia_polynomial_6392</span><span class="sgr33">([20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* <span class="sgr95">nocapture</span> <span class="sgr95">noundef</span> <span class="sgr95">nonnull</span> <span class="sgr95">readonly</span> <span class="sgr95">align</span> <span class="sgr33">8</span> <span class="sgr95">dereferenceable</span><span class="sgr33">(160)</span> %0, <span class="sgr36">double</span> %1<span class="sgr33">)</span> #0 <span class="sgr33">{</span>
+<span class="sgr95">define</span> <span class="sgr36">double</span> <span class="sgr93">@julia_polynomial_5807</span><span class="sgr33">([20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* <span class="sgr95">nocapture</span> <span class="sgr95">noundef</span> <span class="sgr95">nonnull</span> <span class="sgr95">readonly</span> <span class="sgr95">align</span> <span class="sgr33">8</span> <span class="sgr95">dereferenceable</span><span class="sgr33">(160)</span> %0, <span class="sgr36">double</span> %1<span class="sgr33">)</span> #0 <span class="sgr33">{</span>
 <span class="sgr91">pass.18:</span>
 <span class="sgr90">;  @ lab.md:114 within `polynomial`</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
    %2 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">19</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %3 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %2, <span class="sgr95">align</span> <span class="sgr33">8</span>
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %unbox = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %2, <span class="sgr95">align</span> <span class="sgr33">8</span>
 <span class="sgr90">; └</span>
 <span class="sgr90">;  @ lab.md:116 within `polynomial`</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %4 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %3, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %3 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %unbox, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %5 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">18</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %4 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">18</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %6 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %5, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %7 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %4, %6
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %4, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %5 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %3, %unbox3
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %8 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %7, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %6 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %5, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %9 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">17</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %7 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">17</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %10 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %9, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %11 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %8, %10
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.1 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %7, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %8 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %6, %unbox3.1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %9 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %8, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %10 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">16</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.2 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %10, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %11 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %9, %unbox3.2
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
    %12 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %11, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %13 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">16</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %13 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">15</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %14 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %13, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %15 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %12, %14
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.3 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %13, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %14 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %12, %unbox3.3
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %16 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %15, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %15 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %14, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %17 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">15</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %16 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">14</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %18 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %17, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %19 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %16, %18
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.4 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %16, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %17 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %15, %unbox3.4
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %20 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %19, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %18 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %17, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %21 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">14</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %19 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">13</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %22 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %21, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %23 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %20, %22
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.5 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %19, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %20 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %18, %unbox3.5
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %21 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %20, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %22 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">12</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.6 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %22, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %23 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %21, %unbox3.6
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
    %24 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %23, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %25 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">13</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %25 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">11</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %26 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %25, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %27 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %24, %26
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.7 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %25, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %26 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %24, %unbox3.7
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %28 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %27, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %27 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %26, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %29 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">12</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %28 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">10</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %30 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %29, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %31 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %28, %30
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.8 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %28, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %29 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %27, %unbox3.8
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %32 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %31, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %30 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %29, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %33 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">11</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %31 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">9</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %34 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %33, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %35 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %32, %34
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.9 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %31, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %32 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %30, %unbox3.9
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %33 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %32, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %34 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">8</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.10 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %34, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %35 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %33, %unbox3.10
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
    %36 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %35, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %37 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">10</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %37 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">7</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %38 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %37, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %39 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %36, %38
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.11 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %37, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %38 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %36, %unbox3.11
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %40 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %39, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %39 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %38, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %41 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">9</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %40 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">6</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %42 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %41, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %43 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %40, %42
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.12 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %40, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %41 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %39, %unbox3.12
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %44 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %43, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %42 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %41, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %45 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">8</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %43 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">5</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %46 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %45, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %47 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %44, %46
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.13 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %43, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %44 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %42, %unbox3.13
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %45 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %44, %1
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %46 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">4</span>
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.14 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %46, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %47 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %45, %unbox3.14
+<span class="sgr90">; └</span>
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
    %48 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %47, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %49 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">7</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %49 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">3</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %50 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %49, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %51 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %48, %50
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.15 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %49, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %50 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %48, %unbox3.15
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %52 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %51, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %51 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %50, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %53 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">6</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %52 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">2</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %54 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %53, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %55 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %52, %54
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.16 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %52, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %53 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %51, %unbox3.16
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %56 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %55, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %54 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %53, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %57 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">5</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %55 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">1</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %58 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %57, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %59 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %56, %58
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.17 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %55, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %56 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %54, %unbox3.17
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %60 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %59, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %57 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %56, %1
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %61 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">4</span>
+<span class="sgr90">; ┌ @ tuple.jl:31 within `getindex`</span>
+   %58 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">0</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %62 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %61, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %63 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %60, %62
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %64 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %63, %1
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %65 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">3</span>
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %66 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %65, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %67 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %64, %66
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %68 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %67, %1
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %69 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">2</span>
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %70 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %69, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %71 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %68, %70
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %72 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %71, %1
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %73 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">1</span>
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %74 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %73, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %75 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %72, %74
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %76 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %75, %1
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ tuple.jl:29 within `getindex`</span>
-   %77 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>, <span class="sgr33">[20</span> x <span class="sgr36">double</span><span class="sgr33">]</span>* %0, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span> <span class="sgr33">0</span>
-<span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %78 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %77, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %79 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %76, %78
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %unbox3.18 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %58, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %59 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %57, %unbox3.18
 <span class="sgr90">; └</span>
 <span class="sgr90">;  @ lab.md:118 within `polynomial`</span>
-  <span class="sgr96"><span class="sgr1">ret</span></span> <span class="sgr36">double</span> %79
+  <span class="sgr96"><span class="sgr1">ret</span></span> <span class="sgr36">double</span> %59
 <span class="sgr33">}</span></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_llvm polynomial(ac,x)</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr90">;  @ lab.md:113 within `polynomial`</span>
-<span class="sgr95">define</span> <span class="sgr36">double</span> <span class="sgr93">@julia_polynomial_6394</span><span class="sgr33">({}</span>* <span class="sgr95">noundef</span> <span class="sgr95">nonnull</span> <span class="sgr95">align</span> <span class="sgr33">16</span> <span class="sgr95">dereferenceable</span><span class="sgr33">(40)</span> %0, <span class="sgr36">double</span> %1<span class="sgr33">)</span> #0 <span class="sgr33">{</span>
+<span class="sgr95">define</span> <span class="sgr36">double</span> <span class="sgr93">@julia_polynomial_5809</span><span class="sgr33">({}</span>* <span class="sgr95">noundef</span> <span class="sgr95">nonnull</span> <span class="sgr95">align</span> <span class="sgr33">16</span> <span class="sgr95">dereferenceable</span><span class="sgr33">(40)</span> %0, <span class="sgr36">double</span> %1<span class="sgr33">)</span> #0 <span class="sgr33">{</span>
 <span class="sgr91">top:</span>
 <span class="sgr90">;  @ lab.md:114 within `polynomial`</span>
-<span class="sgr90">; ┌ @ abstractarray.jl:419 within `lastindex`</span>
-<span class="sgr90">; │┌ @ abstractarray.jl:382 within `eachindex`</span>
-<span class="sgr90">; ││┌ @ abstractarray.jl:133 within `axes1`</span>
+<span class="sgr90">; ┌ @ abstractarray.jl:423 within `lastindex`</span>
+<span class="sgr90">; │┌ @ abstractarray.jl:386 within `eachindex`</span>
+<span class="sgr90">; ││┌ @ abstractarray.jl:134 within `axes1`</span>
 <span class="sgr90">; │││┌ @ abstractarray.jl:98 within `axes`</span>
-<span class="sgr90">; ││││┌ @ array.jl:149 within `size`</span>
+<span class="sgr90">; ││││┌ @ array.jl:191 within `size`</span>
        %2 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr33">{}</span>* %0 <span class="sgr95">to</span> <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>*
-       %3 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>, <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>* %2, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i32</span> <span class="sgr33">1</span>
-       %4 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %3, <span class="sgr95">align</span> <span class="sgr33">8</span>
+       %arraylen_ptr = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>, <span class="sgr33">{</span> <span class="sgr36">i8</span>*, <span class="sgr36">i64</span>, <span class="sgr36">i16</span>, <span class="sgr36">i16</span>, <span class="sgr36">i32</span> <span class="sgr33">}</span>* %2, <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i32</span> <span class="sgr33">1</span>
+       %arraylen = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %arraylen_ptr, <span class="sgr95">align</span> <span class="sgr33">8</span>
 <span class="sgr90">; └└└└└</span>
 <span class="sgr90">; ┌ @ essentials.jl:13 within `getindex`</span>
-   %5 = <span class="sgr96"><span class="sgr1">add</span></span> <span class="sgr95">nsw</span> <span class="sgr36">i64</span> %4, <span class="sgr33">-1</span>
-   %.not19 = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %4, <span class="sgr33">0</span>
-   <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %.not19, <span class="sgr36">label</span> <span class="sgr91">%oob</span>, <span class="sgr36">label</span> <span class="sgr91">%idxend</span>
+   %3 = <span class="sgr96"><span class="sgr1">add</span></span> <span class="sgr95">nsw</span> <span class="sgr36">i64</span> %arraylen, <span class="sgr33">-1</span>
+   %inbounds.not = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %arraylen, <span class="sgr33">0</span>
+   <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %inbounds.not, <span class="sgr36">label</span> <span class="sgr91">%oob</span>, <span class="sgr36">label</span> <span class="sgr91">%idxend</span>
 
-<span class="sgr91">L23:</span>                                              <span class="sgr90">; preds = %idxend7, %L23.preheader</span>
-   %value_phi3 = <span class="sgr96"><span class="sgr1">phi</span></span> <span class="sgr36">i64</span> <span class="sgr33">[</span> %6, <span class="sgr91">%idxend7</span> <span class="sgr33">]</span>, <span class="sgr33">[</span> %5, <span class="sgr91">%L23.preheader</span> <span class="sgr33">]</span>
-   %value_phi5 = <span class="sgr96"><span class="sgr1">phi</span></span> <span class="sgr36">double</span> <span class="sgr33">[</span> %22, <span class="sgr91">%idxend7</span> <span class="sgr33">]</span>, <span class="sgr33">[</span> %12, <span class="sgr91">%L23.preheader</span> <span class="sgr33">]</span>
+<span class="sgr91">L64:</span>                                              <span class="sgr90">; preds = %idxend16, %idxend</span>
+   %value_phi8 = <span class="sgr96"><span class="sgr1">phi</span></span> <span class="sgr36">i64</span> <span class="sgr33">[</span> %4, <span class="sgr91">%idxend16</span> <span class="sgr33">]</span>, <span class="sgr33">[</span> %3, <span class="sgr91">%idxend</span> <span class="sgr33">]</span>
+   %value_phi10 = <span class="sgr96"><span class="sgr1">phi</span></span> <span class="sgr36">double</span> <span class="sgr33">[</span> %10, <span class="sgr91">%idxend16</span> <span class="sgr33">]</span>, <span class="sgr33">[</span> %arrayref, <span class="sgr91">%idxend</span> <span class="sgr33">]</span>
 <span class="sgr90">; └</span>
 <span class="sgr90">;  @ lab.md:116 within `polynomial`</span>
 <span class="sgr90">; ┌ @ essentials.jl:13 within `getindex`</span>
-   %6 = <span class="sgr96"><span class="sgr1">add</span></span> <span class="sgr95">nsw</span> <span class="sgr36">i64</span> %value_phi3, <span class="sgr33">-1</span>
-   %7 = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">ult</span></span> <span class="sgr36">i64</span> %6, %16
-   <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %7, <span class="sgr36">label</span> <span class="sgr91">%idxend7</span>, <span class="sgr36">label</span> <span class="sgr91">%oob6</span>
+   %4 = <span class="sgr96"><span class="sgr1">add</span></span> <span class="sgr95">nsw</span> <span class="sgr36">i64</span> %value_phi8, <span class="sgr33">-1</span>
+   %inbounds13 = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">ult</span></span> <span class="sgr36">i64</span> %4, %arraylen
+   <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %inbounds13, <span class="sgr36">label</span> <span class="sgr91">%idxend16</span>, <span class="sgr36">label</span> <span class="sgr91">%oob14</span>
 
-<span class="sgr91">L40:</span>                                              <span class="sgr90">; preds = %idxend7, %idxend</span>
-   %value_phi11 = <span class="sgr96"><span class="sgr1">phi</span></span> <span class="sgr36">double</span> <span class="sgr33">[</span> %12, <span class="sgr91">%idxend</span> <span class="sgr33">]</span>, <span class="sgr33">[</span> %22, <span class="sgr91">%idxend7</span> <span class="sgr33">]</span>
+<span class="sgr91">L81:</span>                                              <span class="sgr90">; preds = %idxend16, %idxend</span>
+   %value_phi23 = <span class="sgr96"><span class="sgr1">phi</span></span> <span class="sgr36">double</span> <span class="sgr33">[</span> %arrayref, <span class="sgr91">%idxend</span> <span class="sgr33">]</span>, <span class="sgr33">[</span> %10, <span class="sgr91">%idxend16</span> <span class="sgr33">]</span>
 <span class="sgr90">; └</span>
 <span class="sgr90">;  @ lab.md:118 within `polynomial`</span>
-  <span class="sgr96"><span class="sgr1">ret</span></span> <span class="sgr36">double</span> %value_phi11
+  <span class="sgr96"><span class="sgr1">ret</span></span> <span class="sgr36">double</span> %value_phi23
 
 <span class="sgr91">oob:</span>                                              <span class="sgr90">; preds = %top</span>
 <span class="sgr90">;  @ lab.md:114 within `polynomial`</span>
 <span class="sgr90">; ┌ @ essentials.jl:13 within `getindex`</span>
-   %8 = <span class="sgr96"><span class="sgr1">alloca</span></span> <span class="sgr36">i64</span>, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span>* %8, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr36">void</span> <span class="sgr93">@ijl_bounds_error_ints</span><span class="sgr33">({}</span>* %0, <span class="sgr36">i64</span>* <span class="sgr95">nonnull</span> %8, <span class="sgr36">i64</span> <span class="sgr33">1)</span>
+   %errorbox = <span class="sgr96"><span class="sgr1">alloca</span></span> <span class="sgr36">i64</span>, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr36">i64</span> <span class="sgr33">0</span>, <span class="sgr36">i64</span>* %errorbox, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr36">void</span> <span class="sgr93">@ijl_bounds_error_ints</span><span class="sgr33">({}</span>* %0, <span class="sgr36">i64</span>* <span class="sgr95">nonnull</span> %errorbox, <span class="sgr36">i64</span> <span class="sgr33">1)</span>
    <span class="sgr96"><span class="sgr1">unreachable</span></span>
 
 <span class="sgr91">idxend:</span>                                           <span class="sgr90">; preds = %top</span>
-   %9 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr33">{}</span>* %0 <span class="sgr95">to</span> <span class="sgr36">double</span>**
-   %10 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>*, <span class="sgr36">double</span>** %9, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   %11 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %10, <span class="sgr36">i64</span> %5
-   %12 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %11, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %5 = <span class="sgr96"><span class="sgr1">bitcast</span></span> <span class="sgr33">{}</span>* %0 <span class="sgr95">to</span> <span class="sgr36">double</span>**
+   %arrayptr32 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>*, <span class="sgr36">double</span>** %5, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %6 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %arrayptr32, <span class="sgr36">i64</span> %3
+   %arrayref = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %6, <span class="sgr95">align</span> <span class="sgr33">8</span>
 <span class="sgr90">; └</span>
 <span class="sgr90">;  @ lab.md:115 within `polynomial`</span>
 <span class="sgr90">; ┌ @ range.jl:22 within `Colon`</span>
 <span class="sgr90">; │┌ @ range.jl:24 within `_colon`</span>
-<span class="sgr90">; ││┌ @ range.jl:373 within `StepRange` @ range.jl:320</span>
-     %13 = <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr36">i64</span> <span class="sgr93">@j_steprange_last_6396</span><span class="sgr33">(</span><span class="sgr36">i64</span> <span class="sgr95">signext</span> %5, <span class="sgr36">i64</span> <span class="sgr95">signext</span> <span class="sgr33">-1</span>, <span class="sgr36">i64</span> <span class="sgr95">signext</span> <span class="sgr33">1)</span> #0
-<span class="sgr90">; └└└</span>
-<span class="sgr90">; ┌ @ range.jl:887 within `iterate`</span>
-<span class="sgr90">; │┌ @ range.jl:659 within `isempty`</span>
-<span class="sgr90">; ││┌ @ operators.jl:269 within `!=`</span>
-<span class="sgr90">; │││┌ @ promotion.jl:499 within `==`</span>
-      %14 = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %5, %13
-<span class="sgr90">; ││└└</span>
-<span class="sgr90">; ││┌ @ operators.jl:369 within `&gt;`</span>
-<span class="sgr90">; │││┌ @ int.jl:83 within `&lt;`</span>
-      %.not = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">sgt</span></span> <span class="sgr36">i64</span> %4, %13
-<span class="sgr90">; │└└└</span>
-   %15 = <span class="sgr96"><span class="sgr1">or</span></span> <span class="sgr36">i1</span> %14, %.not
-<span class="sgr90">; └</span>
-  <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %15, <span class="sgr36">label</span> <span class="sgr91">%L23.preheader</span>, <span class="sgr36">label</span> <span class="sgr91">%L40</span>
+<span class="sgr90">; ││┌ @ range.jl:379 within `StepRange` @ range.jl:325</span>
+<span class="sgr90">; │││┌ @ range.jl:340 within `steprange_last`</span>
+      %7 = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %arraylen, <span class="sgr33">1</span>
+      <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %7, <span class="sgr36">label</span> <span class="sgr91">%L81</span>, <span class="sgr36">label</span> <span class="sgr91">%L64</span>
 
-<span class="sgr91">L23.preheader:</span>                                    <span class="sgr90">; preds = %idxend</span>
-  %16 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">i64</span>, <span class="sgr36">i64</span>* %3, <span class="sgr95">align</span> <span class="sgr33">8</span>
-  %17 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>*, <span class="sgr36">double</span>** %9, <span class="sgr95">align</span> <span class="sgr33">8</span>
+<span class="sgr91">oob14:</span>                                            <span class="sgr90">; preds = %L64</span>
+<span class="sgr90">; └└└└</span>
 <span class="sgr90">;  @ lab.md:116 within `polynomial`</span>
 <span class="sgr90">; ┌ @ essentials.jl:13 within `getindex`</span>
-   <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">label</span> <span class="sgr91">%L23</span>
-
-<span class="sgr91">oob6:</span>                                             <span class="sgr90">; preds = %L23</span>
-   %18 = <span class="sgr96"><span class="sgr1">alloca</span></span> <span class="sgr36">i64</span>, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr36">i64</span> %value_phi3, <span class="sgr36">i64</span>* %18, <span class="sgr95">align</span> <span class="sgr33">8</span>
-   <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr36">void</span> <span class="sgr93">@ijl_bounds_error_ints</span><span class="sgr33">({}</span>* %0, <span class="sgr36">i64</span>* <span class="sgr95">nonnull</span> %18, <span class="sgr36">i64</span> <span class="sgr33">1)</span>
+   %errorbox15 = <span class="sgr96"><span class="sgr1">alloca</span></span> <span class="sgr36">i64</span>, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   <span class="sgr96"><span class="sgr1">store</span></span> <span class="sgr36">i64</span> %value_phi8, <span class="sgr36">i64</span>* %errorbox15, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   <span class="sgr96"><span class="sgr1">call</span></span> <span class="sgr36">void</span> <span class="sgr93">@ijl_bounds_error_ints</span><span class="sgr33">({}</span>* %0, <span class="sgr36">i64</span>* <span class="sgr95">nonnull</span> %errorbox15, <span class="sgr36">i64</span> <span class="sgr33">1)</span>
    <span class="sgr96"><span class="sgr1">unreachable</span></span>
 
-<span class="sgr91">idxend7:</span>                                          <span class="sgr90">; preds = %L23</span>
+<span class="sgr91">idxend16:</span>                                         <span class="sgr90">; preds = %L64</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:410 within `*`</span>
-   %19 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %value_phi5, %1
+<span class="sgr90">; ┌ @ float.jl:411 within `*`</span>
+   %8 = <span class="sgr96"><span class="sgr1">fmul</span></span> <span class="sgr36">double</span> %value_phi10, %1
 <span class="sgr90">; └</span>
 <span class="sgr90">; ┌ @ essentials.jl:13 within `getindex`</span>
-   %20 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %17, <span class="sgr36">i64</span> %6
-   %21 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %20, <span class="sgr95">align</span> <span class="sgr33">8</span>
+   %9 = <span class="sgr96"><span class="sgr1">getelementptr</span></span> <span class="sgr95">inbounds</span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %arrayptr32, <span class="sgr36">i64</span> %4
+   %arrayref19 = <span class="sgr96"><span class="sgr1">load</span></span> <span class="sgr36">double</span>, <span class="sgr36">double</span>* %9, <span class="sgr95">align</span> <span class="sgr33">8</span>
 <span class="sgr90">; └</span>
-<span class="sgr90">; ┌ @ float.jl:408 within `+`</span>
-   %22 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %19, %21
+<span class="sgr90">; ┌ @ float.jl:409 within `+`</span>
+   %10 = <span class="sgr96"><span class="sgr1">fadd</span></span> <span class="sgr36">double</span> %8, %arrayref19
 <span class="sgr90">; └</span>
 <span class="sgr90">;  @ lab.md:117 within `polynomial`</span>
-<span class="sgr90">; ┌ @ range.jl:891 within `iterate`</span>
-<span class="sgr90">; │┌ @ promotion.jl:499 within `==`</span>
-    %.not15 = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %value_phi3, %13
+<span class="sgr90">; ┌ @ range.jl:901 within `iterate`</span>
+<span class="sgr90">; │┌ @ promotion.jl:521 within `==`</span>
+    %.not35.not = <span class="sgr96"><span class="sgr1">icmp</span></span> <span class="sgr96"><span class="sgr1">eq</span></span> <span class="sgr36">i64</span> %value_phi8, <span class="sgr33">1</span>
 <span class="sgr90">; └└</span>
-  <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %.not15, <span class="sgr36">label</span> <span class="sgr91">%L40</span>, <span class="sgr36">label</span> <span class="sgr91">%L23</span>
-<span class="sgr33">}</span></code></pre><p>More than 2x speedup</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a,$x)</code><code class="nohighlight hljs ansi" style="display:block;">  8.965 ns (0 allocations: 0 bytes)
-1.048575e6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($ac,$x)</code><code class="nohighlight hljs ansi" style="display:block;">  23.607 ns (0 allocations: 0 bytes)
+  <span class="sgr96"><span class="sgr1">br</span></span> <span class="sgr36">i1</span> %.not35.not, <span class="sgr36">label</span> <span class="sgr91">%L81</span>, <span class="sgr36">label</span> <span class="sgr91">%L64</span>
+<span class="sgr33">}</span></code></pre><p>More than 2x speedup</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($a,$x)</code><code class="nohighlight hljs ansi" style="display:block;">  8.985 ns (0 allocations: 0 bytes)
+1.048575e6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @btime polynomial($ac,$x)</code><code class="nohighlight hljs ansi" style="display:block;">  15.228 ns (0 allocations: 0 bytes)
 1.048575e6</code></pre></p></details><h3 id="Recursion-inlining-depth"><a class="docs-heading-anchor" href="#Recursion-inlining-depth">Recursion inlining depth</a><a id="Recursion-inlining-depth-1"></a><a class="docs-heading-anchor-permalink" href="#Recursion-inlining-depth" title="Permalink"></a></h3><p>Inlining<sup class="footnote-reference"><a id="citeref-2" href="#footnote-2">[2]</a></sup> is another compiler optimization that allows us to speed up the code by avoiding function calls. Where applicable compiler can replace <code>f(args)</code> directly with the function body of <code>f</code>, thus removing the need to modify stack to transfer the control flow to a different place. This is yet another optimization that may improve speed at the expense of binary size.</p><div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body"><p>Rewrite the <code>polynomial</code> function from the last <a href="../../lecture_05/lab/#horner">lab</a> using recursion and find the length of the coefficients, at which inlining of the recursive calls stops occurring.</p><pre><code class="language-julia hljs">function polynomial(a, x)
@@ -699,7 +676,7 @@ end</code></pre><p>Results can be stored into some variables, which we can inspe
       args: Array{Any}((3,))
         1: Symbol +
         2: Symbol x
-        3: Symbol y</code></pre><p>The type of both multiline and single line expression is <code>Expr</code> with fields <code>head</code> and <code>args</code>. Notice that <code>Expr</code> type is recursive in the <code>args</code>, which can store other expressions resulting in a tree structure - abstract syntax tree (AST) - that can be visualized for example with the combination of <code>GraphRecipes</code> and <code>Plots</code> packages. </p><pre><code class="language-julia hljs">plot(code_expr_block, fontsize=12, shorten=0.01, axis_buffer=0.15, nodeshape=:rect)</code></pre><img src="d2bc3d0d.svg" alt="Example block output"/><p>This recursive structure has some major performance drawbacks, because the <code>args</code> field is of type <code>Any</code> and therefore modifications of this expression level AST won&#39;t be type stable. Building blocks of expressions are <code>Symbol</code>s and literal values (numbers).</p><p>A possible nuisance of working with multiline expressions is the presence of <code>LineNumber</code> nodes, which can be removed with <code>Base.remove_linenums!</code> function.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; Base.remove_linenums!(code_parse_block)</code><code class="nohighlight hljs ansi" style="display:block;">quote
+        3: Symbol y</code></pre><p>The type of both multiline and single line expression is <code>Expr</code> with fields <code>head</code> and <code>args</code>. Notice that <code>Expr</code> type is recursive in the <code>args</code>, which can store other expressions resulting in a tree structure - abstract syntax tree (AST) - that can be visualized for example with the combination of <code>GraphRecipes</code> and <code>Plots</code> packages. </p><pre><code class="language-julia hljs">plot(code_expr_block, fontsize=12, shorten=0.01, axis_buffer=0.15, nodeshape=:rect)</code></pre><img src="923d9c51.svg" alt="Example block output"/><p>This recursive structure has some major performance drawbacks, because the <code>args</code> field is of type <code>Any</code> and therefore modifications of this expression level AST won&#39;t be type stable. Building blocks of expressions are <code>Symbol</code>s and literal values (numbers).</p><p>A possible nuisance of working with multiline expressions is the presence of <code>LineNumber</code> nodes, which can be removed with <code>Base.remove_linenums!</code> function.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; Base.remove_linenums!(code_parse_block)</code><code class="nohighlight hljs ansi" style="display:block;">quote
     x = 2
     y = 3
     x + y
@@ -731,4 +708,4 @@ rex = :(x*x + f(2)*y*x + y*y) # result expression</code></pre><p><strong>HINTS</
            end
        
            return ex
-       end</code><code class="nohighlight hljs ansi" style="display:block;">wrap! (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; wrap!(ex::Number) = Expr(:call, :f, ex)</code><code class="nohighlight hljs ansi" style="display:block;">wrap! (generic function with 2 methods)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; wrap!(ex) = ex</code><code class="nohighlight hljs ansi" style="display:block;">wrap! (generic function with 3 methods)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ext, x, y = copy(ex), 2, 3</code><code class="nohighlight hljs ansi" style="display:block;">(:(x * x + 2 * y * x + y * y), 2, 3)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @test wrap!(ex) == :(x*x + f(2)*y*x + y*y)</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr32"><span class="sgr1">Test Passed</span></span></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eval(ext)</code><code class="nohighlight hljs ansi" style="display:block;">25</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eval(ex)</code><code class="nohighlight hljs ansi" style="display:block;">25.0</code></pre></p></details><p>This kind of manipulation is at the core of some pkgs, such as aforementioned <a href="https://github.com/JuliaIntervals/IntervalArithmetic.jl"><code>IntervalArithmetics.jl</code></a> where every number is replaced with a narrow interval in order to find some bounds on the result of a computation.</p><hr/><h2 id="Resources"><a class="docs-heading-anchor" href="#Resources">Resources</a><a id="Resources-1"></a><a class="docs-heading-anchor-permalink" href="#Resources" title="Permalink"></a></h2><ul><li>Julia&#39;s manual on <a href="https://docs.julialang.org/en/v1/manual/metaprogramming/">metaprogramming</a></li><li>David P. Sanders&#39; <a href="https://www.youtube.com/watch?v=2QLhw6LVaq0">workshop @ JuliaCon 2021</a> </li><li>Steven Johnson&#39;s <a href="https://www.youtube.com/watch?v=mSgXWpvQEHE">keynote talk @ JuliaCon 2019</a></li><li>Andy Ferris&#39;s <a href="https://www.youtube.com/watch?v=SeqAQHKLNj4">workshop @ JuliaCon 2018</a></li><li><a href="https://github.com/johnmyleswhite/julia_tutorials">From Macros to DSL</a> by John Myles White </li><li>Notes on <a href="https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project">JuliaCompilerPlugin</a></li></ul><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a><a href="https://en.wikipedia.org/wiki/Loop\\_unrolling">https://en.wikipedia.org/wiki/Loop_unrolling</a></li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a><a href="https://en.wikipedia.org/wiki/Inline\\_expansion">https://en.wikipedia.org/wiki/Inline_expansion</a></li><li class="footnote" id="footnote-3"><a class="tag is-link" href="#citeref-3">3</a><a href="https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?">https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?</a></li><li class="footnote" id="footnote-4"><a class="tag is-link" href="#citeref-4">4</a><a href="https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions">https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions</a></li><li class="footnote" id="footnote-5"><a class="tag is-link" href="#citeref-5">5</a>Once you understand the recursive structure of expressions, the AST can be constructed manually like any other type.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Friday 22 December 2023 10:31">Friday 22 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+       end</code><code class="nohighlight hljs ansi" style="display:block;">wrap! (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; wrap!(ex::Number) = Expr(:call, :f, ex)</code><code class="nohighlight hljs ansi" style="display:block;">wrap! (generic function with 2 methods)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; wrap!(ex) = ex</code><code class="nohighlight hljs ansi" style="display:block;">wrap! (generic function with 3 methods)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ext, x, y = copy(ex), 2, 3</code><code class="nohighlight hljs ansi" style="display:block;">(:(x * x + 2 * y * x + y * y), 2, 3)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @test wrap!(ex) == :(x*x + f(2)*y*x + y*y)</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr32"><span class="sgr1">Test Passed</span></span></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eval(ext)</code><code class="nohighlight hljs ansi" style="display:block;">25</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; eval(ex)</code><code class="nohighlight hljs ansi" style="display:block;">25.0</code></pre></p></details><p>This kind of manipulation is at the core of some pkgs, such as aforementioned <a href="https://github.com/JuliaIntervals/IntervalArithmetic.jl"><code>IntervalArithmetics.jl</code></a> where every number is replaced with a narrow interval in order to find some bounds on the result of a computation.</p><hr/><h2 id="Resources"><a class="docs-heading-anchor" href="#Resources">Resources</a><a id="Resources-1"></a><a class="docs-heading-anchor-permalink" href="#Resources" title="Permalink"></a></h2><ul><li>Julia&#39;s manual on <a href="https://docs.julialang.org/en/v1/manual/metaprogramming/">metaprogramming</a></li><li>David P. Sanders&#39; <a href="https://www.youtube.com/watch?v=2QLhw6LVaq0">workshop @ JuliaCon 2021</a> </li><li>Steven Johnson&#39;s <a href="https://www.youtube.com/watch?v=mSgXWpvQEHE">keynote talk @ JuliaCon 2019</a></li><li>Andy Ferris&#39;s <a href="https://www.youtube.com/watch?v=SeqAQHKLNj4">workshop @ JuliaCon 2018</a></li><li><a href="https://github.com/johnmyleswhite/julia_tutorials">From Macros to DSL</a> by John Myles White </li><li>Notes on <a href="https://hackmd.io/bVhb97Q4QTWeBQw8Rq4IFw?both#Julia-Compiler-Plugin-Project">JuliaCompilerPlugin</a></li></ul><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a><a href="https://en.wikipedia.org/wiki/Loop\\_unrolling">https://en.wikipedia.org/wiki/Loop_unrolling</a></li><li class="footnote" id="footnote-2"><a class="tag is-link" href="#citeref-2">2</a><a href="https://en.wikipedia.org/wiki/Inline\\_expansion">https://en.wikipedia.org/wiki/Inline_expansion</a></li><li class="footnote" id="footnote-3"><a class="tag is-link" href="#citeref-3">3</a><a href="https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?">https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?</a></li><li class="footnote" id="footnote-4"><a class="tag is-link" href="#citeref-4">4</a><a href="https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions">https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions</a></li><li class="footnote" id="footnote-5"><a class="tag is-link" href="#citeref-5">5</a>Once you understand the recursive structure of expressions, the AST can be constructed manually like any other type.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Thursday 4 January 2024 20:42">Thursday 4 January 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
