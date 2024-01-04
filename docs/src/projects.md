@@ -134,7 +134,11 @@ In practice the project should follow roughly this tree structure
 └── Manifest.toml  				# usually not committed to git as the requirements may be to restrictive
 ```
 
-The first thing that we will look at is `README.md`, which should warn us if there are some special installation steps, that cannot be handled with Julia's Pkg system. For example if some 3rd party binary dependency with license is required. Secondly we will try to run tests in the `test` folder, which should run and not fail and should cover at least some functionality of the pkg. Thirdly and most importantly we will instantiate environment in `scripts` and test if the example runs correctly. Lastly we will focus on documentation in terms of code readability, docstrings and inline comments. 
+Make sure that 
+- `README.md` is present and contains general information about the package. A small example is a nice to have
+- The package can be installed trough the package manager as `Pkg.add("url of the package")` with all and correct dependencies. Do not register the package into an official registry if you are not willing to continue its development and maintainance.
+- Make sure that the package is covered by test which are in `test` folder. We will try to run them. There is no need for 100% percent test coverage. Tests testing the functionality are sufficient.
+- The package should have basic documentation. For small packages, it is sufficient to have documentation in readme. For big pacakges, proper documentation with `Documenter.jl` is advised.
 
 Only after all this we may look at the extent of the project and it's difficulty, which may help us in deciding between grades. 
 
