@@ -71,20 +71,6 @@ Implement one of the following algorithms to train neural networks in parallel. 
 
 ## Solve issues in existing projects:
 
-### Create Yao backend for quantum simulation (Mentor: Niklas Heim)
-
-The recently published quantum programming library
-[Qadence](https://pasqal-io.github.io/qadence/latest/) needs a Julia backend. The tricky quantum
-parts are already implemented in a library called [Yao.jl](https://docs.yaoquantum.org/dev/). The
-goal of this project is to take the Qadence (Python) representation and translate it to Yao.jl
-(Julia). You will work with the Python/Julia interfacing library `PythonCall.jl` to realize this
-and benchmark the Julia backend in the end to assess if it is faster than the existing python
-implementation.
-
-If this sounds interesting, talk to Niklas.
-
-
-
 ### Address issues in markov decision processes (Mentor: Jan Mrkos)
 
 Fix type stability issue in [MCTS.jl](https://github.com/JuliaPOMDP/MCTS.jl), prepare benchmarks,
@@ -94,10 +80,10 @@ bit about Markov Decision Processes if you don't know them already.
 
 If it sounds interesting, get in touch with lecturer/lab assistant, who will connect you with Jan Mrkos.
 
-### Extend HMil library with Retentative networks (mentor Tomas Pevny)
+### Extend HMil library with Retentative networks (Mentor: Tomas Pevny)
 [Retentative networks](https://arxiv.org/abs/2307.08621) were recently proposed as a low-cost  alternative to Transformer models without sacrificing performance (according to authors). By implementing Retentative Networks, te HMil library will be able to learn sequences (not just sets), which might nicely extend its applicability.
 
-### Address issues in HMil/JsonGrinder library (mentor Simon Mandlik)
+### Address issues in HMil/JsonGrinder library (Mentor: Simon Mandlik)
 
 These are open source toolboxes that are used internally in Avast. Lots of general functionality is done, but some love is needed in polishing.
 
