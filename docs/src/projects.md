@@ -112,9 +112,14 @@ If it sounds interesting, get in touch with lecturer/lab assistant, who will con
 
 
 # Project requirements
-The goal of the semestral project is to create a Julia pkg with **reusable, properly tested and documented** code. We have given you some options of topics, as well as the freedom to choose something that could be useful for your research or other subjects. In general we are looking for something where performance may be crucial such as data processing, optimization or equation solving.
+The goal of the semestral project is to create a Julia pkg with **reusable**,
+**properly tested** and **documented** code. We have given you some options of topics,
+as well as the freedom to choose something that could be useful for your
+research or other subjects. In general we are looking for something where
+performance may be crucial such as data processing, optimization or equation
+solving.
 
-In practice the project should follow roughly this tree structure
+In practice the project should roughly follow the structure below:
 ```julia
 .
 ├── scripts
@@ -129,18 +134,31 @@ In practice the project should follow roughly this tree structure
 │	├── runtest.jl              # contains either all the tests or just includes them from other files
 │	├── Project.toml  			# lists some additional test dependencies
 │	└── Manifest.toml   		# usually not committed to git as it is generated on the fly
+├── docs
+│   ├── Project.toml
+│   ├── make.jl
+│   └── src
+│       └── index.md
 ├── README.md 					# describes in short what the pkg does and how to install pkg (e.g. some external deps) and run the example
 ├── Project.toml  				# lists all the pkg dependencies
 └── Manifest.toml  				# usually not committed to git as the requirements may be to restrictive
 ```
 
 Make sure that 
-- `README.md` is present and contains general information about the package. A small example is a nice to have
-- The package can be installed trough the package manager as `Pkg.add("url of the package")` with all and correct dependencies. Do not register the package into an official registry if you are not willing to continue its development and maintainance.
-- Make sure that the package is covered by test which are in `test` folder. We will try to run them. There is no need for 100% percent test coverage. Tests testing the functionality are sufficient.
-- The package should have basic documentation. For small packages, it is sufficient to have documentation in readme. For big pacakges, proper documentation with `Documenter.jl` is advised.
+- `README.md` is present and contains general information about the package. A small example is a nice to have.
+- The package can be installed trough the package manager as `Pkg.add("url of
+  the package")` with all and correct dependencies. Do not register the package
+  into an official registry if you are not willing to continue its development and
+  maintainance.
+- Make sure that the package is covered by tests which are in the `test` folder. We
+  will try to run them. There is no need for 100% percent test coverage. Tests
+  testing the functionality are sufficient.
+- The package should have basic documentation. For small packages, it is
+  sufficient to have documentation in readme. For larger pacakges, proper
+  documentation with `Documenter.jl` is advised.
 
-Only after all this we may look at the extent of the project and it's difficulty, which may help us in deciding between grades. 
+Only after all this we may look at the extent of the project and it's
+difficulty, which may help us in deciding between grades. 
 
 Nice to have things, which are not strictly required but obviously improves the score.
 - Ideally the project should be hosted on GitHub, which could have the continuous integration/testing set up.
@@ -148,6 +166,10 @@ Nice to have things, which are not strictly required but obviously improves the 
 - Some parallelization attempts either by multi-processing, multi-threadding, or CUDA. Do not forget to show the improvement.
 - Documentation with a webpage using Documenter.jl.
 
-Here are some examples of how the project could look like:
 
-- [ImageInspector](https://github.com/JuliaTeachingCTU/ImageInspector.jl)
+# [Former projects for your inspiration](@id former_projects)
+
+The following is a list of great projects of past years.
+
+- [`NeuralCollaborativeFiltering.jl`](https://github.com/poludmik/NeuralCollaborativeFiltering.jl)
+- [`ImageInspector.jl`](https://github.com/JuliaTeachingCTU/ImageInspector.jl) (used in our bachelor course)

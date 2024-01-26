@@ -76,7 +76,9 @@ Hint: The **first few homeworks are easier**. Use them to fill up your points.
 The final project will be individually agreed on for each student. Ideally you
 can use this project to solve a problem you have e.g. in your thesis, but don't
 worry - if you cannot come up with an own project idea, we will suggest one to
-you. More info and project suggestion can be found [here](@ref projects).
+you. More info and project suggestion can be found [here](@ref projects). Check
+out the [list of projects](@ref former_projects) from past to get a feeling for
+what we expect.
 
 
 ## Grading
