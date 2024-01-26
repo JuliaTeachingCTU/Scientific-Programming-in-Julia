@@ -3,7 +3,7 @@
 <br/><br/>
 # Usage instructions
 All interactive notebooks are Jupyter notebooks. 
-In order to use them some instalations are needed.
+In order to use them some installations are needed.
 
 1) run julia (version is your choice) in terminal
 2) you need to install `IJulia` -> `using Pkg; Pkg.add("IJulia")`

@@ -29,7 +29,7 @@ is one approach that can identify concise equations that describe a given
 dataset.
 
 The EQL is essentially a neural network with different unary or binary
-activation functions at each indiviual unit. The network weights are
+activation functions at each individual unit. The network weights are
 regularized during training to obtain a sparse model which hopefully results in
 a model that represents a simple equation.
 
@@ -37,7 +37,7 @@ The goal of this project is to implement the EQL, and if there is enough time
 the [*improved equation learner*](https://arxiv.org/abs/2105.06331) (iEQL).
 The equation learners should be tested on a few toy problems (possibly inspired
 by the tasks in the papers).  Finally, you will implement functionality that
-can transform the learned model into a symbolic, human readable, and exectuable
+can transform the learned model into a symbolic, human readable, and executable
 Julia expression.
 
 ### Architecture visualizer
@@ -145,7 +145,7 @@ Only after all this we may look at the extent of the project and it's difficulty
 Nice to have things, which are not strictly required but obviously improves the score.
 - Ideally the project should be hosted on GitHub, which could have the continuous integration/testing set up.
 - Include some benchmark and profiling code in your examples, which can show us how well you have dealt with the question of performance.
-- Some parallelization attempts either by multi-processing, multi-threadding, or CUDA. Do not forget to show the improvement.
+- Some parallelization attempts either by multi-processing, multi-threading, or CUDA. Do not forget to show the improvement.
 - Documentation with a webpage using Documenter.jl.
 
 Here are some examples of how the project could look like:

@@ -39,11 +39,11 @@ Any guidelines to solve real-world problems?
 
 
 Fundamental tradeoff: rules vs. freedom
-- freedom: in the C language it is possible to access assembler instructions, use pointer aritmetics:
+- freedom: in the C language it is possible to access assembler instructions, use pointer arithmetics:
     - it is possible to write extremely efficient code
     - it is easy to segfault, leak memory, etc.
-- rules: in strict languages (strict OOP, strict functional programing) you lose freedom for certain guarantees:
-    - e.g. strict functional programing guarantees that the program provably terminates
+- rules: in strict languages (strict OOP, strict functional programming) you lose freedom for certain guarantees:
+    - e.g. strict functional programming guarantees that the program provably terminates
     - operations that are simple e.g. in pointer arithmetics may become clumsy and inefficient in those strict rules.
     - the compiler can validate the rules and complain if the code does not comply with them. 
 
@@ -61,7 +61,7 @@ Read:
 
 ## Design Patterns of OOP from the Julia viewpoint
 
-OOP is currently very popular concept (C++, Java, Python).  It has strenghts and weaknesses. The Julia authors tried to keep the strength and overcome weaknesses. 
+OOP is currently very popular concept (C++, Java, Python).  It has strengths and weaknesses. The Julia authors tried to keep the strength and overcome weaknesses. 
 
 Key features of OOP:
 - Encapsulation 
@@ -212,7 +212,7 @@ make_sound(w::Wolf)=println("Howl")
 - julia does not check if ```make_sound``` exists for all animals. May result in `MethodError`. Responsibility of a programmer.
     - define ```make_sound(A::AbstractAnimal)```
 
-So far, the polymorphism coincides for OOP and julia becuase the method had only one argument => single argument dispatch.
+So far, the polymorphism coincides for OOP and julia because the method had only one argument => single argument dispatch.
 
 
 Multiple dispatch is an *extension* of the classical first-argument-polymorphism of OOP, to all-argument polymorphism.
@@ -389,9 +389,9 @@ A simple example of parametric approach will be demonstarted in the lab.
 
 ## Interfaces: inheritance/subtyping without a hierarchy tree
 
-In OOP languages such as Java, interfaces have a dedicated keyword such that compiler can check correctes of the interface implementation. 
+In OOP languages such as Java, interfaces have a dedicated keyword such that compiler can check correctness of the interface implementation. 
 
-In Julia, interfaces can be achived by defining ordinary functions.  Not so strict validation by the compiler as in other languages. Freedom...
+In Julia, interfaces can be achieved by defining ordinary functions.  Not so strict validation by the compiler as in other languages. Freedom...
 
 ### Example: Iterators
 
