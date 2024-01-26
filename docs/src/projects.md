@@ -158,4 +158,5 @@ Nice to have things, which are not strictly required but obviously improves the 
 The following is a list of great projects of past years.
 
 - [NeuralCollaborativeFiltering.jl](https://github.com/poludmik/NeuralCollaborativeFiltering.jl)
+- [OptimalTrainControl.jl](https://github.com/vtfanta/OptimalTrainControl_v2.jl)
 - [ImageInspector.jl](https://github.com/JuliaTeachingCTU/ImageInspector.jl) (used in our bachelor course)
