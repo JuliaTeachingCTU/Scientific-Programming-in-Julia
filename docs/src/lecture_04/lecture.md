@@ -103,10 +103,8 @@ end;
 REPL of Julia is a module called "Main". 
 - modules are not copied, but referenced, i.e. `B.b===B.C.c`
 - including one module twice (from different packages) is not a problem
-- Upcoming Julia 1.9 has the ability to change the contextual module in the REPL:
+- Julia 1.9 has the ability to change the contextual module in the REPL:
   ```REPL.activate(TestPackage)```
-
-
 
 
 ### Revise.jl
@@ -146,6 +144,7 @@ for def in setdiff(newexprs, oldexprs)
 end
 ```
 
+See [Modern Julia Workflows](https://modernjuliaworkflows.github.io) for more hints
 
 
 ## Namespaces & scoping
@@ -205,6 +204,27 @@ end
 @show x;
 ```
 
+Notice that if does not introduce new scope
+```julia
+if true 
+  branch_taken = true 
+else
+  branch_not_taken = true 
+end
+```
+
+!!! tip "do-block"
+    Let's assume a function, which takes as a first argument a function
+    ```julia
+      g(f::Function, args...) = println("f called on $(args) evaluates to ", f(args...))
+    ```
+    We can use `g` as `g(+, 1, 2)`, or with a lambda function `g(x -> x^2, 2).` But sometimes, it might be useful to the lambda function to span multiple lines. This can be achieved by a `do` block as 
+    ```julia
+    g(1,2,3) do a,b,c
+      a*b + c
+    end
+    ```
+
 ## Packages
 
 Package is a source tree with a standard layout. It provides a module and thus can be loaded with `include` or `using`.
@@ -234,6 +254,15 @@ Many other optional directories:
 - directory scripts/, examples/,... (optional)
 
 
+!!! tip "Type-Piracy"
+    "Type piracy" refers to the practice of extending or redefining methods in Base or other packages on types that you have not defined. In extreme cases, you can crash Julia (e.g. if your method extension or redefinition causes invalid input to be passed to a ccall). Type piracy can complicate reasoning about code, and may introduce incompatibilities that are hard to predict and diagnose.
+    ```julia
+    module A
+    import Base.*
+    *(x::Symbol, y::Symbol) = Symbol(x,y)
+    end
+    ```
+  
 The package typically loads other modules that form package dependencies.
 
 ## Project environments
@@ -277,11 +306,11 @@ Handles both packages and projects:
   - `add` treats packages as being finished, version handling pkg manager. Precompiles!
   - `dev` leaves all operations on the package to the user (git versioning, etc.). Always read content of files
 
-By default these operations are related to environment `.julia/environments/v1.8`
+By default these operations are related to environment `.julia/environments/v1.9`
 
 E.g. running and updating will update packages in `Manifest.toml` in this directory. What if the update breaks functionality of some project package that uses special features?
 
-There can and should be more than one environment!
+There can and *should* be more than one environment!
 
 Project environments are based on files with installed packages.
 
@@ -317,6 +346,20 @@ Developing a package with interactive test/development:
 3. `dev MainPackage` in the `MainScript` environment
    - Revise.jl will watch the `MainPackage` so it is always up to date
    - in `dev` mode you have full control over commits etc.
+
+
+### Package Extensions
+
+Some functionality of a package that depends on external packages may not be always needed. A typical example is plotting and visualization that may reguire heavy visualization packages.
+These are completely unnecessary e.g. in distributed server number crunching.
+
+The extension is a new module depending on: i) the base package, and ii) the conditioning package.
+It will not be compiled if the conditioning package is not loaded. Once the optional package is loaded, the extension will be automatically compiled and loaded.
+
+New feature since Julia 1.9:
+- new directory in project tree: `ext/` the extending module is stored here
+- new section in `Project.toml` called `[extensions]` listing extension names and their conditioning packages
+
 
 
 
@@ -454,7 +497,7 @@ Faster code can be achieved by the `precompile` directive:
 module FSum
 
 fsum(x) = x
-fsum(x,p...) = x+fsum(p[1],p[2:end]...)
+fsum(x,p...) = x+fsum(p...)
 
 precompile(fsum,(Float64,Float64,Float64))
 end
@@ -476,5 +519,7 @@ Useful packages:
 
 
 
-
 - `AutoSysimages.jl` allows easy generation of precompiles images - reduces package loading
+
+## Additional material
+- [Modern Julia Workflows](https://modernjuliaworkflows.github.io)

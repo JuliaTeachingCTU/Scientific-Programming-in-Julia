@@ -1,16 +1,9 @@
-using Scientific_Programming_in_Julia
 using Documenter
 
 using Downloads: download
 using Documenter.Writers: HTMLWriter
 using DocumenterTools.Themes
 
-DocMeta.setdocmeta!(
-    Scientific_Programming_in_Julia,
-    :DocTestSetup,
-    :(using Scientific_Programming_in_Julia);
-    recursive = true
-)
 
 # download and compile theme
 assetsdir(args...) = joinpath(@__DIR__, "src", "assets", args...)
@@ -54,15 +47,63 @@ lecture_02 = [
 
 lecture_03 = [
     "Lecture" => "./lecture_03/lecture.md"
+    "Lab" => "./lecture_03/lab.md"
+    "Homework" => "./lecture_03/hw.md"
 ]
 
 lecture_04 = [
     "Lecture" => "./lecture_04/lecture.md"
+    "Lab" => "./lecture_04/lab.md"
+    "Homework" => "./lecture_04/hw.md"
 ]
 
+lecture_05 = [
+    "Lecture" => "./lecture_05/lecture.md"
+    "Lab" => "./lecture_05/lab.md"
+    "Homework" => "./lecture_05/hw.md"
+]
+
+lecture_06 = [
+    "Lecture" => "./lecture_06/lecture.md"
+    "Lab" => "./lecture_06/lab.md"
+    "Homework" => "./lecture_06/hw.md"
+]
+
+lecture_07 = [
+    "Lecture" => "./lecture_07/lecture.md"
+    "Lab" => "./lecture_07/lab.md"
+    "Homework" => "./lecture_07/hw.md"
+]
+
+lecture_08 = [
+    "Lecture" => "./lecture_08/lecture.md"
+    "Lab" => "./lecture_08/lab.md"
+    "Homework" => "./lecture_08/hw.md"
+]
+
+lecture_09 = [
+    "Lecture" => "./lecture_09/lecture.md"
+    "Lab" => "./lecture_09/lab.md"
+]
+
+lecture_10 = [
+    "Lecture" => "./lecture_10/lecture.md"
+    "Lab" => "./lecture_10/lab.md"
+    "Homework" => "./lecture_10/hw.md"
+]
+
+lecture_11 = [
+    "Lecture" => "./lecture_11/lecture.md"
+    "Lab" => "./lecture_11/lab.md"
+]
+
+lecture_12 = [
+    "Lecture" => "./lecture_12/lecture.md"
+    "Lab" => "./lecture_12/lab.md"
+    "Homework" => "./lecture_12/hw.md"
+]
 
 makedocs(;
-    modules = [Scientific_Programming_in_Julia],
     authors = "JuliaTeachingCTU",
     repo = "https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/{commit}{path}#{line}",
     sitename = "Scientific Programming in Julia",
@@ -78,9 +119,17 @@ makedocs(;
         "Installation" => "installation.md", 
         "Projects" => "projects.md",
         "1: Introduction" => lecture_01,
-        "2: The power of Type System & multiple dispatch" => lecture_02,
-        "3: Design Patterns" => lecture_03,
-        "4: Package development, Unit test & CI" => lecture_04,
+        "2: The power of type system & multiple dispatch" => lecture_02,
+        "3: Design patterns" => lecture_03,
+        "4: Package development, unit tests & CI" => lecture_04,
+        "5: Performance benchmarking" => lecture_05,
+        "6: Lanuage introspection" => lecture_06,
+        "7: Macros" => lecture_07,
+        "8: Automatic differentiation" => lecture_08,
+        "9: Intermediate representation" => lecture_09,
+        "10: Parallel programming" => lecture_10,
+        "11: GPU programming" => lecture_11,
+        "12: Ordinary Differential Equations" => lecture_12,
     ],
 )
 

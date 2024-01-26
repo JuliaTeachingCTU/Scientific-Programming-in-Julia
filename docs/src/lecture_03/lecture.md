@@ -31,6 +31,7 @@ Is julia OOP or FP? It is different from both, based on:
 - types system (polymorphic)
 - multiple dispatch (extending single dispatch of OOP)
 - functions as first class 
+- decoupling of data and functions
 - macros
 
 Any guidelines to solve real-world problems?
@@ -72,6 +73,9 @@ Classical OOP languages define classes that bind processing functions to the dat
 !!! tip "Encapsulation"
     Refers to bundling of data with the methods that operate on that data, or the restricting of direct access to some of an object's components. Encapsulation is used to hide the values or state of a structured data object inside a class, preventing direct access to them by clients in a way that could expose hidden implementation details or violate state invariance maintained by the methods. 
 
+!!! tip "Making Julia to mimic OOP"
+    There are many discussions how to make Julia to behave like an OOP. The best implementation to our knowledge is [ObjectOriented](https://github.com/Suzhou-Tongyuan/ObjectOriented.jl)
+
 ### Encapsulation Advantage: Consistency and Validity 
 With fields of data structure freely accessible, the information may become inconsistent.
 ```
@@ -103,7 +107,7 @@ But fields are still accessible:
 ```julia
 grass.size = 10000
 ```
-Recall that ```grass.size=1000``` is a syntax of ```setproperty!(grass,:size,1000), which can be redefined:
+Recall that `grass.size=1000` is a syntax of `setproperty!(grass,:size,1000)`, which can be redefined:
 ```julia
 function Base.setproperty!(obj::Grass, sym::Symbol, val)
     if sym==:size
@@ -112,9 +116,20 @@ function Base.setproperty!(obj::Grass, sym::Symbol, val)
     setfield!(obj,sym,val)
 end
 ```
-Function ```setfield!``` can not be overloaded.
+Function `setfield!` can not be overloaded.
 
 Julia has *partial encapsulation* via a mechanism for consistency checks. 
+
+!!! warn "Array in unmutable struct can be mutated"
+    The mutability applies to the structure and not to encapsulated structures.
+    ```julia
+    struct Foo
+        x::Float64
+        y::Vector{Float64}
+        z::Dict{Int,Int}
+    end
+    ```
+    In the structure `Foo`, `x` cannot be mutated, but fields of `y` and key-value pairs of `z` can be mutated, because they are mutable containers. But I cannot replace `y` with a different `Vector`.
 
 
 ### Encapsulation Disadvantage: the Expression Problem 
@@ -194,7 +209,7 @@ make_sound(w::Wolf)=println("Howl")
 *Freedom* vs. Rules. 
 - Duck typing is a type of polymorphism without static types
     - more  programming freedom, less formal guarantees
-- julia does not check if ```make_sound``` exists for all animals. May result in MethodError. Responsibility of a programmer.
+- julia does not check if ```make_sound``` exists for all animals. May result in `MethodError`. Responsibility of a programmer.
     - define ```make_sound(A::AbstractAnimal)```
 
 So far, the polymorphism coincides for OOP and julia because the method had only one argument => single argument dispatch.
@@ -234,7 +249,7 @@ eat!(w1::Sheep, a::Grass, w::World)=
 eat!(w1::Sheep, a::Flower, w::World)=
 eat!(w1::Sheep, a::PoisonousGrass, w::World)=
 ```
-Boiler-plate code can be automated by macros.
+Boiler-plate code can be automated by macros / meta programming.
 
 
 ## Inheritance
@@ -297,11 +312,11 @@ There are very good use-cases:
 
 !!! theorem "SubTyping issues"
     With parametric types, unions and other construction, subtype resolution may become a complicated problem. Julia can even crash.
-    https://www.youtube.com/watch?v=LT4AP7CUMAw
+    (Jan Vitek's Keynote at JuliaCon 2021)[https://www.youtube.com/watch?v=LT4AP7CUMAw]
 
 
 ### Sharing of data field via composition
-Composition is also recommended in OOP: https://en.wikipedia.org/wiki/Composition_over_inheritance
+Composition is also recommended in OOP: (Composition over ingeritance)[https://en.wikipedia.org/wiki/Composition_over_inheritance]
 
 ```julia 
 struct ⚥Sheep <: Animal
@@ -369,6 +384,8 @@ end
 Now, we can define methods dispatching on parameters of the main type.
 
 Composition is simpler in such a general case. Composition over inheritance. 
+
+A simple example of parametric approach will be demonstarted in the lab.
 
 ## Interfaces: inheritance/subtyping without a hierarchy tree
 
@@ -455,6 +472,13 @@ Many packages automating this with more structure:
 - https://github.com/andyferris/Traitor.jl
 - https://github.com/mauro3/SimpleTraits.jl
 - https://github.com/tk3369/BinaryTraits.jl
+
+## Functional tools: Partial evaluation
+It is common to create a new function which "just" specify some parameters.
+```
+_prod(x) = reduce(*,x)
+_sum(x) = reduce(+,x)
+``` 
 
 ## Functional tools: Closures
 
@@ -562,3 +586,7 @@ Usage of closures:
 !!! theorem "Beware: Performance of captured variables"
     Inference of types may be difficult in closures:
     https://github.com/JuliaLang/julia/issues/15276    
+
+
+## Aditional materials
+ * [Functional desighn pattersn](https://www.youtube.com/watch?v=srQt1NAHYC0)
