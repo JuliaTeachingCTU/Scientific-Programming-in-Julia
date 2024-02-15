@@ -160,4 +160,5 @@ The following is a list of great projects of past years.
 - [NeuralCollaborativeFiltering.jl](https://github.com/poludmik/NeuralCollaborativeFiltering.jl)
 - [OptimalTrainControl.jl](https://github.com/vtfanta/OptimalTrainControl_v2.jl)
 - [Urban Traffic Control](https://github.com/Matyxus/UTC_jl)
+- [Directed Evolution in Silico](https://github.com/soldamatlab/DESilico.jl)
 - [ImageInspector.jl](https://github.com/JuliaTeachingCTU/ImageInspector.jl) (used in our bachelor course)
