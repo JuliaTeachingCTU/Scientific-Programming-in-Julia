@@ -103,8 +103,9 @@ the standard grading scale below.
 
 ## Prerequisites
 
-There are no hard requirements to take the course, but if you are not at all familiar
-with Julia we recommend you to take [Julia for Optimization and Learning](https://github.com/JuliaTeachingCTU/Julia-for-Optimization-and-Learning) before enrolling in this course. The [Functional Programming](https://cw.fel.cvut.cz/b202/courses/fup/start) course also contains
+There are no hard requirements to take the course. We go through the basics of Julia, but we do it rather quickly,
+so some familiarity with the language is an advantage.
+If you are looking for an in depth course on the basics of the language, we recommend to check out [Julia for Optimization and Learning](https://github.com/JuliaTeachingCTU/Julia-for-Optimization-and-Learning) before enrolling in this course. The [Functional Programming](https://cw.fel.cvut.cz/b202/courses/fup/start) course also contains
 some helpful concepts for this course. And knowledge about computer hardware, namely basics of how CPU works, how it interacts with memory through caches, and basics of multi-threading certainly helps.
 
 ## References
