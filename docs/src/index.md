@@ -113,6 +113,7 @@ some helpful concepts for this course. And knowledge about computer hardware, na
 - [Official documentation](https://docs.julialang.org/en/v1/)
 - [Modern Julia Workflows](https://modernjuliaworkflows.github.io)
 - [Workflow tips, and what is new in v1.9](https://www.youtube.com/watch?v=qM9NtiYlXck)
+- [Zero2Hero Julia Workhop](https://github.com/Datseris/Zero2Hero-JuliaWorkshop)
 - [Think Julia: How to Think Like a Computer Scientist](https://benlauwens.github.io/ThinkJulia.jl/latest/book.html#chap01)
 - [From Zero to Julia!](https://techytok.com/from-zero-to-julia/)
 - [WikiBooks](https://en.wikibooks.org/wiki/Introducing_Julia)
