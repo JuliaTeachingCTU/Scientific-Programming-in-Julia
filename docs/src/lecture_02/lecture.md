@@ -291,7 +291,7 @@ nothing # hide
 
 Giving fields of a composite type an abstract type does not really solve the problem of the compiler not knowing the type. In this example, it still does not know, if it should use instructions for `Float64` or `Int8`.
 
-``julia
+```julia
 struct LessVaguePosition
   x::Real
   y::Real

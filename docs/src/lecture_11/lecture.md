@@ -135,6 +135,17 @@ reduce(max, cx, dims = 1)
 ```
 Notice that in case, the function in `map` and in broadcasting is essentially a custom kernel. As such, the code within has to still obey (not precisely specified but clear for seasoned Julia programmers) rules on what can be executed as kernel. Also needless to say, that the generic `map` over `CuArray` will try to find good launch configuration (number of threads and number of blocks), which might not be an ideal for your application.
 
+An example adapted from (Tim Bessard's talk on JuliaCon 2023 in Eindhoven)[https://www.youtube.com/watch?v=Q8fj8QbVpZM]
+```
+l2(x,y) = sqrt(sum((x - y) .^2))
+l2b(x,y) = sqrt(sum((x .- y) .^2))
+l2m(x,y) = sqrt(mapreduce((xᵢ,yᵢ) -> (xᵢ - yᵢ)^2, +, x, y))
+
+@btime CUDA.@sync l2(cx, cy)
+@btime CUDA.@sync l2b(cx, cy)
+@btime CUDA.@sync l2m(cx, cy)
+```
+
 Let's now try to use CUDA on computation of Julia set, which should benefit a lot from CUDA's paralelization, as we can dispatch each pixel to each thread --- something GPUs were originally designed for. 
 
 We slightly modify the kernel we have used in our lecture on multi-threadding, mainly to force all types to be 32-bit wide
@@ -169,10 +180,21 @@ We see that CPU version takes around 50ms with the GPU version takes about 64μs
 is about `315` μs, which still 160x faster.
 
 !!! info 
-	### Profiler
-    Cuda offers a two sampling profilers: NVIDIA Nsight Systems and  NVIDIA Nsight Compute. The first is good to optimize the overall execution of your application, observing when the kernel is launched, delays in kernel launch, utilization of CPU and GPU, etc. The second is good for optimizing the single kernel. Profilers are not shipped with `CUDA.jl` and you need to download them from NVidia's resources for developers [here](https://developer.nvidia.com/) after you create an account for free.
+  ### Internal profiler
+    `CUDA.jl` offers a simple profiler which showing how much time has been spent in CPU and in GPU. This profiler is easy to use, as it is shipped with `CUDA.jl` and can be immediately used, but the provided informations are less detailed in comparison to NVIDIA's profiles shown below.
 
-    To use the profiler, we need to launch julia within the profiler as for example `/opt/nvidia/nsight-systems/2021.5.1/bin/nsys launch --trace=cuda,nvtx /opt/julia-1.8.5/bin/julia --color=yes`.
+    The profiler can be called as
+    ```julia
+    CUDA.@profile CUDA.@sync juliaset_pixel.(cuis, cujs, n);
+    ```
+
+
+
+!!! info 
+	### External profilers
+    Cuda offers a two profilers: NVIDIA Nsight Systems and  NVIDIA Nsight Compute. The first is good to optimize the overall execution of your application, observing when the kernel is launched, delays in kernel launch, utilization of CPU and GPU, etc. The second is good for optimizing the single kernel. Profilers are not shipped with `CUDA.jl` and you need to download them from NVidia's resources for developers [here](https://developer.nvidia.com/) after you create an account for free.
+
+    To use the profiler, we need to launch julia within the profiler as for example `/opt/nvidia/nsight-systems/2021.5.1/bin/nsys launch --trace=cuda,nvtx /opt/julia-1.10.0-rc3/bin/julia --color=yes`.
     and then, we can profile the code using the usual `@profile` macro this time sourced from `CUDA` as
     ```julia
     CUDA.@profile external=true CUDA.@sync juliaset_pixel.(cuis, cujs, n);

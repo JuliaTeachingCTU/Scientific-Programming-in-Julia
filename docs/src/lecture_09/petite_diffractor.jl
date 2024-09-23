@@ -39,7 +39,7 @@ Pullback{S}(pullbacks) where S = Pullback{S,typeof(pullbacks)}(pullbacks)
 
 argtype(ir::CC.IRCode, a::Core.Argument) = ir.argtypes[a.n]
 argtype(ir::CC.IRCode, a::Core.SSAValue) = ir.stmts.type[a.id]
-argtype(ir::CC.IRCode, f::GlobalRef) = typeof(eval(f))
+argtype(ir::CC.IRCode, f::GlobalRef) = typeof(getproperty(f.mod, f.name)) # better than argtype(ir::CC.IRCode, f::GlobalRef) = typeof(eval(f))
 argtype(ir::CC.IRCode, a) = error("argtype of $(typeof(a)) not supported")
 
 """

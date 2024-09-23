@@ -30,83 +30,90 @@ end
 
 
 # documentation
-lecture_01 = [
-    "Motivation" => "./lecture_01/motivation.md",
-    "Basics" => "./lecture_01/basics.md",
-    "Examples" => "./lecture_01/demo.md",
-    "Outline" => "./lecture_01/outline.md",
-    "Lab" => "./lecture_01/lab.md",
-    "Homework" => "./lecture_01/hw.md",
+pages = [
+    "Home" => "index.md",
+    "Installation" => "installation.md", 
+    "Projects" => "projects.md",
+    "1: Introduction" => [
+        "Motivation" => "./lecture_01/motivation.md",
+        "Basics" => "./lecture_01/basics.md",
+        "Examples" => "./lecture_01/demo.md",
+        "Outline" => "./lecture_01/outline.md",
+        "Lab" => "./lecture_01/lab.md",
+        "Homework" => "./lecture_01/hw.md",
+    ],
+
+    "2: The power of type system & multiple dispatch" => [
+        "Lecture" => "./lecture_02/lecture.md",
+        "Lab" => "./lecture_02/lab.md",
+        "Homework" => "./lecture_02/hw.md",
+    ],
+
+    "3: Design patterns" => [
+        "Lecture" => "./lecture_03/lecture.md",
+        "Lab" => "./lecture_03/lab.md",
+        "Homework" => "./lecture_03/hw.md",
+    ],
+
+    "4: Package development, unit tests & CI" => [
+        "Lecture" => "./lecture_04/lecture.md",
+        "Lab" => "./lecture_04/lab.md",
+        "Homework" => "./lecture_04/hw.md",
+    ],
+
+    "5: Performance benchmarking" => [
+        "Lecture" => "./lecture_05/lecture.md",
+        "Lab" => "./lecture_05/lab.md",
+        "Homework" => "./lecture_05/hw.md",
+    ],
+
+    "6: Lanuage introspection" => [
+        "Lecture" => "./lecture_06/lecture.md",
+        "Lab" => "./lecture_06/lab.md",
+        "Homework" => "./lecture_06/hw.md",
+    ],
+
+    "7: Macros" => [
+        "Lecture" => "./lecture_07/lecture.md",
+        "Lab" => "./lecture_07/lab.md",
+        "Homework" => "./lecture_07/hw.md",
+    ],
+
+    "8: Automatic differentiation" => [
+        "Lecture" => "./lecture_08/lecture.md",
+        "Lab" => "./lecture_08/lab.md",
+        "Homework" => "./lecture_08/hw.md",
+    ],
+
+    "9: Intermediate representation" => [
+        "Lecture" => "./lecture_09/lecture.md",
+        "Lab" => "./lecture_09/lab.md",
+    ],
+
+    "10: Parallel programming" => [
+        "Lecture" => "./lecture_10/lecture.md",
+        "Lab" => "./lecture_10/lab.md",
+        "Homework" => "./lecture_10/hw.md",
+    ],
+
+    "11: GPU programming" => [
+        "Lecture" => "./lecture_11/lecture.md",
+        "Lab" => "./lecture_11/lab.md",
+    ],
+
+    "12: Ordinary Differential Equations" => [
+        "Lecture" => "./lecture_12/lecture.md",
+        "Lab" => "./lecture_12/lab.md",
+        "Homework" => "./lecture_12/hw.md",
+    ],
 ]
 
-lecture_02 = [
-    "Lecture" => "./lecture_02/lecture.md"
-    "Lab" => "./lecture_02/lab.md"
-    "Homework" => "./lecture_02/hw.md"
-]
-
-lecture_03 = [
-    "Lecture" => "./lecture_03/lecture.md"
-    "Lab" => "./lecture_03/lab.md"
-    "Homework" => "./lecture_03/hw.md"
-]
-
-lecture_04 = [
-    "Lecture" => "./lecture_04/lecture.md"
-    "Lab" => "./lecture_04/lab.md"
-    "Homework" => "./lecture_04/hw.md"
-]
-
-lecture_05 = [
-    "Lecture" => "./lecture_05/lecture.md"
-    "Lab" => "./lecture_05/lab.md"
-    "Homework" => "./lecture_05/hw.md"
-]
-
-lecture_06 = [
-    "Lecture" => "./lecture_06/lecture.md"
-    "Lab" => "./lecture_06/lab.md"
-    "Homework" => "./lecture_06/hw.md"
-]
-
-lecture_07 = [
-    "Lecture" => "./lecture_07/lecture.md"
-    "Lab" => "./lecture_07/lab.md"
-    "Homework" => "./lecture_07/hw.md"
-]
-
-lecture_08 = [
-    "Lecture" => "./lecture_08/lecture.md"
-    "Lab" => "./lecture_08/lab.md"
-    "Homework" => "./lecture_08/hw.md"
-]
-
-lecture_09 = [
-    "Lecture" => "./lecture_09/lecture.md"
-    "Lab" => "./lecture_09/lab.md"
-]
-
-lecture_10 = [
-    "Lecture" => "./lecture_10/lecture.md"
-    "Lab" => "./lecture_10/lab.md"
-    "Homework" => "./lecture_10/hw.md"
-]
-
-lecture_11 = [
-    "Lecture" => "./lecture_11/lecture.md"
-    "Lab" => "./lecture_11/lab.md"
-]
-
-lecture_12 = [
-    "Lecture" => "./lecture_12/lecture.md"
-    "Lab" => "./lecture_12/lab.md"
-    "Homework" => "./lecture_12/hw.md"
-]
 
 makedocs(;
     authors = "JuliaTeachingCTU",
     repo = "https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/{commit}{path}#{line}",
     sitename = "Scientific Programming in Julia",
+    pagesonly = true,
     format = Documenter.HTML(;
         prettyurls = true,
         canonical = "https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia",
@@ -114,25 +121,9 @@ makedocs(;
         collapselevel = 1,
         ansicolor=true,
     ),
-    pages = [
-        "Home" => "index.md",
-        "Installation" => "installation.md", 
-        "Projects" => "projects.md",
-        "1: Introduction" => lecture_01,
-        "2: The power of type system & multiple dispatch" => lecture_02,
-        "3: Design patterns" => lecture_03,
-        "4: Package development, unit tests & CI" => lecture_04,
-        "5: Performance benchmarking" => lecture_05,
-        "6: Lanuage introspection" => lecture_06,
-        "7: Macros" => lecture_07,
-        "8: Automatic differentiation" => lecture_08,
-        "9: Intermediate representation" => lecture_09,
-        "10: Parallel programming" => lecture_10,
-        "11: GPU programming" => lecture_11,
-        "12: Ordinary Differential Equations" => lecture_12,
-    ],
+    pages
 )
 
-deploydocs(;
-    repo = "github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia",
-)
+# deploydocs(;
+#     repo = "github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia",
+# )
