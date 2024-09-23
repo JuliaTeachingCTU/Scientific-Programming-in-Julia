@@ -707,17 +707,18 @@ for f in [:setindex!, :getindex, :size, :length]
     println("$(f)(A::MyMatrix, args...) = $(f)(A.x, args...)")
 end
 ```
+
 ```julia
 for f in [:setindex!, :getindex, :size, :length]
 	s = "Base.$(f)(A::MyMatrix, args...) = $(f)(A.x, args...)"
 	println(s)
 	eval(Meta.parse(s))
 end
-```
+
 for f in [:setindex!, :getindex, :size, :length]
 	@eval $(f)(A::MyMatrix, args...) = $(f)(A.x, args...)
 end
-
+```
 Notice that we have just hand-implemented parts of `@forward` macro from [MacroTools](https://github.com/FluxML/MacroTools.jl/blob/master/src/examples/forward.jl), which does exactly this.
 
 ---

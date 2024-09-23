@@ -171,7 +171,7 @@ methods(var"@showarg")
 
 ## [Notes on quotation](@id lec7_quotation)
 In the previous lecture we have seen that we can *quote a block of code*, which tells the compiler to treat the input as a data and parse it. We have talked about three ways of quoting code.
-1.  `:(quoted code)`
+1. `:(quoted code)`
 2. `Meta.parse(input_string)`
 3. `quote ... end`
 The truth is that Julia does not do full quotation, but a *quasiquotation* as it allows you to **interpolate** expressions inside the quoted code using `$` symbol similar to the string. This is handy, as sometimes, when we want to insert into the quoted code an result of some computation / preprocessing.
@@ -236,9 +236,9 @@ The error code snippet errors telling us that the expression `"$"` is outside of
     ```
     or `@benchmark` support interpolation of values. This interpolation needs to be handled by the logic of the macro and is not automatically handled by Julia language.
 
-Macros do not know about runtime values, they only know about syntax trees. When a macro receives an expression with a $x in it, it can't interpolate the value of x into the syntax tree because it reads the syntax tree before `x` ever has a value! 
+Macros do not know about runtime values, they only know about syntax trees. When a macro receives an expression with a `$x` in it, it can't interpolate the value of x into the syntax tree because it reads the syntax tree before `x` ever has a value! 
 
-Instead, when a macro is given an expression with $ in it, it assumes you're going to give your own meaning to $x. In the case of BenchmarkTools.jl they return code that has to wait until runtime to receive the value of x and then splice that value into an expression which is evaluated and benchmarked. Nowhere in the actual body of the macro do they have access to the value of x though.
+Instead, when a macro is given an expression with `$` in it, it assumes you're going to give your own meaning to `$x`. In the case of BenchmarkTools.jl they return code that has to wait until runtime to receive the value of `x` and then splice that value into an expression which is evaluated and benchmarked. Nowhere in the actual body of the macro do they have access to the value of `x` though.
 
 
 !!! info 

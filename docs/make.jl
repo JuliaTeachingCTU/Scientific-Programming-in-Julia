@@ -111,7 +111,7 @@ pages = [
 
 makedocs(;
     authors = "JuliaTeachingCTU",
-    repo = "https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/{commit}{path}#{line}",
+    # repo = "https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/{commit}{path}#{line}",
     sitename = "Scientific Programming in Julia",
     pagesonly = true,
     format = Documenter.HTML(;
