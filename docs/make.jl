@@ -120,9 +120,25 @@ makedocs(;
         assets = ["assets/favicon.ico", "assets/onlinestats.css"],
         collapselevel = 1,
         ansicolor=true,
+        mathengine=Documenter.MathJax3(),
     ),
     pages
 )
+
+# makedocs(;
+#     authors = "JuliaTeachingCTU",
+#     # repo = "https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/{commit}{path}#{line}",
+#     sitename = "Scientific Programming in Julia",
+#     pagesonly = true,
+#     format = Documenter.HTML(;
+#         prettyurls = true,
+#         canonical = "https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia",
+#         assets = ["assets/favicon.ico", "assets/onlinestats.css"],
+#         collapselevel = 1,
+#         ansicolor=true,
+#     ),
+#     pages
+# )
 
 deploydocs(;
     repo = "github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia",
