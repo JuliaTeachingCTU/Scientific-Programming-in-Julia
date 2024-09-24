@@ -124,6 +124,6 @@ makedocs(;
     pages
 )
 
-# deploydocs(;
-#     repo = "github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia",
-# )
+deploydocs(;
+    repo = "github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia",
+)

@@ -43,7 +43,7 @@ The computation of gradient ``\frac{\partial f}{\partial x}`` *theoretically* bo
    1. computing Jacobians ``\left\{\mathbf{J}_i\right\}_{i=1}^n`` 
    2. multiplication of Jacobians as it holds that ``\left.\frac{\partial f}{\partial x}\right|_{y_0} = J_1 \times J_2 \times \ldots \times J_n``. 
 
-The complexity of the computation (at least one part of it) is therefore therefore determined by the  Matrix multiplication, which is generally expensive, as theoretically it has complexity at least ``O(n^{2.3728596}),`` but in practice a little bit more as the lower bound hides the devil in the ``O`` notation. The order in which the Jacobians are multiplied has therefore a profound effect on the complexity of the AD engine. While determining the optimal order of multiplication of sequence of matrices is costly, in practice, we recognize two important cases.
+The complexity of the computation (at least one part of it) is therefore determined by the  Matrix multiplication, which is generally expensive, as theoretically it has complexity at least ``O(n^{2.3728596}),`` but in practice a little bit more as the lower bound hides the devil in the ``O`` notation. The order in which the Jacobians are multiplied has therefore a profound effect on the complexity of the AD engine. While determining the optimal order of multiplication of sequence of matrices is costly, in practice, we recognize two important cases.
 
 1. Jacobians are multiplied from right to left as  ``J_1 \times (J_2 \times ( \ldots \times (J_{n-1} \times J_n) \ldots))`` which has the advantage when the input dimension of ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m`` is smaller than the output dimension, ``n < m``. - referred to as the **FORWARD MODE**
 2. Jacobians are multiplied from left to right as ``( \ldots ((J_1 \times J_2) \times J_3) \times \ldots ) \times J_n`` which has the advantage when the input dimension of ``f: \mathbb{R}^n \rightarrow \mathbb{R}^m`` is larger than the output dimension, ``n > m``. - referred to as the **BACKWARD MODE**
@@ -83,7 +83,7 @@ Initialize the Jacobian of ``y_n`` with respect to ``x`` to an identity matrix, 
 Iterate `i` from `n` down to `1` as
 - calculate the next intermediate output as ``y^0_{i-1} = f_i({y^0_i})`` 
 - calculate Jacobian ``J_i = \left.\frac{f_i}{\partial y_i}\right|_{y^0_i}``
-- *push forward* the gradient as ``\left.\frac{\partial y_{i-1}}{\partial x}\right|_x = J_i \times \left.\frac{\partial y_n}{\partial x}\right|_x``
+- *push forward* the gradient as ``\left.\frac{\partial y_{i-1}}{\partial x}\right|_x = J_i \times \left.\frac{\partial y_i}{\partial x}\right|_x``
 
 Notice that 
 - on the very end, we are left with ``y = y^0_0`` and with ``\frac{\partial y_0}{\partial x}``, which is the gradient we wanted to calculate;
@@ -155,7 +155,7 @@ where in the multiplier of ``\dot{v} \epsilon``: ``\sum_{i=1}^n ip_i v^{i - 1}``
 
 Let's now consider a general function ``f:\mathbb{R} \rightarrow \mathbb{R}``. Its value at point ``v + \dot v \epsilon`` can be approximated using Taylor expansion at function at point ``v`` as
 ```math
-f(v+\dot v \epsilon) = \sum_{i=0}^\infty \frac{f^i(v)\dot v^i\epsilon^n}{i!}
+f(v+\dot v \epsilon) = \sum_{i=0}^\infty \frac{f^i(v)\dot v^i\epsilon^i}{i!}
   = f(v) + f'(v)\dot v\epsilon,
 ```
 where all higher order terms can be dropped because ``\epsilon^i=0`` for ``i>1``. This shows that we can calculate the gradient of ``f`` at point ``v`` by calculating its value at ``f(v + \epsilon)`` and taking the multiplier of ``\epsilon``.
