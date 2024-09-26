@@ -39,55 +39,42 @@ end
 nothing #hide
 ```
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Evaluate the code of the function called `polynomial` in Julia REPL and evaluate the function itself with the following arguments.
-```@example lab01_base
-a = [-19, 7, -4, 6] # list coefficients a from a^0 to a^n
-x = 3               # point of evaluation
-nothing #hide
-```
+!!! warning "Exercise"
+    Evaluate the code of the function called `polynomial` in Julia REPL and evaluate the function itself with the following arguments.
+    ```@example lab01_base
+    a = [-19, 7, -4, 6] # list coefficients a from a^0 to a^n
+    x = 3               # point of evaluation
+    nothing #hide
+    ```
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
+!!! details
+    The simplest way is to just copy&paste into an already running terminal manually. As opposed to the default Python REPL, Julia can deal with the blocks of code and different indentation much better without installation of an `ipython`-like REPL. There are ways to make this much easier in different text editors/IDEs:
+    - `VSCode` - when using Julia extension is installed and `.jl` file is opened, `Ctrl/Cmd+Enter` will spawn Julia REPL
+    - `Sublime Text` - `Ctrl/Cmd+Enter` with `Send Code` pkg (works well with Linux terminal or tmux, support for Windows is poor)
+    - `Vim` - there is a Julia language [plugin](https://github.com/JuliaEditorSupport/julia-vim), which can be combine with [vimcmdline](https://github.com/jalvesaq/vimcmdline) to gain similar functionality
 
-The simplest way is to just copy&paste into an already running terminal manually. As opposed to the default Python REPL, Julia can deal with the blocks of code and different indentation much better without installation of an `ipython`-like REPL. There are ways to make this much easier in different text editors/IDEs:
-- `VSCode` - when using Julia extension is installed and `.jl` file is opened, `Ctrl/Cmd+Enter` will spawn Julia REPL
-- `Sublime Text` - `Ctrl/Cmd+Enter` with `Send Code` pkg (works well with Linux terminal or tmux, support for Windows is poor)
-- `Vim` - there is a Julia language [plugin](https://github.com/JuliaEditorSupport/julia-vim), which can be combine with [vimcmdline](https://github.com/jalvesaq/vimcmdline) to gain similar functionality
-
-Either way, you should see the following:
-```@repl lab01_base
-function polynomial(a, x)
-    accumulator = 0
-    for i in length(a):-1:1
-        accumulator += x^(i-1) * a[i] # ! 1-based indexing for arrays
+    Either way, you should see the following:
+    ```@repl lab01_base
+    function polynomial(a, x)
+        accumulator = 0
+        for i in length(a):-1:1
+            accumulator += x^(i-1) * a[i] # ! 1-based indexing for arrays
+        end
+        return accumulator
     end
-    return accumulator
-end
-```
+    ```
 
-Similarly we enter the arguments of the function `a` and `x`:
-```@repl lab01_base
-a = [-19, 7, -4, 6]
-x = 3
-```
+    Similarly we enter the arguments of the function `a` and `x`:
+    ```@repl lab01_base
+    a = [-19, 7, -4, 6]
+    x = 3
+    ```
 
 
-Function call intuitively takes the name of the function with round brackets as arguments, i.e. works in the same way as majority of programming languages. The result is printed unless a `;` is added at the end of the statement.
-```@repl lab01_base
-polynomial(a, x)    # function call
-```
-
-```@raw html
-</p></details>
-```
+    Function call intuitively takes the name of the function with round brackets as arguments, i.e. works in the same way as majority of programming languages. The result is printed unless a `;` is added at the end of the statement.
+    ```@repl lab01_base
+    polynomial(a, x)    # function call
+    ```
 
 Thanks to the high level nature of Julia language it is often the case that examples written in pseudocode are almost directly rewritable into the language itself without major changes and the code can be thus interpreted easily.
 
@@ -116,25 +103,15 @@ eltype(a)
 
 In most cases variables store just a reference to a place in memory either stack/heap (exceptions are primitive types such as `Int`, `Float`) and therefore creating an array `a`, "storing" the reference in `b` with an assignment and changing elements of `b`, e.g. `b[1] = 2`, changes also the values in `a`.
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Create variables `x` and `accumulator`, storing floating point `3.0` and integer value `0` respectively. Check the type of variables using `typeof` function.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@repl lab01_base
-x = 3.0
-accumulator = 0
-typeof(x), typeof(accumulator)
-```
-```@raw html
-</p></details>
-```
+!!! warning "Exercise"
+    Create variables `x` and `accumulator`, storing floating point `3.0` and integer value `0` respectively. Check the type of variables using `typeof` function.
+
+!!! details "Solution"
+    ```@repl lab01_base
+    x = 3.0
+    accumulator = 0
+    typeof(x), typeof(accumulator)
+    ```
 
 ### For cycles and ranges
 Moving further into the polynomial function we encounter the definition of a for cycle, with the de facto standard syntax
@@ -154,28 +131,18 @@ collect(r)
 length(r)
 ```
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Create variable `c` containing an array of even numbers from `2` to `42`. Furthermore create variable `d` that is different from `c` only at the 7th position, which will contain `13`.
+!!! warning "Exercise"
+    Create variable `c` containing an array of even numbers from `2` to `42`. Furthermore create variable `d` that is different from `c` only at the 7th position, which will contain `13`.
 
-**HINT**: Use `collect` function for creation of `c` and `copy` for making a copy of `c`.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@repl lab01_base
-c = collect(2:2:42)
-d = copy(c)
-d[7] = 13
-d
-```
-```@raw html
-</p></details>
-```
+    **HINT**: Use `collect` function for creation of `c` and `copy` for making a copy of `c`.
+
+!!! details "Solution"
+    ```@repl lab01_base
+    c = collect(2:2:42)
+    d = copy(c)
+    d[7] = 13
+    d
+    ```
 
 ### Functions and operators
 Let us now move from the function body to the function definition itself. From the picture at the top of the page, we can infer the general syntax for function definition:
@@ -230,29 +197,18 @@ julia> methodswith(Int)
 ```
 
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Define function called `addone` with one argument, that adds `1` to the argument.
+!!! warning "Exercise"
+    Define function called `addone` with one argument, that adds `1` to the argument.
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
 
-```@repl lab01_base
-function addone(x)
-    x + 1
-end
-addone(1) == 2
-```
+!!! details "Solution"
+    ```@repl lab01_base
+    function addone(x)
+        x + 1
+    end
+    addone(1) == 2
+    ```
 
-```@raw html
-</p></details>
-```
 
 
 ### Calling for help
@@ -269,103 +225,81 @@ end
 ```
 More on this in lecture 4 about pkg development.
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Lookup `docstring` for the basic functions that we have introduced in the previous exercises: `typeof`, `eltype`, `length`, `collect`, `copy`, `methods` and `methodswith`. 
+!!! warning "Exercise"
+    Lookup `docstring` for the basic functions that we have introduced in the previous exercises: `typeof`, `eltype`, `length`, `collect`, `copy`, `methods` and `methodswith`. 
 
-**BONUS**: Try it with others, for example with the subtyping operator `<:`.
+    **BONUS**: Try it with others, for example with the subtyping operator `<:`.
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-Example docstring for `typeof` function.
-```julia
-  typeof(x)
 
-  Get the concrete type of x.
+!!! details "Solution"
+    Example docstring for `typeof` function.
+    ```julia
+      typeof(x)
 
-  Examples
-  ≡≡≡≡≡≡≡≡≡≡
+      Get the concrete type of x.
 
-  julia> a = 1//2;
-  
-  julia> typeof(a)
-  Rational{Int64}
-  
-  julia> M = [1 2; 3.5 4];
-  
-  julia> typeof(M)
-  Matrix{Float64} (alias for Array{Float64, 2})
-```
-```@raw html
-</p></details>
-```
+      Examples
+      ≡≡≡≡≡≡≡≡≡≡
+
+      julia> a = 1//2;
+      
+      julia> typeof(a)
+      Rational{Int64}
+      
+      julia> M = [1 2; 3.5 4];
+      
+      julia> typeof(M)
+      Matrix{Float64} (alias for Array{Float64, 2})
+    ```
 
 ## Testing waters
 As the arguments of the `polynomial` functions are untyped, i.e. they do not specify the allowed types like for example `polynomial(a, x::Number)` does, the following exercise explores which arguments the function accepts, while giving expected result.
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Choose one of the variables `af` to `ac` representing polynomial coefficients and try to evaluate it with the `polynomial` function at point `x=3` as before. Lookup the type of coefficient collection variable itself with `typeof` and the items in the collection with `eltype`. In this case we allow you to consult your solution with the expandable solution bellow to find out more information about a particular example.
+!!! warning "Exercise"
+    Choose one of the variables `af` to `ac` representing polynomial coefficients and try to evaluate it with the `polynomial` function at point `x=3` as before. Lookup the type of coefficient collection variable itself with `typeof` and the items in the collection with `eltype`. In this case we allow you to consult your solution with the expandable solution bellow to find out more information about a particular example.
 
-```@example lab01_base
-af = [-19.0, 7.0, -4.0, 6.0]
-at = (-19, 7, -4, 6)
-ant = (a₀ = -19, a₁ = 7, a₂ = -4, a₃ = 6)
-a2d = [-19 -4; 7 6]
-ac = [2i^2 + 1 for i in -2:1]
-nothing #hide
-```
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-```@repl lab01_base
-typeof(af), eltype(af)
-polynomial(af, x)
-```
-As opposed to the basic definition of `a` type the array is filled with `Float64` types and the resulting value gets promoted as well to the `Float64`.
+    ```@example lab01_base
+    af = [-19.0, 7.0, -4.0, 6.0]
+    at = (-19, 7, -4, 6)
+    ant = (a₀ = -19, a₁ = 7, a₂ = -4, a₃ = 6)
+    a2d = [-19 -4; 7 6]
+    ac = [2i^2 + 1 for i in -2:1]
+    nothing #hide
+    ```
 
 
-```@repl lab01_base
-typeof(at), eltype(at)
-polynomial(at, x)
-```
-With round brackets over a fixed length vector we get the `Tuple` type, which is so called immutable "array" of a fixed size (its elements cannot be changed, unless initialized from scratch). Each element can be of a different type, but here we have only one and thus the `Tuple` is aliased into `NTuple`. There are some performance benefits for using immutable structure, which will be discussed [later](@ref type_system).
+!!! details "Solution"
+    ```@repl lab01_base
+    typeof(af), eltype(af)
+    polynomial(af, x)
+    ```
+    As opposed to the basic definition of `a` type the array is filled with `Float64` types and the resulting value gets promoted as well to the `Float64`.
 
 
-Defining `key=value` pairs inside round brackets creates a structure called `NamedTuple`, which has the same properties as `Tuple` and furthermore its elements can be conveniently accessed by dot syntax, e.g. `ant.a₀`.
-```@repl lab01_base
-typeof(ant), eltype(ant)
-polynomial(ant, x)
-```
+    ```@repl lab01_base
+    typeof(at), eltype(at)
+    polynomial(at, x)
+    ```
+    With round brackets over a fixed length vector we get the `Tuple` type, which is so called immutable "array" of a fixed size (its elements cannot be changed, unless initialized from scratch). Each element can be of a different type, but here we have only one and thus the `Tuple` is aliased into `NTuple`. There are some performance benefits for using immutable structure, which will be discussed [later](@ref type_system).
 
-Defining a 2D array is a simple change of syntax, which initialized a matrix row by row separated by `;` with spaces between individual elements. The function returns the same result because linear indexing works in 2d arrays in the column major order.
-```@repl lab01_base
-typeof(a2d), eltype(a2d)
-polynomial(a2d, x)
-```
 
-The last example shows so called array comprehension syntax, where we define and array of known length using and for loop iteration. Resulting array/vector has integer elements, however even mixed type is possible yielding `Any`, if there isn't any other common supertype to `promote` every entry into. (Use `?` to look what `promote` and `promote_type` does.)
-```@repl lab01_base
-typeof(ac), eltype(ac)
-polynomial(ac, x)
-```
+    Defining `key=value` pairs inside round brackets creates a structure called `NamedTuple`, which has the same properties as `Tuple` and furthermore its elements can be conveniently accessed by dot syntax, e.g. `ant.a₀`.
+    ```@repl lab01_base
+    typeof(ant), eltype(ant)
+    polynomial(ant, x)
+    ```
 
-```@raw html
-</p></details>
-```
+    Defining a 2D array is a simple change of syntax, which initialized a matrix row by row separated by `;` with spaces between individual elements. The function returns the same result because linear indexing works in 2d arrays in the column major order.
+    ```@repl lab01_base
+    typeof(a2d), eltype(a2d)
+    polynomial(a2d, x)
+    ```
+
+    The last example shows so called array comprehension syntax, where we define and array of known length using and for loop iteration. Resulting array/vector has integer elements, however even mixed type is possible yielding `Any`, if there isn't any other common supertype to `promote` every entry into. (Use `?` to look what `promote` and `promote_type` does.)
+    ```@repl lab01_base
+    typeof(ac), eltype(ac)
+    polynomial(ac, x)
+    ```
 
 So far we have seen that `polynomial` function accepts a wide variety of arguments, however there are some understandable edge cases that it cannot handle.
 
@@ -396,178 +330,156 @@ The problem that we face during evaluation is that generator type is missing the
 ## Extending/limiting the polynomial example
 Following up on the polynomial example, let's us expand it a little further in order to facilitate the arguments, that have been throwing exceptions. The first direction, which we will move forward to, is providing the user with more detailed error message when an incorrect type of coefficients has been provided.
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
+!!! warning "Exercise"
 
-Design an `if-else` condition such that the array of `Char` example throws an error with custom string message, telling the user what went wrong and printing the incorrect input alongside it. Confirm that we have not broken the functionality of other examples from previous exercise.
+    Design an `if-else` condition such that the array of `Char` example throws an error with custom string message, telling the user what went wrong and printing the incorrect input alongside it. Confirm that we have not broken the functionality of other examples from previous exercise.
 
-**HINTS:**
-- Throw the `ArgumentError(msg)` with `throw` function and string message `msg`. More details in help mode `?` or at the end of this [document](@ref lab_errors).
-- Strings are defined like this `s = "Hello!"`
-- Use string interpolation to create the error message. It allows injecting an expression into a string with the `$` syntax `b = 1; s = "Hellow Number $(b)"`
-- Compare `eltype` of the coefficients with `Char` type.
-- The syntax for `if-else`:
-```julia
-if condition
-    println("true") # true branch code
-else
-    println("false") # false branch code
-end
-```
-- Not equal condition can be written as `a != b`.
-- Throwing an exception automatically returns from the function. Use return inside one of the branches to return the correct value.
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-The simplest way is to wrap the whole function inside an `if-else` condition and returning only when the input is "correct" (it will still fail in some cases).
-```@repl lab01_base
-function polynomial(a, x)
-    if eltype(a) != Char
-        accumulator = 0
-        for i in length(a):-1:1
-            accumulator += x^(i-1) * a[i] # ! 1-based indexing for arrays
-        end
-        return accumulator
+    **HINTS:**
+    - Throw the `ArgumentError(msg)` with `throw` function and string message `msg`. More details in help mode `?` or at the end of this [document](@ref lab_errors).
+    - Strings are defined like this `s = "Hello!"`
+    - Use string interpolation to create the error message. It allows injecting an expression into a string with the `$` syntax `b = 1; s = "Hellow Number $(b)"`
+    - Compare `eltype` of the coefficients with `Char` type.
+    - The syntax for `if-else`:
+    ```julia
+    if condition
+        println("true") # true branch code
     else
-        throw(ArgumentError("Invalid coefficients $(a) of type Char!"))
+        println("false") # false branch code
     end
-end
-nothing #hide
-```
+    ```
+    - Not equal condition can be written as `a != b`.
+    - Throwing an exception automatically returns from the function. Use return inside one of the branches to return the correct value.
 
-Now this should show our predefined error message. 
-```@repl lab01_base
-polynomial(ach, x)
-```
 
-Testing on other examples should pass without errors and give the same output as before.
-```@repl lab01_base
-polynomial(a, x)
-polynomial(af, x)
-polynomial(at, x)
-polynomial(ant, x)
-polynomial(a2d, x)
-polynomial(ac, x)
-```
+!!! details "Solution"
+    The simplest way is to wrap the whole function inside an `if-else` condition and returning only when the input is "correct" (it will still fail in some cases).
+    ```@repl lab01_base
+    function polynomial(a, x)
+        if eltype(a) != Char
+            accumulator = 0
+            for i in length(a):-1:1
+                accumulator += x^(i-1) * a[i] # ! 1-based indexing for arrays
+            end
+            return accumulator
+        else
+            throw(ArgumentError("Invalid coefficients $(a) of type Char!"))
+        end
+    end
+    nothing #hide
+    ```
 
-```@raw html
-</p></details>
-```
+    Now this should show our predefined error message. 
+    ```@repl lab01_base
+    polynomial(ach, x)
+    ```
+
+    Testing on other examples should pass without errors and give the same output as before.
+    ```@repl lab01_base
+    polynomial(a, x)
+    polynomial(af, x)
+    polynomial(at, x)
+    polynomial(ant, x)
+    polynomial(a2d, x)
+    polynomial(ac, x)
+    ```
+
 
 The second direction concerns the limitation to index-able structures, which the generator example is not. For this we will have to rewrite the whole loop in a more functional programming approach using `map`, anonymous function and other concepts.
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
+!!! warning "Exercise"
 
-Rewrite the following code inside our original `polynomial` function with `map`, `enumerate` and anonymous function.
-```julia
-accumulator = 0
-for i in length(a):-1:1
-    accumulator += x^(i-1) * a[i] # ! 1-based indexing for arrays
-end
-```
-!!! note "Anonymous functions reminder"
+    Rewrite the following code inside our original `polynomial` function with `map`, `enumerate` and anonymous function.
+    ```julia
+    accumulator = 0
+    for i in length(a):-1:1
+        accumulator += x^(i-1) * a[i] # ! 1-based indexing for arrays
+    end
+    ```
+
+    ***Anonymous functions reminder***
     ```@repl lab01_anonymous
     x -> x + 1              # unless the reference is stored it cannot be called
     plusone = x -> x + 1    # the reference can be stored inside a variable
     plusone(x)              # calling with the same syntax
     ```
 
-**HINTS:**
-- Use `enumerate` to obtain iterator over `a` that returns a tuple of `ia = (i, aᵢ)`. With Julia 1-based indexing `i` starts also from 1 and goes up to `length(a)`.
-- Pass this into a `map` with either in-place or predefined anonymous function that does the operation of `x^(i-1) * aᵢ`.
-- Use `sum` to collect the resulting array into `accumulator` variable or directly into the `return` command.
+    **HINTS:**
+    - Use `enumerate` to obtain iterator over `a` that returns a tuple of `ia = (i, aᵢ)`. With Julia 1-based indexing `i` starts also from 1 and goes up to `length(a)`.
+    - Pass this into a `map` with either in-place or predefined anonymous function that does the operation of `x^(i-1) * aᵢ`.
+    - Use `sum` to collect the resulting array into `accumulator` variable or directly into the `return` command.
 
-**BONUS:**
-Can you figure out how to use the `mapreduce` function here? See entry in the help mode `?`.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
+    **BONUS:**
+    Can you figure out how to use the `mapreduce` function here? See entry in the help mode `?`.
 
-Ordered from the longest to the shortest, here are three examples with the same functionality (and there are definitely many more).
-Using the `map(iterable) do itervar ... end` syntax, that creates anonymous function from the block of code.
-```@example lab01_base
-function polynomial(a, x)
-    powers = map(enumerate(a)) do (i, aᵢ)
+!!! details "Solution"
+    Ordered from the longest to the shortest, here are three examples with the same functionality (and there are definitely many more).
+    Using the `map(iterable) do itervar ... end` syntax, that creates anonymous function from the block of code.
+    ```@example lab01_base
+    function polynomial(a, x)
+        powers = map(enumerate(a)) do (i, aᵢ)
+            x^(i-1) * aᵢ
+        end
+        accumulator = sum(powers)
+        return accumulator
+    end
+    nothing #hide
+    ```
+
+    Using the default syntax for `map` and storing the anonymous into a variable
+    ```@example lab01_base
+    function polynomial(a, x)
+        polypow(i,aᵢ) = x^(i-1) * aᵢ
+        powers = map(polypow, enumerate(a))
+        return sum(powers)
+    end
+    nothing #hide
+    ```
+
+    As the function `polypow` is used only once, there is no need to assign it to a local variable.
+    Note the sightly awkward additional parenthesis in the argument of the lambda function.
+    ```@example lab01_base
+    function polynomial(a, x)
+        powers = map(((i,aᵢ),) -> x^(i-1) * aᵢ, enumerate(a))
+        sum(powers)
+    end
+    nothing #hide
+    ```
+
+    Checking the behavior on all the inputs.
+    ```@repl lab01_base
+    polynomial(a, x)
+    polynomial(af, x)
+    polynomial(at, x)
+    polynomial(ant, x)
+    polynomial(a2d, x)
+    polynomial(ach, x)
+    polynomial(ac, x)
+    polynomial(ag, x)
+    ```
+
+    **BONUS:** You may have noticed that in the example above, the `powers` variable is allocating an
+    additional, unnecessary vector. With the current, scalar `x`, this is not such a big deal. But in
+    your homework you will generalize this function to matrix inputs of `x`, which means that `powers`
+    becomes a vector of (potentially very large) matrices. This is a very natural use case for the
+    `mapreduce`:
+    function:
+    ```@example lab01_base
+    polynomial(a, x) = mapreduce(+, enumerate(a), init=zero(x)) do (i, aᵢ)
         x^(i-1) * aᵢ
     end
-    accumulator = sum(powers)
-    return accumulator
-end
-nothing #hide
-```
 
-Using the default syntax for `map` and storing the anonymous into a variable
-```@example lab01_base
-function polynomial(a, x)
-    polypow(i,aᵢ) = x^(i-1) * aᵢ
-    powers = map(polypow, enumerate(a))
-    return sum(powers)
-end
-nothing #hide
-```
-
-As the function `polypow` is used only once, there is no need to assign it to a local variable.
-Note the sightly awkward additional parenthesis in the argument of the lambda function.
-```@example lab01_base
-function polynomial(a, x)
-    powers = map(((i,aᵢ),) -> x^(i-1) * aᵢ, enumerate(a))
-    sum(powers)
-end
-nothing #hide
-```
-
-Checking the behavior on all the inputs.
-```@repl lab01_base
-polynomial(a, x)
-polynomial(af, x)
-polynomial(at, x)
-polynomial(ant, x)
-polynomial(a2d, x)
-polynomial(ach, x)
-polynomial(ac, x)
-polynomial(ag, x)
-```
-
-**BONUS:** You may have noticed that in the example above, the `powers` variable is allocating an
-additional, unnecessary vector. With the current, scalar `x`, this is not such a big deal. But in
-your homework you will generalize this function to matrix inputs of `x`, which means that `powers`
-becomes a vector of (potentially very large) matrices. This is a very natural use case for the
-`mapreduce`:
-function:
-```@example lab01_base
-polynomial(a, x) = mapreduce(+, enumerate(a), init=zero(x)) do (i, aᵢ)
-    x^(i-1) * aᵢ
-end
-
-polynomial(a, x)
-```
-Let's unpack what is happening here. If the function `mapreduce(f, op, itr)` is called with `op=+`
-it returns the same result as `sum(map(f, itr))`.  In contrast to `sum(map(f, itr))` (which
-allocates a vector as a result of `map` and **then** sums) `mapreduce` applies `f` to an element in
-`itr` and **immediately accumulates** the result with the given `op=+`.
+    polynomial(a, x)
+    ```
+    Let's unpack what is happening here. If the function `mapreduce(f, op, itr)` is called with `op=+`
+    it returns the same result as `sum(map(f, itr))`.  In contrast to `sum(map(f, itr))` (which
+    allocates a vector as a result of `map` and **then** sums) `mapreduce` applies `f` to an element in
+    `itr` and **immediately accumulates** the result with the given `op=+`.
 
 
-```@repl lab01_base
-polynomial(a, x) = sum(ia -> x^(ia[1]-1) * ia[2], enumerate(a))
-nothing #hide
-```
-
-```@raw html
-</p></details>
-```
+    ```@repl lab01_base
+    polynomial(a, x) = sum(ia -> x^(ia[1]-1) * ia[2], enumerate(a))
+    nothing #hide
+    ```
 
 ## How to use code from other people
 The script that we have run at the beginning of this lab has created two new files inside the current folder:
@@ -592,54 +504,42 @@ Status `~/.julia/environments/v1.6/Project.toml` (empty project)
 Generally one should avoid working in the general environment, with the exception of some generic pkgs, such as `PkgTemplates.jl`, which is used for generating library templates/folder structure like the one above ([link](https://github.com/invenia/PkgTemplates.jl)), more on this in the lecture on pkg development. 
 
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Activate the environment inside the current folder and check that the `BenchmarkTools` package has been installed. Use `BenchmarkTools` pkg's `@btime` to benchmark our `polynomial` function with the following arguments.
-```@example lab01_base
-aexp = ones(10) ./ factorial.(0:9)
-x = 1.1
-nothing #hide
-```
+!!! warning "Exercise"
+    Activate the environment inside the current folder and check that the `BenchmarkTools` package has been installed. Use `BenchmarkTools` pkg's `@btime` to benchmark our `polynomial` function with the following arguments.
+    ```@example lab01_base
+    aexp = ones(10) ./ factorial.(0:9)
+    x = 1.1
+    nothing #hide
+    ```
 
-**HINTS:**
-- In pkg mode use the command `activate` and `status` to check the presence. 
-- In order to import the functionality from other package, lookup the keyword `using` in the repl help mode `?`. 
-- The functionality that we want to use is the `@btime` macro (it acts almost like a function but with a different syntax `@macro arg1 arg2 arg3 ...`). More on macros in lecture 7.
+    **HINTS:**
+    - In pkg mode use the command `activate` and `status` to check the presence. 
+    - In order to import the functionality from other package, lookup the keyword `using` in the repl help mode `?`. 
+    - The functionality that we want to use is the `@btime` macro (it acts almost like a function but with a different syntax `@macro arg1 arg2 arg3 ...`). More on macros in lecture 7.
 
-**BONUS**: Compare the output of `polynomial(aexp, x)` with the value of `exp(x)`, which it approximates.
+    **BONUS**: Compare the output of `polynomial(aexp, x)` with the value of `exp(x)`, which it approximates.
 
 !!! note "Broadcasting"
     In the assignment's code, we are using quite ubiquitous concept in Julia called `broadcasting` or simply the `dot-syntax` - represented here by `./`, `factorial.`. This concept allows to map both simple arithmetic operations as well as custom functions across arrays, with the added benefit of increased performance, when the broadcasting system can merge operations into a more efficient code. More information can be found in the official [documentation](https://docs.julialang.org/en/v1/manual/arrays/#Broadcasting) or [section](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/lecture_01/arrays/#Broadcasting) of our bachelor course.
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
 
-There are other options to import a function/macro from a different package, however for now let's keep it simple with the `using Module` syntax, that brings to the REPL, all the variables/function/macros exported by the `BenchmarkTools` pkg. If `@btime` is exported, which it is, it can be accessed without specification i.e. just by calling `@btime` without the need for `BenchmarkTools.@btime`. More on the architecture of pkg/module loading in the package developement lecture.
-```julia
-julia> using BenchmarkTools
+!!! details "Solution"
+    There are other options to import a function/macro from a different package, however for now let's keep it simple with the `using Module` syntax, that brings to the REPL, all the variables/function/macros exported by the `BenchmarkTools` pkg. If `@btime` is exported, which it is, it can be accessed without specification i.e. just by calling `@btime` without the need for `BenchmarkTools.@btime`. More on the architecture of pkg/module loading in the package developement lecture.
+    ```julia
+    julia> using BenchmarkTools
 
-julia> @btime polynomial(aexp, x)
-  97.119 ns (1 allocation: 16 bytes)
-3.004165230550543
-```
-The output gives us the time of execution averaged over multiple runs (the number of samples is defined automatically based on run time) as well as the number of allocations and the output of the function, that is being benchmarked.
+    julia> @btime polynomial(aexp, x)
+      97.119 ns (1 allocation: 16 bytes)
+    3.004165230550543
+    ```
+    The output gives us the time of execution averaged over multiple runs (the number of samples is defined automatically based on run time) as well as the number of allocations and the output of the function, that is being benchmarked.
 
 
-**BONUS**: The difference between our approximation and the "actual" function value computed as a difference of the two. 
-```@repl lab01_base
-polynomial(aexp, x) - exp(x)
-```
-The apostrophes in the previous sentence are on purpose, because implementation of `exp` also relies on a finite sum, though much more sophisticated than the basic Taylor expansion.
-
-```@raw html
-</p></details>
-```
+    **BONUS**: The difference between our approximation and the "actual" function value computed as a difference of the two. 
+    ```@repl lab01_base
+    polynomial(aexp, x) - exp(x)
+    ```
+    The apostrophes in the previous sentence are on purpose, because implementation of `exp` also relies on a finite sum, though much more sophisticated than the basic Taylor expansion.
 
 ## Discussion & future directions
 Instead of `if-else` statements that would throw an error for different types, in Julia, we generally see the pattern of typing the function in a way, that for other than desirable types `MethodError` is emitted with the information about closest matching methods. This is part of the design process in Julia of a function and for the particular functionality of the `polynomial` example, we can look into the Julia itself, where it has been implemented in the `evalpoly` function

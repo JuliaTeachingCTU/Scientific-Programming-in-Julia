@@ -15,18 +15,18 @@ mv(download("$(site)logo/CTU-logo-dark.svg"), assetsdir("logo-dark.svg"); force)
 mv(download("$(site)logo/CTU-logo.svg"), assetsdir("logo.svg"); force)
 mv(download("$(site)icons/favicon.ico"), assetsdir("favicon.ico"); force)
 
-for theme in ["light", "dark"]
-    mktemp(@__DIR__) do path, io
-        write(io, join([
-            read(joinpath(HTMLWriter.ASSETS_THEMES, "documenter-$(theme).css"), String),
-            read(download("$(site)assets/lectures-$(theme).css"), String)
-        ], "\n"))
-        Themes.compile(
-            path,
-            joinpath(@__DIR__, assetsdir("themes", "documenter-$(theme).css"))
-        )
-    end
-end
+# for theme in ["light", "dark"]
+#     mktemp(@__DIR__) do path, io
+#         write(io, join([
+#             read(joinpath(HTMLWriter.ASSETS_THEMES, "documenter-$(theme).css"), String),
+#             read(download("$(site)assets/lectures-$(theme).css"), String)
+#         ], "\n"))
+#         Themes.compile(
+#             path,
+#             joinpath(@__DIR__, assetsdir("themes", "documenter-$(theme).css"))
+#         )
+#     end
+# end
 
 
 # documentation
@@ -117,29 +117,13 @@ makedocs(;
     format = Documenter.HTML(;
         prettyurls = true,
         canonical = "https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia",
-        assets = ["assets/favicon.ico", "assets/onlinestats.css"],
+        assets = ["assets/favicon.ico"],
         collapselevel = 1,
         ansicolor=true,
         mathengine=Documenter.MathJax3(),
     ),
     pages
 )
-
-# makedocs(;
-#     authors = "JuliaTeachingCTU",
-#     # repo = "https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/{commit}{path}#{line}",
-#     sitename = "Scientific Programming in Julia",
-#     pagesonly = true,
-#     format = Documenter.HTML(;
-#         prettyurls = true,
-#         canonical = "https://JuliaTeachingCTU.github.io/Scientific-Programming-in-Julia",
-#         assets = ["assets/favicon.ico", "assets/onlinestats.css"],
-#         collapselevel = 1,
-#         ansicolor=true,
-#     ),
-#     pages
-# )
-
 deploydocs(;
     repo = "github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia",
 )
