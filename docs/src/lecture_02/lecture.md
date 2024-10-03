@@ -37,7 +37,6 @@ This allows us to define functions applicable only to the corresponding type
 ```julia
 howl(wolf::Wolf) = println(wolf.name, " has howled.")
 baa(sheep::Sheep) = println(sheep.name, " has baaed.")
-nothing # hide
 ```
 
 Therefore the compiler (or interpreter) **enforces** that a wolf can only `howl`
@@ -54,7 +53,6 @@ For comparison, consider an alternative definition which does not have specified
 ```julia
 bark(animal) = println(animal.name, " has howled.")
 baa(animal)  = println(animal.name, " has baaed.")
-nothing # hide
 ```
 in which case the burden of ensuring that a wolf will never baa rests upon the
 programmer which inevitably leads to errors (note that severely constrained
@@ -67,7 +65,6 @@ alternatives to represent a set of animals:
 ```julia
 a = [Wolf("1", 1), Wolf("2", 2), Sheep("3", 3)]
 b = (Wolf("1", 1), Wolf("2", 2), Sheep("3", 3))
-nothing # hide
 ```
 
 where `a` is an array which can contain arbitrary types and have arbitrary length
@@ -77,7 +74,6 @@ energy of all animals as
 
 ```julia
 energy(animals) = mapreduce(x -> x.energy, +, animals)
-nothing # hide
 ```
 
 A good compiler makes use of the information provided by the type system to generate efficient code which we can verify by inspecting the compiled code using `@code_native` macro
@@ -114,7 +110,6 @@ Julia's type system is dynamic, which means that all types are resolved during r
 ```julia
 wolfpack_a =  [Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
 wolfpack_b =  Any[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
-nothing # hide
 ```
 
 `wolfpack_a` carries a type `Vector{Wolf}` while `wolfpack_b` has the type `Vector{Any}`. This means that in the first case, the compiler knows that all items are of the type `Wolf`and it can specialize functions using this information. In case of `wolfpack_b`, it does not know which animal it will encounter (although all are of the same type), and therefore it needs to dynamically resolve the type of each item upon its use. This ultimately leads to less performant code.
@@ -189,12 +184,12 @@ abstract type Unsigned      <: Integer end
 where `<:` means "is a subtype of" and it is used in declarations where the right-hand is an immediate supertype of a given type (`Integer` has the immediate supertype `Real`.) If the supertype is not supplied, it is considered to be Any, therefore in the above definition `Number` has the supertype `Any`. 
 
 We can list childrens of an abstract type using function `subtypes`  
-``julia
+```julia
 using InteractiveUtils: subtypes  # hide
 subtypes(AbstractFloat)
 ```
 and we can also list the immediate `supertype` or climb the ladder all the way to `Any` using `supertypes`
-``julia
+```julia
 using InteractiveUtils: supertypes  # hide
 supertypes(AbstractFloat)
 ```
@@ -215,7 +210,6 @@ The main role of abstract types allows is in function definitions. They allow to
 
 ```julia
 sgn(x::Real) = x > 0 ? 1 : x < 0 ? -1 : 0
-nothing # hide
 ```
 
 and we know it would be correct for all real numbers. This means that if anyone creates
@@ -227,7 +221,6 @@ For unsigned numbers, the `sgn` can be simplified, as it is sufficient to verify
 
 ```julia
 sgn(x::Unsigned) = x > 0 ? 1 : 0
-nothing # hide
 ```
 
 and again, it applies to all numbers derived from `Unsigned`. Recall that
@@ -242,6 +235,29 @@ to specialize for sub-types. A great example is matrix multiplication, which has
 generic (and slow) implementation with many specializations, which can take advantage
 of structure (sparse, banded), or use optimized implementations (e.g. blas implementation
 for dense matrices with eltype `Float32` and `Float64`).
+
+!!! example "Posit Numbers"
+    [Posit numbers](https://posithub.org/) are an alternative to IEEE764 format to store floating points (`Real`) numbers.
+    They offer higher precision around zero and wider dynamic range of representable numbers.
+    When julia performs matrix multiplication with `Float32` / `Float64`, it will use BLAS routines written in C, which are very performant.
+    ```julia
+    A = rand(Float32, 32, 32)
+    B = rand(Float32, 32, 16)
+    A * B
+    julia> @which A*B
+    *(A::Union{LinearAlgebra.Adjoint{<:Any, <:StridedMatrix{var"#s994"}}, LinearAlgebra.Transpose{<:Any, <:StridedMatrix{var"#s994"}}, StridedMatrix{var"#s994"}} where var"#s994"<:Union{Float32, Float64}, B::Union{LinearAlgebra.Adjoint{<:Any, <:StridedMatrix{var"#s128"}}, LinearAlgebra.Transpose{<:Any, <:StridedMatrix{var"#s128"}}, StridedMatrix{var"#s128"}} where var"#s128"<:Union{Float32, Float64})
+         @ LinearAlgebra ~/.julia/juliaup/julia-1.10.5+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/LinearAlgebra/src/matmul.jl:111
+    ```
+    We can now convert both matrices to posit representation. We can still multiply them, but the function which will now perform the multiplication is a generic multiplication.
+    ```julia
+    using SoftPosit
+    A = Posit32.(A)
+    B = Posit32.(B)
+    A * B
+    @which A*B
+    *(A::AbstractMatrix, B::AbstractMatrix)
+     @ LinearAlgebra ~/.julia/juliaup/julia-1.10.5+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/LinearAlgebra/src/matmul.jl:104
+    ```
 
 Again, Julia does not make a difference between abstract types defined in `Base`
 libraries shipped with the language and those defined by you (the user). All are treated
@@ -277,19 +293,19 @@ struct VaguePosition
 end
 ```
 
-This works as the definition above except that the arguments are not converted to `Float64` now. One can store different values in `x` and `y`, for example `String` (e.g. VaguePosition("Hello","world")). Although the above definition might be convenient, it limits the compiler's ability to specialize, as the type  `VaguePosition` does not carry information about type of `x` and `y`, which has a negative impact on the performance. For example
-
+This works as the definition above except that the arguments are not converted to `Float64` now. One can store different values in `x` and `y`, for example `String` (e.g. VaguePosition("Hello","world")). Although the above definition might be convenient, it limits the compiler's ability to specialize, as the type  `VaguePosition` does not carry information about type of `x` and `y`, which has a negative impact on the performance. Let's demonstrate it on an example of random walk.  where we implement function `move` which move position by position.
 ```julia
 using BenchmarkTools
 move(a,b) = typeof(a)(a.x+b.x, a.y+b.y)
-x = [PositionF64(rand(), rand()) for _ in 1:100]
-y = [VaguePosition(rand(), rand()) for _ in 1:100]
-@benchmark reduce(move, $(x))
-@benchmark reduce(move, $(y))
-nothing # hide
+δx = [PositionF64(rand(), rand()) for _ in 1:100]
+x₀ = PositionF64(rand(), rand())
+δy = [VaguePosition(rand(), rand()) for _ in 1:100]
+y₀ = VaguePosition(rand(), rand())
+@benchmark foldl(move, $(δx); init = $(x₀))
+@benchmark foldl(move, $(δy); init = $(y₀))
 ```
 
-Giving fields of a composite type an abstract type does not really solve the problem of the compiler not knowing the type. In this example, it still does not know, if it should use instructions for `Float64` or `Int8`.
+Giving fields of a composite type an abstract type does not really solve the problem of the compiler not knowing the type. In this example, it still does not know, if it should use instructions for `Float64` or `Int8`. From the perspective of generating optimal code, the definition of `LessVaguePosition` and `VaguePosition` are equally uninformative to the compiler as it cannot assume anything about the code. However, the  `LessVaguePosition` will ensure that the position will contain only numbers, hence catching trivial errors like instantiating `VaguePosition` with non-numeric types for which arithmetic operators will not be defined (recall the discussion on the  beginning of the lecture).
 
 ```julia
 struct LessVaguePosition
@@ -297,12 +313,11 @@ struct LessVaguePosition
   y::Real
 end
 
-z = [LessVaguePosition(rand(), rand()) for _ in 1:100];
-@benchmark reduce(move, $(z))
+δz = [LessVaguePosition(rand(), rand()) for _ in 1:100]
+z₀ = LessVaguePosition(rand(), rand())
+@benchmark foldl(move, $(δz); init = $(z₀))
 nothing #hide
 ```
-
-From the perspective of generating optimal code, both definitions are equally uninformative to the compiler as it cannot assume anything about the code. However, the  `LessVaguePosition` will ensure that the position will contain only numbers, hence catching trivial errors like instantiating `VaguePosition` with non-numeric types for which arithmetic operators will not be defined (recall the discussion on the  beginning of the lecture).
 
 All structs defined above are immutable (as we have seen above in the case of `Tuple`), which means that one cannot change a field (unless the struct wraps a container, like and array, which allows that). For example this raises an error
 
@@ -312,7 +327,6 @@ a.x = 2
 ```
 
 If one needs to make a struct mutable, use the keyword `mutable` before the keyword `struct` as
-
 ```julia
 mutable struct MutablePosition
   x::Float64
@@ -328,7 +342,10 @@ a.x = 2;
 a
 ```
 
-Note, that the memory layout of mutable structures is different, as fields now contain references to memory locations, where the actual values are stored (such structures cannot be allocated on stack, which increases the pressure on Garbage Collector).
+!!! note "Mutable and Non-Mutable structs"
+    The functional difference between those is that you are not allowed to change fields of non-mutable structures. Therefore when the structure needs to be changed, you need to *construct* new structure, which means calling constructor, where you can enforce certain properties (through inner constructor).
+
+    There is also difference for the compiler. When a struct is non-mutable, the fields in memory stores the actual values, and therefore they can be stored on stack (this is possible only if all fields are of primitive types). The operations are fast, because there is no pointer dereferencing, there is no need to allocate memory (when they can be store on stack), and therefore less presure on Garbage Collector. When stack is mutable, the structure contains a pointer to a memory location on the heap, which contains the value. This means to access the value, we first need to read the pointer to the memory location and then read the value (two fetches from the memory). Moreover, the value has to be stored on Heap, which means that we need to allocate memory during construction, which is expensive.
 
 The difference can be seen from 
 ```
@@ -341,31 +358,33 @@ Why there is just one addition?
 
 Also, the mutability is costly.
 ```julia
-x = [PositionF43(rand(), rand()) for _ in 1:100];
-z = [MutablePosition(rand(), rand()) for _ in 1:100];
-@benchmark reduce(move, $(x))
-@benchmark reduce(move, $(z))
+δx = [PositionF64(rand(), rand()) for _ in 1:100]
+x₀ = PositionF64(rand(), rand())
+δz = [MutablePosition(rand(), rand()) for _ in 1:100]
+z₀ = MutablePosition(rand(), rand())
+@benchmark foldl(move, $(δx); init = $(x₀))
+@benchmark foldl(move, $(δz); init = $(z₀))
 ```
 
 ### Parametric types
-So far, we had to trade-off flexibility for generality in type definitions. Can we have both? The answer is affirmative. The way to achieve this  **flexibility** in definitions of the type while being  able to generate optimal code is to  **parametrize** the type definition. This is achieved by replacing types with a parameter (typically a single uppercase character) and decorating in definition by specifying different type in curly brackets. For example
+So far, we had to trade-off flexibility for generality in type definitions. We either have structured with a fixed type, which are fast, or we had structures with a general type information, but they are slow. Can we have both? The answer is affirmative. The way to achieve this  **flexibility** in definitions of the type while being able to generate optimal code is to  **parametrize** the type definition. This is achieved by replacing types with a parameter (typically a single uppercase character) and decorating in definition by specifying different type in curly brackets. For example
 
 ```julia
 struct PositionT{T}
   x::T
   y::T
 end
-u = [PositionT(rand(), rand()) for _ in 1:100]
-u = [PositionT(rand(Float32), rand(Float32)) for _ in 1:100]
 
-@benchmark reduce(move, $(u))
-nothing # hide
+u64 = [PositionT(rand(), rand()) for _ in 1:100]
+u32 = [PositionT(rand(Float32), rand(Float32)) for _ in 1:100]
+@benchmark foldl(move, $(u64))
+@benchmark foldl(move, $(u32))
 ```
 
 Notice that the compiler can take advantage of specializing for different types (which does not have an effect here as in modern processors addition of `Float` and `Int` takes the same time).
 
 ```julia
-v = [PositionT(rand(1:100), rand(1:100)) for _ in 1:100]
+v = [PositionT(Int8(rand(1:100)), Int8(rand(1:100))) for _ in 1:100];
 @benchmark reduce(move, v)
 nothing #hide
 ```
@@ -380,15 +399,16 @@ end
 ```
 
 which will throw an error if we try to initialize it with `Position("1.0", "2.0")`. Notice the flexibility we have achieved. We can use `Position` to store (and later compute) not only over `Float32` / `Float64` but any real numbers defined by other packages, for example with `Posit`s.
-``julia
+```julia
 using SoftPosit
-Position(Posit8(3), Posit8(1))
+p32 = [Position(Posit32(rand(Float32)), Posit32(rand(Float32))) for _ in 1:100];
+@benchmark foldl(move, $(p32))
 ```
-also notice that trying to construct the `Position` with different type of real numbers will fail, example `Position(1f0,1e0)`
+The above test with `Posit` is slow, because there is no hardware support for their operations.
+Trying to construct the `Position` with different type of real numbers will fail, example `Position(1f0,1e0),` because through type definition we enforce them to have equal type.
 
 Naturally, fields in structures can be of different types, as is in the below pointless example.
-
-``julia
+```julia
 struct PositionXY{X<:Real, Y<:Real}
   x::X
   y::Y
@@ -396,7 +416,6 @@ end
 ```
 
 The type can be parametrized by a concrete types. This is useful to communicate the compiler some useful informations, for example size of arrays. 
-
 ```julia
 struct PositionZ{T<:Real,Z}
   x::T
@@ -431,7 +450,6 @@ function dot(a::AbstractVector, b::AbstractVector)
   @assert length(a) == length(b)
   mapreduce(*, +, a, b)
 end
-nothing # hide
 ```
 
 You can verify that the above general function can be compiled to performant code if
@@ -449,7 +467,6 @@ A *function* refers to a set of "methods" for a different combination of type pa
 ```julia
 move(a::Position, b::Position) = Position(a.x + b.x, a.y + b.y)
 move(a::Vector{<:Position}, b::Vector{<:Position}) = move.(a,b)
-nothing # hide
 ```
 
 `move` refers to a function with methods `move(a::Position, b::Position)` and `move(a::Vector{<:Position}, b::Vector{<:Position})`. When different behavior on different types is defined by a programmer, as shown above, it is also called *implementation specialization*. There is another type of specialization, called *compiler specialization*, which occurs when the compiler generates different functions for you from a single method. For example for
@@ -457,23 +474,44 @@ nothing # hide
 ```
 move(Position(1,1), Position(2,2))
 move(Position(1.0,1.0), Position(2.0,2.0))
-```
-
-the compiler generates two methods, one for `Position{Int64}` and the other for `Position{Float64}`. Notice that inside generated functions, the compiler needs to use different intrinsic operations, which can be viewed from
-
-```julia; ansicolor=true
-@code_native debuginfo=:none move(Position(1,1), Position(2,2))
-```
-
-and
-
-```julia; ansicolor=true
-@code_native debuginfo=:none move(Position(1.0,1.0), Position(2.0,2.0))
-```
-
-Notice that `move` works on `Posits` defined in 3rd party libas well
-```
 move(Position(Posit8(1),Posit8(1)), Position(Posit8(2),Posit8(2)))
+```
+
+### Frequent problems
+* Why does the following fail?
+    
+```julia
+foo(a::Vector{Real}) = println("Vector{Real}")
+foo([1.0,2,3])
+```
+Julia's type system is **invariant**, which means that `Vector{Real}` is different from `Vector{Float64}` and from `Vector{Float32}`, even though `Float64` and `Float32` are sub-types of `Real`. Therefore `typeof([1.0,2,3])` isa `Vector{Float64}` which is not subtype of `Vector{Real}.` For **covariant** languages, this would be true. For more information on variance in computer languages, [see here](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)). If the above definition of `foo` should be applicable to all vectors which has elements of subtype of `Real` we have define it as
+    
+```julia
+foo(a::Vector{T}) where {T<:Real} = println("Vector{T} where {T<:Real}")
+```
+or equivalently but more tersely as 
+```julia
+foo(a::Vector{<:Real}) = println("Vector{T} where {T<:Real}")
+```
+* **Diagonal rule** says that a repeated type in a method signature has to be a concrete type (this is to avoid ambiguity if the repeated type is used inside function definition to define a new variable to change type of variables). Consider for example the function below 
+```julia
+move(a::T, b::T) where {T<:Position} = T(a.x + by.x, a.y + by.y)
+```
+we cannot call it with `move(Position(1.0,2.0), Position(1,2))`, since in this case `Position(1.0,2.0)` is of type `Position{Float64}` while `Position(1,2)` is of type `Position{Int64}`.
+    
+The **Diagonal rule** applies to parametric types as well.
+```julia
+move(a::Position{T}, b::Position{T}) where {T} = T(a.x + by.x, a.y + by.y)
+```
+* When debugging why arguments do not match a particular method definition, it is useful to use `typeof`, `isa`, and `<:` commands. For example
+```julia
+typeof(Position(1.0,2.0))
+typeof(Position(1,2))
+Position(1,2) isa Position{Float64}
+Position(1,2) isa Position{Real}
+Position(1,2) isa Position{<:Real}
+typeof(Position(1,2)) <: Position{<:Float64}
+typeof(Position(1,2)) <: Position{<:Real}
 ```
 
 ## Intermezzo: How does the Julia compiler work?
@@ -485,7 +523,6 @@ move(a::T, by::T) where {T<:Position} = Position(a.x + by.x, a.y + by.y)
 move(a::Position{Float64}, by::Position{Float64}) = Position(a.x + by.x, a.y + by.y)
 move(a::Vector{<:Position}, by::Vector{<:Position}) = move.(a, by)
 move(a::Vector{<:Position}, by::Position) = move.(a, by)
-nothing # hide
 ```
 
 and a function call
@@ -511,13 +548,13 @@ m = Base.method_instances(move, (typeof(a), typeof(by)), wc)
 m = first(m)
 ```
 
-4a. If the method has been specialized (compiled), then the arguments are prepared and the method is invoked. The compiled specialization can be seen from
+4. If the method has been specialized (compiled), then the arguments are prepared and the method is invoked. The compiled specialization can be seen from
 
 ```
 m.cache
 ```
 
-4b. If the method has not been specialized (compiled), the method is compiled for the given type of arguments and continues as in step 4a.
+5. If the method has not been specialized (compiled), the method is compiled for the given type of arguments and continues as in step 4a.
 A compiled function is therefore  a "blob" of **native code** living in a particular memory location. When Julia calls a function, it needs to pick the right block corresponding to a function with particular type of parameters.
 
 If the compiler cannot narrow the types of arguments to concrete types, it has to perform the above procedure inside the called function, which has negative effects on performance, as the type resolution and identification of the methods can be slow, especially for methods with many arguments (e.g. 30ns for a method with one argument,
@@ -601,9 +638,9 @@ In the above process, the step, where Julia looks for a method instance with cor
 
 When Julia needs to specialize a method instance, it needs to find it among multiple definitions. A single function can have many method instances, see for example `methods(+)` which  lists all method instances of the `+`-function. How does Julia select the proper one?
 1. It finds all methods where the type of arguments match or are subtypes of restrictions on arguments in the method definition.
-2a. If there are multiple matches, the compiler selects the most specific definition.
+2. If there are multiple matches, the compiler selects the most specific definition.
 
-2b. If the compiler cannot decide, which method instance to choose, it throws an error.
+3. If the compiler cannot decide, which method instance to choose, it throws an error.
 
 ```
 confused_move(a::Position{Float64}, by) = Position(a.x + by.x, a.y + by.y)
@@ -611,7 +648,7 @@ confused_move(a, by::Position{Float64}) = Position(a.x + by.x, a.y + by.y)
 confused_move(Position(1.0,2.0), Position(1.0,2.0))
 ```
 
-2c. If it cannot find a suitable method, it throws an error.
+4. If it cannot find a suitable method, it throws an error.
 
 ```
 move(Position(1,2), VaguePosition("hello","world"))
@@ -626,7 +663,6 @@ move(a::Position{Float64}, by::Position{Float64}) = Position(a.x + by.x, a.y + b
 move(a::Vector{<:Position}, by::Vector{<:Position}) = move.(a, by)
 move(a::Vector{T}, by::Vector{T}) where {T<:Position} = move.(a, by)
 move(a::Vector{<:Position}, by::Position) = move.(a, by)
-nothing # hide
 ```
 
 Which method will compiler select for
@@ -657,48 +693,6 @@ Again, the fourth and fifth method definitions match the argument, but the fifth
 move([Position(1,2), Position(1.0,2.0)], [Position(1,2), Position(1.0,2.0)])
 ```
 
-### Frequent problems
-1. Why does the following fail?
-
-```
-foo(a::Vector{Real}) = println("Vector{Real}")
-foo([1.0,2,3])
-```
-
-Julia's type system is **invariant**, which means that `Vector{Real}` is different from `Vector{Float64}` and from `Vector{Float32}`, even though `Float64` and `Float32` are sub-types of `Real`. Therefore `typeof([1.0,2,3])` isa `Vector{Float64}` which is not subtype of `Vector{Real}.` For **covariant** languages, this would be true. For more information on variance in computer languages, [see here](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)). If the above definition of `foo` should be applicable to all vectors which has elements of subtype of `Real` we have define it as
-
-```julia
-foo(a::Vector{T}) where {T<:Real} = println("Vector{T} where {T<:Real}")
-nothing # hide
-```
-
-or equivalently but more tersely as
-
-```julia
-foo(a::Vector{<:Real}) = println("Vector{T} where {T<:Real}")
-nothing # hide
-```
-
-2. Diagonal rule says that a repeated type in a method signature has to be a concrete type (this is to avoid ambiguity if the repeated type is used inside function definition to define a new variable to change type of variables). Consider for example the function below
-
-```julia
-move(a::T, b::T) where {T<:Position} = T(a.x + by.x, a.y + by.y)
-nothing # hide
-```
-
-we cannot call it with `move(Position(1.0,2.0), Position(1,2))`, since in this case `Position(1.0,2.0)` is of type `Position{Float64}` while `Position(1,2)` is of type `Position{Int64}`.
-3. When debugging why arguments do not match a particular method definition, it is useful to use `typeof`, `isa`, and `<:` commands. For example
-
-```
-typeof(Position(1.0,2.0))
-typeof(Position(1,2))
-Position(1,2) isa Position{Float64}
-Position(1,2) isa Position{Real}
-Position(1,2) isa Position{<:Real}
-typeof(Position(1,2)) <: Position{<:Float64}
-typeof(Position(1,2)) <: Position{<:Real}
-```
-
 ### A bizzare definition which you can encounter
 The following definition of a one-hot matrix is taken from [Flux.jl](https://github.com/FluxML/Flux.jl/blob/1a0b51938b9a3d679c6950eece214cd18108395f/src/onehot.jl#L10-L12)
 
@@ -711,4 +705,4 @@ end
 The parameters of the type carry information about the type used to encode the position of `one` in each column in `T`, the dimension of one-hot vectors in `L`, the dimension of the storage of `indices` in `N` (which is zero for `OneHotVector` and one for `OneHotMatrix`), number of dimensions of the `OneHotArray` in `var"N+1"` and the type of underlying storage of indices `I`.
 
 
-[^1]: Type Stability in Julia, Pelenitsyn et al., 2021](https://arxiv.org/pdf/2109.01950.pdf)
+[^1]: [Type Stability in Julia, Pelenitsyn et al., 2021](https://arxiv.org/pdf/2109.01950.pdf)
