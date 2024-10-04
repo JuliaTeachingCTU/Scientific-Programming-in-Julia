@@ -11,6 +11,7 @@ in the language, the latter aspect is important for the speed of the generated c
 Type systems according to [Wikipedia](https://en.wikipedia.org/wiki/Data_type):
 * In computer science and computer programming, a **data type** or simply **type** is an attribute of data which tells the compiler or interpreter how the programmer intends to use the data.
 * A **type system** is a logical system comprising a set of rules that assigns a property called a type to the various constructs of a computer program, such as variables, expressions, functions or modules. These types formalize and enforce the otherwise implicit categories the programmer uses for algebraic data types, data structures, or other components.
+[Good short answer to Static vs. Dynamic types](https://stackoverflow.com/a/34004445)
 
 ## Structuring the code / enforcing the categories
 The role of **structuring** the code and imposing semantic restriction
@@ -30,7 +31,6 @@ struct Sheep
   energy::Int
 end
 ```
-
 
 This allows us to define functions applicable only to the corresponding type
 
@@ -534,27 +534,12 @@ move(a, by)
 ```
 
 1. The compiler knows that you call the function `move`.
-2. The compiler infers the type of the arguments. You can view the result with
+2. The compiler infers the type of the arguments. You can view the result with `(typeof(a),typeof(by))`
+3. The compiler identifies all `move`-methods with arguments of type `(Position{Float64}, Position{Float64})`:  
+    `m = Base.method_instances(move, (typeof(a), typeof(by)), Base.get_world_counter())`
+4. a) If the method has been specialized (compiled), then the arguments are prepared and the method is invoked. The compiled specialization can be seen from `m.cache`
 
-```
-(typeof(a),typeof(by))
-```
-
-3. The compiler identifies all `move`-methods with arguments of type `(Position{Float64}, Position{Float64})`:
-
-```
-wc = Base.get_world_counter()
-m = Base.method_instances(move, (typeof(a), typeof(by)), wc)
-m = first(m)
-```
-
-4. If the method has been specialized (compiled), then the arguments are prepared and the method is invoked. The compiled specialization can be seen from
-
-```
-m.cache
-```
-
-5. If the method has not been specialized (compiled), the method is compiled for the given type of arguments and continues as in step 4a.
+4. b) If the method has not been specialized (compiled), the method is compiled for the given type of arguments and continues as in step 4a.
 A compiled function is therefore  a "blob" of **native code** living in a particular memory location. When Julia calls a function, it needs to pick the right block corresponding to a function with particular type of parameters.
 
 If the compiler cannot narrow the types of arguments to concrete types, it has to perform the above procedure inside the called function, which has negative effects on performance, as the type resolution and identification of the methods can be slow, especially for methods with many arguments (e.g. 30ns for a method with one argument,
@@ -563,38 +548,9 @@ Recall the above example
 
 ```julia
 wolfpack_a =  [Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
-@benchmark energy($(wolfpack_a))
-```
-```
-BenchmarkTools.Trial: 10000 samples with 991 evaluations.
- Range (min … max):  40.195 ns … 66.641 ns  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     40.742 ns              ┊ GC (median):    0.00%
- Time  (mean ± σ):   40.824 ns ±  1.025 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
-
-   ▂▃ ▃▅▆▅▆█▅▅▃▂▂                                             ▂
-  ▇██████████████▇▇▅▅▁▅▄▁▅▁▄▄▃▄▅▄▅▃▅▃▅▁▃▁▄▄▃▁▁▅▃▃▄▃▄▃▄▆▆▇▇▇▇█ █
-  40.2 ns      Histogram: log(frequency) by time      43.7 ns <
-
- Memory estimate: 0 bytes, allocs estimate: 0.
-```
-
-and
-
-```julia
 wolfpack_b =  Any[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
+@benchmark energy($(wolfpack_a))
 @benchmark energy($(wolfpack_b))
-```
-```
-BenchmarkTools.Trial: 10000 samples with 800 evaluations.
- Range (min … max):  156.406 ns … 212.344 ns  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     157.136 ns               ┊ GC (median):    0.00%
- Time  (mean ± σ):   158.114 ns ±   4.023 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
-
-  ▅█▆▅▄▂   ▃▂▁                                                  ▂
-  ██████▆▇██████▇▆▇█▇▆▆▅▅▅▅▅▃▄▄▅▄▄▄▄▅▁▃▄▄▃▃▄▃▃▃▄▄▄▅▅▅▅▁▅▄▃▅▄▄▅▅ █
-  156 ns        Histogram: log(frequency) by time        183 ns <
-
- Memory estimate: 0 bytes, allocs estimate: 0.
 ```
 
 An interesting intermediate between fully abstract and fully concrete type happens, when the compiler knows that arguments have abstract type, which is composed of a small number of concrete types. This case  called Union-Splitting, which happens when there is just a little bit of uncertainty. Julia will do something like
@@ -614,19 +570,6 @@ const WolfOrSheep = Union{Wolf, Sheep}
 wolfpack_c =  WolfOrSheep[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
 @benchmark energy($(wolfpack_c))
 ```
-```
-BenchmarkTools.Trial: 10000 samples with 991 evaluations.
- Range (min … max):  43.600 ns … 73.494 ns  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     44.106 ns              ┊ GC (median):    0.00%
- Time  (mean ± σ):   44.279 ns ±  0.931 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
-
-       █     ▁ ▃                                               
-  ▂▂▂▆▃██▅▃▄▄█▅█▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▂▂▂▁▂▂▂▂▂▂▂▂▂▂▂▂▂ ▃
-  43.6 ns         Histogram: frequency by time        47.4 ns <
-
- Memory estimate: 0 bytes, allocs estimate: 0.
-```
-
 Thanks to union splitting, Julia is able to have performant operations on arrays with undefined / missing values for example
 
 ```
