@@ -281,7 +281,7 @@ eat!(grass,sheep,world);
 ```
 The `eat!` method for wolves increases the wolf's energy by `sheep.energy *
 wolf.Δenergy` and kills the sheep (i.e.  removes the sheep from the world).
-There are other situationsin which agents die , so it makes sense to implement
+There are other situations in which agents die , so it makes sense to implement
 another function `kill_agent!(::Animal,::World)`.
 
 Hint: You can use `delete!` to remove agents from the dictionary in your world.

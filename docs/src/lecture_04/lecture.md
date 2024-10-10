@@ -75,7 +75,7 @@ Combinations:
 ### Conflicts:
 When importing/using functions with name that is already imported/used from another module:
 - the imported functions/structs are invalidated. 
-- both functions has to be acessed by their full names.
+- both functions has to be accessed by their full names.
 
 Resolution:
 - It may be easier to cherry pick only the functions we need (rather than importing all via `using`)
@@ -320,7 +320,7 @@ Project environments are based on files with installed packages.
 - when switching to a new project `]instantiate` will prepare (download and precompile) the environment
   - creates `Manifest.toml` = list of all exact versions of all packages 
 - which Packages are visible is determined by `LOAD_PATH`
-    - typically contaings default libraries and default environment
+    - typically contains default libraries and default environment
     - it is different for REPL and Pkg.tests ! No default env. in tests. 
 
 

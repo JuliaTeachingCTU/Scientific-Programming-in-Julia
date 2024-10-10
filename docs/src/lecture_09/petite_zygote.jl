@@ -45,6 +45,7 @@ function adjoint(pr)
   data = push!(ir, xcall(:getfield, self, QuoteNode(:data)))
   _, pbs = primal(pr)
   pbs = Dict(pbs[i] => push!(ir, xcall(:getindex, data, i)) for i = 1:length(pbs))
+  
   for v in reverse(keys(pr))
     ex = pr[v].expr
     isexpr(ex, :call) || continue

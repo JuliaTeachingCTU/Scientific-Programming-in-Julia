@@ -1,16 +1,9 @@
-using Scientific_Programming_in_Julia
 using Documenter
 
 using Downloads: download
 using Documenter.Writers: HTMLWriter
 using DocumenterTools.Themes
 
-DocMeta.setdocmeta!(
-    Scientific_Programming_in_Julia,
-    :DocTestSetup,
-    :(using Scientific_Programming_in_Julia);
-    recursive = true
-)
 
 # download and compile theme
 assetsdir(args...) = joinpath(@__DIR__, "src", "assets", args...)
@@ -93,8 +86,24 @@ lecture_09 = [
     "Lab" => "./lecture_09/lab.md"
 ]
 
+lecture_10 = [
+    "Lecture" => "./lecture_10/lecture.md"
+    "Lab" => "./lecture_10/lab.md"
+    "Homework" => "./lecture_10/hw.md"
+]
+
+lecture_11 = [
+    "Lecture" => "./lecture_11/lecture.md"
+    "Lab" => "./lecture_11/lab.md"
+]
+
+lecture_12 = [
+    "Lecture" => "./lecture_12/lecture.md"
+    "Lab" => "./lecture_12/lab.md"
+    "Homework" => "./lecture_12/hw.md"
+]
+
 makedocs(;
-    modules = [Scientific_Programming_in_Julia],
     authors = "JuliaTeachingCTU",
     repo = "https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/{commit}{path}#{line}",
     sitename = "Scientific Programming in Julia",
@@ -117,7 +126,10 @@ makedocs(;
         "6: Lanuage introspection" => lecture_06,
         "7: Macros" => lecture_07,
         "8: Automatic differentiation" => lecture_08,
-        # "9: Intermediate representation" => lecture_09,
+        "9: Intermediate representation" => lecture_09,
+        "10: Parallel programming" => lecture_10,
+        "11: GPU programming" => lecture_11,
+        "12: Ordinary Differential Equations" => lecture_12,
     ],
 )
 

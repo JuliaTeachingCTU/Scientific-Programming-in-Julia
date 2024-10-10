@@ -18,7 +18,7 @@
 
 import Core.Compiler as CC
 using ChainRules
-using Core: SSAValue, GlobalRef, ReturnNode
+using Core: SSAValue, GlobalRef, ReturnNode, Argument
 
 
 function get_ciir(f, sig; world = Core.Compiler.get_world_counter(), optimize_until = "compact 1")
@@ -30,9 +30,11 @@ end
 
 
 
-# struct Pullback{S,T}
-#   pullbacks::T
-# end
+struct Pullback{S,T}
+  pullbacks::T
+end
+
+Pullback{S}(pullbacks) where S = Pullback{S,typeof(pullbacks)}(pullbacks)
 
 
 argtype(ir::CC.IRCode, a::Core.Argument) = ir.argtypes[a.n]
@@ -61,7 +63,7 @@ remap(d, r::ReturnNode) = ReturnNode(remap(d, r.val))
 remap(d, x::SSAValue) = d[x] 
 remap(d, x) = x
 
-function forward(ir)
+function forward(ir, S)
   pullbacks = []
   new_insts = Any[]
   new_line = Int32[]
@@ -77,7 +79,6 @@ function forward(ir)
       push!(new_line, stmt[:line])
       push!(new_types, tt)
       rrule_ssa = SSAValue(length(new_insts))
-
 
       push!(new_insts, Expr(:call, :getindex, rrule_ssa, 1))      
       push!(new_line, stmt[:line])
@@ -107,11 +108,22 @@ function forward(ir)
   push!(new_line, new_line[end])
   push!(new_types, Tuple{[new_types[x.id] for x in pullbacks]...})
 
+  # construct the PullBack
+
+  pb = Expr(:call, Pullback{S}, pull_ssa)
+
+
   # construct the tuple containing forward and reverse
-  push!(new_insts, Expr(:call, :tuple, fval_ssa, pull_ssa))
+  push!(new_insts, Expr(:call, :tuple, fval_ssa, calltype_ssa))
   ret_ssa = SSAValue(length(new_insts))
   push!(new_line, new_line[end])
-  push!(new_types, Tuple{new_types[fval_ssa.id], new_types[pull_ssa.id]})
+  push!(new_types, Tuple{new_types[fval_ssa.id], new_types[calltype_ssa.id]})
+
+  # # construct the tuple containing forward and reverse
+  # push!(new_insts, Expr(:call, :tuple, fval_ssa, pull_ssa))
+  # ret_ssa = SSAValue(length(new_insts))
+  # push!(new_line, new_line[end])
+  # push!(new_types, Tuple{new_types[fval_ssa.id], new_types[pull_ssa.id]})
 
   # put a return statement
   push!(new_insts, ReturnNode(ret_ssa))
@@ -132,22 +144,69 @@ end
 
 
 
+function play(ir)
+  pullbacks = []
+  new_insts = Any[]
+  new_line = Int32[]
+  new_types = Any[]
+
+  push!(new_insts, Expr(:call, GlobalRef(Core, :typeof), Argument(1)))
+  # push!(new_insts, Argument(1))
+  ret_ssa = SSAValue(length(new_insts))
+  push!(new_line, ir.stmts[1][:line])
+  push!(new_types, Any)
 
 
-function foo(x,y) 
-  z = x * y 
-  z + sin(x)
+  # put a return statement
+  push!(new_insts, ReturnNode(ret_ssa))
+  push!(new_line, new_line[end])
+  push!(new_types, Any)
+
+  # this nightmare construct the IRCode with absolutely useless type information
+  is = CC.InstructionStream(
+    new_insts,                               # inst::Vector{Any}
+    new_types,            # type::Vector{Any}
+    fill(CC.NoCallInfo(), length(new_insts)),   # info::Vector{CallInfo}
+    new_line,                               # line::Vector{Int32}
+    fill(UInt8(0), length(new_insts)),       # flag::Vector{UInt8}
+  )
+  cfg = CC.compute_basic_blocks(new_insts)
+  new_ir = CC.IRCode(is, cfg, ir.linetable, ir.argtypes, ir.meta, ir.sptypes)
 end
 
 
-(ci, ir, rt) = get_ciir(foo, (Float64, Float64))
-new_ir = forward(ir)
-CC.replace_code_newstyle!(ci, ir)
+function demo()
 
-forw = Core.OpaqueClosure(forward(ir))
-fval, pullbacks = forw(1.0,1.0)
+  function foo(x,y) 
+    z = x * y 
+    z + sin(x)
+  end
 
-(1.0,1.0)
+
+  (ci, ir, rt) = get_ciir(foo, (Float64, Float64))
+  new_ir = forward(ir)
+  CC.replace_code_newstyle!(ci, ir)
+
+  forw = Core.OpaqueClosure(forward(ir))
+  fval, pullbacks = forw(1.0,1.0)
+end
+
+# S = Tuple{foo, Float64, Float64}
+# T = typeof(pullbacks)
+# @macroexpand @code_typed Pullback{S,T}(pullbacks)
+# (ci, ir, rt) = get_ciir(Pullback{S,T}, T)
+
+# julia> dump(e)
+# Expr
+#   head: Symbol new
+#   args: Array{Any}((2,))
+#     1: Core.Argument
+#       n: Int64 1
+#     2: Core.Argument
+#       n: Int64 2
+
+# julia>
+# (1.0,1.0)
 
 
 """

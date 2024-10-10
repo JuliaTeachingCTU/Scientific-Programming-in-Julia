@@ -29,7 +29,7 @@ is one approach that can identify concise equations that describe a given
 dataset.
 
 The EQL is essentially a neural network with different unary or binary
-activation functions at each indiviual unit. The network weights are
+activation functions at each individual unit. The network weights are
 regularized during training to obtain a sparse model which hopefully results in
 a model that represents a simple equation.
 
@@ -37,7 +37,7 @@ The goal of this project is to implement the EQL, and if there is enough time
 the [*improved equation learner*](https://arxiv.org/abs/2105.06331) (iEQL).
 The equation learners should be tested on a few toy problems (possibly inspired
 by the tasks in the papers).  Finally, you will implement functionality that
-can transform the learned model into a symbolic, human readable, and exectuable
+can transform the learned model into a symbolic, human readable, and executable
 Julia expression.
 
 ### Architecture visualizer
@@ -71,20 +71,6 @@ Implement one of the following algorithms to train neural networks in parallel. 
 
 ## Solve issues in existing projects:
 
-### Create Yao backend for quantum simulation (Mentor: Niklas Heim)
-
-The recently published quantum programming library
-[Qadence](https://pasqal-io.github.io/qadence/latest/) needs a Julia backend. The tricky quantum
-parts are already implemented in a library called [Yao.jl](https://docs.yaoquantum.org/dev/). The
-goal of this project is to take the Qadence (Python) representation and translate it to Yao.jl
-(Julia). You will work with the Python/Julia interfacing library `PythonCall.jl` to realize this
-and benchmark the Julia backend in the end to assess if it is faster than the existing python
-implementation.
-
-If this sounds interesting, talk to Niklas.
-
-
-
 ### Address issues in markov decision processes (Mentor: Jan Mrkos)
 
 Fix type stability issue in [MCTS.jl](https://github.com/JuliaPOMDP/MCTS.jl), prepare benchmarks,
@@ -94,10 +80,10 @@ bit about Markov Decision Processes if you don't know them already.
 
 If it sounds interesting, get in touch with lecturer/lab assistant, who will connect you with Jan Mrkos.
 
-### Extend HMil library with Retentative networks (mentor Tomas Pevny)
+### Extend HMil library with Retentative networks (Mentor: Tomas Pevny)
 [Retentative networks](https://arxiv.org/abs/2307.08621) were recently proposed as a low-cost  alternative to Transformer models without sacrificing performance (according to authors). By implementing Retentative Networks, te HMil library will be able to learn sequences (not just sets), which might nicely extend its applicability.
 
-### Address issues in HMil/JsonGrinder library (mentor Simon Mandlik)
+### Address issues in HMil/JsonGrinder library (Mentor: Simon Mandlik)
 
 These are open source toolboxes that are used internally in Avast. Lots of general functionality is done, but some love is needed in polishing.
 
@@ -112,9 +98,14 @@ If it sounds interesting, get in touch with lecturer/lab assistant, who will con
 
 
 # Project requirements
-The goal of the semestral project is to create a Julia pkg with **reusable, properly tested and documented** code. We have given you some options of topics, as well as the freedom to choose something that could be useful for your research or other subjects. In general we are looking for something where performance may be crucial such as data processing, optimization or equation solving.
+The goal of the semestral project is to create a Julia pkg with **reusable**,
+**properly tested** and **documented** code. We have given you some options of topics,
+as well as the freedom to choose something that could be useful for your
+research or other subjects. In general we are looking for something where
+performance may be crucial such as data processing, optimization or equation
+solving.
 
-In practice the project should follow roughly this tree structure
+In practice the project should roughly follow the structure below:
 ```julia
 .
 ├── scripts
@@ -129,21 +120,45 @@ In practice the project should follow roughly this tree structure
 │	├── runtest.jl              # contains either all the tests or just includes them from other files
 │	├── Project.toml  			# lists some additional test dependencies
 │	└── Manifest.toml   		# usually not committed to git as it is generated on the fly
+├── docs
+│   ├── Project.toml
+│   ├── make.jl
+│   └── src
+│       └── index.md
 ├── README.md 					# describes in short what the pkg does and how to install pkg (e.g. some external deps) and run the example
 ├── Project.toml  				# lists all the pkg dependencies
 └── Manifest.toml  				# usually not committed to git as the requirements may be to restrictive
 ```
 
-The first thing that we will look at is `README.md`, which should warn us if there are some special installation steps, that cannot be handled with Julia's Pkg system. For example if some 3rd party binary dependency with license is required. Secondly we will try to run tests in the `test` folder, which should run and not fail and should cover at least some functionality of the pkg. Thirdly and most importantly we will instantiate environment in `scripts` and test if the example runs correctly. Lastly we will focus on documentation in terms of code readability, docstrings and inline comments. 
+Make sure that 
+- `README.md` is present and contains general information about the package. A small example is a nice to have.
+- The package can be installed trough the package manager as `Pkg.add("url of
+  the package")` with all and correct dependencies. Do not register the package
+  into an official registry if you are not willing to continue its development and
+  maintainance.
+- Make sure that the package is covered by tests which are in the `test` folder. We
+  will try to run them. There is no need for 100% percent test coverage. Tests
+  testing the functionality are sufficient.
+- The package should have basic documentation. For small packages, it is
+  sufficient to have documentation in readme. For larger pacakges, proper
+  documentation with `Documenter.jl` is advised.
 
-Only after all this we may look at the extent of the project and it's difficulty, which may help us in deciding between grades. 
+Only after all this we may look at the extent of the project and it's
+difficulty, which may help us in deciding between grades. 
 
 Nice to have things, which are not strictly required but obviously improves the score.
 - Ideally the project should be hosted on GitHub, which could have the continuous integration/testing set up.
 - Include some benchmark and profiling code in your examples, which can show us how well you have dealt with the question of performance.
-- Some parallelization attempts either by multi-processing, multi-threadding, or CUDA. Do not forget to show the improvement.
+- Some parallelization attempts either by multi-processing, multi-threading, or CUDA. Do not forget to show the improvement.
 - Documentation with a webpage using Documenter.jl.
 
-Here are some examples of how the project could look like:
 
-- [ImageInspector](https://github.com/JuliaTeachingCTU/ImageInspector.jl)
+# [Former projects for your inspiration](@id former_projects)
+
+The following is a list of great projects of past years.
+
+- [NeuralCollaborativeFiltering.jl](https://github.com/poludmik/NeuralCollaborativeFiltering.jl)
+- [OptimalTrainControl.jl](https://github.com/vtfanta/OptimalTrainControl_v2.jl)
+- [Urban Traffic Control](https://github.com/Matyxus/UTC_jl)
+- [Directed Evolution in Silico](https://github.com/soldamatlab/DESilico.jl)
+- [ImageInspector.jl](https://github.com/JuliaTeachingCTU/ImageInspector.jl) (used in our bachelor course)

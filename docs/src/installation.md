@@ -18,7 +18,7 @@ juliaup add 1.9
 # but please, just use the latest, stable version
 ```
 
-Now you should be able to start Julia an be greated with the following:
+Now you should be able to start Julia an be greeted with the following:
 ```bash
 $ julia
                _

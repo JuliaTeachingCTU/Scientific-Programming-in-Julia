@@ -45,7 +45,7 @@ fast, extensible, reusable, and easy-to-read code using things like *optional
 typing*, *multiple dispatch*, and functional programming concepts.  The later
 part of the course will teach you how to use more advanced concepts like
 *language introspection*, *metaprogramming*, and *symbolic computing*.
-Amonst others you will _**implement your own automatic differetiation**_ (the
+Amonst others you will _**implement your own automatic differentiation**_ (the
 backbone of modern machine learning) package based on these advanced techniques
 that can transform intermediate representations of Julia code.
 
@@ -76,7 +76,9 @@ Hint: The **first few homeworks are easier**. Use them to fill up your points.
 The final project will be individually agreed on for each student. Ideally you
 can use this project to solve a problem you have e.g. in your thesis, but don't
 worry - if you cannot come up with an own project idea, we will suggest one to
-you. More info and project suggestion can be found [here](@ref projects).
+you. More info and project suggestion can be found [here](@ref projects). Check
+out the [list of projects](@ref former_projects) from past to get a feeling for
+what we expect.
 
 
 ## Grading
@@ -101,15 +103,17 @@ the standard grading scale below.
 
 ## Prerequisites
 
-There are no hard requirements to take the course, but if you are not at all familiar
-with Julia we recommend you to take [Julia for Optimization and Learning](https://github.com/JuliaTeachingCTU/Julia-for-Optimization-and-Learning) before enrolling in this course. The [Functional Programming](https://cw.fel.cvut.cz/b202/courses/fup/start) course also contains
-some helpful concepts for this course. And knowledge about computer hardware, namely basics of how CPU works, how it interacts with memory through caches, and basics of multi-threadding certainly helps.
+There are no hard requirements to take the course. We go through the basics of Julia, but we do it rather quickly,
+so some familiarity with the language is an advantage.
+If you are looking for an in depth course on the basics of the language, we recommend to check out [Julia for Optimization and Learning](https://github.com/JuliaTeachingCTU/Julia-for-Optimization-and-Learning) before enrolling in this course. The [Functional Programming](https://cw.fel.cvut.cz/b202/courses/fup/start) course also contains
+some helpful concepts for this course. And knowledge about computer hardware, namely basics of how CPU works, how it interacts with memory through caches, and basics of multi-threading certainly helps.
 
 ## References
 
 - [Official documentation](https://docs.julialang.org/en/v1/)
 - [Modern Julia Workflows](https://modernjuliaworkflows.github.io)
 - [Workflow tips, and what is new in v1.9](https://www.youtube.com/watch?v=qM9NtiYlXck)
+- [Zero2Hero Julia Workhop](https://github.com/Datseris/Zero2Hero-JuliaWorkshop)
 - [Think Julia: How to Think Like a Computer Scientist](https://benlauwens.github.io/ThinkJulia.jl/latest/book.html#chap01)
 - [From Zero to Julia!](https://techytok.com/from-zero-to-julia/)
 - [WikiBooks](https://en.wikibooks.org/wiki/Introducing_Julia)

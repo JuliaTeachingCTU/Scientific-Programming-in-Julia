@@ -61,7 +61,7 @@ programmer which inevitably leads to errors (note that severely constrained
 type systems are difficult to use).
 
 ## Intention of use and restrictions on compilers
-Types play an important role in generating efficient code by a compiler, because they tells the compiler which operations are permitted, prohibited, and can indicate invariants of type (e.g. constant size of an array). If compiler knows that something is invariant (constant), it can expoit such information. As an example, consider the following two
+Types play an important role in generating efficient code by a compiler, because they tells the compiler which operations are permitted, prohibited, and can indicate invariants of type (e.g. constant size of an array). If compiler knows that something is invariant (constant), it can exploit such information. As an example, consider the following two
 alternatives to represent a set of animals:
 
 ```julia
@@ -144,7 +144,7 @@ primitive type Float64 <: AbstractFloat 64 end
 ```
 and they are mainly used to jump-start julia's type system. It is rarely needed to
 define a special primitive type, as it makes sense only if you define special functions
-operating on its bits. This is almost excusively used for exposing special operations
+operating on its bits. This is almost exclusively used for exposing special operations
 provided by the underlying CPU / LLVM compiler. For example `+` for `Int32` is different
 from `+` for `Float32` as they call a different intrinsic operations. You can inspect this
 jump-starting of the type system yourself by looking at Julia's source.
@@ -186,7 +186,7 @@ abstract type Integer       <: Real end
 abstract type Signed        <: Integer end
 abstract type Unsigned      <: Integer end
 ```
-where `<:` means "is a subtype of" and it is used in declarations where the right-hand is an immediate sypertype of a given type (`Integer` has the immediate supertype `Real`.) If the supertype is not supplied, it is considered to be Any, therefore in the above defition `Number` has the supertype `Any`. 
+where `<:` means "is a subtype of" and it is used in declarations where the right-hand is an immediate supertype of a given type (`Integer` has the immediate supertype `Real`.) If the supertype is not supplied, it is considered to be Any, therefore in the above definition `Number` has the supertype `Any`. 
 
 We can list childrens of an abstract type using function `subtypes`  
 ``julia
@@ -395,7 +395,7 @@ struct PositionXY{X<:Real, Y<:Real}
 end
 ```
 
-The type can be parametrized by a concrete types. This is usefuyl to communicate the compiler some useful informations, for example size of arrays. 
+The type can be parametrized by a concrete types. This is useful to communicate the compiler some useful informations, for example size of arrays. 
 
 ```julia
 struct PositionZ{T<:Real,Z}
@@ -444,7 +444,7 @@ using InteractiveUtils: @code_native
 
 ## More on the use of types in function definitions
 ### Terminology
-A *function* refers to a set of "methods" for a different combination of type parameters (the term function can be therefore considered as refering to a mere **name**). *Methods* define different behavior for different types of arguments for a given function. For example
+A *function* refers to a set of "methods" for a different combination of type parameters (the term function can be therefore considered as referring to a mere **name**). *Methods* define different behavior for different types of arguments for a given function. For example
 
 ```julia
 move(a::Position, b::Position) = Position(a.x + b.x, a.y + b.y)
@@ -520,8 +520,8 @@ m.cache
 4b. If the method has not been specialized (compiled), the method is compiled for the given type of arguments and continues as in step 4a.
 A compiled function is therefore  a "blob" of **native code** living in a particular memory location. When Julia calls a function, it needs to pick the right block corresponding to a function with particular type of parameters.
 
-If the compiler cannot narrow the types of arguments to concrete types, it has to perform the above procedure inside the called function, which has negative effects on performance, as the type resulution and identification of the methods can be slow, especially for methods with many arguments (e.g. 30ns for a method with one argument,
-100 ns for method with two arguements). **You always want to avoid run-time resolution inside the performant loop!!!**
+If the compiler cannot narrow the types of arguments to concrete types, it has to perform the above procedure inside the called function, which has negative effects on performance, as the type resolution and identification of the methods can be slow, especially for methods with many arguments (e.g. 30ns for a method with one argument,
+100 ns for method with two arguments). **You always want to avoid run-time resolution inside the performant loop!!!**
 Recall the above example
 
 ```julia
@@ -635,7 +635,7 @@ Which method will compiler select for
 move(Position(1.0,2.0), Position(1.0,2.0))
 ```
 
-The first three methods match the types of argumens, but the compiler will select the third one, since it is the most specific.
+The first three methods match the types of arguments, but the compiler will select the third one, since it is the most specific.
 
 Which method will compiler select for
 
@@ -679,7 +679,7 @@ foo(a::Vector{<:Real}) = println("Vector{T} where {T<:Real}")
 nothing # hide
 ```
 
-2. Diagonal rule says that a repeated type in a method signature has to be a concrete type (this is to avoid ambinguity if the repeated type is used inside function definition to define a new variable to change type of variables). Consider for example the function below
+2. Diagonal rule says that a repeated type in a method signature has to be a concrete type (this is to avoid ambiguity if the repeated type is used inside function definition to define a new variable to change type of variables). Consider for example the function below
 
 ```julia
 move(a::T, b::T) where {T<:Position} = T(a.x + by.x, a.y + by.y)
@@ -708,7 +708,7 @@ struct OneHotArray{T<:Integer, L, N, var"N+1", I<:Union{T,AbstractArray{T, N}}} 
 end
 ```
 
-The parameters of the type carry information about the type used to encode the position of `one` in each column in `T`, the dimension of one-hot vectors in `L`, the dimension of the storage of `indices` in `N` (which is zero for `OneHotVector` and one for `OneHotMatrix`), number of dimensions of the `OneHotArray` in `var"N+1"` and the type of underlying storage of indicies `I`.
+The parameters of the type carry information about the type used to encode the position of `one` in each column in `T`, the dimension of one-hot vectors in `L`, the dimension of the storage of `indices` in `N` (which is zero for `OneHotVector` and one for `OneHotMatrix`), number of dimensions of the `OneHotArray` in `var"N+1"` and the type of underlying storage of indices `I`.
 
 
 [^1]: Type Stability in Julia, Pelenitsyn et al., 2021](https://arxiv.org/pdf/2109.01950.pdf)
