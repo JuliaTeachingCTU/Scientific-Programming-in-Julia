@@ -20,27 +20,38 @@ Locals
   i<span class="sgr36">::Int64</span>
 Body<span class="sgr36">::Int64</span>
 <span class="sgr90">1 ─</span>       (accumulator = 0)
-<span class="sgr90">│  </span> %2  = Main.length(a)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %3  = (%2:-1:1)<span class="sgr36">::Core.PartialStruct(StepRange{Int64, Int64}, Any[Int64, Core.Const(-1), Int64])</span>
-<span class="sgr90">│  </span>       (@_4 = Base.iterate(%3))
-<span class="sgr90">│  </span> %5  = (@_4 === nothing)<span class="sgr36">::Bool</span>
-<span class="sgr90">│  </span> %6  = Base.not_int(%5)<span class="sgr36">::Bool</span>
-<span class="sgr90">└──</span>       goto #4 if not %6
-<span class="sgr90">2 ┄</span> %8  = @_4<span class="sgr36">::Tuple{Int64, Int64}</span>
-<span class="sgr90">│  </span>       (i = Core.getfield(%8, 1))
-<span class="sgr90">│  </span> %10 = Core.getfield(%8, 2)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %11 = accumulator<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %12 = (i - 1)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %13 = (x ^ %12)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %14 = Base.getindex(a, i)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %15 = (%13 * %14)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span>       (accumulator = %11 + %15)
-<span class="sgr90">│  </span>       (@_4 = Base.iterate(%3, %10))
-<span class="sgr90">│  </span> %18 = (@_4 === nothing)<span class="sgr36">::Bool</span>
-<span class="sgr90">│  </span> %19 = Base.not_int(%18)<span class="sgr36">::Bool</span>
-<span class="sgr90">└──</span>       goto #4 if not %19
+<span class="sgr90">│  </span> %2  = Main.:(:)<span class="sgr36">::Core.Const(Colon())</span>
+<span class="sgr90">│  </span> %3  = Main.length<span class="sgr36">::Core.Const(length)</span>
+<span class="sgr90">│  </span> %4  = (%3)(a)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %5  = (%2)(%4, -1, 1)<span class="sgr36">::Core.PartialStruct(StepRange{Int64, Int64}, Any[Int64, Core.Const(-1), Int64])</span>
+<span class="sgr90">│  </span>       (@_4 = Base.iterate(%5))
+<span class="sgr90">│  </span> %7  = @_4<span class="sgr33"><span class="sgr1">::Union{Nothing, Tuple{Int64, Int64}}</span></span>
+<span class="sgr90">│  </span> %8  = (%7 === nothing)<span class="sgr36">::Bool</span>
+<span class="sgr90">│  </span> %9  = Base.not_int(%8)<span class="sgr36">::Bool</span>
+<span class="sgr90">└──</span>       goto #4 if not %9
+<span class="sgr90">2 ┄</span> %11 = @_4<span class="sgr36">::Tuple{Int64, Int64}</span>
+<span class="sgr90">│  </span>       (i = Core.getfield(%11, 1))
+<span class="sgr90">│  </span> %13 = Core.getfield(%11, 2)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %14 = Main.:+<span class="sgr36">::Core.Const(+)</span>
+<span class="sgr90">│  </span> %15 = accumulator<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %16 = Main.:*<span class="sgr36">::Core.Const(*)</span>
+<span class="sgr90">│  </span> %17 = Main.:^<span class="sgr36">::Core.Const(^)</span>
+<span class="sgr90">│  </span> %18 = Main.:-<span class="sgr36">::Core.Const(-)</span>
+<span class="sgr90">│  </span> %19 = i<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %20 = (%18)(%19, 1)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %21 = (%17)(x, %20)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %22 = i<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %23 = Base.getindex(a, %22)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %24 = (%16)(%21, %23)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span>       (accumulator = (%14)(%15, %24))
+<span class="sgr90">│  </span>       (@_4 = Base.iterate(%5, %13))
+<span class="sgr90">│  </span> %27 = @_4<span class="sgr33"><span class="sgr1">::Union{Nothing, Tuple{Int64, Int64}}</span></span>
+<span class="sgr90">│  </span> %28 = (%27 === nothing)<span class="sgr36">::Bool</span>
+<span class="sgr90">│  </span> %29 = Base.not_int(%28)<span class="sgr36">::Bool</span>
+<span class="sgr90">└──</span>       goto #4 if not %29
 <span class="sgr90">3 ─</span>       goto #2
-<span class="sgr90">4 ┄</span>       return accumulator</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_warntype polynomial(a, xf) # type unstable</code><code class="nohighlight hljs ansi" style="display:block;">MethodInstance for Main.polynomial(::Vector{Int64}, ::Float64)
+<span class="sgr90">4 ┄</span> %32 = accumulator<span class="sgr36">::Int64</span>
+<span class="sgr90">└──</span>       return %32</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_warntype polynomial(a, xf) # type unstable</code><code class="nohighlight hljs ansi" style="display:block;">MethodInstance for Main.polynomial(::Vector{Int64}, ::Float64)
   from polynomial(<span class="sgr90">a</span>, <span class="sgr90">x</span>)<span class="sgr90"> @</span> <span class="sgr90">Main</span> <span class="sgr90"><span class="sgr4">REPL[1]:1</span></span>
 Arguments
   #self#<span class="sgr36">::Core.Const(Main.polynomial)</span>
@@ -52,27 +63,38 @@ Locals
   i<span class="sgr36">::Int64</span>
 Body<span class="sgr33"><span class="sgr1">::Union{Float64, Int64}</span></span>
 <span class="sgr90">1 ─</span>       (accumulator = 0)
-<span class="sgr90">│  </span> %2  = Main.length(a)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %3  = (%2:-1:1)<span class="sgr36">::Core.PartialStruct(StepRange{Int64, Int64}, Any[Int64, Core.Const(-1), Int64])</span>
-<span class="sgr90">│  </span>       (@_4 = Base.iterate(%3))
-<span class="sgr90">│  </span> %5  = (@_4 === nothing)<span class="sgr36">::Bool</span>
-<span class="sgr90">│  </span> %6  = Base.not_int(%5)<span class="sgr36">::Bool</span>
-<span class="sgr90">└──</span>       goto #4 if not %6
-<span class="sgr90">2 ┄</span> %8  = @_4<span class="sgr36">::Tuple{Int64, Int64}</span>
-<span class="sgr90">│  </span>       (i = Core.getfield(%8, 1))
-<span class="sgr90">│  </span> %10 = Core.getfield(%8, 2)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %11 = accumulator<span class="sgr33"><span class="sgr1">::Union{Float64, Int64}</span></span>
-<span class="sgr90">│  </span> %12 = (i - 1)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %13 = (x ^ %12)<span class="sgr36">::Float64</span>
-<span class="sgr90">│  </span> %14 = Base.getindex(a, i)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %15 = (%13 * %14)<span class="sgr36">::Float64</span>
-<span class="sgr90">│  </span>       (accumulator = %11 + %15)
-<span class="sgr90">│  </span>       (@_4 = Base.iterate(%3, %10))
-<span class="sgr90">│  </span> %18 = (@_4 === nothing)<span class="sgr36">::Bool</span>
-<span class="sgr90">│  </span> %19 = Base.not_int(%18)<span class="sgr36">::Bool</span>
-<span class="sgr90">└──</span>       goto #4 if not %19
+<span class="sgr90">│  </span> %2  = Main.:(:)<span class="sgr36">::Core.Const(Colon())</span>
+<span class="sgr90">│  </span> %3  = Main.length<span class="sgr36">::Core.Const(length)</span>
+<span class="sgr90">│  </span> %4  = (%3)(a)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %5  = (%2)(%4, -1, 1)<span class="sgr36">::Core.PartialStruct(StepRange{Int64, Int64}, Any[Int64, Core.Const(-1), Int64])</span>
+<span class="sgr90">│  </span>       (@_4 = Base.iterate(%5))
+<span class="sgr90">│  </span> %7  = @_4<span class="sgr33"><span class="sgr1">::Union{Nothing, Tuple{Int64, Int64}}</span></span>
+<span class="sgr90">│  </span> %8  = (%7 === nothing)<span class="sgr36">::Bool</span>
+<span class="sgr90">│  </span> %9  = Base.not_int(%8)<span class="sgr36">::Bool</span>
+<span class="sgr90">└──</span>       goto #4 if not %9
+<span class="sgr90">2 ┄</span> %11 = @_4<span class="sgr36">::Tuple{Int64, Int64}</span>
+<span class="sgr90">│  </span>       (i = Core.getfield(%11, 1))
+<span class="sgr90">│  </span> %13 = Core.getfield(%11, 2)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %14 = Main.:+<span class="sgr36">::Core.Const(+)</span>
+<span class="sgr90">│  </span> %15 = accumulator<span class="sgr33"><span class="sgr1">::Union{Float64, Int64}</span></span>
+<span class="sgr90">│  </span> %16 = Main.:*<span class="sgr36">::Core.Const(*)</span>
+<span class="sgr90">│  </span> %17 = Main.:^<span class="sgr36">::Core.Const(^)</span>
+<span class="sgr90">│  </span> %18 = Main.:-<span class="sgr36">::Core.Const(-)</span>
+<span class="sgr90">│  </span> %19 = i<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %20 = (%18)(%19, 1)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %21 = (%17)(x, %20)<span class="sgr36">::Float64</span>
+<span class="sgr90">│  </span> %22 = i<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %23 = Base.getindex(a, %22)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %24 = (%16)(%21, %23)<span class="sgr36">::Float64</span>
+<span class="sgr90">│  </span>       (accumulator = (%14)(%15, %24))
+<span class="sgr90">│  </span>       (@_4 = Base.iterate(%5, %13))
+<span class="sgr90">│  </span> %27 = @_4<span class="sgr33"><span class="sgr1">::Union{Nothing, Tuple{Int64, Int64}}</span></span>
+<span class="sgr90">│  </span> %28 = (%27 === nothing)<span class="sgr36">::Bool</span>
+<span class="sgr90">│  </span> %29 = Base.not_int(%28)<span class="sgr36">::Bool</span>
+<span class="sgr90">└──</span>       goto #4 if not %29
 <span class="sgr90">3 ─</span>       goto #2
-<span class="sgr90">4 ┄</span>       return accumulator</code></pre><p>We are getting a little ahead of ourselves in this lab, as understanding of these expressions is part of the future lecture. Anyway the output basically shows what the compiler thinks of each variable in the code, albeit for us in less readable form than the original code. The more red the color is of the type info the less sure the inferred type is. Our main focus should be on the return type of the function which is just at the start of the code with the keyword <code>Body</code>. In the first case the return type is an <code>Int64</code>, whereas in the second example the compiler is unsure whether the type is <code>Float64</code> or <code>Int64</code>, marked as the <code>Union</code> type of the two. Fortunately for us this type instability can be fixed with a single line edit, but we will see later that it is not always the case.</p><div class="admonition is-info"><header class="admonition-header">Type stability</header><div class="admonition-body"><p>Having a variable represented as <code>Union</code> of multiple types in a functions is a lesser evil than having <code>Any</code>, as we can at least enumerate statically the available options of functions to which to dynamically dispatch and in some cases there may be a low penalty.</p></div></div><div class="admonition is-category-exercise">
+<span class="sgr90">4 ┄</span> %32 = accumulator<span class="sgr33"><span class="sgr1">::Union{Float64, Int64}</span></span>
+<span class="sgr90">└──</span>       return %32</code></pre><p>We are getting a little ahead of ourselves in this lab, as understanding of these expressions is part of the future lecture. Anyway the output basically shows what the compiler thinks of each variable in the code, albeit for us in less readable form than the original code. The more red the color is of the type info the less sure the inferred type is. Our main focus should be on the return type of the function which is just at the start of the code with the keyword <code>Body</code>. In the first case the return type is an <code>Int64</code>, whereas in the second example the compiler is unsure whether the type is <code>Float64</code> or <code>Int64</code>, marked as the <code>Union</code> type of the two. Fortunately for us this type instability can be fixed with a single line edit, but we will see later that it is not always the case.</p><div class="admonition is-info"><header class="admonition-header">Type stability</header><div class="admonition-body"><p>Having a variable represented as <code>Union</code> of multiple types in a functions is a lesser evil than having <code>Any</code>, as we can at least enumerate statically the available options of functions to which to dynamically dispatch and in some cases there may be a low penalty.</p></div></div><div class="admonition is-category-exercise">
 <header class="admonition-header">Exercise</header>
 <div class="admonition-body"><p>Create a new function <code>polynomial_stable</code>, which is type stable and measure the difference in evaluation time. </p><p><strong>HINTS</strong>: </p><ul><li>Ask for help on the <code>one</code> and <code>zero</code> keyword, which are often as a shorthand for these kind of functions.</li><li>run the function with the argument once before running <code>@time</code> or use <code>@btime</code> if you have <code>BenchmarkTools</code> readily available in your environment</li><li>To see some measurable difference with this simple function, a longer vector of coefficients may be needed.</li></ul></div></div>
 <details class = "solution-body">
@@ -93,28 +115,38 @@ Locals
   accumulator<span class="sgr36">::Int64</span>
   i<span class="sgr36">::Int64</span>
 Body<span class="sgr36">::Int64</span>
-<span class="sgr90">1 ─</span>       (accumulator = Main.zero(x))
-<span class="sgr90">│  </span> %2  = Main.length(a)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %3  = (%2:-1:1)<span class="sgr36">::Core.PartialStruct(StepRange{Int64, Int64}, Any[Int64, Core.Const(-1), Int64])</span>
-<span class="sgr90">│  </span>       (@_4 = Base.iterate(%3))
-<span class="sgr90">│  </span> %5  = (@_4 === nothing)<span class="sgr36">::Bool</span>
-<span class="sgr90">│  </span> %6  = Base.not_int(%5)<span class="sgr36">::Bool</span>
-<span class="sgr90">└──</span>       goto #4 if not %6
-<span class="sgr90">2 ┄</span> %8  = @_4<span class="sgr36">::Tuple{Int64, Int64}</span>
-<span class="sgr90">│  </span>       (i = Core.getfield(%8, 1))
-<span class="sgr90">│  </span> %10 = Core.getfield(%8, 2)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %11 = accumulator<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %12 = (i - 1)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %13 = (x ^ %12)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %14 = Base.getindex(a, i)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %15 = (%13 * %14)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span>       (accumulator = %11 + %15)
-<span class="sgr90">│  </span>       (@_4 = Base.iterate(%3, %10))
-<span class="sgr90">│  </span> %18 = (@_4 === nothing)<span class="sgr36">::Bool</span>
-<span class="sgr90">│  </span> %19 = Base.not_int(%18)<span class="sgr36">::Bool</span>
-<span class="sgr90">└──</span>       goto #4 if not %19
+<span class="sgr90">1 ─</span> %1  = Main.zero<span class="sgr36">::Core.Const(zero)</span>
+<span class="sgr90">│  </span>       (accumulator = (%1)(x))
+<span class="sgr90">│  </span> %3  = Main.:(:)<span class="sgr36">::Core.Const(Colon())</span>
+<span class="sgr90">│  </span> %4  = Main.length(a)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %5  = (%3)(%4, -1, 1)<span class="sgr36">::Core.PartialStruct(StepRange{Int64, Int64}, Any[Int64, Core.Const(-1), Int64])</span>
+<span class="sgr90">│  </span>       (@_4 = Base.iterate(%5))
+<span class="sgr90">│  </span> %7  = @_4<span class="sgr33"><span class="sgr1">::Union{Nothing, Tuple{Int64, Int64}}</span></span>
+<span class="sgr90">│  </span> %8  = (%7 === nothing)<span class="sgr36">::Bool</span>
+<span class="sgr90">│  </span> %9  = Base.not_int(%8)<span class="sgr36">::Bool</span>
+<span class="sgr90">└──</span>       goto #4 if not %9
+<span class="sgr90">2 ┄</span> %11 = @_4<span class="sgr36">::Tuple{Int64, Int64}</span>
+<span class="sgr90">│  </span>       (i = Core.getfield(%11, 1))
+<span class="sgr90">│  </span> %13 = Core.getfield(%11, 2)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %14 = Main.:+<span class="sgr36">::Core.Const(+)</span>
+<span class="sgr90">│  </span> %15 = accumulator<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %16 = Main.:*<span class="sgr36">::Core.Const(*)</span>
+<span class="sgr90">│  </span> %17 = Main.:^<span class="sgr36">::Core.Const(^)</span>
+<span class="sgr90">│  </span> %18 = i<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %19 = (%18 - 1)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %20 = (%17)(x, %19)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %21 = i<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %22 = Base.getindex(a, %21)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %23 = (%16)(%20, %22)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span>       (accumulator = (%14)(%15, %23))
+<span class="sgr90">│  </span>       (@_4 = Base.iterate(%5, %13))
+<span class="sgr90">│  </span> %26 = @_4<span class="sgr33"><span class="sgr1">::Union{Nothing, Tuple{Int64, Int64}}</span></span>
+<span class="sgr90">│  </span> %27 = (%26 === nothing)<span class="sgr36">::Bool</span>
+<span class="sgr90">│  </span> %28 = Base.not_int(%27)<span class="sgr36">::Bool</span>
+<span class="sgr90">└──</span>       goto #4 if not %28
 <span class="sgr90">3 ─</span>       goto #2
-<span class="sgr90">4 ┄</span>       return accumulator</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_warntype polynomial_stable(a, xf) # type stable</code><code class="nohighlight hljs ansi" style="display:block;">MethodInstance for Main.polynomial_stable(::Vector{Int64}, ::Float64)
+<span class="sgr90">4 ┄</span> %31 = accumulator<span class="sgr36">::Int64</span>
+<span class="sgr90">└──</span>       return %31</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @code_warntype polynomial_stable(a, xf) # type stable</code><code class="nohighlight hljs ansi" style="display:block;">MethodInstance for Main.polynomial_stable(::Vector{Int64}, ::Float64)
   from polynomial_stable(<span class="sgr90">a</span>, <span class="sgr90">x</span>)<span class="sgr90"> @</span> <span class="sgr90">Main</span> <span class="sgr90"><span class="sgr4">REPL[1]:1</span></span>
 Arguments
   #self#<span class="sgr36">::Core.Const(Main.polynomial_stable)</span>
@@ -125,28 +157,38 @@ Locals
   accumulator<span class="sgr36">::Float64</span>
   i<span class="sgr36">::Int64</span>
 Body<span class="sgr36">::Float64</span>
-<span class="sgr90">1 ─</span>       (accumulator = Main.zero(x))
-<span class="sgr90">│  </span> %2  = Main.length(a)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %3  = (%2:-1:1)<span class="sgr36">::Core.PartialStruct(StepRange{Int64, Int64}, Any[Int64, Core.Const(-1), Int64])</span>
-<span class="sgr90">│  </span>       (@_4 = Base.iterate(%3))
-<span class="sgr90">│  </span> %5  = (@_4 === nothing)<span class="sgr36">::Bool</span>
-<span class="sgr90">│  </span> %6  = Base.not_int(%5)<span class="sgr36">::Bool</span>
-<span class="sgr90">└──</span>       goto #4 if not %6
-<span class="sgr90">2 ┄</span> %8  = @_4<span class="sgr36">::Tuple{Int64, Int64}</span>
-<span class="sgr90">│  </span>       (i = Core.getfield(%8, 1))
-<span class="sgr90">│  </span> %10 = Core.getfield(%8, 2)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %11 = accumulator<span class="sgr36">::Float64</span>
-<span class="sgr90">│  </span> %12 = (i - 1)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %13 = (x ^ %12)<span class="sgr36">::Float64</span>
-<span class="sgr90">│  </span> %14 = Base.getindex(a, i)<span class="sgr36">::Int64</span>
-<span class="sgr90">│  </span> %15 = (%13 * %14)<span class="sgr36">::Float64</span>
-<span class="sgr90">│  </span>       (accumulator = %11 + %15)
-<span class="sgr90">│  </span>       (@_4 = Base.iterate(%3, %10))
-<span class="sgr90">│  </span> %18 = (@_4 === nothing)<span class="sgr36">::Bool</span>
-<span class="sgr90">│  </span> %19 = Base.not_int(%18)<span class="sgr36">::Bool</span>
-<span class="sgr90">└──</span>       goto #4 if not %19
+<span class="sgr90">1 ─</span> %1  = Main.zero<span class="sgr36">::Core.Const(zero)</span>
+<span class="sgr90">│  </span>       (accumulator = (%1)(x))
+<span class="sgr90">│  </span> %3  = Main.:(:)<span class="sgr36">::Core.Const(Colon())</span>
+<span class="sgr90">│  </span> %4  = Main.length(a)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %5  = (%3)(%4, -1, 1)<span class="sgr36">::Core.PartialStruct(StepRange{Int64, Int64}, Any[Int64, Core.Const(-1), Int64])</span>
+<span class="sgr90">│  </span>       (@_4 = Base.iterate(%5))
+<span class="sgr90">│  </span> %7  = @_4<span class="sgr33"><span class="sgr1">::Union{Nothing, Tuple{Int64, Int64}}</span></span>
+<span class="sgr90">│  </span> %8  = (%7 === nothing)<span class="sgr36">::Bool</span>
+<span class="sgr90">│  </span> %9  = Base.not_int(%8)<span class="sgr36">::Bool</span>
+<span class="sgr90">└──</span>       goto #4 if not %9
+<span class="sgr90">2 ┄</span> %11 = @_4<span class="sgr36">::Tuple{Int64, Int64}</span>
+<span class="sgr90">│  </span>       (i = Core.getfield(%11, 1))
+<span class="sgr90">│  </span> %13 = Core.getfield(%11, 2)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %14 = Main.:+<span class="sgr36">::Core.Const(+)</span>
+<span class="sgr90">│  </span> %15 = accumulator<span class="sgr36">::Float64</span>
+<span class="sgr90">│  </span> %16 = Main.:*<span class="sgr36">::Core.Const(*)</span>
+<span class="sgr90">│  </span> %17 = Main.:^<span class="sgr36">::Core.Const(^)</span>
+<span class="sgr90">│  </span> %18 = i<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %19 = (%18 - 1)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %20 = (%17)(x, %19)<span class="sgr36">::Float64</span>
+<span class="sgr90">│  </span> %21 = i<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %22 = Base.getindex(a, %21)<span class="sgr36">::Int64</span>
+<span class="sgr90">│  </span> %23 = (%16)(%20, %22)<span class="sgr36">::Float64</span>
+<span class="sgr90">│  </span>       (accumulator = (%14)(%15, %23))
+<span class="sgr90">│  </span>       (@_4 = Base.iterate(%5, %13))
+<span class="sgr90">│  </span> %26 = @_4<span class="sgr33"><span class="sgr1">::Union{Nothing, Tuple{Int64, Int64}}</span></span>
+<span class="sgr90">│  </span> %27 = (%26 === nothing)<span class="sgr36">::Bool</span>
+<span class="sgr90">│  </span> %28 = Base.not_int(%27)<span class="sgr36">::Bool</span>
+<span class="sgr90">└──</span>       goto #4 if not %28
 <span class="sgr90">3 ─</span>       goto #2
-<span class="sgr90">4 ┄</span>       return accumulator</code></pre><pre><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @time polynomial(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">  0.000003 seconds (1 allocation: 16 bytes)
+<span class="sgr90">4 ┄</span> %31 = accumulator<span class="sgr36">::Float64</span>
+<span class="sgr90">└──</span>       return %31</code></pre><pre><code class="nohighlight hljs ansi" style="display:block;"></code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @time polynomial(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">  0.000003 seconds (1 allocation: 16 bytes)
 128.0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; @time polynomial_stable(a, xf)</code><code class="nohighlight hljs ansi" style="display:block;">  0.000004 seconds (1 allocation: 16 bytes)
 128.0</code></pre><p>Only really visible when evaluating multiple times.</p><pre><code class="language-julia hljs">julia&gt; using BenchmarkTools
 
@@ -321,20 +363,30 @@ Locals
   #14<span class="sgr36">::Main.var&quot;#14#15&quot;{Main.Animal{🐺}}</span>
   as<span class="sgr36">::Vector{Main.Agent}</span>
 Body<span class="sgr91"><span class="sgr1">::Union{Nothing, Main.Agent}</span></span>
-<span class="sgr90">1 ─</span> %1  = Main.:(var&quot;#14#15&quot;)<span class="sgr36">::Core.Const(Main.var&quot;#14#15&quot;)</span>
-<span class="sgr90">│  </span> %2  = Core.typeof(a)<span class="sgr36">::Core.Const(Main.Animal{🐺})</span>
-<span class="sgr90">│  </span> %3  = Core.apply_type(%1, %2)<span class="sgr36">::Core.Const(Main.var&quot;#14#15&quot;{Main.Animal{🐺}})</span>
-<span class="sgr90">│  </span>       (#14 = %new(%3, a))
-<span class="sgr90">│  </span> %5  = #14<span class="sgr36">::Main.var&quot;#14#15&quot;{Main.Animal{🐺}}</span>
-<span class="sgr90">│  </span> %6  = Base.getproperty(w, :agents)<span class="sgr36">::Dict{Int64, Main.Agent}</span>
-<span class="sgr90">│  </span> %7  = (%6 |&gt; Main.values)<span class="sgr36">::Base.ValueIterator{Dict{Int64, Main.Agent}}</span>
-<span class="sgr90">│  </span> %8  = (%7 |&gt; Main.collect)<span class="sgr36">::Vector{Main.Agent}</span>
-<span class="sgr90">│  </span>       (as = Main.filter(%5, %8))
-<span class="sgr90">│  </span> %10 = Main.isempty(as)<span class="sgr36">::Bool</span>
-<span class="sgr90">└──</span>       goto #3 if not %10
-<span class="sgr90">2 ─</span>       return Main.nothing
-<span class="sgr90">3 ─</span> %13 = Main.sample(as)<span class="sgr91"><span class="sgr1">::Main.Agent</span></span>
-<span class="sgr90">└──</span>       return %13</code></pre><p>Indeed we see that the return type is not inferred precisely but ends up being just the <code>Union{Nothing, Agent}</code>, this is better than straight out <code>Any</code>, which is the union of all types but still, julia has to do dynamic dispatch here, which is slow.</p><p>The underlying issue here is that we are working array of type <code>Vector{Agent}</code>, where <code>Agent</code> is abstract, which does not allow the compiler to specialize the code for the loop body.</p></p></details><h2 id="Different-Ecosystem.jl-versions"><a class="docs-heading-anchor" href="#Different-Ecosystem.jl-versions">Different <code>Ecosystem.jl</code> versions</a><a id="Different-Ecosystem.jl-versions-1"></a><a class="docs-heading-anchor-permalink" href="#Different-Ecosystem.jl-versions" title="Permalink"></a></h2><p>In order to fix the type instability in the <code>Vector{Agent}</code> we somehow have to rethink our world such that we get a vector of a concrete type. Optimally we would have one vector for each type of agent that populates our world. Before we completely redesign how our world works we can try a simple hack that might already improve things. Instead of letting julia figure our which types of agents we have (which could be infinitely many), we can tell the compiler at least that we have only three of them: <code>Wolf</code>, <code>Sheep</code>, and <code>Grass</code>.</p><p>We can do this with a tiny change in the constructor of our <code>World</code>:</p><pre><code class="language-julia hljs">function World(agents::Vector{&lt;:Agent})
+<span class="sgr90">1 ─</span> %1  = Main.filter<span class="sgr36">::Core.Const(filter)</span>
+<span class="sgr90">│  </span> %2  = Main.:(var&quot;#14#15&quot;)<span class="sgr36">::Core.Const(Main.var&quot;#14#15&quot;)</span>
+<span class="sgr90">│  </span> %3  = Core.typeof(a)<span class="sgr36">::Core.Const(Main.Animal{🐺})</span>
+<span class="sgr90">│  </span> %4  = Core.apply_type(%2, %3)<span class="sgr36">::Core.Const(Main.var&quot;#14#15&quot;{Main.Animal{🐺}})</span>
+<span class="sgr90">│  </span>       (#14 = %new(%4, a))
+<span class="sgr90">│  </span> %6  = #14<span class="sgr36">::Main.var&quot;#14#15&quot;{Main.Animal{🐺}}</span>
+<span class="sgr90">│  </span> %7  = Main.:|&gt;<span class="sgr36">::Core.Const(|&gt;)</span>
+<span class="sgr90">│  </span> %8  = Main.:|&gt;<span class="sgr36">::Core.Const(|&gt;)</span>
+<span class="sgr90">│  </span> %9  = Base.getproperty(w, :agents)<span class="sgr36">::Dict{Int64, Main.Agent}</span>
+<span class="sgr90">│  </span> %10 = Main.values<span class="sgr36">::Core.Const(values)</span>
+<span class="sgr90">│  </span> %11 = (%8)(%9, %10)<span class="sgr36">::Base.ValueIterator{Dict{Int64, Main.Agent}}</span>
+<span class="sgr90">│  </span> %12 = Main.collect<span class="sgr36">::Core.Const(collect)</span>
+<span class="sgr90">│  </span> %13 = (%7)(%11, %12)<span class="sgr36">::Vector{Main.Agent}</span>
+<span class="sgr90">│  </span>       (as = (%1)(%6, %13))
+<span class="sgr90">│  </span> %15 = Main.isempty<span class="sgr36">::Core.Const(isempty)</span>
+<span class="sgr90">│  </span> %16 = as<span class="sgr36">::Vector{Main.Agent}</span>
+<span class="sgr90">│  </span> %17 = (%15)(%16)<span class="sgr36">::Bool</span>
+<span class="sgr90">└──</span>       goto #3 if not %17
+<span class="sgr90">2 ─</span> %19 = Main.nothing<span class="sgr36">::Core.Const(nothing)</span>
+<span class="sgr90">└──</span>       return %19
+<span class="sgr90">3 ─</span> %21 = Main.sample<span class="sgr36">::Core.Const(StatsBase.sample)</span>
+<span class="sgr90">│  </span> %22 = as<span class="sgr36">::Vector{Main.Agent}</span>
+<span class="sgr90">│  </span> %23 = (%21)(%22)<span class="sgr91"><span class="sgr1">::Main.Agent</span></span>
+<span class="sgr90">└──</span>       return %23</code></pre><p>Indeed we see that the return type is not inferred precisely but ends up being just the <code>Union{Nothing, Agent}</code>, this is better than straight out <code>Any</code>, which is the union of all types but still, julia has to do dynamic dispatch here, which is slow.</p><p>The underlying issue here is that we are working array of type <code>Vector{Agent}</code>, where <code>Agent</code> is abstract, which does not allow the compiler to specialize the code for the loop body.</p></p></details><h2 id="Different-Ecosystem.jl-versions"><a class="docs-heading-anchor" href="#Different-Ecosystem.jl-versions">Different <code>Ecosystem.jl</code> versions</a><a id="Different-Ecosystem.jl-versions-1"></a><a class="docs-heading-anchor-permalink" href="#Different-Ecosystem.jl-versions" title="Permalink"></a></h2><p>In order to fix the type instability in the <code>Vector{Agent}</code> we somehow have to rethink our world such that we get a vector of a concrete type. Optimally we would have one vector for each type of agent that populates our world. Before we completely redesign how our world works we can try a simple hack that might already improve things. Instead of letting julia figure our which types of agents we have (which could be infinitely many), we can tell the compiler at least that we have only three of them: <code>Wolf</code>, <code>Sheep</code>, and <code>Grass</code>.</p><p>We can do this with a tiny change in the constructor of our <code>World</code>:</p><pre><code class="language-julia hljs">function World(agents::Vector{&lt;:Agent})
     ids = [a.id for a in agents]
     length(unique(ids)) == length(agents) || error(&quot;Not all agents have unique IDs!&quot;)
 
@@ -359,21 +411,31 @@ Arguments
 Locals
   #14<span class="sgr36">::Main.var&quot;#14#15&quot;{Main.Animal{🐺}}</span>
   as<span class="sgr36">::Vector{Union{Main.Animal{🐑}, Main.Animal{🐺}, Main.Plant{🌿}}}</span>
-Body<span class="sgr91"><span class="sgr1">::Any</span></span>
-<span class="sgr90">1 ─</span> %1  = Main.:(var&quot;#14#15&quot;)<span class="sgr36">::Core.Const(Main.var&quot;#14#15&quot;)</span>
-<span class="sgr90">│  </span> %2  = Core.typeof(a)<span class="sgr36">::Core.Const(Main.Animal{🐺})</span>
-<span class="sgr90">│  </span> %3  = Core.apply_type(%1, %2)<span class="sgr36">::Core.Const(Main.var&quot;#14#15&quot;{Main.Animal{🐺}})</span>
-<span class="sgr90">│  </span>       (#14 = %new(%3, a))
-<span class="sgr90">│  </span> %5  = #14<span class="sgr36">::Main.var&quot;#14#15&quot;{Main.Animal{🐺}}</span>
-<span class="sgr90">│  </span> %6  = Base.getproperty(w, :agents)<span class="sgr36">::Dict{Int64, Union{Main.Animal{🐑}, Main.Animal{🐺}, Main.Plant{🌿}}}</span>
-<span class="sgr90">│  </span> %7  = (%6 |&gt; Main.values)<span class="sgr36">::Base.ValueIterator{Dict{Int64, Union{Main.Animal{🐑}, Main.Animal{🐺}, Main.Plant{🌿}}}}</span>
-<span class="sgr90">│  </span> %8  = (%7 |&gt; Main.collect)<span class="sgr36">::Vector{Union{Main.Animal{🐑}, Main.Animal{🐺}, Main.Plant{🌿}}}</span>
-<span class="sgr90">│  </span>       (as = Main.filter(%5, %8))
-<span class="sgr90">│  </span> %10 = Main.isempty(as)<span class="sgr36">::Bool</span>
-<span class="sgr90">└──</span>       goto #3 if not %10
-<span class="sgr90">2 ─</span>       return Main.nothing
-<span class="sgr90">3 ─</span> %13 = Main.sample(as)<span class="sgr33"><span class="sgr1">::Union{Main.Animal{🐑}, Main.Animal{🐺}, Main.Plant{🌿}}</span></span>
-<span class="sgr90">└──</span>       return %13</code></pre></p></details><hr/><p>Julia still has to perform runtime dispatch on the small <code>Union</code> of <code>Agent</code>s that is in our dictionary. To avoid this we could create a world that - instead of one plain dictionary - works with a tuple of dictionaries with one entry for each type of agent. Our world would then look like this:</p><pre><code class="language-julia hljs"># pseudocode:
+Body<span class="sgr91"><span class="sgr1">::Union{Nothing, Main.Plant{🌿}, Main.Animal}</span></span>
+<span class="sgr90">1 ─</span> %1  = Main.filter<span class="sgr36">::Core.Const(filter)</span>
+<span class="sgr90">│  </span> %2  = Main.:(var&quot;#14#15&quot;)<span class="sgr36">::Core.Const(Main.var&quot;#14#15&quot;)</span>
+<span class="sgr90">│  </span> %3  = Core.typeof(a)<span class="sgr36">::Core.Const(Main.Animal{🐺})</span>
+<span class="sgr90">│  </span> %4  = Core.apply_type(%2, %3)<span class="sgr36">::Core.Const(Main.var&quot;#14#15&quot;{Main.Animal{🐺}})</span>
+<span class="sgr90">│  </span>       (#14 = %new(%4, a))
+<span class="sgr90">│  </span> %6  = #14<span class="sgr36">::Main.var&quot;#14#15&quot;{Main.Animal{🐺}}</span>
+<span class="sgr90">│  </span> %7  = Main.:|&gt;<span class="sgr36">::Core.Const(|&gt;)</span>
+<span class="sgr90">│  </span> %8  = Main.:|&gt;<span class="sgr36">::Core.Const(|&gt;)</span>
+<span class="sgr90">│  </span> %9  = Base.getproperty(w, :agents)<span class="sgr36">::Dict{Int64, Union{Main.Animal{🐑}, Main.Animal{🐺}, Main.Plant{🌿}}}</span>
+<span class="sgr90">│  </span> %10 = Main.values<span class="sgr36">::Core.Const(values)</span>
+<span class="sgr90">│  </span> %11 = (%8)(%9, %10)<span class="sgr36">::Base.ValueIterator{Dict{Int64, Union{Main.Animal{🐑}, Main.Animal{🐺}, Main.Plant{🌿}}}}</span>
+<span class="sgr90">│  </span> %12 = Main.collect<span class="sgr36">::Core.Const(collect)</span>
+<span class="sgr90">│  </span> %13 = (%7)(%11, %12)<span class="sgr36">::Vector{Union{Main.Animal{🐑}, Main.Animal{🐺}, Main.Plant{🌿}}}</span>
+<span class="sgr90">│  </span>       (as = (%1)(%6, %13))
+<span class="sgr90">│  </span> %15 = Main.isempty<span class="sgr36">::Core.Const(isempty)</span>
+<span class="sgr90">│  </span> %16 = as<span class="sgr36">::Vector{Union{Main.Animal{🐑}, Main.Animal{🐺}, Main.Plant{🌿}}}</span>
+<span class="sgr90">│  </span> %17 = (%15)(%16)<span class="sgr36">::Bool</span>
+<span class="sgr90">└──</span>       goto #3 if not %17
+<span class="sgr90">2 ─</span> %19 = Main.nothing<span class="sgr36">::Core.Const(nothing)</span>
+<span class="sgr90">└──</span>       return %19
+<span class="sgr90">3 ─</span> %21 = Main.sample<span class="sgr36">::Core.Const(StatsBase.sample)</span>
+<span class="sgr90">│  </span> %22 = as<span class="sgr36">::Vector{Union{Main.Animal{🐑}, Main.Animal{🐺}, Main.Plant{🌿}}}</span>
+<span class="sgr90">│  </span> %23 = (%21)(%22)<span class="sgr33"><span class="sgr1">::Union{Main.Animal{🐑}, Main.Animal{🐺}, Main.Plant{🌿}}</span></span>
+<span class="sgr90">└──</span>       return %23</code></pre></p></details><hr/><p>Julia still has to perform runtime dispatch on the small <code>Union</code> of <code>Agent</code>s that is in our dictionary. To avoid this we could create a world that - instead of one plain dictionary - works with a tuple of dictionaries with one entry for each type of agent. Our world would then look like this:</p><pre><code class="language-julia hljs"># pseudocode:
 world ≈ (
     :Grass =&gt; Dict{Int, Plant{Grass}}(...),
     :Sheep =&gt; Dict{Int, Animal{Sheep}}(...),
@@ -417,12 +479,12 @@ function create_world()
 end
 world = create_world();</code></pre><pre><code class="language-julia hljs">w = Wolf(4000)
 find_food(w, world)
-@code_warntype find_food(w, world)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MethodInstance for Main.find_food(::Main.Animal{🐺, ♂}, ::Main.World{@NamedTuple{Grass::Dict{Int64, Main.Plant{🌿}}, SheepFemale::Dict{Int64, Main.Animal{🐑, ♀}}, SheepMale::Dict{Int64, Main.Animal{🐑, ♂}}, WolfMale::Dict{Int64, Main.Animal{🐺, ♂}}, WolfFemale::Dict{Int64, Main.Animal{🐺, ♀}}}})
+@code_warntype find_food(w, world)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">MethodInstance for Main.find_food(::Main.Animal{🐺, ♂}, ::Main.World{@NamedTuple{Grass::Dict{Int64, Main.Plant{🌿}}, SheepMale::Dict{Int64, Main.Animal{🐑, ♂}}, SheepFemale::Dict{Int64, Main.Animal{🐑, ♀}}, WolfMale::Dict{Int64, Main.Animal{🐺, ♂}}, WolfFemale::Dict{Int64, Main.Animal{🐺, ♀}}}})
   from find_food(::<span class="sgr1">Main.Animal</span>{🐺}, <span class="sgr90">w</span>::<span class="sgr1">Main.World</span>)<span class="sgr90"> @</span> <span class="sgr90">Main</span> <span class="sgr90">~/work/Scientific-Programming-in-Julia/Scientific-Programming-in-Julia/docs/build/lecture_05/ecosystems/animal_ST_world_NamedTupleDict/<span class="sgr4">Ecosystem.jl:158</span></span>
 Arguments
   #self#<span class="sgr36">::Core.Const(Main.find_food)</span>
   _<span class="sgr36">::Main.Animal{🐺, ♂}</span>
-  w<span class="sgr36">::Main.World{@NamedTuple{Grass::Dict{Int64, Main.Plant{🌿}}, SheepFemale::Dict{Int64, Main.Animal{🐑, ♀}}, SheepMale::Dict{Int64, Main.Animal{🐑, ♂}}, WolfMale::Dict{Int64, Main.Animal{🐺, ♂}}, WolfFemale::Dict{Int64, Main.Animal{🐺, ♀}}}}</span>
+  w<span class="sgr36">::Main.World{@NamedTuple{Grass::Dict{Int64, Main.Plant{🌿}}, SheepMale::Dict{Int64, Main.Animal{🐑, ♂}}, SheepFemale::Dict{Int64, Main.Animal{🐑, ♀}}, WolfMale::Dict{Int64, Main.Animal{🐺, ♂}}, WolfFemale::Dict{Int64, Main.Animal{🐺, ♀}}}}</span>
 Body<span class="sgr33"><span class="sgr1">::Union{Nothing, Main.Animal{🐑, ♀}, Main.Animal{🐑, ♂}}</span></span>
 <span class="sgr90">1 ─</span> %1 = Main.find_agent(Main.Sheep, w)<span class="sgr33"><span class="sgr1">::Union{Nothing, Main.Animal{🐑, ♀}, Main.Animal{🐑, ♂}}</span></span>
-<span class="sgr90">└──</span>      return %1</code></pre><h2 id="Useful-resources"><a class="docs-heading-anchor" href="#Useful-resources">Useful resources</a><a id="Useful-resources-1"></a><a class="docs-heading-anchor-permalink" href="#Useful-resources" title="Permalink"></a></h2><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Explanation of the Horner schema can be found on <a href="https://en.wikipedia.org/wiki/Horner%27s_method">https://en.wikipedia.org/wiki/Horner%27s_method</a>.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Friday 4 October 2024 06:52">Friday 4 October 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<span class="sgr90">└──</span>      return %1</code></pre><h2 id="Useful-resources"><a class="docs-heading-anchor" href="#Useful-resources">Useful resources</a><a id="Useful-resources-1"></a><a class="docs-heading-anchor-permalink" href="#Useful-resources" title="Permalink"></a></h2><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-1"><a class="tag is-link" href="#citeref-1">1</a>Explanation of the Horner schema can be found on <a href="https://en.wikipedia.org/wiki/Horner%27s_method">https://en.wikipedia.org/wiki/Horner%27s_method</a>.</li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lecture/">« Lecture</a><a class="docs-footer-nextpage" href="../hw/">Homework »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Thursday 10 October 2024 15:45">Thursday 10 October 2024</span>. Using Julia version 1.11.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
