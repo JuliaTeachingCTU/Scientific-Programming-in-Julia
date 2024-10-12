@@ -2,6 +2,7 @@
 
 ```@setup block
 projdir = dirname(Base.active_project())
+using StatsBase
 include(joinpath(projdir,"src","lecture_03","Lab03Ecosystem.jl"))
 
 function find_food(a::Animal, w::World)
