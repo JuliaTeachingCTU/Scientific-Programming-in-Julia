@@ -1,5 +1,3 @@
-using StatsBase
-
 abstract type Species end
 
 abstract type PlantSpecies <: Species end
