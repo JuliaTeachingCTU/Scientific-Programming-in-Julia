@@ -12,7 +12,7 @@ Once you have tested the functionality, you can start exploring the performance 
 ## Checking type stability
 Recall that type stable function is written in a way, that allows Julia's compiler to infer all the types of all the variables and produce an efficient native code implementation without the need of boxing some variables in a structure whose types is known only during runtime. Probably unbeknown to you we have already seen an example of type unstable function (at least in some situations) in the first lab, where we have defined the `polynomial` function:
 
-```@repl lab05_polynomial
+```julia
 function polynomial(a, x)
     accumulator = 0
     for i in length(a):-1:1
@@ -25,20 +25,20 @@ end
 The exact form of compiled code and also the type stability depends on the arguments of the function. Let's explore the following two examples of calling the function:
 
 - Integer number valued arguments
-```@example lab05_polynomial
+```julia
 a = [-19, 7, -4, 6]
 x = 3
 polynomial(a, x)
 ```
     
 - Float number valued arguments
-```@example lab05_polynomial
+```julia
 xf = 3.0
 polynomial(a, xf)
 ```
 
 The result they produce is the "same" numerically, however it differs in the output type. Though you have probably not noticed it, there should be a difference in runtime (assuming that you have run it once more after its compilation). It is probably a surprise to no one, that one of the methods that has been compiled is type unstable. This can be check with the `@code_warntype` macro:
-```@repl lab05_polynomial
+```julia
 using InteractiveUtils #hide
 @code_warntype polynomial(a, x)  # type stable
 @code_warntype polynomial(a, xf) # type unstable
@@ -48,65 +48,54 @@ We are getting a little ahead of ourselves in this lab, as understanding of thes
 !!! note "Type stability"
     Having a variable represented as `Union` of multiple types in a functions is a lesser evil than having `Any`, as we can at least enumerate statically the available options of functions to which to dynamically dispatch and in some cases there may be a low penalty.
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Create a new function `polynomial_stable`, which is type stable and measure the difference in evaluation time. 
+!!! warning "Exercise"
+    Create a new function `polynomial_stable`, which is type stable and measure the difference in evaluation time. 
 
-**HINTS**: 
-- Ask for help on the `one` and `zero` keyword, which are often as a shorthand for these kind of functions.
-- run the function with the argument once before running `@time` or use `@btime` if you have `BenchmarkTools` readily available in your environment
-- To see some measurable difference with this simple function, a longer vector of coefficients may be needed.
+    **HINTS**: 
+    - Ask for help on the `one` and `zero` keyword, which are often as a shorthand for these kind of functions.
+    - run the function with the argument once before running `@time` or use `@btime` if you have `BenchmarkTools` readily available in your environment
+    - To see some measurable difference with this simple function, a longer vector of coefficients may be needed.
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-
-```@repl lab05_polynomial
-function polynomial_stable(a, x)
-    accumulator = zero(x)
-    for i in length(a):-1:1
-        accumulator += x^(i-1) * a[i]
+!!! details
+    ```@repl lab05_polynomial
+    function polynomial_stable(a, x)
+        accumulator = zero(x)
+        for i in length(a):-1:1
+            accumulator += x^(i-1) * a[i]
+        end
+        accumulator
     end
-    accumulator
-end
-```
+    ```
 
-```@repl lab05_polynomial
-@code_warntype polynomial_stable(a, x)  # type stable
-@code_warntype polynomial_stable(a, xf) # type stable
-```
+    ```@repl lab05_polynomial
+    @code_warntype polynomial_stable(a, x)  # type stable
+    @code_warntype polynomial_stable(a, xf) # type stable
+    ```
 
-```@repl lab05_polynomial
-polynomial(a, xf) #hide
-polynomial_stable(a, xf) #hide
-@time polynomial(a, xf)
-@time polynomial_stable(a, xf)
-```
+    ```@repl lab05_polynomial
+    polynomial(a, xf) #hide
+    polynomial_stable(a, xf) #hide
+    @time polynomial(a, xf)
+    @time polynomial_stable(a, xf)
+    ```
 
-Only really visible when evaluating multiple times.
-```julia
-julia> using BenchmarkTools
+    Only really visible when evaluating multiple times.
+    ```julia
+    julia> using BenchmarkTools
 
-julia> @btime polynomial($a, $xf)
-  31.806 ns (0 allocations: 0 bytes)
-128.0
+    julia> @btime polynomial($a, $xf)
+      31.806 ns (0 allocations: 0 bytes)
+    128.0
 
-julia> @btime polynomial_stable($a, $xf)
-  28.522 ns (0 allocations: 0 bytes)
-128.0
-```
-Difference only a few nanoseconds.
+    julia> @btime polynomial_stable($a, $xf)
+      28.522 ns (0 allocations: 0 bytes)
+    128.0
+    ```
+    Difference only a few nanoseconds.
 
 
-*Note*: Recalling homework from lab 1. Adding `zero` also extends this function to the case of `x` being a matrix, see `?` menu.
-```@raw html
-</p></details>
-```
+    *Note*: Recalling homework from lab 1. Adding `zero` also extends this function to the case of `x` being a matrix, see `?` menu.
+
 
 Code stability issues are something unique to Julia, as its JIT compilation allows it to produce code that contains boxed variables, whose type can be inferred during runtime. This is one of the reasons why interpreted languages are slow to run but fast to type. Julia's way of solving it is based around compiling functions for specific arguments, however in order for this to work without the interpreter, the compiler has to be able to infer the types.
 
@@ -129,7 +118,7 @@ The number of samples/evaluations can be set manually, however most of the time 
 
 The most commonly used interface of `Benchmarkools` is the `@btime` macro, which returns an output similar to the regular `@time` macro however now aggregated over samples by taking their minimum (a robust estimator for the location parameter of the time distribution, should not be considered an outlier - usually the noise from other processes/tasks puts the results to the other tail of the distribution and some miraculous noisy speedups are uncommon. In order to see the underlying sampling better there is also the `@benchmark` macro, which runs in the same way as `@btime`, but prints more detailed statistics which are also returned in the `Trial` type instead of the actual code output.
 
-```
+```julia
 julia> @btime sum($(rand(1000)))
   174.274 ns (0 allocations: 0 bytes)
 504.16236531044757
@@ -208,37 +197,25 @@ In order to get more of a visual feel for profiling, there are packages that all
 ![poly_stable](poly_stable.png)
 
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Let's compare this with the type unstable situation.
+!!! warning "Exercise"
+    Let's compare this with the type unstable situation.
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
 
-First let's define the function that allows us to run the `polynomial` multiple times.
-```@repl lab05_polynomial
-function run_polynomial(a, x, n) 
-    for _ in 1:n
-        polynomial(a, x)
+!!! details
+    First let's define the function that allows us to run the `polynomial` multiple times.
+    ```@repl lab05_polynomial
+    function run_polynomial(a, x, n) 
+        for _ in 1:n
+            polynomial(a, x)
+        end
     end
-end
-```
+    ```
 
-```julia
-@profview run_polynomial(a, xf, Int(1e5)) # clears the profile for us
-```
-![poly_unstable](poly_unstable.png)
+    ```julia
+    @profview run_polynomial(a, xf, Int(1e5)) # clears the profile for us
+    ```
+    ![poly_unstable](poly_unstable.png)
 
-
-```@raw html
-</p></details>
-```
 
 Other options for viewing profiler outputs
 - [ProfileView](https://github.com/timholy/ProfileView.jl) - close cousin of `ProfileSVG`, spawns GTK window with interactive FlameGraph
@@ -250,66 +227,54 @@ Other options for viewing profiler outputs
 We have noticed that no matter if the function is type stable or unstable the majority of the computation falls onto the power function `^` and there is a way to solve this using a clever technique called Horner schema[^1], which uses distributive and associative rules to convert the sum of powers into an incremental multiplication of partial results.
 
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Rewrite the `polynomial` function using the Horner schema/method[^1]. Moreover include the type stability fixes from `polynomial_stable` You should get more than 3x speedup when measured against the old implementation (measure `polynomial` against `polynomial_stable`.
+!!! warning "Exercise"
+    Rewrite the `polynomial` function using the Horner schema/method[^1]. Moreover include the type stability fixes from `polynomial_stable` You should get more than 3x speedup when measured against the old implementation (measure `polynomial` against `polynomial_stable`.
 
-**BONUS**: Profile the new method and compare the differences in traces.
+    **BONUS**: Profile the new method and compare the differences in traces.
 
-[^1]: Explanation of the Horner schema can be found on [https://en.wikipedia.org/wiki/Horner%27s\_method](https://en.wikipedia.org/wiki/Horner%27s_method).
+    [^1]: Explanation of the Horner schema can be found on [https://en.wikipedia.org/wiki/Horner%27s\_method](https://en.wikipedia.org/wiki/Horner%27s_method).
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
 
-```julia
-function polynomial(a, x)
-    accumulator = a[end] * one(x)
-    for i in length(a)-1:-1:1
-        accumulator = accumulator * x + a[i]
+!!! details
+    ```julia
+    function polynomial(a, x)
+        accumulator = a[end] * one(x)
+        for i in length(a)-1:-1:1
+            accumulator = accumulator * x + a[i]
+        end
+        accumulator  
     end
-    accumulator  
-end
-```
+    ```
 
-Speed up:
-- 49ns -> 8ns ~ 6x on integer valued input 
-- 59ns -> 8ns ~ 7x on real valued input
+    Speed up:
+    - 49ns -> 8ns ~ 6x on integer valued input 
+    - 59ns -> 8ns ~ 7x on real valued input
 
-```
-julia> @btime polynomial($a, $x)
-  8.008 ns (0 allocations: 0 bytes)
-97818
+    ```
+    julia> @btime polynomial($a, $x)
+      8.008 ns (0 allocations: 0 bytes)
+    97818
 
-julia> @btime polynomial_stable($a, $x)
-  49.173 ns (0 allocations: 0 bytes)
-97818
+    julia> @btime polynomial_stable($a, $x)
+      49.173 ns (0 allocations: 0 bytes)
+    97818
 
-julia> @btime polynomial($a, $xf)
-  8.008 ns (0 allocations: 0 bytes)
-97818.0
+    julia> @btime polynomial($a, $xf)
+      8.008 ns (0 allocations: 0 bytes)
+    97818.0
 
-julia> @btime polynomial_stable($a, $xf)
-  58.773 ns (0 allocations: 0 bytes)
-97818.0
-```
-These numbers will be different on different HW.
+    julia> @btime polynomial_stable($a, $xf)
+      58.773 ns (0 allocations: 0 bytes)
+    97818.0
+    ```
+    These numbers will be different on different HW.
 
-**BONUS**: The profile trace does not even contain the calling of mathematical operators and is mainly dominated by the iteration utilities. In this case we had to increase the number of runs to `1e6` to get some meaningful trace.
+    **BONUS**: The profile trace does not even contain the calling of mathematical operators and is mainly dominated by the iteration utilities. In this case we had to increase the number of runs to `1e6` to get some meaningful trace.
 
-```julia
-@profview run_polynomial(a, xf, Int(1e6))
-```
-![poly_horner](poly_horner.png)
-
-```@raw html
-</p></details>
-```
+    ```julia
+    @profview run_polynomial(a, xf, Int(1e6))
+    ```
+    ![poly_horner](poly_horner.png)
 
 ---
 
@@ -402,7 +367,7 @@ BenchmarkTools.Trial: 10000 samples with 7 evaluations.
 Let's now apply what we have learned so far on the much bigger codebase of our
 `Ecosystem`.
 
-```@example block
+```julia
 include("ecosystems/lab04/Ecosystem.jl")
 
 function make_counter()
@@ -427,69 +392,58 @@ world = create_world();
 nothing # hide
 ```
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise:</header>
-<div class="admonition-body">
-```
-Use `@profview` and `@code_warntype` to find the type unstable and slow parts of
-our simulation.
 
-Precompile everything by running one step of our simulation and run the profiler
-like this:
+!!! warning "Exercise"
+    Use `@profview` and `@code_warntype` to find the type unstable and slow parts of
+    our simulation.
 
-```julia
-world_step!(world)
-@profview for i=1:100 world_step!(world) end
-```
+    Precompile everything by running one step of our simulation and run the profiler
+    like this:
 
-You should get a flamegraph similar to the one below:
-![lab04-ecosystem](ecosystems/lab04-worldstep.png)
+    ```julia
+    world_step!(world)
+    @profview for i=1:100 world_step!(world) end
+    ```
+
+    You should get a flamegraph similar to the one below:
+    ![lab04-ecosystem](ecosystems/lab04-worldstep.png)
 
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-Red bars indicate type instabilities. The bars stacked on top of them are high,
-narrow and not filling the whole width, indicating that the problem is pretty
-serious. In our case the worst offender is the `filter` method inside
-`find_food` and `find_mate` functions.
-In both cases the bars on top of it are narrow and not the full with, meaning
-that not that much time has been really spend working, but instead inferring the
-types in the function itself during runtime.
+!!! details
+    Red bars indicate type instabilities. The bars stacked on top of them are high,
+    narrow and not filling the whole width, indicating that the problem is pretty
+    serious. In our case the worst offender is the `filter` method inside
+    `find_food` and `find_mate` functions.
+    In both cases the bars on top of it are narrow and not the full with, meaning
+    that not that much time has been really spend working, but instead inferring the
+    types in the function itself during runtime.
 
-As a reminder, this is the `find_food` function:
-```julia
-# original
-function find_food(a::Animal, w::World)
-    as = filter(x -> eats(a,x), w.agents |> values |> collect)
-    isempty(as) ? nothing : sample(as)
-end
-```
-Just from looking at that piece of code its not obvious what is the problem,
-however the red color indicates that the code may be type unstable. Let's see if
-that is the case by evaluation the function with some isolated inputs.
+    As a reminder, this is the `find_food` function:
+    ```julia
+    # original
+    function find_food(a::Animal, w::World)
+        as = filter(x -> eats(a,x), w.agents |> values |> collect)
+        isempty(as) ? nothing : sample(as)
+    end
+    ```
+    Just from looking at that piece of code its not obvious what is the problem,
+    however the red color indicates that the code may be type unstable. Let's see if
+    that is the case by evaluation the function with some isolated inputs.
 
-```@example block
-using InteractiveUtils # hide
-w = Wolf(4000)
-find_food(w, world)
-@code_warntype find_food(w, world)
-```
+    ```julia
+    using InteractiveUtils # hide
+    w = Wolf(4000)
+    find_food(w, world)
+    @code_warntype find_food(w, world)
+    ```
 
-Indeed we see that the return type is not inferred precisely but ends up being
-just the `Union{Nothing, Agent}`, this is better than straight out `Any`, which
-is the union of all types but still, julia has to do dynamic dispatch here, which is slow.
+    Indeed we see that the return type is not inferred precisely but ends up being
+    just the `Union{Nothing, Agent}`, this is better than straight out `Any`, which
+    is the union of all types but still, julia has to do dynamic dispatch here, which is slow.
 
-The underlying issue here is that we are working array of type `Vector{Agent}`,
-where `Agent` is abstract, which does not allow the compiler to specialize the
-code for the loop body.
-```@raw html
-</p></details>
-```
-
+    The underlying issue here is that we are working array of type `Vector{Agent}`,
+    where `Agent` is abstract, which does not allow the compiler to specialize the
+    code for the loop body.
 
 ## Different `Ecosystem.jl` versions
 
@@ -517,66 +471,56 @@ function World(agents::Vector{<:Agent})
 end
 ```
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise:</header>
-<div class="admonition-body">
-```
-1. Run the benchmark script provided [here](ecosystems/lab04/bench.jl) to get
-   timings for `find_food` and `reproduce!` for the original ecosystem.
-2. Run the same benchmark with the modified `World` constructor.
+!!! warning "Exercise"
+    1. Run the benchmark script provided [here](ecosystems/lab04/bench.jl) to get
+       timings for `find_food` and `reproduce!` for the original ecosystem.
+    2. Run the same benchmark with the modified `World` constructor.
 
-Which differences can you observe? Why is one version faster than the other?
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-It turns out that with this simple change we can already gain a little bit of speed:
+    Which differences can you observe? Why is one version faster than the other?
 
-|                                           | `find_food` | `reproduce!` |
-|-------------------------------------------|-------------|--------------|
-|`Animal{A}`   & `Dict{Int,Agent}`          | 43.917 μs   | 439.666 μs   |
-|`Animal{A}`   & `Dict{Int,Union{...}}`     | 12.208 μs   | 340.041 μs   |
+!!! details
+    It turns out that with this simple change we can already gain a little bit of speed:
 
-We are gaining performance here because for small `Union`s of types the julia
-compiler can precompile the multiple available code branches.  If we have just a
-`Dict` of `Agent`s this is not possible.
+    |                                           | `find_food` | `reproduce!` |
+    |-------------------------------------------|-------------|--------------|
+    |`Animal{A}`   & `Dict{Int,Agent}`          | 43.917 μs   | 439.666 μs   |
+    |`Animal{A}`   & `Dict{Int,Union{...}}`     | 12.208 μs   | 340.041 μs   |
 
-This however, does not yet fix our type instabilities completely. We are still working with `Union`s of types
-which we can see again using `@code_warntype`:
-```@setup uniondict
-include("ecosystems/animal_S_world_DictUnion/Ecosystem.jl")
+    We are gaining performance here because for small `Union`s of types the julia
+    compiler can precompile the multiple available code branches.  If we have just a
+    `Dict` of `Agent`s this is not possible.
 
-function make_counter()
-    n = 0
-    counter() = n += 1
-end
+    This however, does not yet fix our type instabilities completely. We are still working with `Union`s of types
+    which we can see again using `@code_warntype`:
+    ```@setup uniondict
+    include("ecosystems/animal_S_world_DictUnion/Ecosystem.jl")
 
-function create_world()
-    n_grass  = 1_000
-    n_sheep  = 40
-    n_wolves = 4
+    function make_counter()
+        n = 0
+        counter() = n += 1
+    end
 
-    nextid = make_counter()
+    function create_world()
+        n_grass  = 1_000
+        n_sheep  = 40
+        n_wolves = 4
 
-    World(vcat(
-        [Grass(nextid()) for _ in 1:n_grass],
-        [Sheep(nextid()) for _ in 1:n_sheep],
-        [Wolf(nextid()) for _ in 1:n_wolves],
-    ))
-end
-world = create_world();
-```
-```@example uniondict
-using InteractiveUtils # hide
-w = Wolf(4000)
-find_food(w, world)
-@code_warntype find_food(w, world)
-```
-```@raw html
-</p></details>
-```
+        nextid = make_counter()
+
+        World(vcat(
+            [Grass(nextid()) for _ in 1:n_grass],
+            [Sheep(nextid()) for _ in 1:n_sheep],
+            [Wolf(nextid()) for _ in 1:n_wolves],
+        ))
+    end
+    world = create_world();
+    ```
+    ```@example uniondict
+    using InteractiveUtils # hide
+    w = Wolf(4000)
+    find_food(w, world)
+    @code_warntype find_food(w, world)
+    ```
 
 --- 
 
@@ -701,3 +645,5 @@ find_food(w, world)
 ```
 
 ## Useful resources
+
+The problem we have been touching in the latter part is quite pervasive in some systems with many agents. One solution we have not used here is to use SumTypes. Julia does not have a native support, but offers solutions thourough libraries like [SumTypes.jl](https://github.com/JuliaDynamics/LightSumTypes.jl), [UniTyper.jl](https://github.com/YingboMa/Unityper.jl) or [Moshi](https://rogerluo.dev/Moshi.jl/).
