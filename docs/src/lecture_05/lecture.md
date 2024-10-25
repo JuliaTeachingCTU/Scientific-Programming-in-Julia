@@ -228,7 +228,7 @@ BenchmarkTools.Trial: 11 samples with 1 evaluation.
 
 We can see that we have approximately 3-fold improvement.
 
-Let's profile again, not forgetting to use `Profile.clear()` to clear already stored probes.
+Let's profile again.
 ```
 prof = @profview g2(p,n)
 ProfileCanvas.html_file("profiles/profile2.html", prof)
