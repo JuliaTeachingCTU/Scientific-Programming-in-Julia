@@ -7,6 +7,7 @@
     + As an example, consider a `@show` macro, which just prints the name of the variable (or the expression) and its evaluation. This means that instead of writing `println("2+exp(4) = ",  2+exp(4))` we can just write `@show 2+exp(4)`.
     + We have seen `@time` or `@benchmark`, which is difficult to implement using normal function, since when you pass `2+exp(4)` as a function argument, it will be automatically evaluated. You need to pass it as an expression, that can be evaluated within the function.
     + `@chain` macro from [`Chain.jl`](https://github.com/jkrumbiegel/Chain.jl) improves over native piping `|>`
+    + `@set` macro from [`Accesors.jl`](https://github.com/JuliaObjects/Accessors.jl) which allows to set the value of a field in a non-mutable struct (it is done by constructing new struct and copying the old values).
     + We have seen `@forward` macro implementing **encapsulation**.
     + Macros are used to insert compilation directives not accessible through the syntax, e.g. `@inbounds`.
 - A chapter on its own is definition of **Domain Specific Languages**.
@@ -26,7 +27,7 @@ Julia (as any modern compiler) uses several stages to convert source code to nat
     9. inlining and high level optimization --- `code_typed`
     10. LLVM IR generation --- `code_llvm`
     11. LLVM optimizer, native code generation --- `code_native`
-- steps 3-6 are done in inseparable stage
+- steps 3-6 are done in one inseparable stage
 - Julia's IR is in [static single assignment form](https://en.wikipedia.org/wiki/Static_single_assignment_form)
 
 ### Example: Fibonacci numbers
@@ -310,11 +311,21 @@ L16:
 ```
 and the output is used mainly for debugging / inspection. 
 
-## Looking around the language
+## Looking around
 Language introspection is very convenient for investigating, how things are implemented and how they are optimized / compiled to the native code.
 
 !!! note "Reminder `@which`"
 	Though we have already used it quite a few times, recall the very useful macro `@which`, which identifies the concrete function called in a function call. For example `@which mapreduce(sin, +, [1,2,3,4])`. Note again that the macro here is a convenience macro to obtain types of arguments from the expression. Under the hood, it calls `InteractiveUtils.which(function_name, (Base.typesof)(args...))`. Funny enough, you can call `@which InteractiveUtils.which(+, (Base.typesof)(1,1))` to inspect, where `which` is defined.
+
+    Alternatively, you can invest time in learning `Cthulhu.jl` package, which is a tool for inspecting functions called in a function. In other words it will simplify a recursive call of which when one is interested in how internals of some function are implemented.
+
+!!! note "Effect analysis"
+    The compiler is analysing the code to automatically infer some properties, which can help it to create more efficient code. This is analysis id called effect analysis and you can execute it yourself using `Base.infer_effects`. For example for our `nextfib` we obtain (on 1.11.1)
+    ```julia
+    julia> Base.infer_effects(nextfib, (Int,))
+    (+c,+e,+n,!t,+s,+m,+u,+o,+r)
+    ```
+    See the documentation for (Base.@assume_effects)[https://docs.julialang.org/en/v1/base/base/#Base.@assume_effects] for details of individual fields.
 
 ### Broadcasting
 Broadcasting is not a unique concept in programming languages (Python/Numpy, MATLAB), however its implementation in Julia allows to easily fuse operations. For example 
