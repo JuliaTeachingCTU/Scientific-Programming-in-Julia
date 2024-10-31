@@ -14,27 +14,27 @@ We will be again a little getting ahead of ourselves as we are going to use quit
 
 ## Quick reminder of introspection tooling
 Let's start with the topic of code inspection, e.g. we may ask the following: What happens when Julia evaluates `[i for i in 1:10]`?
-- parsing 
+#### parsing 
 ```@repl lab06_intro
 using InteractiveUtils #hide
 :([i for i in 1:10]) |> dump
 ```
-- lowering
+#### lowering
 ```@repl lab06_intro
-Meta.@lower [i for i in 1:10]
+Meta.@lower debuginfo=:none [i for i in 1:10]
 ```
-- typing
+#### typing
 ```@repl lab06_intro
 f() = [i for i in 1:10]
-@code_typed f()
+@code_typed debuginfo=:none f()
 ```
-- LLVM code generation
+#### LLVM code generation
 ```@repl lab06_intro
-@code_llvm f()
+@code_llvm debuginfo=:none f()
 ```
-- native code generation
+#### native code generation
 ```@repl lab06_intro
-@code_native f()
+@code_native debuginfo=:none f()
 ```
 
 Let's see how these tools can help us understand some of Julia's internals on examples from previous labs and lectures.
@@ -42,204 +42,169 @@ Let's see how these tools can help us understand some of Julia's internals on ex
 ### Understanding runtime dispatch and type instabilities
 We will start with a question: Can we spot internally some difference between type stable/unstable code?
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Inspect the following two functions using `@code_lowered`, `@code_typed`, `@code_llvm` and `@code_native`.
-```@example lab06_intro
-x = rand(10^5)
-function explicit_len(x)
-    length(x)
-end
-
-function implicit_len()
-    length(x)
-end
-nothing #hide
-```
-For now do not try to understand the details, but focus on the overall differences such as length of the code.
-
-!!! info "Redirecting `stdout`"
-    If the output of the method introspection tools is too long you can use a general way of redirecting standard output `stdout` to a file
-    ```julia
-    open("./llvm_fun.ll", "w") do file
-        original_stdout = stdout
-        redirect_stdout(file)
-        @code_llvm fun()
-        redirect_stdout(original_stdout)
+!!! warning "Exercise"
+    Inspect the following two functions using `@code_lowered`, `@code_typed`, `@code_llvm` and `@code_native`.
+    ```@example lab06_intro
+    x = rand(10^5)
+    function explicit_len(x)
+        length(x)
     end
+
+    function implicit_len()
+        length(x)
+    end
+    nothing #hide
     ```
-    In case of `@code_llvm` and `@code_native` there are special options, that allow this out of the box, see help `?` for underlying `code_llvm` and `code_native`. If you don't mind adding dependencies there is also the `@capture_out` from [`Suppressor.jl`](https://github.com/JuliaIO/Suppressor.jl)
+    For now do not try to understand the details, but focus on the overall differences such as length of the code.
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
+    !!! info "Redirecting `stdout`"
+        If the output of the method introspection tools is too long you can use a general way of redirecting standard output `stdout` to a file
+        ```julia
+        open("./llvm_fun.ll", "w") do file
+            original_stdout = stdout
+            redirect_stdout(file)
+            @code_llvm debuginfo=:none fun()
+            redirect_stdout(original_stdout)
+        end
+        ```
+        In case of `@code_llvm` and `@code_native` there are special options, that allow this out of the box, see help `?` for underlying `code_llvm` and `code_native`. If you don't mind adding dependencies there is also the `@capture_out` from [`Suppressor.jl`](https://github.com/JuliaIO/Suppressor.jl)
 
-```julia
-@code_warntype explicit_sum(x)
-@code_warntype implicit_sum()
+!!! details
+    ```julia
+    @code_warntype explicit_sum(x)
+    @code_warntype implicit_sum()
 
-@code_typed explicit_sum(x)
-@code_typed implicit_sum()
+    @code_typed debuginfo=:none explicit_sum(x)
+    @code_typed debuginfo=:none implicit_sum()
 
-@code_llvm explicit_sum(x)
-@code_llvm implicit_sum()
+    @code_llvm debuginfo=:none explicit_sum(x)
+    @code_llvm debuginfo=:none implicit_sum()
 
-@code_native explicit_sum(x)
-@code_native implicit_sum()
-```
+    @code_native debuginfo=:none explicit_sum(x)
+    @code_native debuginfo=:none implicit_sum()
+    ```
 
-In this case we see that the generated code for such a simple operation is much longer in the type unstable case resulting in longer run times. However in the next example we will see that having longer code is not always a bad thing.
-```@raw html
-</p></details>
-```
+    In this case we see that the generated code for such a simple operation is much longer in the type unstable case resulting in longer run times. However in the next example we will see that having longer code is not always a bad thing.
 
 ### Loop unrolling
 In some cases the compiler uses loop unrolling[^1] optimization to speed up loops at the expense of binary size. The result of such optimization is removal of the loop control instructions and rewriting the loop into a repeated sequence of independent statements.
 
 [^1]: [https://en.wikipedia.org/wiki/Loop_unrolling](https://en.wikipedia.org/wiki/Loop\_unrolling)
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Inspect under what conditions does the compiler unroll the for loop in the `polynomial` function from the last [lab](@ref horner).
-```@example lab06_intro
-function polynomial(a, x)
-    accumulator = a[end] * one(x)
-    for i in length(a)-1:-1:1
-        accumulator = accumulator * x + a[i]
+!!! warning "Exercise"
+    Inspect under what conditions does the compiler unroll the for loop in the `polynomial` function from the last [lab](@ref horner).
+    ```@example lab06_intro
+    function polynomial(a, x)
+        accumulator = a[end] * one(x)
+        for i in length(a)-1:-1:1
+            accumulator = accumulator * x + a[i]
+        end
+        accumulator  
     end
-    accumulator  
-end
-nothing #hide
-```
+    nothing #hide
+    ```
 
-Compare the speed of execution with and without loop unrolling.
+    Compare the speed of execution with and without loop unrolling.
 
-**HINTS**:
-- these kind of optimization are lower level than intermediate language
-- loop unrolling is possible when compiler knows the length of the input
+    **HINTS**:
+    - these kind of optimization are lower level than intermediate language
+    - loop unrolling is possible when compiler knows the length of the input
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@example lab06_intro
-using Test #hide
-using BenchmarkTools
-a = Tuple(ones(20)) # tuple has known size
-ac = collect(a)
-x = 2.0
 
-@code_lowered polynomial(a,x)       # cannot be seen here as optimizations are not applied
-@code_typed polynomial(a,x)         # loop unrolling is not part of type inference optimization
-nothing #hide
-```
+!!! details 
+    ```@example lab06_intro
+    using Test #hide
+    using BenchmarkTools
+    a = Tuple(ones(20)) # tuple has known size
+    ac = collect(a)
+    x = 2.0
 
-```@repl lab06_intro
-@code_llvm polynomial(a,x)
-@code_llvm polynomial(ac,x)
-```
+    @code_lowered polynomial(a,x)       # cannot be seen here as optimizations are not applied
+    @code_typed debuginfo=:none polynomial(a,x)         # loop unrolling is not part of type inference optimization
+    nothing #hide
+    ```
 
-More than 2x speedup
-```@repl lab06_intro
-@btime polynomial($a,$x)
-@btime polynomial($ac,$x)
-```
+    ```@repl lab06_intro
+    @code_llvm debuginfo=:none polynomial(a,x)
+    @code_llvm debuginfo=:none polynomial(ac,x)
+    ```
 
-```@raw html
-</p></details>
-```
+    More than 2x speedup
+    ```@repl lab06_intro
+    @btime polynomial($a,$x)
+    @btime polynomial($ac,$x)
+    ```
 
 ### Recursion inlining depth
 Inlining[^2] is another compiler optimization that allows us to speed up the code by avoiding function calls. Where applicable compiler can replace `f(args)` directly with the function body of `f`, thus removing the need to modify stack to transfer the control flow to a different place. This is yet another optimization that may improve speed at the expense of binary size.
 
 [^2]: [https://en.wikipedia.org/wiki/Inline_expansion](https://en.wikipedia.org/wiki/Inline\_expansion)
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Rewrite the `polynomial` function from the last [lab](@ref horner) using recursion and find the length of the coefficients, at which inlining of the recursive calls stops occurring.
+!!! warning "Exercise"
+    Rewrite the `polynomial` function from the last [lab](@ref horner) using recursion and find the length of the coefficients, at which inlining of the recursive calls stops occurring.
 
-```julia
-function polynomial(a, x)
-    accumulator = a[end] * one(x)
-    for i in length(a)-1:-1:1
-        accumulator = accumulator * x + a[i]
-    end
-    accumulator  
-end
-```
-
-!!! info "Splatting/slurping operator `...`"
-    The operator `...` serves two purposes inside function calls [^3][^4]:
-    - combines multiple arguments into one
-    ```@repl lab06_splat
-    function printargs(args...)
-        println(typeof(args))
-        for (i, arg) in enumerate(args)
-            println("Arg #$i = $arg")
+    ```julia
+    function polynomial(a, x)
+        accumulator = a[end] * one(x)
+        for i in length(a)-1:-1:1
+            accumulator = accumulator * x + a[i]
         end
+        accumulator  
     end
-    printargs(1, 2, 3)
-    ```
-    - splits one argument into many different arguments
-    ```@repl lab06_splat
-    function threeargs(a, b, c)
-        println("a = $a::$(typeof(a))")
-        println("b = $b::$(typeof(b))")
-        println("c = $c::$(typeof(c))")
-    end
-    threeargs([1,2,3]...) # or with a variable threeargs(x...)
     ```
 
-    [^3]: [https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?](https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?)
-    [^4]: [https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions](https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions)
+    !!! info "Splatting/slurping operator `...`"
+        The operator `...` serves two purposes inside function calls [^3][^4]:
+        - combines multiple arguments into one
+        ```@repl lab06_splat
+        function printargs(args...)
+            println(typeof(args))
+            for (i, arg) in enumerate(args)
+                println("Arg #$i = $arg")
+            end
+        end
+        printargs(1, 2, 3)
+        ```
+        - splits one argument into many different arguments
+        ```@repl lab06_splat
+        function threeargs(a, b, c)
+            println("a = $a::$(typeof(a))")
+            println("b = $b::$(typeof(b))")
+            println("c = $c::$(typeof(c))")
+        end
+        threeargs([1,2,3]...) # or with a variable threeargs(x...)
+        ```
 
-**HINTS**:
-- define two methods `_polynomial!(ac, x, a...)` and `_polynomial!(ac, x, a)` for the case of ≥2 coefficients and the last coefficient
-- use splatting together with range indexing `a[1:end-1]...`
-- the correctness can be checked using the built-in `evalpoly`
-- recall that these kind of optimization are possible just around the type inference stage
-- use container of known length to store the coefficients
+        [^3]: [https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?](https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?)
+        [^4]: [https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions](https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions)
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
+    **HINTS**:
+    - define two methods `_polynomial!(ac, x, a...)` and `_polynomial!(ac, x, a)` for the case of ≥2 coefficients and the last coefficient
+    - use splatting together with range indexing `a[1:end-1]...`
+    - the correctness can be checked using the built-in `evalpoly`
+    - recall that these kind of optimization are possible just around the type inference stage
+    - use container of known length to store the coefficients
 
-```@example lab06_intro
-_polynomial!(ac, x, a...) = _polynomial!(x * ac + a[end], x, a[1:end-1]...)
-_polynomial!(ac, x, a) = x * ac + a
-polynomial(a, x) = _polynomial!(a[end] * one(x), x, a[1:end-1]...)
+!!! details
+    ```@example lab06_intro
+    _polynomial!(ac, x, a...) = _polynomial!(x * ac + a[end], x, a[1:end-1]...)
+    _polynomial!(ac, x, a) = x * ac + a
+    polynomial(a, x) = _polynomial!(a[end] * one(x), x, a[1:end-1]...)
 
-# the coefficients have to be a tuple
-a = Tuple(ones(Int, 21)) # everything less than 22 gets inlined
-x = 2
-polynomial(a,x) == evalpoly(x,a) # compare with built-in function
+    # the coefficients have to be a tuple
+    a = Tuple(ones(Int, 21)) # everything less than 22 gets inlined
+    x = 2
+    polynomial(a,x) == evalpoly(x,a) # compare with built-in function
 
-# @code_llvm polynomial(a,x)    # seen here too, but code_typed is a better option
-@code_lowered polynomial(a,x) # cannot be seen here as optimizations are not applied
-nothing #hide
-```
+    # @code_llvm debuginfo=:none polynomial(a,x)    # seen here too, but code_typed is a better option
+    @code_lowered polynomial(a,x) # cannot be seen here as optimizations are not applied
+    nothing #hide
+    ```
 
-```@repl lab06_intro
-@code_typed polynomial(a,x)
-```
+    ```@repl lab06_intro
+    @code_typed debuginfo=:none polynomial(a,x)
+    ```
 
-```@raw html
-</p></details>
-```
 
 ## AST manipulation: The first steps to metaprogramming
 Julia is so called homoiconic language, as it allows the language to reason about its code. This capability is inspired by years of development in other languages such as Lisp, Clojure or Prolog.
@@ -296,132 +261,98 @@ eval(code_parse)    # evaluation of :(x = 2)
 x                   # should be defined
 ```
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Before doing anything more fancy let's start with some simple manipulation of ASTs.
-- Define a variable `code` to be as the result of parsing the string `"j = i^2"`. 
-- Copy code into a variable `code2`. Modify this to replace the power `2` with a power `3`. Make sure that the original code variable is not also modified. 
-- Copy `code2` to a variable `code3`. Replace `i` with `i + 1` in `code3`.
-- Define a variable `i` with the value `4`. Evaluate the different code expressions using the `eval` function and check the value of the variable `j`.
+!!! warning "Exercise"
+    Before doing anything more fancy let's start with some simple manipulation of ASTs.
+    - Define a variable `code` to be as the result of parsing the string `"j = i^2"`. 
+    - Copy code into a variable `code2`. Modify this to replace the power `2` with a power `3`. Make sure that the original code variable is not also modified. 
+    - Copy `code2` to a variable `code3`. Replace `i` with `i + 1` in `code3`.
+    - Define a variable `i` with the value `4`. Evaluate the different code expressions using the `eval` function and check the value of the variable `j`.
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@repl lab06_meta
-code = Meta.parse("j = i^2")
-code2 = copy(code)
-code2.args[2].args[3] = 3
-code3 = copy(code2)
-code3.args[2].args[2] = :(i + 1)
-i = 4
-eval(code), eval(code2), eval(code3)
-```
-
-```@raw html
-</p></details>
-```
+!!! details
+    ```@repl lab06_meta
+    code = Meta.parse("j = i^2")
+    code2 = copy(code)
+    code2.args[2].args[3] = 3
+    code3 = copy(code2)
+    code3.args[2].args[2] = :(i + 1)
+    i = 4
+    eval(code), eval(code2), eval(code3)
+    ```
 
 Following up on the more general substitution of variables in an expression from the lecture, let's see how the situation becomes more complicated, when we are dealing with strings instead of a parsed AST.
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-```@example lab06_meta
-using Test #hide
-replace_i(s::Symbol) = s == :i ? :k : s
-replace_i(e::Expr) = Expr(e.head, map(replace_i, e.args)...)
-replace_i(u) = u
-nothing #hide
-```
-Given a function `replace_i`, which replaces variables `i` for `k` in an expression like the following
-```@repl lab06_meta
-ex = :(i + i*i + y*i - sin(z))
-@test replace_i(ex) == :(k + k*k + y*k - sin(z))
-```
-write a different function `sreplace_i(s)`, which does the same thing but instead of a parsed expression (AST) it manipulates a string, such as
-```@repl lab06_meta
-s = string(ex)
-```
-**HINTS**:
-- Use `Meta.parse` in combination with `replace_i` **ONLY** for checking of correctness.
-- You can use the `replace` function in combination with regular expressions.
-- Think of some corner cases, that the method may not handle properly.
+!!! warning "Exercise"
+    ```@example lab06_meta
+    using Test #hide
+    replace_i(s::Symbol) = s == :i ? :k : s
+    replace_i(e::Expr) = Expr(e.head, map(replace_i, e.args)...)
+    replace_i(u) = u
+    nothing #hide
+    ```
+    Given a function `replace_i`, which replaces variables `i` for `k` in an expression like the following
+    ```@repl lab06_meta
+    ex = :(i + i*i + y*i - sin(z))
+    @test replace_i(ex) == :(k + k*k + y*k - sin(z))
+    ```
+    write a different function `sreplace_i(s)`, which does the same thing but instead of a parsed expression (AST) it manipulates a string, such as
+    ```@repl lab06_meta
+    s = string(ex)
+    ```
+    **HINTS**:
+    - Use `Meta.parse` in combination with `replace_i` **ONLY** for checking of correctness.
+    - You can use the `replace` function in combination with regular expressions.
+    - Think of some corner cases, that the method may not handle properly.
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-The naive solution
-```@repl lab06_meta
-sreplace_i(s) = replace(s, 'i' => 'k')
-@test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
-```
-does not work in this simple case, because it will replace "i" inside the `sin(z)` expression. We can play with regular expressions to obtain something, that is more robust
-```@repl lab06_meta
-sreplace_i(s) = replace(s, r"([^\w]|\b)i(?=[^\w]|\z)" => s"\1k")
-@test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
-```
-however the code may now be harder to read. Thus it is preferable to use the parsed AST when manipulating Julia's code.
-```@raw html
-</p></details>
-```
+!!! details
+    ```
+    The naive solution
+    ```@repl lab06_meta
+    sreplace_i(s) = replace(s, 'i' => 'k')
+    @test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
+    ```
+    does not work in this simple case, because it will replace "i" inside the `sin(z)` expression. We can play with regular expressions to obtain something, that is more robust
+    ```@repl lab06_meta
+    sreplace_i(s) = replace(s, r"([^\w]|\b)i(?=[^\w]|\z)" => s"\1k")
+    @test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
+    ```
+    however the code may now be harder to read. Thus it is preferable to use the parsed AST when manipulating Julia's code.
 
 If the exercises so far did not feel very useful let's focus on one, that is similar to a part of the [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) pkg.
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Write function `wrap!(ex::Expr)` which wraps literal values (numbers) with a call to `f()`. You can test it on the following example
-```@example lab06_meta
-f = x -> convert(Float64, x)
-ex = :(x*x + 2*y*x + y*y)     # original expression
-rex = :(x*x + f(2)*y*x + y*y) # result expression
-nothing #hide
-```
 
-**HINTS**:
-- use recursion and multiple dispatch
-- dispatch on `::Number` to detect numbers in an expression
-- for testing purposes, create a copy of `ex` before mutating
+!!! warning "Exercise"
+    Write function `wrap!(ex::Expr)` which wraps literal values (numbers) with a call to `f()`. You can test it on the following example
+    ```@example lab06_meta
+    f = x -> convert(Float64, x)
+    ex = :(x*x + 2*y*x + y*y)     # original expression
+    rex = :(x*x + f(2)*y*x + y*y) # result expression
+    nothing #hide
+    ```
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
+    **HINTS**:
+    - use recursion and multiple dispatch
+    - dispatch on `::Number` to detect numbers in an expression
+    - for testing purposes, create a copy of `ex` before mutating
 
-```@repl lab06_meta
-function wrap!(ex::Expr)
-    args = ex.args
-    
-    for i in 1:length(args)
-        args[i] = wrap!(args[i])
+!!! details
+    ```@repl lab06_meta
+    function wrap!(ex::Expr)
+        args = ex.args
+        
+        for i in 1:length(args)
+            args[i] = wrap!(args[i])
+        end
+
+        return ex
     end
 
-    return ex
-end
+    wrap!(ex::Number) = Expr(:call, :f, ex)
+    wrap!(ex) = ex
 
-wrap!(ex::Number) = Expr(:call, :f, ex)
-wrap!(ex) = ex
-
-ext, x, y = copy(ex), 2, 3
-@test wrap!(ex) == :(x*x + f(2)*y*x + y*y)
-eval(ext)
-eval(ex)
-```
-
-```@raw html
-</p></details>
-```
+    ext, x, y = copy(ex), 2, 3
+    @test wrap!(ex) == :(x*x + f(2)*y*x + y*y)
+    eval(ext)
+    eval(ex)
+    ```
 
 This kind of manipulation is at the core of some pkgs, such as aforementioned [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) where every number is replaced with a narrow interval in order to find some bounds on the result of a computation.
 
