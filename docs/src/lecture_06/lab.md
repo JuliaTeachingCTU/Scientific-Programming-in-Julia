@@ -14,25 +14,25 @@ We will be again a little getting ahead of ourselves as we are going to use quit
 
 ## Quick reminder of introspection tooling
 Let's start with the topic of code inspection, e.g. we may ask the following: What happens when Julia evaluates `[i for i in 1:10]`?
-- parsing 
+#### parsing 
 ```@repl lab06_intro
 using InteractiveUtils #hide
 :([i for i in 1:10]) |> dump
 ```
-- lowering
+#### lowering
 ```@repl lab06_intro
 Meta.@lower debuginfo=:none [i for i in 1:10]
 ```
-- typing
+#### typing
 ```@repl lab06_intro
 f() = [i for i in 1:10]
 @code_typed debuginfo=:none f()
 ```
-- LLVM code generation
+#### LLVM code generation
 ```@repl lab06_intro
 @code_llvm debuginfo=:none f()
 ```
-- native code generation
+#### native code generation
 ```@repl lab06_intro
 @code_native debuginfo=:none f()
 ```
