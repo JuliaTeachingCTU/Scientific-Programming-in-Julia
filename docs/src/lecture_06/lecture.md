@@ -199,7 +199,28 @@ CodeInfo(
 ```
 
 #### Code Typing
-**Code typing** is the process in which the compiler attaches types to variables and tries to infer types of objects returned from called functions. If the compiler fails to infer the returned type, it will give the variable type `Any`, in which case a dynamic dispatch will be used in subsequent operations with the variable. Inspecting typed code is therefore important for detecting type instabilities (the process can be difficult and error prone, fortunately, new tools like `Jet.jl` may simplify this task). The output of typing can be inspected using `@code_typed` macro. If you know the types of function arguments, aka function signature, you can call directly function `InteractiveUtils.code_typed(nextfib, (typeof(3),))`.
+**Code typing** is the process in which the compiler attaches types to variables and tries to infer types of objects returned from called functions. If the compiler fails to infer the returned type, it will give the variable type `Any`, in which case a dynamic dispatch will be used in subsequent operations with the variable. Inspecting typed code is therefore important for detecting type instabilities (the process can be difficult and error prone, fortunately, new tools like `Jet.jl` may simplify this task). The output of typing can be inspected using `@code_typed` macro. If you know the types of function arguments, aka function signature, you can call directly function `InteractiveUtils.code_typed(nextfib, (typeof(3),))`. By default, the `@code_typed` shows the output after **typing** and **optimization**. Turing off optimization to see the outcome of just typing, we get
+```julia
+julia> @code_typed optimize=false nextfib(3)
+CodeInfo(
+1 ─ %1 = Main.one(n)::Core.Const(1)
+│   %2 = Main.one(n)::Core.Const(1)
+│        (a = %1)::Core.Const(1)
+└──      (b = %2)::Core.Const(1)
+2 ┄ %5 = (b < n)::Bool
+└──      goto #4 if not %5
+3 ─ %7 = b::Int64
+│   %8 = (a + b)::Int64
+│        (a = %7)::Int64
+│        (b = %8)::Int64
+└──      goto #2
+4 ─      return b
+) => Int64
+```
+Note that the same view of the code is offered by the `@code_warntype` macro, which we have seen in the previous [lecture](@ref perf_lecture). The main difference from `@code_typed` is that it highlights type instabilities with red color and shows only unoptimized view of the code.
+
+Let's now look at the output after the optimization pass
+
 ```julia
 julia> @code_typed nextfib(3)
 CodeInfo(
@@ -222,25 +243,6 @@ We can see that
 - The phi-instruction `%2 = φ (#1 => 1, #3 => %6)` is a **selector function**, which returns the value depending on from which branch do you come from. In this case, variable `%2` will have value 1, if the control was transfered from block `#1` and it will have value copied from variable `%6` if the control was transferreed from block `3` [see also](https://llvm.org/docs/LangRef.html#phi-instruction). The `φ` stands from *phony* variable.
 
 When we have called `@code_lower`, the role of types of arguments was in selecting - via multiple dispatch - the appropriate function body among different methods. Contrary in `@code_typed`, the types of parameters determine the choice of inner methods that need to be called (again with multiple dispatch). This process can trigger other optimization, such as inlining, as seen in the case of `one(n)` being replaced with `1` directly, though here this replacement is hidden in the `φ` function. 
-
-Note that the same view of the code is offered by the `@code_warntype` macro, which we have seen in the previous [lecture](@ref perf_lecture). The main difference from `@code_typed` is that it highlights type instabilities with red color and shows only unoptimized view of the code. You can view the unoptimized code with a keyword argument `optimize=false`:
-```julia
-julia> @code_typed optimize=false nextfib(3)
-CodeInfo(
-1 ─ %1 = Main.one(n)::Core.Const(1)
-│   %2 = Main.one(n)::Core.Const(1)
-│        (a = %1)::Core.Const(1)
-└──      (b = %2)::Core.Const(1)
-2 ┄ %5 = (b < n)::Bool
-└──      goto #4 if not %5
-3 ─ %7 = b::Int64
-│   %8 = (a + b)::Int64
-│        (a = %7)::Int64
-│        (b = %8)::Int64
-└──      goto #2
-4 ─      return b
-) => Int64
-```
 
 #### Lowering to LLVM IR
 Julia uses the LLVM compiler framework to generate machine code. LLVM stands for low-level virtual machine and it is basis of many modern compilers (see [wiki](https://en.wikipedia.org/wiki/LLVM)).
