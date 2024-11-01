@@ -10,7 +10,13 @@
 
 /docs/build/
 /docs/Manifest.toml
-/docs/src/assets/themes
-/docs/src/assets/favicon.ico
-/docs/src/assets/logo.svg
-/docs/src/assets/logo-dark.svg
+
+# vitepress
+/docs/final_site/
+/docs/node_modules/
+/docs/package-lock.json
+
+# MAC
+.DS_Store
+.AppleDouble
+.LSOverride
