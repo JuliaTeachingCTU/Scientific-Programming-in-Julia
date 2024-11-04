@@ -54,9 +54,12 @@ Instead of littering the whole code with custom getters/setters Julia allows us
 to overload the `sheep.field` behaviour by implementing custom
 `getproperty`/`setproperty!` methods.
 
-!!! warning "Exercise"
-    Implement custom `getproperty`/`setproperty!` methods which allow to access the
+::: warning Exercise
+
+Implement custom `getproperty`/`setproperty!` methods which allow to access the
 `Sheep` inside the `⚥Sheep` as if we would not be wrapping it.
+
+:::
 
 ::: details Show solution
 
@@ -93,6 +96,7 @@ sheep
 
 In order to make the `⚥Sheep` work with the rest of the code we only have
 to forward the `eat!` method
+
 ```@repl forward
 eat!(s::⚥Sheep, food, world) = eat!(s.sheep, food, world);
 sheep = ⚥Sheep(1);
@@ -100,12 +104,12 @@ grass = Grass(2);
 world = World([sheep,grass])
 eat!(sheep, grass, world)
 ```
+
 and implement a custom `reproduce!` method with the behaviour that we want.
 
 However, the extension of `Sheep` to `⚥Sheep` is a very object-oriented approach.
 With a little bit of rethinking, we can build a much more elegant solution that
 makes use of Julia's powerful parametric types.
-
 
 ## Part II: A new, parametric type hierarchy
 
@@ -118,6 +122,7 @@ parameter `S` which will represent the specific animal/plant
 species we are dealing with.
 
 This new type hiearchy can then look like this:
+
 ```@example parametric
 abstract type Species end
 
@@ -136,6 +141,7 @@ abstract type Agent{S<:Species} end
 # just a boolean
 @enum Sex female male
 ```
+
 ```@setup parametric
 mutable struct World{A<:Agent}
     agents::Dict{Int,A}
@@ -158,6 +164,7 @@ end
 
 Now we can create a *concrete* type `Animal` with the two parametric types
 and the fields that we already know from lab 2.
+
 ```@example parametric
 mutable struct Animal{A<:AnimalSpecies} <: Agent{A}
     const id::Int
@@ -168,19 +175,26 @@ mutable struct Animal{A<:AnimalSpecies} <: Agent{A}
     const sex::Sex
 end
 ```
+
 To create an instance of `Animal` we have to specify the parametric type
 while constructing it
+
 ```@repl parametric
 Animal{Wolf}(1,5,5,1,1,female)
 ```
+
 Note that we now automatically have animals of any species without additional work.
 Starting with the overload of the `show` method we can already see that we can
 abstract away a lot of repetitive work into the type system. We can implement
 *one single* `show` method for all animal species!
-!!! warning "Exercise"
-    Implement `Base.show(io::IO, a::Animal)` with a single method for all `Animal`s.
-    You can get the pretty (unicode) printing of the `Species` types with
-    another overload like this: `Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")`
+
+::: warning Exercise
+
+Implement `Base.show(io::IO, a::Animal)` with a single method for all `Animal`s.
+You can get the pretty (unicode) printing of the `Species` types with
+another overload like this: `Base.show(io::IO, ::Type{Sheep}) = print(io,"🐑")`
+
+:::
 
 ::: details Show solution
 
@@ -207,18 +221,23 @@ by simply calling their species constructor. For example, `Sheep` is just an
 abstract type that we cannot instantiate. However, we can manually define
 a new constructor that will give us this convenience back.
 This is done in exactly the same way as defining a constructor for a concrete type:
+
 ```julia
 Sheep(id,E,ΔE,pr,pf,s=rand(Sex)) = Animal{Sheep}(id,E,ΔE,pr,pf,s)
 ```
+
 Ok, so we have a constructor for `Sheep` now. But what about all the other
 billions of species that you want to define in your huge master thesis project of
 ecosystem simulations?  Do you have to write them all by hand? *Do not
 despair!* Julia has you covered.
 
-!!! warning "Exercise"
-    Overload all `AnimalSpecies` types with a constructor.
-    You already know how to write constructors for specific types such as `Sheep`.
-    Can you manage to sneak in a type variable? Maybe with `Type`?
+::: warning Exercise
+
+Overload all `AnimalSpecies` types with a constructor.
+You already know how to write constructors for specific types such as `Sheep`.
+Can you manage to sneak in a type variable? Maybe with `Type`?
+
+:::
 
 ::: details Show solution
 
@@ -243,9 +262,12 @@ Sheep(1)
 Wolf(2)
 ```
 
-!!! warning "Exercise"
-    Check the methods for `eat!` and `kill_agent!` which involve `Animal`s and update
-    their type signatures such that they work for the new type hiearchy.
+::: warning Exercise
+
+Check the methods for `eat!` and `kill_agent!` which involve `Animal`s and update
+their type signatures such that they work for the new type hiearchy.
+
+:::
 
 ::: details Show solution
 
@@ -271,10 +293,13 @@ nothing # hide
 
 :::
 
-!!! warning "Exercise"
-    Finally, we can implement the new behaviour for `reproduce!` which we wanted.
-    Build a function which first finds an animal species of opposite sex and then
-    lets the two reproduce (same behaviour as before).
+::: warning Exercise
+
+Finally, we can implement the new behaviour for `reproduce!` which we wanted.
+Build a function which first finds an animal species of opposite sex and then
+lets the two reproduce (same behaviour as before).
+
+:::
 
 ::: details Show solution
 
@@ -310,8 +335,11 @@ w  = World([s1, s2])
 reproduce!(s1, w); w
 ```
 
-!!! warning "Exercise"
-    Implement the type hiearchy we designed for `Plant`s as well.
+::: warning Exercise
+
+Implement the type hiearchy we designed for `Plant`s as well.
+
+:::
 
 ::: details Show solution
 
