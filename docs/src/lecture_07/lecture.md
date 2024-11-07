@@ -5,7 +5,9 @@ In its essence, macro is a function, which
 2. modify the expressions in argument
 3. insert the modified expression at the same place as the one that is parsed.
 
-Macros are necessary because they execute after the code is parsed (2nd step in conversion of source code to binary as described in last lect, after `Meta.parse`) therefore, macros allow the programmer to generate and include fragments of customized code before the full program is compiled run. **Since they are executed during parsing, they do not have access to the values of their arguments, but only to their syntax**.
+Macros are necessary because they execute after the code is parsed (2nd step in conversion of source code to binary as described in last lecture, after `Meta.parse`) therefore, macros allow the programmer to generate and include fragments of customized code before the full program is compiled run.
+
+**Since they are executed just after parsing *before compilation and execution*, they do not have access to the values of their arguments, but only to their syntax**.
 
 To illustrate the difference, consider the following example:
 
@@ -192,11 +194,32 @@ In contrast to the behavior of `:()` (or `quote ... end`, true quotation would n
 )
 ```
 
+The quasi-quation is useful, when Julia acts as its own preprocessor
 ```julia
-for (v, f) in [(:sin, :foo_sin)]
+for f in [:sin, :cos]
+	vf = Symbol("verbose1_", f)
 	quote
-		$(f)(x) = $(v)(x)
-	end |> Base.remove_linenums! |> dump
+		$(vf)(x) = println(string(:(f),": "), $(f)(x))
+	end |> eval
+end
+```
+The above is simpler to write, but not the way most people would write it, as most of use would like to use `print("$(f): ",...`, which requires double-interpolation as follows.
+Version 2:
+```julia
+for f in [:sin, :cos]
+	vf = Symbol("verbose2_", f)
+	quote
+		$(vf)(x) = println("$($(f)): ", $(f)(x))
+	end |> eval
+end
+```
+The double-interpolation is needed, because " " trigger one interpolation and quote trigger the second interpolation. Compariong to `@show` macro, the `verbose` version of `sin` and `cos` is inferior, since we would like to see the value. 
+```julia
+for f in [:sin, :cos]
+	vf = Symbol("verbose_", f)
+	quote
+		$(vf)(x) = println("$($(f)) (", x, ") = ", $(f)(x))
+	end |> eval
 end
 ```
 
