@@ -272,38 +272,33 @@ Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already co
      🐑  ❌  ❌  ✅  ✅
      🐺  ✅  ❌  ❌  ❌
     ```
+!!! warning "Exercise"
+    Based on the following example syntax, 
+    ```julia
+    @species Plant Broccoli 🥦
+    @species Animal Rabbit 🐇
+    ```
+    write macro `@species` inside `Ecosystem` pkg, which defines the abstract type, its show function and exports the type. For example `@species Plant Broccoli 🥦` should generate code:
+    ```julia
+    abstract type Broccoli <: PlantSpecies end
+    Base.show(io::IO,::Type{Broccoli}) = print(io,"🥦")
+    export Broccoli
+    ```
+    Define first helper function `_species` to inspect the macro's output. This is indispensable, as we are defining new types/constants and thus we may otherwise encounter errors during repeated evaluation (though only if the type signature changed).
+    ```julia
+    _species(:Plant, :Broccoli, :🥦)
+    _species(:Animal, :Rabbit, :🐇)
+    ```
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Based on the following example syntax, 
-```julia
-@species Plant Broccoli 🥦
-@species Animal Rabbit 🐇
-```
-write macro `@species` inside `Ecosystem` pkg, which defines the abstract type, its show function and exports the type. For example `@species Plant Broccoli 🥦` should generate code:
-```julia
-abstract type Broccoli <: PlantSpecies end
-Base.show(io::IO,::Type{Broccoli}) = print(io,"🥦")
-export Broccoli
-```
-Define first helper function `_species` to inspect the macro's output. This is indispensable, as we are defining new types/constants and thus we may otherwise encounter errors during repeated evaluation (though only if the type signature changed).
-```julia
-_species(:Plant, :Broccoli, :🥦)
-_species(:Animal, :Rabbit, :🐇)
-```
+    **HINTS**:
+    - use `QuoteNode` in the show function just like in the `@myshow` example
+    - escaping `esc` is needed for the returned in order to evaluate in the top most module (`Ecosystem`/`Main`)
+    - ideally these changes should be made inside the modified `Ecosystem` pkg provided in the lab (though not everything can be refreshed with `Revise`) - there is a file `ecosystem_macros.jl` just for this purpose
+    - multiple function definitions can be included into a `quote end` block
+    - interpolation works with any expression, e.g. `$(typ == :Animal ? AnimalSpecies : PlantSpecies)`
 
-**HINTS**:
-- use `QuoteNode` in the show function just like in the `@myshow` example
-- escaping `esc` is needed for the returned in order to evaluate in the top most module (`Ecosystem`/`Main`)
-- ideally these changes should be made inside the modified `Ecosystem` pkg provided in the lab (though not everything can be refreshed with `Revise`) - there is a file `ecosystem_macros.jl` just for this purpose
-- multiple function definitions can be included into a `quote end` block
-- interpolation works with any expression, e.g. `$(typ == :Animal ? AnimalSpecies : PlantSpecies)`
-
-**BONUS**:
-Based on `@species` define also macros `@animal` and `@plant` with two arguments instead of three, where the species type is implicitly carried in the macro's name.
+    **BONUS**:
+    Based on `@species` define also macros `@animal` and `@plant` with two arguments instead of three, where the species type is implicitly carried in the macro's name.
 
 
 
