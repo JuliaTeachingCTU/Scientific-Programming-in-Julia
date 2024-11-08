@@ -89,6 +89,23 @@ We can remove this boilerplate code by creating a very simple macro that does th
     What happens if we call `@repeat 3 x = 2`? Is `x` defined?
 
 
+!!! details
+    ```@repl lab07_repeat
+    macro repeat(n::Int, ex)
+        return _repeat(n, ex)
+    end
+
+    function _repeat(n::Int, ex)
+        :(for _ in 1:$n
+            $ex
+         end)
+    end
+
+    _repeat(3, :(println("Hello!")))
+    @repeat 3 println("Hello!")
+    ```
+    Even if we had used escaping the expression `x = 2` won't get evaluated properly due to the induced scope of the for loop. In order to resolve this we would have to specially match that kind of expression and generate a proper syntax withing the for loop `global $ex`. However we may just warn the user in the docstring that the usage is disallowed. 
+
 Note that this kind of repeat macro is also defined in the [`Flux.jl`](https://fluxml.ai/) machine learning framework, wherein it's called `@epochs` and is used for creating training [loop](https://fluxml.ai/Flux.jl/stable/training/training/#Datasets).
 
 ## [Polynomial macro](@id lab07_polymacro)
@@ -138,6 +155,27 @@ p(2)
 
     [^1]: Explanation of the Horner schema can be found on [https://en.wikipedia.org/wiki/Horner%27s\_method](https://en.wikipedia.org/wiki/Horner%27s_method).
 
+!!! details
+    ```@repl lab07_poly
+    using InteractiveUtils #hide
+    macro poly(a...)
+        return _poly(a...)
+    end
+
+    function _poly(a...)
+        N = length(a)
+        ex = :($(a[1]))
+        for i in 2:N
+            ex = :(muladd(x, $ex, $(a[i]))) # equivalent of :(x * $ex + $(a[i]))
+        end
+        :(x -> $ex)
+    end
+
+    p = @poly 3 2 10
+    p(2) == evalpoly(2, [10,2,3])
+    @code_lowered p(2) # can show the generated code
+    ```
+
 Moving on to the first/harder case, where we need to parse the mathematical expression.
 
 !!! warning "Exercise"
@@ -183,6 +221,46 @@ Moving on to the first/harder case, where we need to parse the mathematical expr
         ```
         Note that the `x` or the iteration is required, because by default postwalk/prewalk replaces currently read expression with the output of the body of `do` block.
 
+
+!!! details
+    ```@example lab07_poly
+    using MacroTools
+    using MacroTools: postwalk, prewalk
+
+    macro poly(v::Symbol, p::Expr)
+        a = Tuple(reverse(_get_coeffs(v, p)))
+        return _poly(a...)
+    end
+
+    function _max_rank(v, p)
+        mr = 0
+        postwalk(p) do x
+            if @capture(x, a_*$v^(n_))
+                mr = max(mr, n)
+            end
+            x
+        end
+        mr
+    end
+
+    function _get_coeffs(v, p)
+        N = _max_rank(v, p) + 1
+        coefficients = zeros(N)
+        postwalk(p) do x
+            if @capture(x, a_*$v^(n_))
+                coefficients[n+1] = a
+            end
+            x
+        end
+        coefficients
+    end
+    ```
+    Let's test it.
+    ```@repl lab07_poly
+    p = @poly x 3x^2+2x^1+10x^0
+    p(2) == evalpoly(2, [10,2,3])
+    @code_lowered p(2) # can show the generated code
+    ```
 
 ## Ecosystem macros
 There are at least two ways how we can make our life simpler when using our `Ecosystem` and `EcosystemCore` pkgs. Firstly, recall that in order to test our simulation we always had to write something like this:
@@ -302,6 +380,36 @@ Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already co
     **BONUS**:
     Based on `@species` define also macros `@animal` and `@plant` with two arguments instead of three, where the species type is implicitly carried in the macro's name.
 
+!!! details
+    Macro `@species`
+    ```julia
+    macro species(typ, name, icon)
+        esc(_species(typ, name, icon))
+    end
+
+    function _species(typ, name, icon)
+        quote
+            abstract type $name <: $(typ == :Animal ? AnimalSpecies : PlantSpecies) end
+            Base.show(io::IO, ::Type{$name}) = print(io, $(QuoteNode(icon)))
+            export $name
+        end
+    end
+
+    _species(:Plant, :Broccoli, :🥦)
+    _species(:Animal, :Rabbit, :🐇)
+    ```
+
+    And the bonus macros `@plant` and `@animal`
+    ```julia
+    macro plant(name, icon)
+        return :(@species Plant $name $icon)
+    end
+
+    macro animal(name, icon)
+        return :(@species Animal $name $icon)
+    end
+    ```
+
 The next exercise applies macros to the agents eating behavior.
 
 !!! warning "Exercise"
@@ -339,6 +447,49 @@ The next exercise applies macros to the agents eating behavior.
 
 **BONUS**:
 You can try running the simulation with the newly added agents.
+
+!!! details
+    ```julia
+    macro eats(species::Symbol, foodlist::Expr)
+        return esc(_eats(species, foodlist))
+    end
+
+
+    function _generate_eat(eater::Type{<:AnimalSpecies}, food::Type{<:PlantSpecies}, multiplier)
+        quote
+            EcosystemCore.eats(::Animal{$(eater)}, p::Plant{$(food)}) = size(p)>0
+            function EcosystemCore.eat!(a::Animal{$(eater)}, p::Plant{$(food)}, w::World)
+                incr_energy!(a, $(multiplier)*size(p)*Δenergy(a))
+                p.size = 0
+            end
+        end
+    end
+
+    function _generate_eat(eater::Type{<:AnimalSpecies}, food::Type{<:AnimalSpecies}, multiplier)
+        quote
+            EcosystemCore.eats(::Animal{$(eater)}, ::Animal{$(food)}) = true
+            function EcosystemCore.eat!(ae::Animal{$(eater)}, af::Animal{$(food)}, w::World)
+                incr_energy!(ae, $(multiplier)*energy(af)*Δenergy(ae))
+                kill_agent!(af, w)
+            end
+        end
+    end
+
+    _parse_eats(ex) = Dict(arg.args[2] => arg.args[3] for arg in ex.args if arg.head == :call && arg.args[1] == :(=>))
+
+    function _eats(species, foodlist)
+        cfg = _parse_eats(foodlist)
+        code = Expr(:block)
+        for (k,v) in cfg
+            push!(code.args, _generate_eat(eval(species), eval(k), v))
+        end
+        code
+    end
+
+    species = :Rabbit 
+    foodlist = :([Grass => 0.5, Broccoli => 1.0])
+    _eats(species, foodlist)
+    ```
 
 ---
 ## Resources

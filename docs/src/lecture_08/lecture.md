@@ -582,7 +582,8 @@ What if we somehow be able to talk to the compiler and get this form from him?
 * [simplest viable implementation](https://juliadiff.org/ChainRulesCore.jl/dev/autodiff/operator_overloading.html#ReverseDiffZero)
 
 ### Sources for this lecture
-* Mike Innes' [diff-zoo](https://github.com/MikeInnes/diff-zoo)
+* [Automatic Differentiation Julia’s most confusing superpower? Guillaume Dalle and Adrian Hill] (https://gdalle.github.io/JuliaOptimizationDays2024-AutoDiff/#/title-slide)
+* [Mike Innes' diff-zoo](https://github.com/MikeInnes/diff-zoo)
 * [Write Your Own StS in One Day](https://blog.rogerluo.me/2019/07/27/yassad/)
 * [Build your own AD with Umlaut](https://dfdx.github.io/Yota.jl/dev/design/)
 * [Zygote.jl Paper](https://arxiv.org/pdf/1810.07951.pdf)

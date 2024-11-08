@@ -1051,3 +1051,6 @@ function find_min!(f, x, p; verbose=true)
 end
 @btime find_min!($f, $x₀, $params_tuple; verbose=true)
 ```
+
+### Additional material for interested
+*  [Writing fast Julia, Guillaume Dalle](https://gdalle.github.io/JuliaOptimizationDays2024-FastJulia/)

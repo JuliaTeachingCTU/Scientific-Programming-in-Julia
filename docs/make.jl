@@ -75,7 +75,7 @@ pages = [
 
     "7: Macros" => [
         "Lecture" => "./lecture_07/lecture.md",
-        "Lab" => "./lecture_07/lab.md",
+        "Lab" => "./lecture_07/lab_with_hw.md",
         "Homework" => "./lecture_07/hw.md",
     ],
 
