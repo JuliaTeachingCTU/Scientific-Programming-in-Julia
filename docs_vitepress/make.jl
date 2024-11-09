@@ -56,11 +56,11 @@ pages = [
             "Lab" => "lab.md",
             "Homework" => "hw.md",
         ]),
-        # "6: Lanuage introspection" => add_prefix("lecture_06", [
-        #     "Lecture" => "lecture.md",
-        #     "Lab" => "lab.md",
-        #     "Homework" => "hw.md",
-        # ]),
+        "6: Lanuage introspection" => add_prefix("lecture_06", [
+            "Lecture" => "lecture.md",
+            "Lab" => "lab.md",
+            "Homework" => "hw.md",
+        ]),
         "7: Macros" => add_prefix("lecture_07", [
             "Lecture" => "lecture.md",
             "Lab" => "lab.md",
