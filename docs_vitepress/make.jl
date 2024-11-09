@@ -71,10 +71,10 @@ pages = [
         #     "Lab" => "lab.md",
         #     "Homework" => "hw.md",
         # ]),
-        # "9: Intermediate representation" => add_prefix("lecture_09", [
-        #     "Lecture" => "lecture.md",
-        #     "Lab" => "lab.md",
-        # ]),
+        "9: Intermediate representation" => add_prefix("lecture_09", [
+            "Lecture" => "lecture.md",
+            "Lab" => "lab.md",
+        ]),
         "10: Parallel programming" => add_prefix("lecture_10", [
             "Lecture" => "lecture.md",
             "Lab" => "lab.md",
