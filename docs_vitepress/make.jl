@@ -61,11 +61,11 @@ pages = [
         #     "Lab" => "lab.md",
         #     "Homework" => "hw.md",
         # ]),
-        # "7: Macros" => add_prefix("lecture_07", [
-        #     "Lecture" => "lecture.md",
-        #     "Lab" => "lab.md",
-        #     "Homework" => "hw.md",
-        # ]),
+        "7: Macros" => add_prefix("lecture_07", [
+            "Lecture" => "lecture.md",
+            "Lab" => "lab.md",
+            "Homework" => "hw.md",
+        ]),
         "8: Automatic differentiation" => add_prefix("lecture_08", [
             "Lecture" => "lecture.md",
             "Lab" => "lab.md",
