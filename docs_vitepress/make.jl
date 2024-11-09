@@ -80,10 +80,10 @@ pages = [
         #     "Lab" => "lab.md",
         #     "Homework" => "hw.md",
         # ]),
-        # "11: GPU programming" => add_prefix("lecture_11", [
-        #     "Lecture" => "lecture.md",
-        #     "Lab" => "lab.md",
-        # ]),
+        "11: GPU programming" => add_prefix("lecture_11", [
+            "Lecture" => "lecture.md",
+            "Lab" => "lab.md",
+        ]),
         "12: Ordinary Differential Equations" => add_prefix("lecture_12", [
             "Lecture" => "lecture.md",
             "Lab" => "lab.md",
