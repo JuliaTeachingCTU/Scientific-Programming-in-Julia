@@ -1,3 +1,5 @@
+export VITREPRESS_LIVE_PREVIEW=true
+
 # install all 
 npm install vitepress dependencies
 

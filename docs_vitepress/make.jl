@@ -3,6 +3,21 @@ using Documenter.Remotes
 
 using Scientific_Programming_in_Julia
 
+# This is needed for live preview 
+if get(ENV, "VITREPRESS_LIVE_PREVIEW", "false") == "true"
+    VITREPRESS_KWARGS = (;
+        md_output_path=".",
+        build_vitepress=false,
+    )
+    MAKEDOCS_KWARGS = (; clean=false,)
+else
+    VITREPRESS_KWARGS = (;)
+    MAKEDOCS_KWARGS = (;)
+end
+
+@show VITREPRESS_KWARGS
+@show MAKEDOCS_KWARGS
+
 # utilities
 function add_prefix(prefix::S, pair::Pair{S,T}) where {S<:AbstractString,T}
     key, val = pair
@@ -102,14 +117,13 @@ makedocs(;
     authors=organisation,
     repo=repo,
     sitename="Scientific Programming in Julia",
-    format=DocumenterVitepress.MarkdownVitepress(
+    format=DocumenterVitepress.MarkdownVitepress(;
         repo=Remotes.repourl(repo),
-        md_output_path=".", # local build only
-        build_vitepress=false, # local build only
+        VITREPRESS_KWARGS...,
     ),
     pages=pages,
     warnonly=true,
-    clean=false # local build only
+    MAKEDOCS_KWARGS...,
 )
 
 deploydocs(;
