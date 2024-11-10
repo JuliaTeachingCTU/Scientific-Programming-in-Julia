@@ -7,8 +7,8 @@ hero:
   name: ""
   text: "Scientific Programming in Julia"
   image:
-    light: assets/CTU-logo.svg
-    dark: assets/CTU-logo-dark.svg
+    light: assets/logo.svg
+    dark: assets/logo-dark.svg
   outline: true
   actions:
     - theme: brand
