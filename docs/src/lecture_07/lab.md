@@ -65,7 +65,6 @@ end
 ```
 
 We can remove this boilerplate code by creating a very simple macro that does this for us.
-
 !!! warning "Exercise"
     ```
     Define macro `@repeat` that takes two arguments, first one being the number of times a code is to be run and the other being the actual code.
@@ -153,7 +152,7 @@ p(2)
     @test p(2) == evalpoly(2, [10,2,3]) # reversed coefficients
     ```
 
-    [^1]: Explanation of the Horner schema can be found on [https://en.wikipedia.org/wiki/Horner%27s\_method](https://en.wikipedia.org/wiki/Horner%27s_method).
+[^1]: Explanation of the Horner schema can be found on [https://en.wikipedia.org/wiki/Horner%27s\_method](https://en.wikipedia.org/wiki/Horner%27s_method).
 
 !!! details
     ```@repl lab07_poly
@@ -208,9 +207,9 @@ Moving on to the first/harder case, where we need to parse the mathematical expr
         ```julia
         julia> using MacroTools: prewalk, postwalk
         julia> ex = quote
-             x = f(y, g(z))
-             return h(x)
-           end
+            x = f(y, g(z))
+            return h(x)
+        end
         
         julia> postwalk(ex) do x
                 @capture(x, fun_(arg_)) && println("Function: ", fun, " with argument: ", arg)
@@ -350,6 +349,23 @@ Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already co
      🌍  🐑  🐺  🌿  🍄
      🐑  ❌  ❌  ✅  ✅
      🐺  ✅  ❌  ❌  ❌
+    ```
+!!! warning "Exercise"
+    Based on the following example syntax, 
+    ```julia
+    @species Plant Broccoli 🥦
+    @species Animal Rabbit 🐇
+    ```
+    write macro `@species` inside `Ecosystem` pkg, which defines the abstract type, its show function and exports the type. For example `@species Plant Broccoli 🥦` should generate code:
+    ```julia
+    abstract type Broccoli <: PlantSpecies end
+    Base.show(io::IO,::Type{Broccoli}) = print(io,"🥦")
+    export Broccoli
+    ```
+    Define first helper function `_species` to inspect the macro's output. This is indispensable, as we are defining new types/constants and thus we may otherwise encounter errors during repeated evaluation (though only if the type signature changed).
+    ```julia
+    _species(:Plant, :Broccoli, :🥦)
+    _species(:Animal, :Rabbit, :🐇)
     ```
 
 !!! warning "Exercise"
