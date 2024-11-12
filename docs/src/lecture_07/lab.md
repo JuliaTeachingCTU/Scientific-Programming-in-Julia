@@ -505,8 +505,3 @@ This particular example defines a method where the second argument is the `World
 Furthermore we can use subtyping operator to match all types in a hierarchy, e.g. `::Type{<:AnimalSpecies}` matches all animal species
 
 [^2]: [https://docs.julialang.org/en/v1/manual/types/#man-typet-type](https://docs.julialang.org/en/v1/manual/types/#man-typet-type)
-ic types as values. 
-
-Furthermore we can use subtyping operator to match all types in a hierarchy, e.g. `::Type{<:AnimalSpecies}` matches all animal species
-
-[^2]: [https://docs.julialang.org/en/v1/manual/types/#man-typet-type](https://docs.julialang.org/en/v1/manual/types/#man-typet-type)

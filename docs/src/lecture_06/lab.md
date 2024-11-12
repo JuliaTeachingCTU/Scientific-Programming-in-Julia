@@ -304,7 +304,6 @@ Following up on the more general substitution of variables in an expression from
     - Think of some corner cases, that the method may not handle properly.
 
 !!! details
-    ```
     The naive solution
     ```@repl lab06_meta
     sreplace_i(s) = replace(s, 'i' => 'k')
