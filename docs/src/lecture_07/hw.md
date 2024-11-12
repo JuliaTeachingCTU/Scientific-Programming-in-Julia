@@ -17,7 +17,7 @@ Create a macro `@ecosystem` that should be able to define a world given a list o
 world = @ecosystem begin
     @add 10 Sheep female    # adds 10 female sheep
     @add 2 Sheep male       # adds 2 male sheep
-    @add 100 Grass          # adds 100 pieces of grass
+    @add 100 Grass          # adds 100 pieces of fully grown grass
     @add 3 Wolf             # adds 5 wolf with random sex
 end
 ```
