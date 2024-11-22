@@ -1,882 +1,602 @@
-# Manipulating Intermediate Represenation (IR)
+# Source-to-Source Automatic Differentiation
 
-```@setup lec09
-using InteractiveUtils: @code_typed, @code_lowered, code_lowered
-```
+Before diving into the next adventure in automatic differentiation (AD), we spent some time exploring the role of *rules* in AD.
 
-## Generated functions
-Sometimes it is convenient to generate function once types of arguments are known. For example if we have function `foo(args...)`, we can generate different body for different length of `Tuple` and types in `args`. Do we really need such thing, or it is just wish of curious programmer? Not really, as 
-- we can deal with variability of `args` using normal control-flow logic `if length(args) == 1 elseif ...`
-- we can (automatically) generate (a possibly very large) set of functions `foo` specialized for each length of `args` (or combination of types of `args`) and let multiple dispatch to deal with this
-- we cannot deal with this situation with macros, because macros do not see types, only parsed AST, which is in this case always the same.
+The automatic differention libraries consists of two parts.
+1. The engine which performs the differentiation (think about chainrule),
+2. rules teaching the engine how to differentiate basic functions.
 
-Generated functions allow to specialize the code for a given type of argumnets. They are like macros in the sense that they **return expressions** and not **results**. But unlike macros, the input is not expression or value of arguments, but their types (the arguments are of type `Type`). They are also called when compiler needs (which means at least once for each combination of arguments, but possibly more times due to code invalidation).
+This is not very different to how people are differentiating by hand. They know how to differentiate basic functions (`sin`, `exp`, `+`, `/`, etc.) and they apply chainrule to differentiate complex functions. AD engine therefore either know, how to differentiate function because it has a rule for it, or it recursively decomposes the function to simple function it can differentiate. Functions which are differentiated automatically have the same signature and functionality as rules provided by the user and therefore they can be used as new rules.
 
-Let's look at an example
-```@example lec09
-@generated function genplus(x, y)
-  println("generating genplus(x, y)")
-  @show (x, y, typeof(x), typeof(y))
-  quote 
-    println("executing generated genplus(x, y)")
-    @show (x, y, typeof(x), typeof(y))
-    x + y
-  end
-end
-nothing # hide
-```
-and observe the output
+In theory, it should be sufficient to define "few" basic rules and the rest should be handled by the AD system. The practice is different and there is a value of *strategically* defining custom rules. The reasons are
+1. Performance. AD system has non-trivial overhead and therefore it does not make sense to differentiate operations like matrix multiplication.
+2. Memory: Definining custom rules can save a lot of memory.
+3. Numerical stability: Defining custom rules can improve numerical stability.
+4. Approximate gradients: Sometimes, we need to differentiate function which is non-differentiable, but it has a differentiable approximation.
+
+## ChainRules.jl
+Julia has relatively large number of AD systems. At some moment, Katherine Frames White has decided that it might make sense to unify the rule system for all systems, such that AD systems can focus on the engine, which lead to creation of [ChainRules.jl](https://juliadiff.org/ChainRules.jl). ChainRules.jl is a package which provides a common interface for defining rules. The project was quite successful, though it has fall short of its intention, as some AD systems ([Enzyme.jl](https://github.com/EnzymeAD/Enzyme.jl), [Mooncake.jl](https://github.com/compintell/Mooncake.jl)) requires their own special rules, but frequently they can use rules defined by Chainrules.jl. The Chainrules had an impact on the ecosystem, as it discovered problems that have not been thought of before.
+
+The rules are defined as a function which takes the function to differentiate and the arguments of the function and returns the gradient with respect to the arguments. The gradient is returned as a tuple of the same length as the number of arguments of the function. The gradient can be either a number or a special type `NoTangent()` which indicates that the gradient is not defined. The rules can be defined for any function, including user defined functions.
+
+Let's investigate an example taken from the [ChainRules.jl documentation.](https://juliadiff.org/ChainRulesCore.jl/dev/rule_author/example.html) 
+There is  a struct
 ```julia
-julia> genplus(1.0, 1.0) == 1.0 + 1.0
-generating genplus(x, y)
-(x, y, typeof(x), typeof(y)) = (Float64, Float64, DataType, DataType)
-executing generated genplus(x, y)
-(x, y, typeof(x), typeof(y)) = (1.0, 1.0, Float64, Float64)
-true
-
-julia> genplus(1.0, 1.0) == 1.0 + 1.0
-executing generated genplus(x, y)
-(x, y, typeof(x), typeof(y)) = (1.0, 1.0, Float64, Float64)
-true
-
-julia> genplus(1, 1) == 1 + 1
-generating genplus(x, y)
-(x, y, typeof(x), typeof(y)) = (Int64, Int64, DataType, DataType)
-executing generated genplus(x, y)
-(x, y, typeof(x), typeof(y)) = (1, 1, Int64, Int64)
-true
-```
-which shows that the body of `genplus` is called for each combination of types of parameters, but the generated code is called whenever `genplus` is called.
-
-Generated functions has to be pure in the sense that they are not allowed to have side effects, for example modifying some global variables. Note that printing is not allowed in pure functions, as it modifies the global buffer. From the above example this rule does not seems to be enforced, but not obeying it can lead to unexpected errors mostly caused by not knowing when and how many times the functions will be called.
-
-Finally, generated functions cannot call functions that has been defined after their definition.
-```@repl lec09
-@generated function genplus(x, y)
-  foo()
-  :(x + y)
+struct Foo{T}
+    A::Matrix{T}
+    c::Float64
 end
-
-foo() = println("foo")
-genplus(1,1)
 ```
-Here, the *applicable method* is `foo`.
-
-### An example that explains everything.
-Consider a version of `map` applicable to `NamedTuple`s with permuted names.
-Recall the behavior of normal map, which works if the names are in the same order.
-```@repl lec09
-x = (a = 1, b = 2, c = 3)
-y = (a = 4, b = 5, c = 6)
-map(+, x, y)
-```
-
-The same does not work with permuted names:
-```@repl lec09
-x = (a = 1, b = 2, c = 3)
-y = (c = 6, b = 5, a = 4)
-map(+, x, y)
-```
-How to fix this? The usual approach would be to iterate over the keys in named tuples:
-```@example lec09
-function permuted_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY}
-    ks = tuple(intersect(KX,KY)...)
-    NamedTuple{ks}(map(k -> f(x[k], y[k]), ks))
-end
-nothing # hide
-```
-But, can we do better? Recall that in `NamedTuple`s, we exactly know the position of the arguments, hence we should be able to directly match the corresponding arguments without using `get`. 
-
-Since creation (and debugging) of generated functions is difficult, we start with a single-argument unrolled map.
-```@repl
-@generated function unrolled_map(f, x::NamedTuple{KX}) where {KX} 
-    vals = [:(f(getfield(x, $(QuoteNode(k))))) for k in KX]
-    :(($(vals...),))
-end
-unrolled_map(e->e+1, x)
-```
-We see that inserting a `Symbol` specifying the field in the `NamedTuple` is a
-bit tricky. It needs to be quoted, since `$()` which is needed to substitute
-`k` for its value "peels" one layer of the quoting. Compare this to
-```@repl
-vals = [:(f(getfield(x, $(k)))) for k in KX]
-```
-
-Since getting the field is awkward, we write syntactic sugar for that
+for which we define custom multiplication rule
 ```julia
-_get(name, k) = :(getfield($(name), $(QuoteNode(k))))
-```
-with that, we proceed to a nicer two argument function which we have desired:
-```@repl lec09
-@generated function unrolled_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY} 
-    ks = tuple(intersect(KX,KY)...)
-    _get(name, k) = :(getfield($(name), $(QuoteNode(k))))
-    vals = [:(f($(_get(:x, k)), $(_get(:y, k)))) for k in ks]
-    :(NamedTuple{$(ks)}(($(vals...),)))
+function foo_mul(foo::Foo, b::AbstractArray)
+    return foo.A * b
 end
-nothing # hide
 ```
-We can check that the `unrolled_map` unrolls the map and generates just needed operations
-```@repl lec09
-@code_typed unrolled_map(+, x, y)
-```
-and compare this to the code generated by the non-generated version `permuted_map`:
+The rule for reverse AD, `rrule` is defined as 
 ```julia
-@code_typed permuted_map(+, x, y)
+function ChainRulesCore.rrule(::typeof(foo_mul), foo::Foo{T}, b::AbstractArray) where T
+    y = foo_mul(foo, b)
+    function foo_mul_pullback(ȳ)
+        f̄ = NoTangent()
+        f̄oo = Tangent{Foo{T}}(; A=ȳ * b', c=ZeroTangent())
+        b̄ = @thunk(foo.A' * ȳ)
+        return f̄, f̄oo, b̄
+    end
+    return y, foo_mul_pullback
+end
 ```
-which is not shown here for the sake of conciseness.
+- The first interesting thing is the signature of an `rrule`, which as a first argument contains the type of the function (think about it as an unique identifier of the function) and its argument. The concrete `rrule` is selected through multiple dispatch and there can be many variants for the same function. Also, if you list all methods `methods(rrule),` you will see number of rrules currently at the system.
+- `rrule` returns the output of the function to be differentiated, and a function computing the gradient with respect to its arguments. This function is called *pullback*. Its input is the gradient with respect to the output of the function. Its output is the gradient with respect to function arguments. Note that since the function itself can have parameters, the first return value of the pullback is the gradient with respect to function parameters.
+- The gradient can be either numerical gradient, or it might not exist (signaled by `NoTangent()`), or it can be zero, which is signaled by `ZeroTangent()`.
+- The gradient with respect to the `struct` is returned as a `Tangent` type with type equal to the `struct`. The `Tangent` type contains `NamedTuple` with fields storing individual gradients. Type signature ensures we are adding right things.
+- The `@thunk` macro is used for delayed evaluation.
+- The `pullback` is in fact closure, which allows to communicate values from forward pass to the backward pass.
+- the `rrule` is evaluated during the forward pass, `pullbacks` are evaluated during the reverse pass.
 
-For fun, we can create a version which replaces the `Symbol` arguments directly by position numbers
 ```julia
-@generated function unrolled_map(f, x::NamedTuple{KX}, y::NamedTuple{KY}) where {KX, KY} 
-    ks = tuple(intersect(KX,KY)...)
-    _get(name, k, KS) = :(getfield($(name), $(findfirst(k .== KS))))
-    vals = [:(f($(_get(:x, k, KX)), $(_get(:y, k, KY)))) for k in KX]
-    :(NamedTuple{$(KX)}(($(vals...),)))
+using Zygote
+x = Foo(rand(2,2), 1.0)
+y = rand(2,10)
+gradient(x -> sum(foo_mul(x,y)), x)
+```
+
+Since *pullback* is a closure, it is used to communicate from forward to
+reverse. For example when taking gradient through a sigmoid `σ(x) = inv(1 + exp(-x))`, the forward pass computes `y = σ(x)` and the backward pass computes `∇x = y * (1-y) * ∇y`. The `rrule` will therefore look like
+
+```julia
+σ(x) = inv(1 + exp(-x))
+
+function ChainRulesCore.rrule(::typeof(σ), x::Real)
+    y = σ(x)
+    function σ_pullback(ȳ)
+        f̄ = NoTangent()
+        x̄ = y * (1-y)*ȳ
+        return f̄, x̄
+    end
+    return y, σ_pullback
 end
 ```
 
-## Optionally generated functions
-Macro `@generated` is expanded to
+If we obtain the pullback as `y, pullback = rrule(σ, 1.0),` we can see that pullback contains `y` as field (it is closed in it as) `y == pullback.y.` The use of rrule will be slightly faster, since it will compute `exp` just once, which is expensive.
+Compare a gradient of a version for which we have defined a rule and a version for which we have not defined a rule.
+
 ```julia
-julia> @macroexpand @generated function gentest(x)
-           return :(x + x)
-       end
-
-:(function gentest(x)
-      if $(Expr(:generated))
-          return $(Expr(:copyast, :($(QuoteNode(:(x + x))))))
-      else
-          $(Expr(:meta, :generated_only))
-          return
-      end
-  end)
+using Zygote
+σ2(x) = inv(1 + exp(-x))
+@benchmark gradient(sin ∘ σ2, 1.0)
+@benchmark gradient(sin ∘ σ, 1.0)
 ```
-which is a function with an if-condition, where the first branch `$(Expr(:generated))` generates the expression `:(x + x)` and returns it. The other spits out an error saying that the function has only a generated version. This suggests the possibility (and reality) that one can implement two versions of the same function; A generated and a *normal* version. It is left up to the compiler to decide which one to use. It is entirely up to the author to ensure that both versions are the same. Which version will the compiler take? The last comment on [23168](https://github.com/JuliaLang/julia/pull/23168) (as of time of writing) states:
+Note that we add since to prevent compiler to optimize the code to be equivalent. The difference between both executions is tiny, becuase the overhead of AD is non-trivial. You can compare it to `@benchmark gradient(σ, 1.0)` and also observe `@code_native(σ, 1.0)`
 
-"*Currently the `@generated` branch is always used. In the future, which branch is used will mostly depend on whether the JIT compiler is enabled and available, and if it's not available, then it will depend on how much we were able to compile before the compiler was taken away. So I think it will mostly be a concern for those that might need static compilation and JIT-less deployment.*"
 
-## Contextual dispatch / overdubbing
-Imagine that under some circumstances (context), you would like to use alternative implementations of some functions. One of the most cited motivations for this is automatic differentiation, where you would like to take the code **as-is** and calculate gradients with respect to some variables. Other use cases of this approach are mentioned in `Cassette.jl`:
+## Source-to-Source Automatic Differentiation with IRCode
 
-"*Downstream applications for Cassette include dynamic code analysis (e.g. profiling,  record and replay style debugging, etc.), JIT compilation to new hardware/software backends, automatic differentiation, interval constraint programming, automatic parallelization/rescheduling, automatic memoization, lightweight multistage programming, graph extraction, and more.*"
+Let's now use `rrules` to create a simple AD system limited to function without control flow (unlike our previous tape-based system), which rewrites the code to insert statements needed for differentiation. While some 
 
-In theory, we can do all the above by directly modifying the code or introducing new types, but that may require a lot of coding and changing of foreign libraries.
 
-The technique we desire is called contextual dispatch, which means that under some context, we invoke a different function. The library `Casette.jl` provides a high-level API for overdubbing, but it is interesting to see, how it works, as it shows, how we can "interact" with the lowered code before the code is typed.
+The overall idea behind the construction is as follows. We assume to be given a function which we want to differentiate. First, we will verify if there is an `rrule`. If yes, we return the `rrule.` If not, we will create a function (functor), which will behave like `rrule.` The code to transform will be *lowered and typed* code (further called IRCode). This has the advantage that the code is in static single assignment form, stripped from all syntactic sugar, and it is typed. We can also ask compiler to provide certain optimization like SROA, inlining, constant propagation and dead code elimination. This means that we can start with relatively lean code.
 
-### Insertion of code
+!!! note "History"
+    The idea of transforming intermidiate representation, at least in the context of Julia, was due to Mike Innes, who developped Zygote. Zygote worked on untyped IR provided in CodeInfo (see previous version of this lecture). In some cases, Zygote delivered excellent performance and in some cases the performance was not so stunning. While still being used as a main AD system from Flux, it will likely be superceeded by Mooncake (transforming typed IR) or Enzyme (transforming LLVM code).
 
-Imagine that julia has compiled some function. For example 
+Recall that `rrule` function is a function with the same arguments, as the original
+function, but the it returns evaluation of the function and the *pullback*.
+This `rrule` will be generated autotomatically from `IRCode` of the function to differentiate as follows:
+  1. In the forward, we will replace each function call with a call to `rrule`. Since `rrule` return tuple (the evaluation of the function and the pullback), we extract the output of the original function and store the pullback.
+  2. We construct the pullback function. We will iterate over the pullbacks stored from the forward pass in reverse order. Each pullback returns gradient with respect to the arguments, which need to be correctly accumulate it.
+ 
+This is the essence of a simple AD without any control flow. The rest is some plumbing.
+
+## Simple AD without control flow
+
+As always, we start by importing few libraries.
+
 ```julia
-foo(x,y) = x * y + sin(x)
+import Core.Compiler as CC
+using ChainRules
+using Core: SSAValue, GlobalRef, ReturnNode
 ```
-and observe its lowered SSA format
-```julia
-julia> @code_lowered foo(1.0, 1.0)
-CodeInfo(
-1 ─ %1 = x * y
-│   %2 = Main.sin(x)
-│   %3 = %1 + %2
-└──      return %3
-)
-```
-The lowered form is convenient, because on the left hand, there is **always** one variable and the right-hand side is simplified to have (mostly) a single call / expression. Moreover, in the lowered form, all control flow operations like `if`, `for`, `while` and exceptions are converted to `Goto` and `GotoIfNot`, which simplifies their handling. 
 
-### Codeinfo
-We can access the lowered form by
+Let' start by defining a simple function to differentate.
+
 ```julia
-ci = @code_lowered foo(1.0, 1.0)
-```
-which returns an object of type `CodeInfo` containing many fields [docs](https://docs.julialang.org/en/v1/devdocs/ast/#Lowered-form). To make the investigation slightly more interesting, we modify the function a bit to have local variables:
-```@repl lec09
-function foo(x,y) 
-  z = x * y 
+function foo(x,y)
+  z = x * y
   z + sin(x)
 end
-
-ci = @code_lowered foo(1.0, 1.0)
 ```
-The most important (and interesting) field is `code`:
-```@repl lec09
-ci.code
-```
-It contains expressions corresponding to each line of the lowered form. You are free to access them (and modify them with care). Variables identified with underscore `Int`, for example `_2`, are slotted variables which are variables which have a name in the code, defined via input arguments or through an explicit assignment `:(=)`. The names of slotted variables are stored in `ci.slotnames` and they are of type 
-```@repl lec09
-typeof(ci.code[1].args[2].args[2])
-ci.slotnames[ci.code[1].args[2].args[2].id]
-ci.slotnames[ci.code[1].args[2].args[3].id]
-ci.slotnames[ci.code[1].args[1].id]
-```
-The remaining variables are identified by an integer with prefix `%`, where the number corresponds to the line (index in `ci.code`), in which the variable was created. For example the fourth line `:(%2 + %3)` adds the results of the second line `:(_4)` containing variable `z` and the third line `:(Main.sin(_2))`. The type of each slot variable is stored in `slottypes`, which provides some information about how the variable is used ([see docs](https://docs.julialang.org/en/v1/devdocs/ast/#CodeInfo)). Note that if you modify / introduce slot variables, the length of `slotnames` and `slottypes` has to match and it has to be equal to the maximum number of slotted variables.
 
-`CodeInfo` also contains information about the source code. Each item of `ci.code` has an identifier in `ci.codelocs` which is an index into `ci.linetable` containing `Core.LineInfoNode` identifying lines in the source code (or in the REPL). Notice that `ci.linetable` is generally shorter then `ci.codelocs`, as one line of source code can be translated to multiple lines in lowered code. 
+The first step is to get IRCode of the function. We can do this by calling `code_ircode` from Base.
+Note that when calling `Base.code_ircode` we need to provide the types of the arguments, not their values.
+This is because the compiler does not care about values, but about types.
 
-The important feature of the lowered form is that we can freely edit (create new) `CodeInfo` and that generated functions can return a `CodeInfo` object instead of the AST. However, you need to **explicitly** write a `return` statement ([see issue 25678](https://github.com/JuliaLang/julia/issues/25678)).
-
-### Strategy for overdubbing
-In overdubbing, our intention is to recursively dive into called function definitions and modify / change their code. In our example below, with which we will demonstrate the manual implementation (for educational purposes), our goal is to enclose each function call with statements that log the exection time. This means we would like to implement a simplified recording profiler. This functionality cannot be implemented by a macros, since macros do not allow us to dive into function definitions. For example, in our function `foo`, we would would not be able to dive into the definition of `sin` (not that this is a terribly good idea, but the point should be clear).
-
-The overdubbing pattern works as follows.
-1. We define a `@generated function overdub(f, args...)` which takes as a first argument a function `f` and then its arguments.
-2. In the function `overdub` we retrieve the `CodeInfo` for `f(args...)`, which is possible as we know types of the arguments at this time.
-3. We modify the the `CodeInfo` of `f(args...)` according to our liking. Importantly, we replace all function calls `some_fun(some_args...)` with `overdub(some_fun, some_args...)` which establishes the recursive pattern.
-4. Modify the arguments of the `CodeInfo` of `f(args...)` to match `overdub(f, args..)`.
-5. Return the modified `CodeInfo`.
-
-#### The profiler
-The implementation of the simplified logging profiler is straightforward and looks as follows.
 ```julia
-module LoggingProfiler
-struct Calls
-    stamps::Vector{Float64} # contains the time stamps
-    event::Vector{Symbol}  # name of the function that is being recorded
-    startstop::Vector{Symbol} # if the time stamp corresponds to start or to stop
-    i::Ref{Int}
-end
-
-function Calls(n::Int)
-    Calls(Vector{Float64}(undef, n+1), Vector{Symbol}(undef, n+1), Vector{Symbol}(undef, n+1), Ref{Int}(0))
-end
-
-function Base.show(io::IO, calls::Calls)
-    offset = 0
-    if calls.i[] >= length(calls.stamps)
-        @warn "The recording buffer was too small, consider increasing it"
-    end
-    for i in 1:min(calls.i[], length(calls.stamps))
-        offset -= calls.startstop[i] == :stop
-        foreach(_ -> print(io, " "), 1:max(offset, 0))
-        rel_time = calls.stamps[i] - calls.stamps[1]
-        println(io, calls.event[i], ": ", rel_time)
-        offset += calls.startstop[i] == :start
-    end
-end
-
-global const to = Calls(100)
-
-"""
-    record_start(ev::Symbol)
-
-    record the start of the event, the time stamp is recorded after all counters are 
-    appropriately increased
-"""
-record_start(ev::Symbol) = record_start(to, ev)
-function record_start(calls, ev::Symbol)
-    n = calls.i[] = calls.i[] + 1
-    n > length(calls.stamps) && return 
-    calls.event[n] = ev
-    calls.startstop[n] = :start
-    calls.stamps[n] = time_ns()
-end
-
-"""
-    record_end(ev::Symbol)
-
-    record the end of the event, the time stamp is recorded before all counters are 
-    appropriately increased
-"""
-record_end(ev::Symbol) = record_end(to, ev::Symbol)
-function record_end(calls, ev::Symbol)
-    t = time_ns()
-    n = calls.i[] = calls.i[] + 1
-    n > length(calls.stamps) && return 
-    calls.event[n] = ev
-    calls.startstop[n] = :stop
-    calls.stamps[n] = t
-end
-
-reset!() = to.i[] = 0
-
-function Base.resize!(calls::Calls, n::Integer)
-  resize!(calls.stamps, n)
-  resize!(calls.event, n)
-  resize!(calls.startstop, n)
-end
-
-
-exportname(ex::GlobalRef) = QuoteNode(ex.name)
-exportname(ex::Symbol) = QuoteNode(ex)
-exportname(ex::Expr) = exportname(ex.args[1])
-exportname(i::Int) = QuoteNode(Symbol("Int(",i,")"))
-
-function overdubbable(ex::Expr)
-    ex.head != :call && return(false)
-    a = ex.args[1]
-    a != GlobalRef && return(true)
-    a.mod != Core
-end 
-overdubbable(ex) = false 
-
-
-function timable(ex::Expr) 
-    ex.head != :call && return(false)
-    length(ex.args) < 2 && return(false)
-    ex.args[1] isa Core.GlobalRef && return(true)
-    ex.args[1] isa Symbol && return(true)
-    return(false)
-end
-timable(ex) = false
-
-export timable, exportname, overdubbable
-end
+ir, _ = only(Base.code_ircode(foo, (Float64, Float64); optimize_until = "compact 1"))
 ```
 
-The important functions are `report_start` and `report_end` which mark the beggining and end of the executed function. They differ mainly when time is recorded (on the end or on the start of the function call). The profiler has a fixed capacity to prevent garbage collection, which might be increased.
-
-Let's now describe the individual parts of `overdub` before presenting it in its entirety.
-At first, we retrieve the codeinfo `ci` of the overdubbed function. For now, we will just assume we obtain it for example by
+We can ask for different level of optimization, but such a simple function, it will not make much difference:
 ```julia
-ci = @code_lowered foo(1.0, 1.0)
-```
-we initialize the new `CodeInfo` object by emptying some dummy function as 
-```@example lec09
-dummy() = return
-new_ci = code_lowered(dummy, Tuple{})[1]
-empty!(new_ci.code)
-empty!(new_ci.slotnames)
-empty!(new_ci.linetable)
-empty!(new_ci.codelocs)
-new_ci
+   @pass "convert"   ir = convert_to_ircode(ci, sv)
+   @pass "slot2reg"  ir = slot2reg(ir, ci, sv)
+   @pass "compact 1" ir = compact!(ir)
+   @pass "Inlining"  ir = ssa_inlining_pass!(ir, sv.inlining, ci.propagate_inbounds)
+   @pass "compact 2" ir = compact!(ir)
+   @pass "SROA"      ir = sroa_pass!(ir, sv.inlining)
+   @pass "ADCE"      ir = adce_pass!(ir, sv.inlining)
+   @pass "compact 3" ir = compact!(ir)
 ```
 
-Then, we need to copy the slot variables from the `ci` codeinfo of `foo` to the new codeinfo. Additionally, we have to add the arguments of `overdub(f, args...)` since the compiler sees `overdub(f, args...)` and not `foo(x,y)`:
-```@repl lec09
-new_ci.slotnames = vcat([Symbol("#self#"), :f, :args], ci.slotnames[2:end])
-new_ci.slotflags = vcat([0x00, 0x00, 0x00], ci.slotflags[2:end])
-```
-Above, we also filled the `slotflags`. Authors admit that names `:f` and `:args` in the above should be replaced by a `gensym`ed name, but they do not anticipate this code to be used outside of this educative example where name-clashes might occur.
-We also copy information about the lines from the source code:
-```@repl lec09
-foreach(s -> push!(new_ci.linetable, s), ci.linetable)
-```
-The most difficult part when rewriting `CodeInfo` objects is working with indexes, as the line numbers and left hand side variables are strictly ordered one by one and we need to properly change the indexes to reflect changes we made. We will therefore keep three lists
-```@example lec09
-maps = (
-    ssa = Dict{Int, Int}(),
-    slots = Dict{Int, Any}(),
-    goto = Dict{Int,Int}(),
-)
-nothing # hide
-```
-where 
-- `slots` maps slot variables in `ci` to those in `new_ci`
-- `ssa` maps indexes of left-hand side assignments in `ci` to `new_ci`
-- `goto` maps lines to which `GotoNode` and `GotoIfNot` point to variables in `ci` to `new_ci` (in our profiler example, we need to ensure to jump on the beggining of logging of executions)
-Mapping of slots can be initialized in advance, as it is a static shift by `2` :
-```julia
-maps.slots[1] = Core.SlotNumber(1)
-foreach(i -> maps.slots[i] = Core.SlotNumber(i + 2), 2:length(ci.slotnames)) 
-```
-and we can check the correctness by
-```julia
-@assert all(ci.slotnames[i] == new_ci.slotnames[maps.slots[i].id] for i in 1:length(ci.slotnames))  #test that 
-```
-Equipped with that, we start rewriting the code of `foo(x, y)`. We start by a small preample, where we assign values of `args...` to `x`, and `y`. For the sake of simplicity, we map the slotnames to either `Core.SlotNumber` or to `Core.SSAValues` which simplifies the rewriting logic a bit.
-```julia
-newci_no = 0
-args = (Float64, Float64)
-for i in 1:length(args)
-    newci_no +=1
-    push!(new_ci.code, Expr(:call, Base.getindex, Core.SlotNumber(3), i))
-    maps.slots[i+1] = Core.SSAValue(newci_no)
-    push!(new_ci.codelocs, ci.codelocs[1])
-end
-```
-Now we come to the pinnacle of rewriting the body of `foo(x,y)` while inserting calls to the profiler:
-```julia
-for (ci_no, ex) in enumerate(ci.code)
-    if timable(ex)
-        fname = exportname(ex)
-        push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_start), fname))
-        push!(new_ci.codelocs, ci.codelocs[ci_no])
-        newci_no += 1
-        maps.goto[ci_no] = newci_no
-        ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex
-        push!(new_ci.code, ex)
-        push!(new_ci.codelocs, ci.codelocs[ci_no])
-        newci_no += 1
-        maps.ssa[ci_no] = newci_no
-        push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_end), fname))
-        push!(new_ci.codelocs, ci.codelocs[ci_no])
-        newci_no += 1
-    else
-        push!(new_ci.code, ex)
-        push!(new_ci.codelocs, ci.codelocs[ci_no])
-        newci_no += 1
-        maps.ssa[ci_no] = newci_no
-    end
-end
-```
-which yields
-```julia
-julia> new_ci.code
-15-element Vector{Any}:
- :((getindex)(_3, 1))
- :((getindex)(_3, 2))
- :(_4 = _2 * _3)
- :(_4)
- :(Main.LoggingProfiler.record_start(:sin))
- :(Main.overdub(Main.sin, _2))
- :(Main.LoggingProfiler.record_end(:sin))
- :(Main.LoggingProfiler.record_start(:+))
- :(Main.overdub(Main.:+, %2, %3))
- :(Main.LoggingProfiler.record_end(:+))
- :(return %4)
-```
-The important parts are:
-- Depending on the type of expressions (controlled by `timable`) we decide, if a function's execution time should be recorded.
-- `fname = exportname(ex)` obtains the name of the profiled function call.
-- `push!(new_ci.code, Expr(:call, GlobalRef(LoggingProfiler, :record_start), fname))` records the start of the exection.
-- `maps.goto[ci_ssa_no] = ssa_no` updates the map from the code line number in `ci` to the one in `new_ci`.
-- `maps.ssa[ci_ssa_no] = ssa_no` updates the map from the SSA line number in `ci` to `new_ci`.
-- `ex = overdubbable(ex) ? Expr(:call, GlobalRef(Main, :overdub), ex.args...) : ex` modifies the function call (expression in general) to recurse the overdubbing.
-Finally, we need to change the names of slot variables (`Core.SlotNumber`) and variables indexed by the SSA (`Core.SSAValue`).
-```julia
-for i in length(args)+1:length(new_ci.code)
-    new_ci.code[i] = remap(new_ci.code[i], maps)
-end
-```
-where `remap` is defined by the following block of code
-```julia
-remap(ex::Expr, maps) = Expr(ex.head, remap(ex.args, maps)...)
-remap(args::AbstractArray, maps) = map(a -> remap(a, maps), args)
-remap(c::Core.GotoNode, maps) = Core.GotoNode(maps.goto[c.label])
-remap(c::Core.GotoIfNot, maps) = Core.GotoIfNot(remap(c.cond, maps), maps.goto[c.dest])
-remap(r::Core.ReturnNode, maps) = Core.ReturnNode(remap(r.val, maps))
-remap(a::Core.SlotNumber, maps) = maps.slots[a.id]
-remap(a::Core.SSAValue, maps) = Core.SSAValue(maps.ssa[a.id])
-remap(a::Core.NewvarNode, maps) = Core.NewvarNode(maps.slots[a.slot.id])
-remap(a::GlobalRef, maps) = a
-remap(a::QuoteNode, maps) = a
-remap(ex, maps) = ex
-```
 
-!!! warn 
-    ### Retrieving the code properly
+The returned code will look like this
+```julia
+2 1 ─ %1 = (_2 * _3)::Float64
+3 │   %2 = Main.sin(_2)::Float64
+  │   %3 = (%1 + %2)::Float64
+  └──      return %3
+   => Float64
+```
+The code is stored in `IRCode` data structure.
 
-    Consider the following function:
+!!! note "IRCode*"
     ```julia
-    function test(x::T) where T<:Union{Float64, Float32}
-       x < T(pi)
-    end
-
-    julia> ci = @code_lowered test(1.0)
-    CodeInfo(
-    1 ─ %1 = ($(Expr(:static_parameter, 1)))(Main.pi)
-    │   %2 = x < %1
-    └──      return %2
-    )
-    ```
-    the `Expr(:static_parameter, 1)` in the first line of code obtains the type parameter `T` of the function `test`. Since this information is not accessible in the `CodeInfo`, it might render our tooling useless. The needed hook is `Base.Meta.partially_inline!` which partially inlines this into the `CodeInfo` object.
-    The code to retrieve the `CodeInfo` adapted from `IRTools` is a little involved:
-
-    ```julia
-    function retrieve_code_info(sigtypes, world = Base.get_world_counter())
-        S = Tuple{map(s -> Core.Compiler.has_free_typevars(s) ? typeof(s.parameters[1]) : s, sigtypes)...}
-        _methods = Base._methods_by_ftype(S, -1, world)
-        if isempty(_methods) 
-            @info("method $(sigtypes) does not exist")
-            return(nothing)
-        end
-        type_signature, raw_static_params, method = _methods[1]
-        mi = Core.Compiler.specialize_method(method, type_signature, raw_static_params, false)
-        ci = Base.isgenerated(mi) ? Core.Compiler.get_staged(mi) : Base.uncompressed_ast(method)
-        Base.Meta.partially_inline!(ci.code, [], method.sig, Any[raw_static_params...], 0, 0, :propagate)
-        ci
+    struct IRCode
+         stmts::InstructionStream
+         argtypes::Vector{Any}
+         sptypes::Vector{VarState}
+         linetable::Vector{LineInfoNode}
+         cfg::CFG
+         new_nodes::NewNodeStream
+         meta::Vector{Expr}
     end
     ```
-    but
+    
+    where
+    * `stmts` is a stream of instruction (more in this below)
+    * `argtypes` holds types of arguments of the function whose `IRCode` we have obtained
+    * `sptypes` is a vector of `VarState`. It seems to be related to parameters of types
+    * `linetable` is a table of unique lines in the source code from which statement came from
+    * `cfg` holds control flow graph, which contains building blocks and jumps between them
+    * `new_nodes` is an infrastructure that can be used to insert new instructions to the existing `IRCode` . The idea behind is that since insertion requires a renumbering all statements, they are put in a separate queue. They are put to correct position with a correct `SSANumber`  by calling `compact!`.
+    * `meta` is something.
+
+    **InstructionStream**
+
     ```julia
-    julia> ci = retrieve_code_info((typeof(test), Float64))
-    CodeInfo(
-        @ REPL[5]:2 within `test'
-    1 ─ %1 = ($(QuoteNode(Float64)))(Main.pi)
-    │   %2 = x < %1
-    └──      return %2
-    )
+    struct InstructionStream
+        inst::Vector{Any}
+        type::Vector{Any}
+        info::Vector{CallInfo}
+        line::Vector{Int32}
+        flag::Vector{UInt8}
+    end
     ```
-    it performs the needed inlining of `Float64`.
+    where
+    * `inst` is a vector of instructions, stored as `Expr`essions. The allowed fields in `head` are described [here](https://docs.julialang.org/en/v1/devdocs/ast/#Expr-types)
+    * `type` is the type of the value returned by the corresponding statement
+    * `CallInfo` is ???some info???
+    * `line` is an index into `IRCode.linetable` identifying from which line in source code the statement comes from
+    * `flag`  are some flags providing additional information about the statement.
+      - `0x01 << 0` = statement is marked as `@inbounds`
+      - `0x01 << 1` = statement is marked as `@inline`
+      - `0x01 << 2` = statement is marked as `@noinline`
+      - `0x01 << 3` = statement is within a block that leads to `throw` call
+      - `0x01` << 4 = statement may be removed if its result is unused, in particular it is thus be both pure and effect free
+      - `0x01 << 5-6 = <unused>`
+      - `0x01 << 7 = <reserved>` has out-of-band info
 
-## Implementing the profiler with IRTools
-The above implementation of the profiler has shown, that rewriting IR manually is doable, but requires a lot of careful book-keeping. `IRTools.jl` makes our life much simpler, as they take away all the needed book-keeping and let us focus on what is important.
+    For the above `foo` function, the InstructionStream looks like
 
-```@repl lec09
-using IRTools
-function foo(x, y)
-   z =  x * y
-   z + sin(y)
-end;
-ir = @code_ir foo(1.0, 1.0)
-```
-We can see that at first sight, the representation of the lowered code in IRTools is similar to that of `CodeInfo`. Some notable differences:
-- `SlotNumber` are converted to `SSAValues`
-- SSA form is divided into blocks by `GotoNode` and `GotoIfNot` in the parsed `CodeInfo`
-- SSAValues do not need to be ordered. The reordering is deffered to the moment when one converts `IRTools.Inner.IR` back to the `CodeInfo`.
+    ```julia
+    julia   DataFrame(flag = ir.stmts.flag, info = ir.stmts.info, inst = ir.stmts.inst, line = ir.stmts.line, type = ir.stmts.type)
+    4×5 DataFrame
+     Row │ flag   info                               inst          line   type
+         │ UInt8  CallInfo                           Any           Int32  Any
+    ─────┼────────────────────────────────────────────────────────────────────────
+       1 │   112  MethodMatchInfo(MethodLookupResu…  _2 * _3           1  Float64
+       2 │    80  MethodMatchInfo(MethodLookupResu…  Main.sin(_2)      2  Float64
+       3 │   112  MethodMatchInfo(MethodLookupResu…  %1 + %2           2  Float64
+       4 │     0  NoCallInfo()                       return %3         2  Any
+    ```
+    We can index into the statements as `ir.stmts[1]`, which provides a "view" into the vector. To obtain the first instruction, we can do `ir.stmts[1][:inst]`.
 
-Let's now use the IRTools to insert the timing statements into the code for `foo`:
+
+### Implementing forward pass
+Let's now go back to the problem of automatic differentiation. Recall the IRCode of the
+`foo` function looks like this
 ```julia
-using IRTools: xcall, insert!, insertafter!
-
-ir = @code_ir foo(1.0, 1.0)
-for (v, ex) in ir
-    if timable(ex.expr)
-        fname = exportname(ex.expr)
-        insert!(ir, v, xcall(LoggingProfiler, :record_start, fname))
-        insertafter!(ir, v, xcall(LoggingProfiler, :record_end, fname))
-    end
-end
-
-julia> ir
-1: (%1, %2, %3)
-  %7 = Main.LoggingProfiler.record_start(:*)
-  %4 = %2 * %3
-  %8 = Main.LoggingProfiler.record_end(:*)
-  %9 = Main.LoggingProfiler.record_start(:sin)
-  %5 = Main.sin(%3)
-  %10 = Main.LoggingProfiler.record_end(:sin)
-  %11 = Main.LoggingProfiler.record_start(:+)
-  %6 = %4 + %5
-  %12 = Main.LoggingProfiler.record_end(:+)
-  return %6
+2 1 ─ %1 = (_2 * _3)::Float64
+3 │   %2 = Main.sin(_2)::Float64
+  │   %3 = (%1 + %2)::Float64
+  └──      return %3
+   => Float64
 ```
-
-Observe that the statements are on the right places but they are not ordered.
-We can turn the `ir` object into an anonymous function
+The forward part needs to replace each call of the function by a call to `rrule` and stode pullbacks.
+So in pseudocode, we want something like
 ```julia
-f = IRTools.func(ir)
-LoggingProfiler.reset!()
-f(nothing, 1.0, 1.0)
-LoggingProfiler.to
+(%1, %2) = rrule(*, _2, _3)
+(%3, %4) = rrule(Main.sin, _2)
+(%5, %6) = rrule(Base._, %1, %3)
+return(%5, tuple(%2, %4,%6))
 ```
-where we can observe that our profiler is working as it should. But this is not yet our final goal. Originally, our goal was to recursivelly dive into the nested functions. IRTools offers a macro `@dynamo`, which is similar to `@generated` but simplifies our job by allowing to return the `IRTools.Inner.IR` object and it also taking care of properly renaming the arguments. With that we write
-```julia
-using IRTools: @dynamo
-profile_fun(f::Core.IntrinsicFunction, args...) = f(args...)
-profile_fun(f::Core.Builtin, args...) = f(args...)
+In the above pseudocode, `%1, %3, %5` are ouputs of function `*, sin, +` respectively, and `%2, %4, %6`
+are their pullbacks. The function therefore return the correct value and information for the pullback.
+The above pseudocode is not a valid IRCode, since SSA to assign only one variable.
 
-@dynamo function profile_fun(f, args...)
-    ir = IRTools.Inner.IR(f, args...)
-    for (v, ex) in ir
-        if timable(ex.expr)
-            fname = exportname(ex.expr)
-            insert!(ir, v, xcall(LoggingProfiler, :record_start, fname))
-            insertafter!(ir, v, xcall(LoggingProfiler, :record_end, fname))
-        end
-    end
-    for (x, st) in ir
-        recursable(st.expr) || continue
-        ir[x] = xcall(profile_fun, st.expr.args...)
-    end
-    return ir
-end
-```
-where the first pass is as it was above and the `ir[x] = xcall(profile_fun, st.expr.args...)` ensures that the profiler will recursively call itself. `recursable` is a filter defined as below, which is used to prevent profiling itself (and possibly other things).
-```julia
-recursable(gr::GlobalRef) = gr.name ∉ [:profile_fun, :record_start, :record_end]
-recursable(ex::Expr) = ex.head == :call && recursable(ex.args[1])
-recursable(ex) = false
-```
-Additionally, the first two definitions of `profile_fun` for `Core.IntrinsicFunction` and for `Core.Builtin` prevent trying to dive into functions which do not have a Julia IR. And that's all. The full code is 
-```example lec09
-using IRTools
-using IRTools: var, xcall, insert!, insertafter!, func, recurse!, @dynamo
-include("loggingprofiler.jl")
-LoggingProfiler.resize!(LoggingProfiler.to, 10000)
+To implement the code performing the above transformation, we initiate few variables
 
-function timable(ex::Expr) 
-    ex.head != :call && return(false)
-    length(ex.args) < 2 && return(false)
-    ex.args[1] isa Core.GlobalRef && return(true)
-    ex.args[1] isa Symbol && return(true)
-    return(false)
-end
-timable(ex) = false
-
-function recursable_fun(ex::GlobalRef)
-    ex.name ∈ (:profile_fun, :record_start, :record_end) && return(false)
-    iswhite(recursable_list, ex) && return(true)
-    isblack(recursable_list, ex) && return(false)
-    return(isempty(recursable_list) ? true : false)
-end
-
-recursable_fun(ex::IRTools.Inner.Variable) = true
-
-function recursable(ex::Expr) 
-    ex.head != :call && return(false)
-    isempty(ex.args) && return(false)
-    recursable(ex.args[1])
-end
-
-recursable(ex) = false
-
-exportname(ex::GlobalRef) = QuoteNode(ex.name)
-exportname(ex::Symbol) = QuoteNode(ex)
-exportname(ex::Expr) = exportname(ex.args[1])
-exportname(i::Int) = QuoteNode(Symbol("Int(",i,")"))
-
-profile_fun(f::Core.IntrinsicFunction, args...) = f(args...)
-profile_fun(f::Core.Builtin, args...) = f(args...)
-
-@dynamo function profile_fun(f, args...)
-    ir = IRTools.Inner.IR(f, args...)
-    for (v, ex) in ir
-        if timable(ex.expr)
-            fname = exportname(ex.expr)
-            insert!(ir, v, xcall(LoggingProfiler, :record_start, fname))
-            insertafter!(ir, v, xcall(LoggingProfiler, :record_end, fname))
-        end
-    end
-    for (x, st) in ir
-        recursable(st.expr) || continue
-        ir[x] = xcall(profile_fun, st.expr.args...)
-    end
-    # recurse!(ir)
-    return ir
-end
-
-macro record(ex)
-    esc(Expr(:call, :profile_fun, ex.args...))
-end
-
-LoggingProfiler.reset!()
-@record foo(1.0, 1.0)
-LoggingProfiler.to
-```
-where you should notice the long time the first execution of `@record foo(1.0, 1.0)` takes. This is caused by the compiler specializing for every function into which we dive into. The second execution of `@record foo(1.0, 1.0)` is fast. It is also interesting to observe how the time of the compilation is logged by the profiler. The output of the profiler `to` is not shown here due to the length of the output.
-
-## Petite Zygote
-`IRTools.jl` were created for `Zygote.jl` --- Julia's source-to-source AD system currently powering `Flux.jl`. An interesting aspect of `Zygote` was to recognize that TensorFlow is in its nutshell a compiler, PyTorch is an interpreter. So the idea was to let Julia's compiler compile the gradient and perform optimizations that are normally performed with normal code. Recall that a lot of research went into how to generate efficient code and it is reasonable to use this research. `Zygote.jl` provides mainly reversediff, but there was an experimental support for forwarddiff.
-
-One of the questions when developing an AD engine is where and how to create a computation graph. Recall that in TensorFlow, you specify it through a domain specific language, in PyTorch it generated on the fly. Mike Innes' idea was use SSA form provided by the julia compiler. 
-```julia
-julia> @code_lowered foo(1.0, 1.0)
-CodeInfo(
-1 ─      z = x * y
-│   %2 = z
-│   %3 = Main.sin(y)
-│   %4 = %2 + %3
-└──      return %4
-)
-```
-It is very easy to differentiate each line, as they correspond to single expressions (or function calls) and importantly, each variable is assigned exactly once. The strategy to use it for AD would as follows.
-
-### Strategy
-We assume to have a set of AD rules (e.g. ChainRules), which for a given function returns its evaluation and pullback. If `Zygote.jl` is tasked with computing the gradient.
-1. If a rule exists for this function, directly return the rule.
-2. If not, deconstruct the function into a sequence of functions using `CodeInfo` / IR representation
-3. Replace statements by calls to obtain the evaluation of the statements and the pullback.
-4. Chain pullbacks in reverse order.
-5. Return the function evaluation and the chained pullback.
-
-### Simplified implementation
-The following code is adapted from [this example](https://github.com/FluxML/IRTools.jl/blob/master/examples/reverse.jl)
 
 ```julia
-using IRTools, ChainRules
-using IRTools: @dynamo, IR, Pipe, finish, substitute, return!, block, blocks,
-  returnvalue, arguments, isexpr, xcall, self, stmt
+adinfo = []             # storage for informations about pullbacks, needed for the construction of the reverse pass
+new_insts = Any[]       # storate for instructions
+new_line = Int32[]      # Index of instruction we are differentiating
+ssamap = Dict{SSAValue,SSAValue}() # this maps old SSA values to new SSA values, since they need to be linearly ordered.
+```
 
-struct Pullback{S,T}
+We also define a remap_ssa function which will be used to map old SSA values to new SSA values.
+
+```julia
+remap_ssa(d, args::Tuple) = map(a -> remap_ssa(d,a), args)
+remap_ssa(d, args::Vector) = map(a -> remap_ssa(d,a), args)
+remap_ssa(d, r::ReturnNode) = ReturnNode(remap_ssa(d, r.val))
+remap_ssa(d, x::SSAValue) = d[x]
+remap_ssa(d, x) = x
+
+struct PullStore{T<:Tuple}
   data::T
 end
 
-Pullback{S}(data) where S = Pullback{S,typeof(data)}(data)
+PullStore(args...) = PullStore(tuple(args...))
+Base.getindex(p::PullStore, i) = p.data[i]
+```
 
-function primal(ir, T = Any)
-  pr = Pipe(ir)
-  calls = []
-  ret = []
-  for (v, st) in pr
-    ex = st.expr
-    if isexpr(ex, :call)
-      t = insert!(pr, v, stmt(xcall(Main, :forward, ex.args...), line = st.line))
-      pr[v] = xcall(:getindex, t, 1)
-      J = push!(pr, xcall(:getindex, t, 2))
-      push!(calls, v)
-      push!(ret, J)
+The main loop transforming the function looks like foollows
+
+```julia
+for (i, stmt) in enumerate(ir.stmts)
+   inst = stmt[:inst]
+   if inst isa Expr && inst.head == :call
+        new_inst = Expr(:call, GlobalRef(ChainRules, :rrule), remap_ssa(ssamap, inst.args)...)
+        push!(new_insts, new_inst)
+        push!(new_line, stmt[:line])
+        rrule_ssa = SSAValue(length(new_insts))
+
+        push!(new_insts, Expr(:call, GlobalRef(Base, :getindex), rrule_ssa, 1))
+        push!(new_line, stmt[:line])
+        val_ssa = SSAValue(length(new_insts))
+        ssamap[SSAValue(i)] = val_ssa
+
+        push!(new_insts, Expr(:call, GlobalRef(Base, :getindex), rrule_ssa, 2))
+        pullback_ssa = SSAValue(length(new_insts))
+        push!(new_line, stmt[:line])
+        push!(adinfo, (;old_ssa = i, inst = inst, pullback_ssa))
+        continue
+   end
+
+    if inst isa ReturnNode
+        push!(new_insts, Expr(:call, GlobalRef(Main, :PullStore), map(x -> x[end], adinfo)...))
+        pullback_ssa = SSAValue(length(new_insts))
+        push!(new_line, stmt[:line])
+
+        push!(new_insts, Expr(:call, GlobalRef(Base, :tuple), remap_ssa(ssamap, inst.val), pullback_ssa))
+        returned_tuple = SSAValue(length(new_insts))
+        push!(new_line, stmt[:line])
+
+        push!(new_insts, ReturnNode(returned_tuple))
+        push!(new_line, stmt[:line])
+        continue
     end
-  end
-  pb = Expr(:call, Pullback{T}, xcall(:tuple, ret...))
-  return!(pr, xcall(:tuple, returnvalue(block(ir, 1)), pb))
-  return finish(pr), calls
+   error("unknown node $(i)")
 end
-
-@dynamo function forward(m...)
-  ir = IR(m...)
-  ir == nothing && return :(error("Non-differentiable function ", repr(args[1])))
-  length(blocks(ir)) == 1 || error("control flow is not supported")
-  return primal(ir, Tuple{m...})[1]
-end
-
 ```
-where 
-- the generated function `forward` calls `primal` to perform AD manual chainrule
-- actual chainrule is performed in the for loop
-- every function call is replaced  `xcall(Main, :forward, ex.args...)`, which is the recursion we have observed above. `stmt` allows to insert information about lines in the source code).
-- the output of the forward is the value of the function, and *pullback*, the function calculating gradient with respect to its inputs.
-- `pr[v] = xcall(:getindex, t, 1)` fixes the output of the overwritten function call to be the output of `forward(...)`
-- the next line logs the *pullback* 
-- `Expr(:call, Pullback{T}, xcall(:tuple, ret...))` will serve to call generated function which will assemble the pullback in the right order
 
-Let's now observe how the the IR of `foo` is transformed
+After the executing the loop, we obtain stream of new instructions in the `new_insts` and information about how to construct
+the reverse pass stored in `pullbacks`.
+Now, we need to consruct valid IRCode, which can be executed. We do this by first
+constructing Instruction stream as
+
 ```julia
-ir = IR(typeof(foo), Float64, Float64)
-julia> primal(ir)[1]
-1: (%1, %2, %3)
-  %4 = Main.forward(Main.:*, %2, %3)
-  %5 = Base.getindex(%4, 1)
-  %6 = Base.getindex(%4, 2)
-  %7 = Main.forward(Main.sin, %3)
-  %8 = Base.getindex(%7, 1)
-  %9 = Base.getindex(%7, 2)
-  %10 = Main.forward(Main.:+, %5, %8)
-  %11 = Base.getindex(%10, 1)
-  %12 = Base.getindex(%10, 2)
-  %13 = Base.tuple(%6, %9, %12)
-  %14 = (Pullback{Any, T} where T)(%13)
-  %15 = Base.tuple(%11, %14)
-  return %15
+stmts = CC.InstructionStream(
+    new_insts,
+    fill(Any, length(new_insts)),
+    fill(CC.NoCallInfo(), length(new_insts)),
+    new_line,
+    fill(CC.IR_FLAG_REFINED, length(new_insts)),
+)
 ```
-- Every function call was transformed into the sequence of `forward(...)` and obtaining first and second item from the returned typle.
-- Line `%14` constructs the `Pullback`, which (as will be seen shortly below) will allow to generate the pullback for the generated function
-- Line `%15` generates the returned tuple, where the first item is the function value (computed at line `%11`) and pullback (constructed at libe `%15`).
 
-We define few AD rules by specializing `forward`  with calls from `ChainRules`
+where (i) we have marked all instruction to undergo effect analysis (`CC.IR_FLAG_REFINED`),
+and we set all return type to `Any` to make them amenable for typing.
+From this stream, we can construct new IRCode as
+
 ```julia
-forward(::typeof(sin), x)    = ChainRules.rrule(sin, x)
-forward(::typeof(*), x, y)   = ChainRules.rrule(*, x, y)
-forward(::typeof(+), x, y)   = ChainRules.rrule(+, x, y)
+cfg = CC.compute_basic_blocks(new_insts)
+linetable = ir.linetable
+forward_ir = CC.IRCode(stmts, cfg, linetable, Any[Tuple{}, Float64, Float64], Expr[], CC.VarState[])
 ```
-Zygote implements this inside the generated function, such that whatever is added to `ChainRules` is automatically reflected. The process is not as trivial (see [`has_chain_rule`](https://github.com/FluxML/Zygote.jl/blob/master/src/compiler/chainrules.jl)) and for the brevity is not shown here. 
 
-We now obtain the value and the pullback of function `foo` as 
+which can be executed by wrapping it into `OpaqueClosure`
+
 ```julia
-julia> v, pb = forward(foo, 1.0, 1.0);
+oc = Core.OpaqueClosure(forward_ir)
+value, pullback = oc(1.0, 1.0)
 ```
-- The pullback contains in `data` field with individual jacobians that have been collected in `ret` in `primal` function.
+
+We can verify the value is equal to the output of the original function `foo`
+
 ```julia
-pb.data[1]
-pb.data[2]
-pb.data[3]
+value == foo(1.0, 1.0)
 ```
-The function for which the Jacobian has been created is stored in type parameter `S` of the `Pullback` type. The pullback for `foo` is generated in another generated function, as `Pullback` `struct` is a functor. This is an interesting **design pattern**, which allows us to return *closure* from a generated function. 
 
-Let's now investigate the code generating code for pullback.
+And the pullback contains functions computing gradient with respect to individual functions within `foo`
+
 ```julia
+pullback[3](1.0) == (ChainRules.NoTangent(), 1.0, 1.0)
+pullback[2](1.0) == (ChainRules.NoTangent(), cos(1.0))
+pullback[1](1.0) == (ChainRules.NoTangent(), 1.0, 1.0)
+```
 
-_sum() = 0
-_sum(x) = x
-_sum(x...) = xcall(:+, x...)
+!!! note "Type inference"
+    
+    So far the IRCode we have constructed was "untyped". We can use Julia's type inference
+    to type the IRCode. Type type inference can be achieved through the following function,
+    which was kindly provided to the community by Katherine Frames White and the actual versions
+    were copied from Mooncake.jl.
 
-function pullback(pr)
-  ir = empty(pr)
-  grads = Dict()
-  grad(x) = _sum(get(grads, x, [])...)
-  grad(x, x̄) = push!(get!(grads, x, []), x̄)
-  grad(returnvalue(block(pr, 1)), IRTools.argument!(ir))
-  data = push!(ir, xcall(:getfield, self, QuoteNode(:data)))
-  _, pbs = primal(pr)
-  pbs = Dict(pbs[i] => push!(ir, xcall(:getindex, data, i)) for i = 1:length(pbs))
-  for v in reverse(keys(pr))
-    ex = pr[v].expr
-    isexpr(ex, :call) || continue
-    Δs = push!(ir, Expr(:call, pbs[v], grad(v)))
-    for (i, x) in enumerate(ex.args)
-      grad(x, push!(ir, xcall(:getindex, Δs, i)))
+    ```julia
+    function infer_ir!(ir::CC.IRCode)
+        return __infer_ir!(ir, CC.NativeInterpreter(), __get_toplevel_mi_from_ir(ir, Main))
     end
-  end
-  return!(ir, xcall(:tuple, [grad(x) for x in arguments(pr)]...))
+    ```
+
+    Given some IR, generates a MethodInstance suitable for passing to infer_ir!, if you don't
+    already have one with the right argument types. [Credit to@oxinabox:
+    (https://gist.github.com/oxinabox/cdcffc1392f91a2f6d80b2524726d802#file-example-jl-L54)
+
+    ```julia
+    _type(x::Type) = x
+    _type(x::CC.Const) = _typeof(x.val)
+    _type(x::CC.PartialStruct) = x.typ
+    _type(x::CC.Conditional) = Union{_type(x.thentype), _type(x.elsetype)}
+    _type(::CC.PartialTypeVar) = TypeVar
+
+    function __get_toplevel_mi_from_ir(ir, _module::Module)
+        mi = ccall(:jl_new_method_instance_uninit, Ref{Core.MethodInstance}, ());
+        mi.specTypes = Tuple{map(_type, ir.argtypes)...}
+        mi.def = _module
+        return mi
+    end
+    ```
+
+    Run type inference and constant propagation on the ir. [Credit to @oxinabox:]
+    (https://gist.github.com/oxinabox/cdcffc1392f91a2f6d80b2524726d802#file-example-jl-L54)
+
+    ```julia
+    function __infer_ir!(ir, interp::CC.AbstractInterpreter, mi::CC.MethodInstance)
+        method_info = CC.MethodInfo(#=propagate_inbounds=#true, nothing)
+        min_world = world = CC.get_inference_world(interp)
+        max_world = Base.get_world_counter()
+        irsv = CC.IRInterpretationState(
+            interp, method_info, ir, mi, ir.argtypes, world, min_world, max_world
+        );
+        rt = CC._ir_abstract_constant_propagation(interp, irsv)
+        return ir
+    end
+    ```
+
+With that, we can create closure with type inference
+
+```julia
+toc = Core.OpaqueClosure(infer_ir!(forward_ir))
+value, pullback = toc(1.0, 1.0)
+```
+
+### Helper functions
+Before moving forward, we define we helper functions which would simplify the construction
+if the IRCode from the stream of instructions. We will also automatically run type inference.
+
+```julia
+function ircode(
+    insts::Vector{Any}, argtypes::Vector{Any}, sptypes::Vector{CC.VarState}=CC.VarState[]
+)
+    cfg = CC.compute_basic_blocks(insts)
+    stmts = __insts_to_instruction_stream(insts)
+    linetable = [CC.LineInfoNode(Main, :ircode, :ir_utils, Int32(1), Int32(0))]
+    meta = Expr[]
+    ir = CC.IRCode(stmts, cfg, linetable, argtypes, meta, CC.VarState[])
+    infer_ir!(ir)
 end
 
-@dynamo function (pb::Pullback{S})(Δ) where S
-  return pullback(IR(S.parameters...))
+function __insts_to_instruction_stream(insts::Vector{Any})
+    return CC.InstructionStream(
+        insts,
+        fill(Any, length(insts)),
+        fill(CC.NoCallInfo(), length(insts)),
+        fill(Int32(1), length(insts)),
+        fill(CC.IR_FLAG_REFINED, length(insts)),
+    )
 end
 ```
-Let's walk how the reverse is constructed for `pr = IR(typeof(foo), Float64, Float64)`
+
+With that, the forward function looks as follows
+
 ```julia
-ir = empty(pr)
-grads = Dict()
-grad(x) = _sum(get(grads, x, [])...)
-grad(x, x̄) = push!(get!(grads, x, []), x̄)
-```
-construct the empty `ir` for the constructed pullback, defines `Dict` where individual contributors of the gradient with respect to certain variable will be stored, and two function for pushing statements to to `grads`. The next statement
-```julia
-grad(returnvalue(block(pr, 1)), IRTools.argument!(ir))
-```
-pushes to `grads` statement that the gradient of the output of the primal `pr` is provided as an argument of the pullback `IRTools.argument!(ir)`. 
-```
-data = push!(ir, xcall(:getfield, self, QuoteNode(:data)))
-_, pbs = primal(pr)
-pbs = Dict(pbs[i] => push!(ir, xcall(:getindex, data, i)) for i = 1:length(pbs))
-```
-sets `data` to the `data` field of the `Pullback` structure containing pullback functions. Then it create a dictionary `pbs`, where the output of each call in the primal (identified by the line) is mapped to the corresponding pullback, which is now a line in the IR representation.
-The IR so far looks as 
-```julia
-1: (%1)
-  %2 = Base.getfield(IRTools.Inner.Self(), :data)
-  %3 = Base.getindex(%2, 1)
-  %4 = Base.getindex(%2, 2)
-  %5 = Base.getindex(%2, 3)
-```
-and `pbs` contains 
-```julia
-julia> pbs
-Dict{IRTools.Inner.Variable, IRTools.Inner.Variable} with 3 entries:
-  %6 => %5
-  %4 => %3
-  %5 => %4
-```
-says that the pullback of a function producing variable at line `%6` in the primal is stored at variable `%5` in the contructed pullback.
-The real deal comes in the for loop 
-```julia
-for v in reverse(keys(pr))
-  ex = pr[v].expr
-  isexpr(ex, :call) || continue
-  Δs = push!(ir, Expr(:call, pbs[v], grad(v)))
-  for (i, x) in enumerate(ex.args)
-    grad(x, push!(ir, xcall(:getindex, Δs, i)))
-  end
+function construct_forward(ir)
+    adinfo = []
+    new_insts = Any[]
+    new_line = Int32[]
+    ssamap = Dict{SSAValue,SSAValue}()
+    for (i, stmt) in enumerate(ir.stmts)
+        inst = stmt[:inst]
+        if inst isa Expr && inst.head == :call
+            new_inst = Expr(:call, GlobalRef(ChainRules, :rrule), remap_ssa(ssamap, inst.args)...)
+            push!(new_insts, new_inst)
+            push!(new_line, stmt[:line])
+            rrule_ssa = SSAValue(length(new_insts))
+
+
+            push!(new_insts, Expr(:call, GlobalRef(Base, :getindex), rrule_ssa, 1))
+            push!(new_line, stmt[:line])
+            val_ssa = SSAValue(length(new_insts))
+            ssamap[SSAValue(i)] = val_ssa
+
+            push!(new_insts, Expr(:call, GlobalRef(Base, :getindex), rrule_ssa, 2))
+            pullback_ssa = SSAValue(length(new_insts))
+            push!(new_line, stmt[:line])
+            push!(adinfo, (;old_ssa = i, inst = inst, pullback_ssa))
+            continue
+        end
+
+        if inst isa ReturnNode
+            # Wrap all pullbacks to PullStore
+            push!(new_insts, Expr(:call, GlobalRef(Main, :PullStore), map(x -> x[end], adinfo)...))
+            pullback_ssa = SSAValue(length(new_insts))
+            push!(new_line, stmt[:line])
+
+            # construct the tuple (value, pullbacks) to return
+            push!(new_insts, Expr(:call, GlobalRef(Base, :tuple), remap_ssa(ssamap, inst.val), pullback_ssa))
+            returned_tuple = SSAValue(length(new_insts))
+            push!(new_line, stmt[:line])
+
+            push!(new_insts, ReturnNode(returned_tuple))
+            push!(new_line, stmt[:line])
+            continue
+        end
+        error("unknown node $(i)")
+    end
+    
+    # Finally, we construct the valid IR code from new statements.
+
+    argtypes = Any[Tuple{}, ir.argtypes[2:end]...]
+    new_ir = ircode(new_insts, argtypes)
+    (new_ir, adinfo)
 end
 ```
-which iterates the primal `pr` in the reverse order and for every call, it inserts statement to calls the appropriate pullback `Δs = push!(ir, Expr(:call, pbs[v], grad(v)))` and adds gradients with respect to the inputs to values accumulating corresponding gradient in the loop `for (i, x) in enumerate(ex.args) ...`
-The last line
-```julia
-return!(ir, xcall(:tuple, [grad(x) for x in arguments(pr)]...))
-```
-puts statements accumulating gradients with respect to individual variables to the ir.
 
-The final generated IR code looks as
+### Implementing reverse pass
+The reverse parts of a linear IR is relatively simple. In a nutshell, the code
+code needs to iterate over the pullbacks in the reverse order, execute them, and
+accumulate the gradients with respect to the arguments. The accumulation of the
+gradient is the most difficult part here.
+
+The function `construct_pullback` will have two arguments. First are the information
+about id of arguments and return values of the original pullback, which we have saved
+during construction of the forward part (not execution). The second argument are the types
+of values returned by the forward part, which are useful for typing.
+
+The function we construct will have two arguments. The first will be information
+communicated from the forward part to the reverse, which contains the varibles closed
+in pullbacks. The second argument will be the gradient with respect to the output of
+the function we are derivating.
+
 ```julia
-julia> pullback(IR(typeof(foo), Float64, Float64))
-1: (%1)
-  %2 = Base.getfield(IRTools.Inner.Self(), :data)
-  %3 = Base.getindex(%2, 1)
-  %4 = Base.getindex(%2, 2)
-  %5 = Base.getindex(%2, 3)
-  %6 = (%5)(%1)
-  %7 = Base.getindex(%6, 1)
-  %8 = Base.getindex(%6, 2)
-  %9 = Base.getindex(%6, 3)
-  %10 = (%4)(%9)
-  %11 = Base.getindex(%10, 1)
-  %12 = Base.getindex(%10, 2)
-  %13 = (%3)(%8)
-  %14 = Base.getindex(%13, 1)
-  %15 = Base.getindex(%13, 2)
-  %16 = Base.getindex(%13, 3)
-  %17 = %12 + %16
-  %18 = Base.tuple(0, %15, %17)
-  return %18
+function construct_pullback(pullbacks, ::Type{<:Tuple{R,P}}) where {R,P}
+    diffmap = Dict{Any,Any}() # this will hold the mapping where is the gradient with respect to SSA.
+    # the argument of the pullback we are defining is a gradient with respect to the argument of return which we assume to be the last of instruction in `inst`
+    diffmap[SSAValue(length(pullbacks))] = Core.Argument(3)
+    reverse_inst = []
+
+    # now we iterate over pullbacks and execute one by one with correct argument
+    for pull_id in reverse(axes(pullbacks,1))
+        ssa_no, inst, _ = pullbacks[pull_id]
+        # first we extract the pullback from a tuple of pullbacks
+        push!(reverse_inst, Expr(:call, GlobalRef(Base, :getindex), Core.Argument(2), pull_id))
+
+        #then we call the pullback with a correct argument
+        push!(reverse_inst, Expr(:call, SSAValue(length(reverse_inst)), diffmap[SSAValue(ssa_no)]))
+        arg_grad = SSAValue(length(reverse_inst))
+        
+        # then we extract gradients with respect to the argument of the instruction and record all the calls
+
+        for (i, a) in enumerate(inst.args)
+            i == 1 && continue # we omit gradient with respect to the name of the function and rrule
+            if haskey(diffmap, a)  # we need to perform addition
+                push!(reverse_inst, Expr(:call, GlobalRef(Base, :getindex), arg_grad, i))
+                new_val = SSAValue(length(reverse_inst))
+                old_val = diffmap[a]
+                push!(reverse_inst, Expr(:call, GlobalRef(Base, :+), old_val, new_val))
+                diffmap[a] = SSAValue(length(reverse_inst))
+            else
+                push!(reverse_inst, Expr(:call, GlobalRef(Base, :getindex), arg_grad, i))
+                diffmap[a] = SSAValue(length(reverse_inst))
+            end
+        end
+    end
+
+    # we create a Tuple with return values
+
+    ∇args = collect(filter(x -> x isa Core.Argument, keys(diffmap)) )
+    sort!(∇args, by = x -> x.n)
+    push!(reverse_inst, Expr(:call, GlobalRef(Base, :tuple), [diffmap[a] for a in ∇args]...))
+    returned_tuple = SSAValue(length(reverse_inst))
+    push!(reverse_inst, ReturnNode(returned_tuple))
+
+    ircode(reverse_inst, Any[Tuple{},P, R])
+end
 ```
 
-and it calculates the gradient with respect to the input as
-```julia
-julia> pb(1.0)
-(0, 1.0, 1.5403023058681398)
-```
-where the first item is gradient with parameters of the function itself.
+Let's now put things together. The automatically generated rules will be
+stored in a struct `CachedGrad` containing forward and backward passes.
+We aditionally define a function `gradient` which will execute the
+forward and backward pass and return a closure containing adinfo from the forward
+pass. With this trick, the pullback returned to the user contains only
 
-## Conclusion
-The above examples served to demonstrate that `@generated` functions offers extremely powerful paradigm, especially if coupled with manipulation of intermediate representation. Within few lines of code, we have implemented reasonably powerful profiler and reverse AD engine. Importantly, it has been done without a single-purpose engine or tooling. 
-  
+```julia
+struct CachedGrad{F<:Core.OpaqueClosure, R<:Core.OpaqueClosure}
+    foc::F
+    roc::R
+end
+
+function gradient(f::CachedGrad, args...)
+    v, adinfo = f.foc(args...)
+    v, f.roc(adinfo, one(eltype(v)))
+end
+
+totype(x::DataType) = x
+totype(x::Type) = x
+totype(x) = typeof(x)
+
+function CachedGrad(f, args...)
+    args = tuple(map(totype, args)...)
+    ir, _ = only(Base.code_ircode(f, args; optimize_until = "compact 1"))
+    forward_ir, pullbacks = construct_forward(ir)
+    rt = Base.Experimental.compute_ir_rettype(forward_ir)
+    reverse_ir = construct_pullback(pullbacks, rt)
+    infer_ir!(reverse_ir)
+
+    foc = Core.OpaqueClosure(forward_ir; do_compile = true)
+    roc = Core.OpaqueClosure(reverse_ir; do_compile = true)
+    CachedGrad(foc, roc)
+end
+
+function foo(x,y)
+  z = x * y
+  z + sin(x)
+end
+
+bar(x) = 5 * x
+```
+
+
+
+[1] [Autodiff by G. Dalle](https://gdalle.github.io/JuliaOptimizationDays2024-AutoDiff/#/)
