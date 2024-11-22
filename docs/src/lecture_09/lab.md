@@ -60,12 +60,12 @@ The types of tangents and cotangents depend on the types of the primals. However
 
 
 !!! warning "Exercise"
-    ```@example labO9
+    ```@example lab09
     using ChainRulesCore, ChainRules, ChainRulesTestUtils
     ```
     Write custom `rrule` for following function $f(x,y) = x^2 + 3y$.
 
-    ```@example labO9
+    ```@example lab09
     f1(x::T, y::T) where T<: Real = x^2 + 3*y
     ```
     You can test your solution using
@@ -157,7 +157,7 @@ The functions `pool_naive` and `pool_sum` perform the same operation with the sa
         function pool_sum_pullback(ȳ)
             ...
         end
-        return y, pool_custom_pullback
+        return y, pool_sum_pullback
     end
 
     ```
