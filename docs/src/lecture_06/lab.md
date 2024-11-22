@@ -69,6 +69,22 @@ We will start with a question: Can we spot internally some difference between ty
         ```
         In case of `@code_llvm` and `@code_native` there are special options, that allow this out of the box, see help `?` for underlying `code_llvm` and `code_native`. If you don't mind adding dependencies there is also the `@capture_out` from [`Suppressor.jl`](https://github.com/JuliaIO/Suppressor.jl)
 
+!!! details
+    ```julia
+    @code_warntype explicit_sum(x)
+    @code_warntype implicit_sum()
+
+    @code_typed debuginfo=:none explicit_sum(x)
+    @code_typed debuginfo=:none implicit_sum()
+
+    @code_llvm debuginfo=:none explicit_sum(x)
+    @code_llvm debuginfo=:none implicit_sum()
+
+    @code_native debuginfo=:none explicit_sum(x)
+    @code_native debuginfo=:none implicit_sum()
+    ```
+
+    In this case we see that the generated code for such a simple operation is much longer in the type unstable case resulting in longer run times. However in the next example we will see that having longer code is not always a bad thing.
 
 ### Loop unrolling
 In some cases the compiler uses loop unrolling[^1] optimization to speed up loops at the expense of binary size. The result of such optimization is removal of the loop control instructions and rewriting the loop into a repeated sequence of independent statements.
@@ -94,6 +110,30 @@ In some cases the compiler uses loop unrolling[^1] optimization to speed up loop
     - these kind of optimization are lower level than intermediate language
     - loop unrolling is possible when compiler knows the length of the input
 
+
+!!! details 
+    ```@example lab06_intro
+    using Test #hide
+    using BenchmarkTools
+    a = Tuple(ones(20)) # tuple has known size
+    ac = collect(a)
+    x = 2.0
+
+    @code_lowered polynomial(a,x)       # cannot be seen here as optimizations are not applied
+    @code_typed debuginfo=:none polynomial(a,x)         # loop unrolling is not part of type inference optimization
+    nothing #hide
+    ```
+
+    ```@repl lab06_intro
+    @code_llvm debuginfo=:none polynomial(a,x)
+    @code_llvm debuginfo=:none polynomial(ac,x)
+    ```
+
+    More than 2x speedup
+    ```@repl lab06_intro
+    @btime polynomial($a,$x)
+    @btime polynomial($ac,$x)
+    ```
 
 ### Recursion inlining depth
 Inlining[^2] is another compiler optimization that allows us to speed up the code by avoiding function calls. Where applicable compiler can replace `f(args)` directly with the function body of `f`, thus removing the need to modify stack to transfer the control flow to a different place. This is yet another optimization that may improve speed at the expense of binary size.
@@ -144,6 +184,27 @@ Inlining[^2] is another compiler optimization that allows us to speed up the cod
     - the correctness can be checked using the built-in `evalpoly`
     - recall that these kind of optimization are possible just around the type inference stage
     - use container of known length to store the coefficients
+
+!!! details
+    ```@example lab06_intro
+    _polynomial!(ac, x, a...) = _polynomial!(x * ac + a[end], x, a[1:end-1]...)
+    _polynomial!(ac, x, a) = x * ac + a
+    polynomial(a, x) = _polynomial!(a[end] * one(x), x, a[1:end-1]...)
+
+    # the coefficients have to be a tuple
+    a = Tuple(ones(Int, 21)) # everything less than 22 gets inlined
+    x = 2
+    polynomial(a,x) == evalpoly(x,a) # compare with built-in function
+
+    # @code_llvm debuginfo=:none polynomial(a,x)    # seen here too, but code_typed is a better option
+    @code_lowered polynomial(a,x) # cannot be seen here as optimizations are not applied
+    nothing #hide
+    ```
+
+    ```@repl lab06_intro
+    @code_typed debuginfo=:none polynomial(a,x)
+    ```
+
 
 ## AST manipulation: The first steps to metaprogramming
 Julia is so called homoiconic language, as it allows the language to reason about its code. This capability is inspired by years of development in other languages such as Lisp, Clojure or Prolog.
@@ -207,6 +268,17 @@ x                   # should be defined
     - Copy `code2` to a variable `code3`. Replace `i` with `i + 1` in `code3`.
     - Define a variable `i` with the value `4`. Evaluate the different code expressions using the `eval` function and check the value of the variable `j`.
 
+!!! details
+    ```@repl lab06_meta
+    code = Meta.parse("j = i^2")
+    code2 = copy(code)
+    code2.args[2].args[3] = 3
+    code3 = copy(code2)
+    code3.args[2].args[2] = :(i + 1)
+    i = 4
+    eval(code), eval(code2), eval(code3)
+    ```
+
 Following up on the more general substitution of variables in an expression from the lecture, let's see how the situation becomes more complicated, when we are dealing with strings instead of a parsed AST.
 
 !!! warning "Exercise"
@@ -231,6 +303,19 @@ Following up on the more general substitution of variables in an expression from
     - You can use the `replace` function in combination with regular expressions.
     - Think of some corner cases, that the method may not handle properly.
 
+!!! details
+    The naive solution
+    ```@repl lab06_meta
+    sreplace_i(s) = replace(s, 'i' => 'k')
+    @test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
+    ```
+    does not work in this simple case, because it will replace "i" inside the `sin(z)` expression. We can play with regular expressions to obtain something, that is more robust
+    ```@repl lab06_meta
+    sreplace_i(s) = replace(s, r"([^\w]|\b)i(?=[^\w]|\z)" => s"\1k")
+    @test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
+    ```
+    however the code may now be harder to read. Thus it is preferable to use the parsed AST when manipulating Julia's code.
+
 If the exercises so far did not feel very useful let's focus on one, that is similar to a part of the [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) pkg.
 
 !!! warning "Exercise"
@@ -246,6 +331,27 @@ If the exercises so far did not feel very useful let's focus on one, that is sim
     - use recursion and multiple dispatch
     - dispatch on `::Number` to detect numbers in an expression
     - for testing purposes, create a copy of `ex` before mutating
+
+!!! details
+    ```@repl lab06_meta
+    function wrap!(ex::Expr)
+        args = ex.args
+        
+        for i in 1:length(args)
+            args[i] = wrap!(args[i])
+        end
+
+        return ex
+    end
+
+    wrap!(ex::Number) = Expr(:call, :f, ex)
+    wrap!(ex) = ex
+
+    ext, x, y = copy(ex), 2, 3
+    @test wrap!(ex) == :(x*x + f(2)*y*x + y*y)
+    eval(ext)
+    eval(ex)
+    ```
 
 This kind of manipulation is at the core of some pkgs, such as aforementioned [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) where every number is replaced with a narrow interval in order to find some bounds on the result of a computation.
 
