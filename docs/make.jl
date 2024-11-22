@@ -86,7 +86,8 @@ pages = [
     ],
 
     "9: Intermediate representation" => [
-        "Lecture" => "./lecture_09/lecture.md",
+        "Lecture v.2 (newest)" => "./lecture_09_new/lecture.md",
+        "Lecture v.1 (older)" => "./lecture_09/lecture.md",
         "Lab" => "./lecture_09/lab.md",
     ],
 
