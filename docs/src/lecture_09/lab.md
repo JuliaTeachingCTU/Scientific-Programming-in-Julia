@@ -184,7 +184,7 @@ function ChainRulesCore.rrule(::typeof(pool), x::AbstractArray, seg₁::AUR, seg
 end
 ```
 
-!!! warning "Excercise"
+!!! warning "Bonus Excercise (hard)"
     Implement functions `forward_pool_hausdorff` and `backward_pool_hausdorff`.
     The key is to identify the indices within each segment that contribute to the Hausdorff distance calculation, then propagate gradients only through these indices in the backward pass.
     *HINT*
