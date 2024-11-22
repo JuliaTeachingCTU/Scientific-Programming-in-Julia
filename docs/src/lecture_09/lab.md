@@ -1,609 +1,251 @@
-# Lab 09 - Generated Functions & IR
+# Lab 09 - Custom Rules For Differentiation
 
-In this lab you will practice two advanced meta programming techniques:
+In many scientific and engineering applications, we often encounter mathematical expressions that require differentiation, and efficiently computing derivatives is a key challenge. The `ChainRules.jl` package in Julia provides a flexible framework to define custom derivative rules for complex functions and compositions. By writing your own rrules, you can optimize the computation of derivatives in your specific use case, making it easier to handle non-standard or complex operations that are not supported out-of-the-box.
 
-* _**Generated functions**_ can help you write specialized code for certain
-  kinds of parametric types with more flexibility and/or less code.
-* _**IRTools.jl**_ is a package that simplifies the manipulation of lowered and
-  typed Julia code
-
-```@setup lab09
-using BenchmarkTools
-```
-
-## `@generate`d Functions
-
-Remember the three most important things about generated functions:
-* They return *quoted expressions* (like macros).
-* You have access to type information of your input variables.
-* They have to be _**pure**_
-
-### A faster `polynomial`
-
-Throughout this course we have come back to our `polynomial` function which
-evaluates a polynomial based on the Horner schema. Below you can find a version
-of the function that operates on a tuple of length $N$.
-```@example lab09
-function polynomial(x, p::NTuple{N}) where N
-    acc = p[N]
-    for i in N-1:-1:1
-        acc = x*acc + p[i]
-    end
-    acc
-end
-nothing # hide
-```
-Julia has its own implementation of this function called `evalpoly`. If we
-compare the performance of our `polynomial` and Julia's `evalpoly` we can
-observe a pretty big difference:
-```@repl lab09
-x = 2.0
-p = ntuple(float,20);
-
-@btime polynomial($x,$p)
-@btime evalpoly($x,$p)
-```
-Julia's implementation uses a generated function which specializes on different
-tuple lengths (i.e. it *unrolls* the loop) and eliminates the (small) overhead
-of looping over the tuple. This is possible, because the length of the tuple is
-known during compile time. You can check the difference between `polynomial`
-and `evalpoly` yourself via the introspectionwtools you know - e.g.
-`@code_lowered`.
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Rewrite the `polynomial` function as a generated function with the signature
-```
-genpoly(x::Number, p::NTuple{N}) where N
-```
-**Hints:**
-* Remember that you have to generate a quoted expression inside your generated
-  function, so you will need things like `:($expr1 + $expr2)`.
-* You can debug the expression you are generating by omitting the `@generated`
-  macro from your function.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@example lab09
-@generated function genpoly(x, p::NTuple{N}) where N
-    ex = :(p[$N])
-    for i in N-1:-1:1
-        ex = :(x*$ex + p[$i])
-    end
-    ex
-end
-nothing # hide
-```
-```@raw html
-</p></details>
-```
-You should get the same performance as `evalpoly` (and as `@poly` from Lab 7 with
-the added convenience of not having to spell out all the coefficients in your code
-like: `p = @poly 1 2 3 ...`).
-```@repl lab09
-@btime genpoly($x,$p)
-```
+## Motivation
 
 
+## ChainRules ecosystem
 
-### Fast, Static Matrices
+* `ChainRulesCore.jl` - It is a system for defining rules, and a collection of tangent types
+* `ChainRules.jl` - a collection of rules for Julia Base and other standard libraries.
+* `ChainRulesTestUtils.jl` - utilities for testing rules using finite differences
 
-Another great example that makes heavy use of generated functions are *static
-arrays*. A static array is an array of fixed size which can be implemented via
-an `NTuple`. This means that it will be allocated on the stack, which can buy
-us a lot of performance for smaller static arrays. We define a
-`StaticMatrix{T,C,R,L}` where the paramteric types represent the matrix element
-type `T` (e.g. `Float32`), the number of rows `R`, the number of columns `C`,
-and the total length of the matrix `L=C*R` (which we need to set the size of
-the `NTuple`).
-```@example lab09
-struct StaticMatrix{T,R,C,L} <: AbstractArray{T,2}
-    data::NTuple{L,T}
-end
+ChainRules is an AD-independent. The most widely used AD packages like `Zygote.jl`, `Diffractor.jl`, `Enzyme.jl` , and etc. automatically load `rule`s or at least support using them. 
 
-function StaticMatrix(x::AbstractMatrix{T}) where T
-    (R,C) = size(x)
-    StaticMatrix{T,R,C,C*R}(x |> Tuple)
-end
-nothing # hide
-```
+# Key distinction between rules
+In a relationship $ y=f(x) $, where $ f $ is a function, computing $ y $ from $ x $ is known as the primal computation. ChainRules focuses on propagating tangents of primal inputs to outputs (with `frule` for forward-mode AD) and cotangents of outputs to inputs (with `rrule` for reverse-mode AD).
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-As a warm-up, overload the `Base` functions `size`, `length`,
-`getindex(x::StaticMatrix,i::Int)`, and `getindex(x::Solution,r::Int,c::Int)`.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@example lab09
-Base.size(x::StaticMatrix{T,R,C}) where {T,R,C} = (R,C)
-Base.length(x::StaticMatrix{T,R,C,L}) where {T,R,C,L} = L
-Base.getindex(x::StaticMatrix, i::Int) = x.data[i]
-Base.getindex(x::StaticMatrix{T,R,C}, r::Int, c::Int) where {T,R,C} = x.data[R*(c-1) + r]
-```
-```@raw html
-</p></details>
-```
+## Forward-mode AD rule (`frule`)
+The `frule` for $f$ encodes how to propagate the tangent of the primal input $\dot{x} = \frac{dx}{da}$ to the tangent of the primal output $\dot{y} = \frac{dy}{dx}$, i.e., $\dot{y} = \frac{dy}{dx}\dot{x}$.
 
-You can check if everything works correctly by comparing to a normal `Matrix`:
-```@repl lab09
-x = rand(2,3)
-x[1,2]
-a = StaticMatrix(x)
-a[1,2]
-```
-
-
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Overload matrix multiplication between two static matrices
+The `frule` of function `foo(args...; kwargs...)` is 
 ```julia
-Base.:*(x::StaticMatrix{T,K,M},y::StaticMatrix{T,M,N})
+function frule((Δself, Δargs...), ::typeof(foo), args...; kwargs...)
+    ...
+    return y, ∂Y
+end
 ```
-with a generated function that creates an expression without loops.  Below you
-can see an example for an expression that would be generated from multiplying
-two $2\times 2$ matrices.
+where `y = foo(args; kwargs...)` is primal output, and `∂Y` is the result of propagationg the input tangents `Δself, Δargs...`.
+
+Example of `frule` for `sin(x)` is:
 ```julia
-:(StaticMatrix{T,2,2,4}((
-    (x[1,1]*y[1,1] + x[1,2]*y[2,1]),
-    (x[2,1]*y[1,1] + x[2,2]*y[2,1]),
-    (x[1,1]*y[1,2] + x[1,2]*y[2,2]),
-    (x[2,1]*y[1,2] + x[2,2]*y[2,2])
-)))
-```
-
-**Hints:**
-
-* You can get output like above by leaving out the `@generated` in front of your
-  overload.
-* It might be helpful to implement matrix multiplication in a *normal* Julia
-  function first.
-* You can construct an expression for a sum of multiple elements like below.
-```@repl lab09
-Expr(:call,:+,1,2,3)
-Expr(:call,:+,1,2,3) |> eval
-```
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@example lab09
-@generated function Base.:*(x::StaticMatrix{T,K,M}, y::StaticMatrix{T,M,N}) where {T,K,M,N}
-    zs = map(Iterators.product(1:K, 1:N) |> collect |> vec) do (k,n)
-        Expr(:call, :+, [:(x[$k,$m] * y[$m,$n]) for m=1:M]...)
-    end
-    z = Expr(:tuple, zs...)
-    :(StaticMatrix{$T,$K,$N,$(K*N)}($z))
+function frule((_, Δx), ::typeof(sin), x)
+    return sin(x), cos(x) * Δx
 end
-nothing # hide
-```
-```@raw html
-</p></details>
 ```
 
-You can check that your matrix multiplication works by multiplying two random
-matrices. Which one is faster?
-```@repl lab09
-a = rand(2,3)
-b = rand(3,4)
-c = StaticMatrix(a)
-d = StaticMatrix(b)
-a*b
-c*d
-```
+## Reverse-mode AD rule (`rrule`)
+The `rrule` for $f$ encodes how to propagate the cotangent of the primal output $\bar{y} = \frac{da}{dy}$ to the tangent of the primal input $\bar{x} = \frac{da}{dx}$, i.e., $\bar{x} = \bar{y}\frac{dy}{dx}$.
 
-
-## `OptionalArgChecks.jl`
-
-The package [`OptionalArgChecks.jl`](https://github.com/simeonschaub/OptionalArgChecks.jl)
-makes is possible to add checks to a function which can then be removed by
-calling the function with the `@skip` macro.  For example, we can check if the
-input to a function `f` is an even number
-```@example lab09
-function f(x::Number)
-    iseven(x) || error("Input has to be an even number!")
-    x
-end
-nothing # hide
-```
-If you are doing more involved argument checking it can take quite some time to
-perform all your checks. However, if you want to be fast and are completely
-sure that you are always passing in the correct inputs to your function, you
-might want to remove them in some cases. Hence, we would like to transform the
-IR of the function above
-```@repl lab09
-using IRTools
-using IRTools: @code_ir
-@code_ir f(1)
-```
-To some thing like this
-```@repl lab09
-transformed_f(x::Number) = x
-@code_ir transformed_f(1)
-```
-
-### Marking Argument Checks
-As a first step we will implement a macro that marks checks which we might want
-to remove later by surrounding it with `:meta` expressions. This will make it
-easy to detect which part of the code can be removed. A `:meta` expression can
-be created like this
-```@repl lab09
-Expr(:meta, :mark_begin)
-Expr(:meta, :mark_end)
-```
-and they will not be evaluated but remain in your IR. To surround an expression
-with two meta expressions you can use a `:block` expression:
-```@repl lab09
-ex = :(x+x)
-Expr(:block, :(print(x)), ex, :(print(x)))
-```
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Define a macro `@mark` that takes an expression and surrounds it with two
-meta expressions marking the beginning and end of a check.
-**Hints**
-* Defining a function `_mark(ex::Expr)` which manipulates your expressions can
-  help a lot with debugging your macro.
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@example lab09
-function _mark(ex::Expr)
-    return Expr(
-        :block,
-        Expr(:meta, :mark_begin),
-        esc(ex),
-        Expr(:meta, :mark_end),
-    )
-end
-
-macro mark(ex)
-    _mark(ex)
-end
-nothing # hide
-```
-```@raw html
-</p></details>
-```
-If you have defined a `_mark` function you can test that it works like this
-```@repl lab09
-_mark(:(println(x)))
-```
-The complete macro should work like below
-```@repl lab09
-function f(x::Number)
-    @mark @show x
-    x
-end;
-@code_ir f(2)
-f(2)
-```
-
-
-### Removing Argument Checks
-
-Now comes tricky part for which we need `IRTools.jl`.
-We want to remove all lines that are between our two meta blocks.
-You can delete the line that corresponds to a certain variable with the `delete!`
-and the `var` functions.
-E.g. deleting the line that defines variable `%4` works like this:
-```@repl lab09
-using IRTools: delete!, var
-
-ir = @code_ir f(2)
-delete!(ir, var(4))
-```
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Write a function `skip(ir::IR)` which deletes all lines between the meta
-expression `:mark_begin` and `:mark_end`.
-
-**Hints**
-You can check whether a statement is one of our meta expressions like this:
-```@repl lab09
-ismarkbegin(e::Expr) = Meta.isexpr(e,:meta) && e.args[1]===:mark_begin
-ismarkbegin(Expr(:meta,:mark_begin))
-```
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@example lab09
-ismarkend(e::Expr) = Meta.isexpr(e,:meta) && e.args[1]===:mark_end
-
-function skip(ir)
-    delete_line = false
-    for (x,st) in ir
-        isbegin = ismarkbegin(st.expr)
-        isend   = ismarkend(st.expr)
-
-        if isbegin
-            delete_line = true
-        end
-        
-        if delete_line
-            delete!(ir,x)
-        end
-
-        if isend
-            delete_line = false
-        end
-    end
-    ir
-end
-nothing # hide
-```
-```@raw html
-</p></details>
-```
-Your function should transform the IR of `f` like below.
-```@repl lab09
-ir = @code_ir f(2)
-ir = skip(ir)
-using IRTools: func
-func(ir)(nothing, 2)  # no output from @show!
-```
-However, if we have a slightly more complicated IR like below this version of
-our function will fail. It actually fails so badly that running
-`func(ir)(nothing,2)` after `skip` will cause the build of this page to crash,
-so we cannot show you the output here ;).
-```@repl lab09
-function g(x)
-    @mark iseven(x) && println("even")
-    x
-end
-
-ir = @code_ir g(2)
-ir = skip(ir)
-```
-The crash is due to `%4` not existing anymore. We can fix this by emptying the
-block in which we found the `:mark_begin` expression and branching to the
-block that contains `:mark_end` (unless they are in the same block already).
-If some (branching) code in between remained, it should then be removed by the
-compiler because it is never reached.
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Use the functions `IRTools.block`, `IRTools.branches`, `IRTools.empty!`, and
-`IRTools.branch!` to modify `skip` such that it also empties the `:mark_begin`
-block, and adds a branch to the `:mark_end` block (unless they are the same
-block).
-
-**Hints**
-* `block` gets you the block of IR in which a given variable is if you call e.g. `block(ir,var(4))`.
-* `empty!` removes all statements in a block.
-* `branches` returns all branches of a block.
-* `branch!(a,b)` creates a branch from the end of block `a` to the beginning
-  block `b`
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-```@example lab09
-using IRTools: block, branch!, empty!, branches
-function skip(ir)
-    delete_line = false
-    orig = nothing
-    for (x,st) in ir
-        isbegin = ismarkbegin(st.expr)
-        isend   = ismarkend(st.expr)
-
-        if isbegin
-            delete_line = true
-        end
-
-        # this part is new
-        if isbegin
-            orig = block(ir,x)
-        elseif isend
-            dest = block(ir,x)
-            if orig != dest
-                empty!(branches(orig))
-                branch!(orig,dest)
-            end
-        end
-        
-        if delete_line
-            delete!(ir,x)
-        end
-
-        if isend
-            delete_line = false
-        end
-    end
-    ir
-end
-nothing # hide
-```
-```@raw html
-</p></details>
-```
-The result should construct valid IR for our `g` function.
-```@repl lab09
-g(2)
-ir = @code_ir g(2)
-ir = skip(ir)
-func(ir)(nothing,2)
-```
-And it should not break when applying it to `f`.
-```@repl lab09
-f(2)
-ir = @code_ir f(2)
-ir = skip(ir)
-func(ir)(nothing,2)
-```
-
-### Recursively Removing Argument Checks
-
-The last step to finalize the `skip` function is to make it work recursively.
-In the current version we can handle functions that contain `@mark` statements,
-but we are not going any deeper than that. Nested functions will not be touched:
-```@example lab09
-foo(x) = bar(baz(x))
-
-function bar(x)
-    @mark iseven(x) && println("The input is even.")
-    x
-end
-
-function baz(x)
-    @mark x<0 && println("The input is negative.")
-    x
-end
-
-nothing # hide
-```
-```@repl lab09
-ir = @code_ir foo(-2)
-ir = skip(ir)
-func(ir)(nothing,-2)
-```
-
-For recursion we will use the macro `IRTools.@dynamo` which will make recursion
-of our `skip` function a lot easier. Additionally, it will save us from all the
-`func(ir)(nothing, args...)` statements. To use `@dynamo` we have to slightly
-modify how we call `skip`:
+The `rrule` of function `foo(args...; kwargs...)` is 
 ```julia
-@dynamo function skip(args...)
-    ir = IR(args...)
+function rrule(::typeof(foo), args...; kwargs...)
+    ...
+    return y, pullback
+end
+```
+where `y = foo(args; kwargs...)` is primal output and `pullback` is a function to propagate the derivative information of `foo` with respect to `args`.
+
+Example of `rrule` for `sin(x)` is: 
+```julia
+function rrule(::typeof(sin), x)
+    sin_pullback(ȳ) = (NoTangent(), cos(x)' * ȳ)
+    return sin(x), sin_pullback
+end
+```
+
+### Tangent types
+The types of tangents and cotangents depend on the types of the primals. However, sometimes our functions may have arguments which derivatives we can not compute or do not need. In that case, we represent it as `NoTangent`. `ZeroTangent` is used when tangent is equal to zero.
+
+
+!!! warning "Exercise"
+    ```@example labO9
+    using ChainRulesCore, ChainRules, ChainRulesTestUtils
+    ```
+    Write custom `rrule` for following function $f(x,y) = x^2 + 3y$.
+
+    ```@example labO9
+    f1(x::T, y::T) where T<: Real = x^2 + 3*y
+    ```
+    You can test your solution using
+    ```julia
+    test_rrule(f1, randn(), randn())
+    ```
     
-    # same code as before that modifies `ir`
-    # ...
-
-    return ir
-end
-
-# now we can call `skip` like this
-skip(f,2)
+```@example import_zygote
+using Zygote
 ```
-Now we can easily use `skip` in recursion, because we can just pass the
-arguments of an expression like this:
+
 ```julia
-using IRTools: xcall
+julia> gradient((a,b)->a^2 + 3*b, 2f0, 4f0)
+(4.0f0, 3.0f0)
 
-for (x,st) in ir
-    isexpr(st.expr,:call) || continue
-    ir[x] = xcall(skip, st.expr.args...)
-end
+julia> gradient((a,b)->f1(a,b), 2f0, 4f0)
+(4.0f0, 3.0f0)
 ```
-The function `xcall` will create an expression that calls `skip` with the given
-arguments and returns `Expr(:call, skip, args...)`.  Note that you can modify
-expressions of a given variable in the IR via `setindex!`.
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Modify `skip` such that it uses `@dynamo` and apply it recursively to all
-`:call` expressions that you ecounter while looping over the given IR.
-This will dive all the way down to `Core.Builtin`s and `Core.IntrinsicFunction`s
-which you cannot maniuplate anymore (because they are written in C).
-You have to end the recursion at these places which can be done via multiple
-dispatch of `skip` on `Builtin`s and `IntrinsicFunction`s.
+For the function in this exercise, writing a custom rrule isn’t necessary; the composition of existing rrules in the ChainRules package will be just as fast as your implementation. But in case, where you work for example with indexing in loops, writing your own rule make computations much faster and lower number of allocations.
 
-Once you are done with this you can also define a macro such that you can
-conveniently call `@skip` with an expression:
+!!! warning "Exercise"
+    Write your custom `rrule` for function `mymaximum` that finds maximal value of vector or matrix.
+    ```@example lab09 
+    mymaximum(x) = maximum(x)
+    ```
+    *HINT*
+    - note that typical evaluation of primal maximum within `rrule` does not have to be the same as `mymaximum`
+    - try to not look for the same maximum twice
+
+
 ```julia
-skip(f,2)
-@skip f(2)
+julia> test_rrule(mymaximum, randn(10));
+Test Summary:                            | Pass  Total  Time
+test_rrule: mymaximum on Vector{Float64} |    7      7  0.0s
+
+julia> test_rrule(mymaximum, randn(10,10));
+Test Summary:                            | Pass  Total  Time
+test_rrule: mymaximum on Matrix{Float64} |    7      7  0.7s
 ```
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
+
+## Sum pooling on large matrices
+![sum_pooling](sum_pooling.png)
+
+To prepare for this task, we'll set up a few utility functions to simplify our implementation. There are multiple ways to approach this, but we'll focus on a straightforward setup for convenience.
+
+First, we define the function `create_range`, which generates index ranges for pooling. We also define a AbstractUnitRange type, sortly `AUR`, for storing these ranges.
 ```@example lab09
-using IRTools: @dynamo, xcall, IR
+create_range(len::Int, step::Int) = [i:min(i + step - 1, len) for i in 1:step:len]
 
-# this is where we want to stop recursion
-skip(f::Core.IntrinsicFunction, args...) = f(args...)
-skip(f::Core.Builtin, args...) = f(args...)
+AUR = Vector{UnitRange{Int64}}
 
-@dynamo function skip(args...)
-    ir = IR(args...)
-    delete_line = false
-    orig = nothing
-    for (x,st) in ir
-        isbegin = ismarkbegin(st.expr)
-        isend   = ismarkend(st.expr)
+x = randn(10,10);
+s1 = create_range(10, 3);
+s2 = create_range(10, 2);
+```
+Next, we’ll compare our custom rule to a basic implementation of this pooling operation, `pool_naive`.
 
-        if isbegin
-            delete_line = true
-        end
+```@example lab09
+pool_native(x::AbstractArray, seg₁::AUR, seg₂::AUR) = [sum(x[sᵢ, sⱼ]) for sᵢ in seg₁, sⱼ in seg₂]
+```
+Calling `gradient` on `pool_naive` shows that the output gradient is a matrix of ones with the same size as `x`, which confirms its correctness. Note that, since the pooling function outputs a matrix, we sum this output to compute derivatives with `gradient`. Because the derivative of addition is one, this result aligns with our expectations.
 
-        if isbegin
-            orig = block(ir,x)
-        elseif isend
-            dest = block(ir,x)
-            if orig != dest
-                empty!(branches(orig))
-                branch!(orig,dest)
-            end
-        end
-        
-        if delete_line
-            delete!(ir,x)
-        end
+```@repl lab09
+gradient(a->sum(pool_native(a, s1, s2)), x)[1]
+```
+The `pool_naive` function is concise, but we could write it in a more structured way, as shown in `pool_sum` below.
 
-        if isend
-            delete_line = false
-        end
-
-        # this part is new
-        if haskey(ir,x) && Meta.isexpr(st.expr,:call)
-            ir[x] = xcall(skip, st.expr.args...)
+```@example lab09
+function pool_sum(x::AbstractArray, seg₁::AUR, seg₂::AUR)
+    y = similar(x, length(seg₁), length(seg₂))
+    for (i, sᵢ) in enumerate(seg₁)
+        for (j, sⱼ) in enumerate(seg₂)
+            y[i,j] = sum(x[sᵢ, sⱼ]) 
         end
     end
-    return ir
+    return y
+end
+```
+The functions `pool_naive` and `pool_sum` perform the same operation with the same performance and memory usage. However, the structured approach in `pool_sum` will be more convenient when writing a custom `rrule` for this pooling operation.
+
+!!! warning "Excercise"
+    Finish `rrule` function for sum pooling by implementing body of `pool_sum_pullback(ȳ)`.  After that test its functionality by `test_rrule` and measure speedup that you gaind using `@benchmark` on  larger matrix (100x100).
+
+    ```julia
+    function ChainRulesCore.rrule(::typeof(pool_sum), x::AbstractArray{T}, seg₁::AUR, seg₂::AUR) where T
+        y = pool_sum(x, seg₁, seg₂) 
+
+        function pool_sum_pullback(ȳ)
+            ...
+        end
+        return y, pool_custom_pullback
+    end
+
+    ```
+
+# Hausdorff distance example
+While sum pooling or finding the maximum may seem straightforward, combining concepts from these examples enables us to write efficient rrules for more complex tasks, such as computing Chamfer or Hausdorff distances. These metrics are highly relevant to our research, and creating custom rules for them significantly accelerated our experiments.
+Here is example of Hausdorff distance $d_{HD}(\mathbf{x},\mathbf{y}) = \max\big(h(\mathbf{x},\mathbf{y}), h(\mathbf{y},\mathbf{x}) \big)$, where $h(\mathbf{a},\mathbf{b}) = \max_{i} \min_{j} d(a_i, b_j)$
+
+```@example lab09
+function HausdorffDistance(c)
+    d₁ = maximum(minimum(c, dims=1))
+    d₂ = maximum(minimum(c, dims=2))
+    maximum([d₁, d₂])
 end
 
-macro skip(ex)
-    ex.head == :call || error("Input expression has to be a `:call`.")
-    return xcall(skip, ex.args...)
+pool_naive(x::AbstractArray, seg₁::AUR, seg₂::AUR, f::Function=sum) = [f(x[sᵢ, sⱼ]) for sᵢ in seg₁, sⱼ in seg₂]
+
+pool(x::AbstractArray, seg₁::AUR, seg₂::AUR, f::Function=sum) = [f(x[sᵢ, sⱼ]) for sᵢ in seg₁, sⱼ in seg₂]
+
+function ChainRulesCore.rrule(::typeof(pool), x::AbstractArray, seg₁::AUR, seg₂::AUR, ::typeof(HausdorffDistance))
+    y, argmaxmins = forward_pool_hausdorff(x, seg₁, seg₂)
+    pullback = ȳ -> backward_pool_hausdorff(ȳ, x, seg₁, seg₂, argmaxmins)
+    return y, pullback
 end
-nothing # hide
-```
-```@raw html
-</p></details>
-```
-```@repl lab09
-@code_ir foo(2)
-@code_ir skip(foo,2)
-foo(-2)
-skip(foo,-2)
-@skip foo(-2)
 ```
 
-## References
+!!! warning "Excercise"
+    Implement functions `forward_pool_hausdorff` and `backward_pool_hausdorff`.
+    The key is to identify the indices within each segment that contribute to the Hausdorff distance calculation, then propagate gradients only through these indices in the backward pass.
+    *HINT*
+    - The `forward_pool_hausdorff` function should compute the Hausdorff distance by finding relevant indices within each segment.
+    - Store these indices in a `Matrix{CartesianIndex{2}}`
+    - In backward function, first asign segment `o[sᵢ, sⱼ]` to temporary variable, then propagate `ȳ` in this segment and then make `o[sᵢ, sⱼ]` equal to temporary variable 
+    - In backward_pool_hausdorff, use the index matrix from the forward pass to propagate gradients only through the identified indices. We suggest, temporarily store each segment’s values and restore them after updating the gradient.
 
-* [Static matrices](https://wesselb.github.io/2020/12/13/julia-learning-circle-meeting-3.html) with `@generate`d functions blog post
-* [`OptionalArgChecks.jl`](https://github.com/simeonschaub/OptionalArgChecks.jl)
-* IRTools [Dynamo](https://fluxml.ai/IRTools.jl/latest/dynamo/)
+
+```julia
+@benchmark gradient(a->sum(pool_naive(a, s1, s2, HausdorffDistance)), x)
+@benchmark gradient(a->sum(pool(a, s1, s2, HausdorffDistance)), x)
+```
+
+
+# Rotary position embedding
+The final example in this lab is Rotary position embedding (RoPE). 
+Rotary Position Embedding (RoPE) is a method used in neural networks, especially transformers, to encode positional information within sequences. Unlike traditional position embeddings that add positional values to token embeddings, RoPE multiplies the embeddings with sinusoidal functions, allowing for the preservation of relative distances between tokens in a more natural way. This approach is efficient for capturing long-range dependencies, especially in models dealing with sequential data like text.
+
+
+```julia
+function rotary_embedding(x::AbstractMatrix, θ::AbstractVector)
+    d = size(x,1)
+    2*d == length(θ) && error("θ should be twice of x")
+    o = similar(x)
+    @inbounds for i in axes(x,2)
+        for (kᵢ, θₖ) in enumerate(θ)
+            k = 2*kᵢ - 1
+            sinᵢ, cosᵢ  = sincos(i * θₖ)
+            o[k,i]   = x[k,i]   * cosᵢ  - x[k+1,i] * sinᵢ
+            o[k+1,i] = x[k+1,i] * cosᵢ  + x[k,i]   * sinᵢ
+        end
+    end
+    o
+end
+
+function ∂rotary_embedding(ȳ, x::AbstractMatrix, θ::AbstractVector)
+    x̄ = similar(x)
+    θ̄ = similar(θ)
+    θ̄ .= 0
+    @inbounds for i in axes(x,2)
+        for (kᵢ, θₖ) in enumerate(θ)
+            k = 2*kᵢ - 1
+            sinᵢ, cosᵢ  = sincos(i * θₖ)
+            x̄[k,i]   =  ȳ[k,i] * cosᵢ + ȳ[k+1,i] * sinᵢ
+            x̄[k+1,i] = -ȳ[k,i] * sinᵢ + ȳ[k+1,i] * cosᵢ
+
+            θ̄[kᵢ] += i* (- ȳ[k,i]   * x[k,i]  * sinᵢ - x[k+1,i] * ȳ[k,i] * cosᵢ 
+                   - x[k+1,i] * ȳ[k+1,i] *sinᵢ + x[k,i] * ȳ[k+1,i] * cosᵢ)
+        end
+    end
+    x̄, θ̄
+end
+
+function ChainRulesCore.rrule(::typeof(rotary_embedding), x::AbstractMatrix, θ::AbstractVector)
+    y = rotary_embedding(x, θ)
+    function rotary_pullback(ȳ)
+        f̄ = NoTangent()
+        x̄, θ̄ = ∂rotary_embedding(ȳ, x, θ)
+        return f̄, x̄, θ̄
+    end
+    return y, rotary_pullback
+end
+```
