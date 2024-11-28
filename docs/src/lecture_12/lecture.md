@@ -174,13 +174,31 @@ The result does not correspond to the ensemble version above.
   - discovering the covariances requires to build the covariance from `ids`. (Expensive if done too often).
 
 
+### Smarter implementation
+Easiest solution is to put the corresponding parts of the problem together:
+- ode function ``f``, 
+- its state ``x0``,
+- and parameters ``θ``
+can be wrapped into an ODEProblem
+
+```julia
+struct ODEProblem{F,T,X<:AbstractVector,P<:AbstractVector}
+    f::F
+    tspan::T
+    x0::X
+    θ::P
+end
+```
+- the solver can operate on the ODEProbelm type
+
+
 ## Vector uncertainty
-The previous simple approach ignores the covariances between variables. Even if we tract covariances linearly in the same fashion (``Measurements.jl``), the approach will suffer from a loss of precision under non-linearity. 
+The previous simple approach ignores the covariances between variables. Even if we trac covariances linearly in the same fashion (``Measurements.jl``), the approach will suffer from a loss of precision under non-linearity. 
 
 
 ![](https://photos1.blogger.com/blogger/5955/293/1600/unscented-transform-explained.jpg)
 
-- The linearization-based approach propogates through the non-linearity only the mean and models its neighborhood by a plane.
+- The linearization-based approach propagates through the non-linearity only the mean and models its neighborhood by a plane.
 - Propagating all samples is too expensive
 - Methods based on quadrature or cubature rules are a compromise
 
@@ -277,59 +295,36 @@ For our example:
   - simple for initial conditions,
   - how to extend to operate also on parameters?
 
-### Smarter implementation
-Easiest solution is to put the corresponding parts of the problem together:
-- ode function ``f``, 
-- its state ``x0``,
-- and parameters ``θ``
-can be wrapped into an ODEProblem
+### Implementation of vector-valued uncertainty
+
+Essentially an ensemble of ODEs where their mean values form a representation of a Gaussian distribution.
+
 
 ```julia
-struct ODEProblem{F,T,X<:AbstractVector,P<:AbstractVector}
-    f::F
-    tspan::T
-    x0::X
-    θ::P
+struct CubODEProblem{ODE::ODEProblem}
+    odes
+    function CubODEProbelm(O::ODEProblem)
+      odes = ntuple(I->O)
+      new(odes)
+    end
 end
-```
-- the solver can operate on the ODEProbelm type
 
-### Unceratinty propagation in vectors
+  #  function RemoteMVGauss(C::CubODEProbelm)
+  #   points = 
 
-Example: consider uncertainty in state ``[x_1,x_2]`` and the first parameter ``\theta_1``. 
 
-Quick and dirty: 
-```julia
-getuncertainty(o::ODEProblem) = [o.u0[1:2];o.θ[1]]
-setuncertainty!(o::ODEProblem,x::AbstractVector) = o.u0[1:2]=x[1:2],o.θ[1]=x[3]
-```
-and write a general Cubature solver using multiple dispatch.
-
-Practical issues:
-- how to check bounds? (Asserts)
-- what if we provide an incompatible ODEProblem
-- define a type that specifies the type of uncertainty? 
-```julia
-struct GaussODEProblem
-  mean::ODEProblem
-  unc_in_u # any indexing type accepted by to_index()
-  unc_in_θ
-  sqΣ0
+struct CubMVGauss:<AbstractMvNormal
+   points
 end
-```
 
-We can dispatch the cubature solver on GaussODEProblem and the ordinary ``solve`` on GaussODEProblem.OP internally.
+function reshape(R::CubMVGauss) end
+function mean(R::CubMVGauss) end
+function cov(R::CubMVGauss) end
 
-```julia
-getmean(gop::GaussODEProblem) =[ gop.mean.x0[gop.unc_in_u];gop.mean.θ[gop.unc_in_θ]]
-setmean!(gop::GaussODEProblem,x::AbstractVector) = begin 
-  gop.mean.x0[gop.unc_in_u]=x[1:length(gop.unc_in_u)]
-  gop.mean.θ[gop.unc_in_θ]=x[length(gop.unc_in_u).+[1:length(gop.unc_in_θ)]] 
+
+function CubMVGauss(C::CubODEProblem)
+  CubMVNormal(ntuple(i-> C.odes[i].X0)
 end
+
 ```
 
-Constructor accepts an ODEProblem with uncertain numbers and converts it to GaussODEProblem:
-- goes through ODEProblem ``x0`` and ``θ`` fields and checks their types
-- replaces GaussNums in ODEProblem  by ordinary numbers
-- remembers indices of GaussNum in ``x0`` and ``θ``
-- copies standard deviations in GaussNum to ``sqΣ0``
