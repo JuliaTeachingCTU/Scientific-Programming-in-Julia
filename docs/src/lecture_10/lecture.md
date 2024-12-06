@@ -108,7 +108,7 @@ function juliaset_pixel(z₀, c)
     return UInt8(255)
 end
 ```
-A nice property of fractals like Julia set is that the computation can be easily paralelized, since the value of each pixel is independent from the remaining. In our experiments, the level of granulity will be one column, since calculation of single pixel is so fast, that thread or process switching will have much higher overhead.
+A nice property of fractals like Julia set is that the computation can be easily paralelized, since the value of each pixel is independent from the remaining. In our experiments, the level of granurality will be one column, since calculation of single pixel is so fast, that thread or process switching will have much higher overhead.
 ```julia
 function juliaset_column!(img, c, n, j)
     x = -2.0 + (j-1)*4.0/(n-1)
@@ -312,10 +312,15 @@ The execution time is much higher then what we have observed in the previous cas
 ```julia
 @everywhere begin 
 	function juliaset_channel_worker(instructions, results)
+		# println("worker $(myid()) has started")
 		while true
+		  # println("worker $(myid()) is waiting for instructions")
 		  c, n, cols = take!(instructions)
+		  # println("worker $(myid()) is computing results")
 		  put!(results, (cols, juliaset_columns(c, n, cols)))
+		  # println("worker $(myid()) has computed results")
 		end
+	  # println("worker $(myid()) has computed results")
 	end
 end
 
@@ -753,13 +758,12 @@ When deciding, what kind of paralelism to employ, consider following
 - `Transducers` thrives for (almost) the same code to support thread- and process-based paralelism.
 
 ### Materials
+- Complexity of thread schedulling [https://www.youtube.com/watch?v=YdiZa0Y3F3c](https://www.youtube.com/watch?v=YdiZa0Y3F3c)
+- [Malt.jl](https://github.com/JuliaPluto/Malt.jl) a library supporting process sandboxing (and killing)
 - [http://cecileane.github.io/computingtools/pages/notes1209.html](http://cecileane.github.io/computingtools/pages/notes1209.html)
 - [https://lucris.lub.lu.se/ws/portalfiles/portal/61129522/julia_parallel.pdf](https://lucris.lub.lu.se/ws/portalfiles/portal/61129522/julia_parallel.pdf)
 - [http://igoro.com/archive/gallery-of-processor-cache-effects/](http://igoro.com/archive/gallery-of-processor-cache-effects/)
 - [https://www.csd.uwo.ca/~mmorenom/cs2101a_moreno/Parallel_computing_with_Julia.pdf](https://www.csd.uwo.ca/~mmorenom/cs2101a_moreno/Parallel_computing_with_Julia.pdf)
-- Complexity of thread schedulling [https://www.youtube.com/watch?v=YdiZa0Y3F3c](https://www.youtube.com/watch?v=YdiZa0Y3F3c)
-- TapIR --- Teaching paralelism to Julia compiler [https://www.youtube.com/watch?v=-JyK5Xpk7jE](https://www.youtube.com/watch?v=-JyK5Xpk7jE)
 - Threads: [https://juliahighperformance.com/code/Chapter09.html](https://juliahighperformance.com/code/Chapter09.html)
 - Processes: [https://juliahighperformance.com/code/Chapter10.html](https://juliahighperformance.com/code/Chapter10.html)
-- Alan Adelman uses FLoops in [https://www.youtube.com/watch?v=dczkYlOM2sg](https://www.youtube.com/watch?v=dczkYlOM2sg)
 - Examples: ?Heat equation? from [https://hpc.llnl.gov/training/tutorials/](introduction-parallel-computing-tutorial#Examples(https://hpc.llnl.gov/training/tutorials/)
