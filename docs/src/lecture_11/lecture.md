@@ -35,7 +35,7 @@ for (i,j) in Iterators.Product(1:2160, 1:3840)
 	image[i,j] = compute_insity(i, j)
 end
 ```
-, where the computation of intensities `compute_insity(i, j)` does not contain many branches. As a result GPUs have been designed for massive parallelism with each core being as simple as possible, leaving all difficulties up to the programmer / compiler. An illustration of a modern gpu architecture is show on the example of NVidia's GPU.
+where the computation of intensities `compute_insity(i, j)` does not contain many branches. As a result GPUs, have been designed for massive parallelism with each core being as simple as possible, leaving all difficulties up to the programmer / compiler. An illustration of a modern gpu architecture is show on the example of NVidia's GPU.
 ![nvidia-gpu](nvidia-gpu.jpg)
 ![nvidia-gpu](nvidia-kepler.jpg)
 1. The chip contains many streaming multi-processors (SM). Normally, each streaming processor would be called core, as it is an indivisible unit, but NVidia decided to call "a core" a unit inside the streaming multi-processor performing stream of operations over a set of 32bit registers.
@@ -135,7 +135,7 @@ reduce(max, cx, dims = 1)
 ```
 Notice that in case, the function in `map` and in broadcasting is essentially a custom kernel. As such, the code within has to still obey (not precisely specified but clear for seasoned Julia programmers) rules on what can be executed as kernel. Also needless to say, that the generic `map` over `CuArray` will try to find good launch configuration (number of threads and number of blocks), which might not be an ideal for your application.
 
-An example adapted from (Tim Bessard's talk on JuliaCon 2023 in Eindhoven)[https://www.youtube.com/watch?v=Q8fj8QbVpZM]
+An example adapted from [Tim Bessard's talk on JuliaCon 2023 in Eindhoven](https://www.youtube.com/watch?v=Q8fj8QbVpZM)
 ```
 l2(x,y) = sqrt(sum((x - y) .^2))
 l2b(x,y) = sqrt(sum((x .- y) .^2))
@@ -179,8 +179,7 @@ We see that CPU version takes around 50ms with the GPU version takes about 64μs
 ```
 is about `315` μs, which still 160x faster.
 
-!!! info 
-  ### Internal profiler
+!!! info "Internal profiler"
     `CUDA.jl` offers a simple profiler which showing how much time has been spent in CPU and in GPU. This profiler is easy to use, as it is shipped with `CUDA.jl` and can be immediately used, but the provided informations are less detailed in comparison to NVIDIA's profiles shown below.
 
     The profiler can be called as
@@ -190,8 +189,7 @@ is about `315` μs, which still 160x faster.
 
 
 
-!!! info 
-	### External profilers
+!!! info "External profilers"
     Cuda offers a two profilers: NVIDIA Nsight Systems and  NVIDIA Nsight Compute. The first is good to optimize the overall execution of your application, observing when the kernel is launched, delays in kernel launch, utilization of CPU and GPU, etc. The second is good for optimizing the single kernel. Profilers are not shipped with `CUDA.jl` and you need to download them from NVidia's resources for developers [here](https://developer.nvidia.com/) after you create an account for free.
 
     To use the profiler, we need to launch julia within the profiler as for example `/opt/nvidia/nsight-systems/2021.5.1/bin/nsys launch --trace=cuda,nvtx /opt/julia-1.10.0-rc3/bin/julia --color=yes`.

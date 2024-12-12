@@ -16,6 +16,10 @@ four most important GPU vendors via four separate packages:
 
 
 !!! note
+    For some parts of this exercise, you might need an NVidia GPU. If you do not have any, download [this colab notebook](https://colab.research.google.com/drive/1klZU8dkc_TIolX_642GoMCrxm6vreb6a#scrollTo=2UMidUQB03vJ) 
+    which allows you to use NVidia GPU hosted by google. 
+
+    An introduction into GPU programming
     [ Tim Besard - GPU Programming in Julia: What, Why and How? ](https://www.youtube.com/watch?v=Q8fj8QbVpZM)
 
 
@@ -31,7 +35,7 @@ a = rand(Float32, 1024) |> MyGPUArray
 
 sin.(a) |> sum
 ```
-Based on the size of the problem and intricacy of the computation we may be achieve both incredible
+Based on the size of the problem and intricacy of the computation we may achieve both incredible
 speedups as well as slowdowns. 
 
 All four above mentioned pacakages have (almost) the same interfaces, which offer the following
@@ -101,37 +105,33 @@ CodeInfo(
 Let's now explore what the we can do with this array programming paradigm on some practical examples.
 
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Load a sufficiently large image to the GPU such as the one provided in the lab (anything >1Mpx
-should be enough) and manipulate it in the following ways:
-- create a negative
-- halve the pixel brightness
-- find the brightest pixels
+!!! warning "Exercise"
+    Load a sufficiently large image to the GPU such as the one provided in the lab (anything >1Mpx
+    should be enough) and manipulate it in the following ways:
+    - create a negative
+    - halve the pixel brightness
+    - find the brightest pixels
 
-Measure the runtime difference with `BenchmarkTools`. Load the image with the following code, which
-adds all the necessary dependencies and loads the image into Floa32 matrix.
+    Measure the runtime difference with `BenchmarkTools`. Load the image with the following code, which
+    adds all the necessary dependencies and loads the image into Floa32 matrix.
 
-```julia
-# using Pkg; 
-# Pkg.add(["FileIO", "ImageMagick", "ImageShow", "ColorTypes"])
+    ```julia
+    # using Pkg; 
+    # Pkg.add(["FileIO", "ImageMagick", "ImageShow", "ColorTypes"])
 
-# using FileIO, ImageMagick, ImageShow, ColorTypes
-#
-# rgb_img = FileIO.load("image.jpeg");
-# gray_img = Float32.(Gray.(rgb_img));
-gray_img = rand(Float32, 10000, 10000)
-cgray_img = MtlArray(gray_img)
-```
+    # using FileIO, ImageMagick, ImageShow, ColorTypes
+    #
+    # rgb_img = FileIO.load("image.jpeg");
+    # gray_img = Float32.(Gray.(rgb_img));
+    gray_img = rand(Float32, 10000, 10000)
+    cgray_img = MtlArray(gray_img)
+    ```
 
-**HINTS**:
-- use `Float32` everywhere for better performance
-- use `Metal.@sync` during benchmarking in order to ensure that the computation has completed
+    **HINTS**:
+    - use `Float32` everywhere for better performance
+    - use `Metal.@sync` during benchmarking in order to ensure that the computation has completed
 
-!!! warning "Scalar indexing"
+!!! note "Scalar indexing"
     Some operations such as showing an image calls fallback implementation which requires
     `getindex!` called from the CPU. As such it is incredibly slow and should be avoided. In order
     to show the image use `Array(cimg)` to move it as a whole. Another option is to suppress the
@@ -150,117 +150,98 @@ cgray_img = MtlArray(gray_img)
 	julia> cimg;
 	```
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
+!!! details "Summary"
+    ```julia
+    negative(i) = 1.0f0 .- i
+    darken(i) = i .* 0.5f0
+    brightest(i) = findmax(i)
+    ```
 
-```julia
-negative(i) = 1.0f0 .- i
-darken(i) = i .* 0.5f0
-brightest(i) = findmax(i)
-```
+    Benchmarking
+    ```julia
+    julia> using BenchmarkTools
 
-Benchmarking
-```julia
-julia> using BenchmarkTools
+    julia> @btime Metal.@sync negative($cgray_img);
+      53.253 ms (295 allocations: 7.68 KiB)
 
-julia> @btime Metal.@sync negative($cgray_img);
-  53.253 ms (295 allocations: 7.68 KiB)
+    julia> @btime negative($gray_img);
+      37.857 ms (2 allocations: 381.47 MiB)
 
-julia> @btime negative($gray_img);
-  37.857 ms (2 allocations: 381.47 MiB)
+    julia> @btime Metal.@sync darken($cgray_img);
+      52.056 ms (311 allocations: 7.99 KiB)
 
-julia> @btime Metal.@sync darken($cgray_img);
-  52.056 ms (311 allocations: 7.99 KiB)
+    julia> @btime darken($gray_img);
+      39.182 ms (2 allocations: 381.47 MiB)
 
-julia> @btime darken($gray_img);
-  39.182 ms (2 allocations: 381.47 MiB)
+    julia> @btime Metal.@sync brightest($cgray_img);
+      43.543 ms (1359 allocations: 34.91 KiB)
 
-julia> @btime Metal.@sync brightest($cgray_img);
-  43.543 ms (1359 allocations: 34.91 KiB)
-
-julia> @btime brightest($gray_img);
-  124.636 ms (0 allocations: 0 bytes)
-```
-
-
-```@raw html
-</p></details>
-```
+    julia> @btime brightest($gray_img);
+      124.636 ms (0 allocations: 0 bytes)
+    ```
 
 In the next example we will try to solve a system of linear equations $Ax=b$, where A is a large
 (possibly sparse) matrix.
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Benchmark the solving of the following linear system with `N` equations and `N` unknowns. Experiment
-with increasing `N` to find a value , from which the advantage of sending the matrix to GPU is
-significant (include the time of sending the data to and from the device). For the sake of this
-example significant means 2x speedup. At what point the memory requirements are incompatible with
-your hardware, i.e. exceeding the memory of a GPU?
 
-```julia
-α = 10.0f0
-β = 10.0f0
+!!! warning "Exercise"
+    Benchmark the solving of the following linear system with `N` equations and `N` unknowns. Experiment
+    with increasing `N` to find a value , from which the advantage of sending the matrix to GPU is
+    significant (include the time of sending the data to and from the device). For the sake of this
+    example significant means 2x speedup. At what point the memory requirements are incompatible with
+    your hardware, i.e. exceeding the memory of a GPU?
 
-function init(N, α, β, r = (0.f0, π/2.0f0))
-    dx = (r[2] - r[1]) / N
-    A = zeros(Float32, N+2, N+2)
-    A[1,1] = 1.0f0
-    A[end,end] = 1.0f0
-    for i in 2:N+1
-        A[i,i-1] = 1.0f0/(dx*dx)
-        A[i,i] = -2.0f0/(dx*dx) - 16.0f0
-        A[i,i+1] = 1.0f0/(dx*dx)
+    ```julia
+    α = 10.0f0
+    β = 10.0f0
+
+    function init(N, α, β, r = (0.f0, π/2.0f0))
+        dx = (r[2] - r[1]) / N
+        A = zeros(Float32, N+2, N+2)
+        A[1,1] = 1.0f0
+        A[end,end] = 1.0f0
+        for i in 2:N+1
+            A[i,i-1] = 1.0f0/(dx*dx)
+            A[i,i] = -2.0f0/(dx*dx) - 16.0f0
+            A[i,i+1] = 1.0f0/(dx*dx)
+        end
+
+        b = fill(-8.0f0, N+2)
+        b[1] = α
+        b[end] = β
+        A, b
     end
 
-    b = fill(-8.0f0, N+2)
-    b[1] = α
-    b[end] = β
-    A, b
-end
+    N = 30
+    A, b = init(N, α, β)
+    ```
 
-N = 30
-A, b = init(N, α, β)
-```
+    **HINTS**:
+    - use backslash operator `\` to solve the system
+    - use `CuArray` and `Array` for moving the date to and from device respectively
+    - use `CUDA.@sync` during benchmarking in order to ensure that the computation has completed
 
-**HINTS**:
-- use backslash operator `\` to solve the system
-- use `CuArray` and `Array` for moving the date to and from device respectively
-- use `CUDA.@sync` during benchmarking in order to ensure that the computation has completed
+    **BONUS 1**: Visualize the solution `x`. What may be the origin of our linear system of equations?
 
-**BONUS 1**: Visualize the solution `x`. What may be the origin of our linear system of equations?
-**BONUS 2**: Use sparse matrix `A` to achieve the same thing. Can we exploit the structure of the matrix for a more effective solution?
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
+    **BONUS 2**: Use sparse matrix `A` to achieve the same thing. Can we exploit the structure of the matrix for a more effective solution?
 
-```julia
-A, b = init(N, α, β)
-cA, cb = CuArray(A), CuArray(b)
-A
-b
-A\b
-cA\cb
+!!! details "Solution"
+    ```julia
+    A, b = init(N, α, β)
+    cA, cb = CuArray(A), CuArray(b)
+    A
+    b
+    A\b
+    cA\cb
 
-@btime $A \ $b;
-@btime CUDA.@sync Array(CuArray($A) \ CuArray($b));
-```
+    @btime $A \ $b;
+    @btime CUDA.@sync Array(CuArray($A) \ CuArray($b));
+    ```
 
-**BONUS 1**:
-The system comes from a solution of second order ODR with *boundary conditions*.
+    **BONUS 1**:
+    The system comes from a solution of second order ODR with *boundary conditions*.
 
-**BONUS 2**:
-The matrix is tridiagonal, therefore we don't have to store all the entries.
-```@raw html
-</p></details>
-```
+    **BONUS 2**:
+    The matrix is tridiagonal, therefore we don't have to store all the entries.
 
 Programming GPUs in this way is akin to using NumPy, MATLAB and other array based toolkits, which
 force users not to use for loops. There are attempts to make GPU programming in Julia more powerful
@@ -298,7 +279,7 @@ There are two paths that lead to the necessity of programming GPUs more directly
 2. We want to get more out of the code,
 
 Note that the ability to write kernels in the language of your choice is not granted, as this club
-includes a limited amount of members - C, C++, Fortran, Julia [^3]. Consider then the following
+includes a limited amount of members - C, C++, Fortran, Julia [^3], Python (Triton). Consider then the following
 comparison between `CUDA C` and `CUDA.jl` implementation of a simple vector addition kernels as seen
 in the [lecture](@ref gpu_lecture_yes_kernel).
 
@@ -469,24 +450,27 @@ It's important to stress that we only schedule the kernel to run, however in ord
 - `CUDA.@sync`, which we have already seen earlier
 - or a command to copy result to host (`Array(c)`), which always synchronizes kernels beforehand
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Fix the `vadd` kernel such that it can work with different launch configurations, such as
-```julia
-@cuda threads=64 blocks=2 vadd(d_a, d_b, d_c)
-@cuda threads=32 blocks=4 vadd(d_a, d_b, d_c)
-```
-Is there some performance difference? Try increasing the size and corresponding number of blocks to cover the larger arrays.
+!!! warning "Exercise"
+    Fix the `vadd` kernel such that it can work with different launch configurations, such as
+    ```julia
+    @cuda threads=64 blocks=2 vadd(d_a, d_b, d_c)
+    @cuda threads=32 blocks=4 vadd(d_a, d_b, d_c)
+    ```
+    Is there some performance difference? Try increasing the size and corresponding number of blocks to cover the larger arrays.
 
-What happens if we launch the kernel in the following way?
-```julia
-@cuda threads=32 blocks=2 vadd(d_a, d_b, d_c)
-```
+    What happens if we launch the kernel in the following way?
+    ```julia
+    @cuda threads=32 blocks=2 vadd(d_a, d_b, d_c)
+    ```
 
-Write a wrapper function `vadd_wrap(a::CuArray, b::CuArray)` for `vadd` kernel, such that it spawns the right amount of threads and returns only when the kernels has finished.
+    Write a wrapper function `vadd_wrap(a::CuArray, b::CuArray)` for `vadd` kernel, such that it spawns the right amount of threads and returns only when the kernels has finished.
+    
+    **HINTS**:
+    - if you don't know what is wrong with the current implementation just try it, but be warned that you might need to restart Julia after that
+    - don't forget to use `CUDA.@sync` when benchmarking
+    - you can inspect the kernel with analogs of `@code_warntype` ~ `@device_code_warntype @cuda vadd(d_a, d_b, d_c)`
+    - lookup `cld` function for computing the number of blocks when launching kernels on variable sized input
+
 
 !!! note "Wrapping kernels"
 	A usual patter that you will see in GPU related code is that the kernel is written inside a function
@@ -507,57 +491,43 @@ Write a wrapper function `vadd_wrap(a::CuArray, b::CuArray)` for `vadd` kernel, 
 	CUDA.maxthreads(k)
 	```
 
-**HINTS**:
-- if you don't know what is wrong with the current implementation just try it, but be warned that you might need to restart Julia after that
-- don't forget to use `CUDA.@sync` when benchmarking
-- you can inspect the kernel with analogs of `@code_warntype` ~ `@device_code_warntype @cuda vadd(d_a, d_b, d_c)`
-- lookup `cld` function for computing the number of blocks when launching kernels on variable sized input
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-In order to fix the out of bounds accesses we need to add manual bounds check, otherwise we may run into some nice Julia crashes.
-```julia
-function vadd(a, b, c)
-	i = (blockIdx().x-1) * blockDim().x + threadIdx().x
-    if i <= length(c)
-	    c[i] = a[i] + b[i]
+!!! details "Solution"
+    In order to fix the out of bounds accesses we need to add manual bounds check, otherwise we may run into some nice Julia crashes.
+    ```julia
+    function vadd(a, b, c)
+    	i = (blockIdx().x-1) * blockDim().x + threadIdx().x
+        if i <= length(c)
+    	    c[i] = a[i] + b[i]
+        end
+    	return
     end
-	return
-end
-```
+    ```
 
-Launching kernel with insufficient number of threads leads to only partial results.
-```julia
-d_c = similar(d_a)
-@cuda threads=32 blocks=2 vadd(d_a, d_b, d_c) # insufficient number of threads
-Array(d_c)
-```
+    Launching kernel with insufficient number of threads leads to only partial results.
+    ```julia
+    d_c = similar(d_a)
+    @cuda threads=32 blocks=2 vadd(d_a, d_b, d_c) # insufficient number of threads
+    Array(d_c)
+    ```
 
-Benchmarking different implementation shows that in this case running more threads per block may be beneficial, however only up to some point.
-```julia
-len = 10_000
-a = rand(Float32, len)
-b = rand(Float32, len)
-d_a = CuArray(a)
-d_b = CuArray(b)
-d_c = similar(d_a)
+    Benchmarking different implementation shows that in this case running more threads per block may be beneficial, however only up to some point.
+    ```julia
+    len = 10_000
+    a = rand(Float32, len)
+    b = rand(Float32, len)
+    d_a = CuArray(a)
+    d_b = CuArray(b)
+    d_c = similar(d_a)
 
-julia> @btime CUDA.@sync @cuda threads=256 blocks=cld(len, 256) vadd($d_a, $d_b, $d_c)
-       @btime CUDA.@sync @cuda threads=128 blocks=cld(len, 128) vadd($d_a, $d_b, $d_c)
-       @btime CUDA.@sync @cuda threads=64 blocks=cld(len, 64) vadd($d_a, $d_b, $d_c)
-       @btime CUDA.@sync @cuda threads=32 blocks=cld(len, 32) vadd($d_a, $d_b, $d_c)
-  8.447 μs (24 allocations: 1.22 KiB)
-  8.433 μs (24 allocations: 1.22 KiB)
-  8.550 μs (24 allocations: 1.22 KiB)
-  8.634 μs (24 allocations: 1.22 KiB)
-```
-
-```@raw html
-</p></details>
-```
+    julia> @btime CUDA.@sync @cuda threads=256 blocks=cld(len, 256) vadd($d_a, $d_b, $d_c)
+           @btime CUDA.@sync @cuda threads=128 blocks=cld(len, 128) vadd($d_a, $d_b, $d_c)
+           @btime CUDA.@sync @cuda threads=64 blocks=cld(len, 64) vadd($d_a, $d_b, $d_c)
+           @btime CUDA.@sync @cuda threads=32 blocks=cld(len, 32) vadd($d_a, $d_b, $d_c)
+      8.447 μs (24 allocations: 1.22 KiB)
+      8.433 μs (24 allocations: 1.22 KiB)
+      8.550 μs (24 allocations: 1.22 KiB)
+      8.634 μs (24 allocations: 1.22 KiB)
+    ```
 
 The launch configuration depends heavily on user's hardware and the actual computation in the kernel, where in some cases having more threads in a block is better (up to some point).
 
@@ -565,59 +535,46 @@ The launch configuration depends heavily on user's hardware and the actual compu
 ### Image processing with kernels
 Following up on exercise with image processing let's use kernels for some functions that cannot be easily expressed as array operations.
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Implement `translate_kernel!(output, input, translation)`, which translates an image `input` in the direction of `translation` tuple (values given in pixels). The resulting image should be stored in `output`. Fill in the empty space with zeros.
+!!! warning "Exercise"
+    Implement `translate_kernel!(output, input, translation)`, which translates an image `input` in the direction of `translation` tuple (values given in pixels). The resulting image should be stored in `output`. Fill in the empty space with zeros.
 
-**HINTS**:
-- use 2D grid of threads and blocks to simplify indexing
-- check all sides of an image for out of bounds accesses
+    **HINTS**:
+    - use 2D grid of threads and blocks to simplify indexing
+    - check all sides of an image for out of bounds accesses
 
-**BONUS**: In a similar fashion you can create `scale_kernel!`, `rotate_kernel!` for scaling and rotation of an image.
+    **BONUS**: In a similar fashion you can create `scale_kernel!`, `rotate_kernel!` for scaling and rotation of an image.
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
+!!! details "Solution"
+    ```julia
+    using CUDA
+    function translate_kernel!(output, input, translation)
+        x_idx = (blockIdx().x-1) * blockDim().x + threadIdx().x
+        y_idx = (blockIdx().y-1) * blockDim().y + threadIdx().y
 
-```julia
-using CUDA
-function translate_kernel!(output, input, translation)
-    x_idx = (blockIdx().x-1) * blockDim().x + threadIdx().x
-    y_idx = (blockIdx().y-1) * blockDim().y + threadIdx().y
+        x_outidx = x_idx + translation[1]
+        y_outidx = y_idx + translation[2]
 
-    x_outidx = x_idx + translation[1]
-    y_outidx = y_idx + translation[2]
+        if (1 <= x_outidx <= size(output,1)) && 
+            (1 <= y_outidx <= size(output,2)) && 
+            (x_idx <= size(output,1)) && (y_idx <= size(output,2))
+            output[x_outidx, y_outidx] = input[x_idx, y_idx]
+        end
 
-    if (1 <= x_outidx <= size(output,1)) && 
-        (1 <= y_outidx <= size(output,2)) && 
-        (x_idx <= size(output,1)) && (y_idx <= size(output,2))
-        output[x_outidx, y_outidx] = input[x_idx, y_idx]
+        return
     end
 
-    return
-end
+    using FileIO, ImageMagick, ImageShow, ColorTypes
+    rgb_img = FileIO.load("tape.jpeg");
+    gray_img = Float32.(Gray.(rgb_img));
+    cgray_img = CuArray(gray_img);
+    cgray_img_moved = CUDA.fill(0.0f0, size(cgray_img));
 
-using FileIO, ImageMagick, ImageShow, ColorTypes
-rgb_img = FileIO.load("tape.jpeg");
-gray_img = Float32.(Gray.(rgb_img));
-cgray_img = CuArray(gray_img);
-cgray_img_moved = CUDA.fill(0.0f0, size(cgray_img));
+    blocks = cld.((size(cgray_img,1), size(cgray_img,2)), 32)
+    @cuda threads=(32, 32) blocks=blocks translate_kernel!(cgray_img_moved, cgray_img, (100, -100))
+    Gray.(Array(cgray_img_moved))
 
-blocks = cld.((size(cgray_img,1), size(cgray_img,2)), 32)
-@cuda threads=(32, 32) blocks=blocks translate_kernel!(cgray_img_moved, cgray_img, (100, -100))
-Gray.(Array(cgray_img_moved))
-
-#@cuda threads=(64, 64) blocks=(1,1) translate_kernel!(cgray_img_moved, cgray_img, (-500, 500)) # too many threads per block (fails on some weird exception) - CUDA error: invalid argument (code 1, ERROR_INVALID_VALUE)
-```
-
-```@raw html
-</p></details>
-```
+    #@cuda threads=(64, 64) blocks=(1,1) translate_kernel!(cgray_img_moved, cgray_img, (-500, 500)) # too many threads per block (fails on some weird exception) - CUDA error: invalid argument (code 1, ERROR_INVALID_VALUE)
+    ```
 
 ### Profiling
 CUDA framework offers a wide variety of developer tooling for debugging and profiling our own kernels. In this section we will focus profiling using the Nsight Systems software that you can download after registering [here](https://developer.nvidia.com/nsight-systems). It contains both `nsys` profiler as well as `nsys-ui`GUI application for viewing the results. First we have to run `julia` using `nsys` application.
@@ -635,139 +592,114 @@ ENV["JULIA_CUDA_NSYS"] = "C:\\Program Files\\NVIDIA Corporation\\Nsight Systems 
 ```
 Now we should be ready to start profiling our kernels.
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Choose a function/kernel out of previous exercises, in order to profile it. Use the `CUDA.@profile` macro the following patter to launch profiling of a block of code with `CUDA.jl`
-```julia
-CUDA.@profile CUDA.@sync begin 
-    NVTX.@range "something" begin
-    		# run some kernel
-    end 
+!!! warning "Exercise"
+    Choose a function/kernel out of previous exercises, in order to profile it. Use the `CUDA.@profile` macro the following patter to launch profiling of a block of code with `CUDA.jl`
+    ```julia
+    CUDA.@profile CUDA.@sync begin 
+        NVTX.@range "something" begin
+        		# run some kernel
+        end 
 
-    NVTX.@range "something" begin
-    		# run some kernel
-    end 
-end
-```
-where `NVTX.@range "something"` is part of `CUDA.jl` as well and serves us to mark a piece of execution for better readability later. Inspect the result in `NSight Systems`.
+        NVTX.@range "something" begin
+        		# run some kernel
+        end 
+    end
+    ```
+    where `NVTX.@range "something"` is part of `CUDA.jl` as well and serves us to mark a piece of execution for better readability later. Inspect the result in `NSight Systems`.
 
 !!! note "Profiling overhead"
 	It is recommended to run the code twice as shown above, because the first execution with profiler almost always takes longer, even after compilation of the kernel itself. 
 
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-In order to show multiple kernels running let's demonstrate profiling of the first image processing exercise
-```julia
-CUDA.@profile CUDA.@sync begin
-    NVTX.@range "copy H2D" begin
-        rgb_img = FileIO.load("image.jpg");
-        gray_img = Float32.(Gray.(rgb_img));
-        cgray_img = CuArray(gray_img);
-    end
+!!! details "Solution"
+    In order to show multiple kernels running let's demonstrate profiling of the first image processing exercise
+    ```julia
+    CUDA.@profile CUDA.@sync begin
+        NVTX.@range "copy H2D" begin
+            rgb_img = FileIO.load("image.jpg");
+            gray_img = Float32.(Gray.(rgb_img));
+            cgray_img = CuArray(gray_img);
+        end
 
-    NVTX.@range "negative" begin 
-        negative(cgray_img);
+        NVTX.@range "negative" begin 
+            negative(cgray_img);
+        end
+        NVTX.@range "darken" begin 
+            darken(cgray_img);
+        end
+        NVTX.@range "fourier" begin 
+            fourier(cgray_img);
+        end
+        NVTX.@range "brightest" begin 
+            brightest(cgray_img);
+        end
     end
-    NVTX.@range "darken" begin 
-        darken(cgray_img);
-    end
-    NVTX.@range "fourier" begin 
-        fourier(cgray_img);
-    end
-    NVTX.@range "brightest" begin 
-        brightest(cgray_img);
-    end
-end
-```
-Running this code should create a report in the current directory with the name `report-**.***`, which we can examine in `NSight Systems`.
-
-```@raw html
-</p></details>
-```
+    ```
+    Running this code should create a report in the current directory with the name `report-**.***`, which we can examine in `NSight Systems`.
 
 ### Matrix multiplication
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
-Write a generic matrix multiplication `generic_matmatmul!(C, A, B)`, which wraps a GPU kernel inside. For simplicity assume that both `A` and `B` input matrices have only `Float32` elements. Benchmark your implementation against `CuBLAS`'s `mul!(C,A,B)`.
+!!! warning "Exercise"
+    Write a generic matrix multiplication `generic_matmatmul!(C, A, B)`, which wraps a GPU kernel inside. For simplicity assume that both `A` and `B` input matrices have only `Float32` elements. Benchmark your implementation against `CuBLAS`'s `mul!(C,A,B)`.
 
-**HINTS**:
-- use 2D blocks for easier indexing
-- import `LinearAlgebra` to be able to directly call `mul!`
-- in order to avoid a headache with the choice of launch config use the following code
-```julia
-max_threads = 256
-threads_x = min(max_threads, size(C,1))
-threads_y = min(max_threads ÷ threads_x, size(C,2))
-threads = (threads_x, threads_y)
-blocks = ceil.(Int, (size(C,1), size(C,2)) ./ threads)
-```
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-Adapted from the `CUDA.jl` source [code](https://github.com/JuliaGPU/CuArrays.jl/blob/cee6253edeca2029d8d0522a46e2cdbb638e0a50/src/matmul.jl#L4-L50).
-
-```julia
-function generic_matmatmul!(C, A, B)
-    function kernel(C, A, B)
-        i = (blockIdx().x-1) * blockDim().x + threadIdx().x
-        j = (blockIdx().y-1) * blockDim().y + threadIdx().y
-
-        if i <= size(A,1) && j <= size(B,2)
-            Ctmp = 0.0f0
-            for k in 1:size(A,2)
-                Ctmp += A[i, k]*B[k, j]
-            end
-            C[i,j] = Ctmp
-        end
-
-        return
-    end
-
+    **HINTS**:
+    - use 2D blocks for easier indexing
+    - import `LinearAlgebra` to be able to directly call `mul!`
+    - in order to avoid a headache with the choice of launch config use the following code
+    ```julia
     max_threads = 256
     threads_x = min(max_threads, size(C,1))
     threads_y = min(max_threads ÷ threads_x, size(C,2))
     threads = (threads_x, threads_y)
     blocks = ceil.(Int, (size(C,1), size(C,2)) ./ threads)
+    ```
 
-    @cuda threads=threads blocks=blocks kernel(C, A, B)
+!!! details "Solution"
+    Adapted from the `CUDA.jl` source [code](https://github.com/JuliaGPU/CuArrays.jl/blob/cee6253edeca2029d8d0522a46e2cdbb638e0a50/src/matmul.jl#L4-L50).
 
-    C
-end
+    ```julia
+    function generic_matmatmul!(C, A, B)
+        function kernel(C, A, B)
+            i = (blockIdx().x-1) * blockDim().x + threadIdx().x
+            j = (blockIdx().y-1) * blockDim().y + threadIdx().y
 
-K, L, M = 10 .* (200, 100, 50)
-A = CuArray(randn(K, L));
-B = CuArray(randn(L, M));
-C = similar(A, K, M);
+            if i <= size(A,1) && j <= size(B,2)
+                Ctmp = 0.0f0
+                for k in 1:size(A,2)
+                    Ctmp += A[i, k]*B[k, j]
+                end
+                C[i,j] = Ctmp
+            end
 
-generic_matmatmul!(C, A, B)
+            return
+        end
 
-using LinearAlgebra
-CC = similar(A, K, M)
-mul!(CC, A, B)
+        max_threads = 256
+        threads_x = min(max_threads, size(C,1))
+        threads_y = min(max_threads ÷ threads_x, size(C,2))
+        threads = (threads_x, threads_y)
+        blocks = ceil.(Int, (size(C,1), size(C,2)) ./ threads)
+
+        @cuda threads=threads blocks=blocks kernel(C, A, B)
+
+        C
+    end
+
+    K, L, M = 10 .* (200, 100, 50)
+    A = CuArray(randn(K, L));
+    B = CuArray(randn(L, M));
+    C = similar(A, K, M);
+
+    generic_matmatmul!(C, A, B)
+
+    using LinearAlgebra
+    CC = similar(A, K, M)
+    mul!(CC, A, B)
 
 
-using BenchmarkTools
-@btime CUDA.@sync generic_matmatmul!(C, A, B);
-@btime CUDA.@sync mul!(CC, A, B);
-```
-
-```@raw html
-</p></details>
-```
-
+    using BenchmarkTools
+    @btime CUDA.@sync generic_matmatmul!(C, A, B);
+    @btime CUDA.@sync mul!(CC, A, B);
+    ```
 
 ## GPU vendor agnostic code
 There is an interesting direction that is allowed with the high level abstraction of Julia -
@@ -808,20 +740,6 @@ matmul!(ag,bg,c)
 @assert a*b ≈ Matrix(c)
 ```
 
-```@raw html
-<div class="admonition is-category-exercise">
-<header class="admonition-header">Exercise</header>
-<div class="admonition-body">
-```
+!!! warning "Exercise"
+    Rewrite the `vadd` kernel with `KernelAbstractions.jl`
 
-Rewrite the `vadd` kernel with `KernelAbstractions.jl`
-
-```@raw html
-</div></div>
-<details class = "solution-body">
-<summary class = "solution-header">Solution:</summary><p>
-```
-Fill out.
-```@raw html
-</p></details>
-```

@@ -14,31 +14,12 @@ Below, we list some potential projects for inspiration.
 
 ### Lenia (Continuous Game of Life)
 [Lenia](https://chakazul.github.io/lenia.html#Code) is a continuous version of Conway's Game of
-Life. Implement a Julia version. For example, you could focus either on performance compared to the
-python version, or build nice visualizations with [Makie.jl](https://docs.makie.org/stable/).
+Life. Try to implement a Julia version and try to make it faster than python version. You can also try to build nice visualizations with [Makie.jl](https://docs.makie.org/stable/).
 
 Nice tutorial [from Conway to Lenia](https://colab.research.google.com/github/OpenLenia/Lenia-Tutorial/blob/main/Tutorial_From_Conway_to_Lenia.ipynb)
 
-### The Equation Learner And Its Symbolic Representation
-
-In many scientific and engineering one searches for interpretable (i.e.
-human-understandable) models instead of the black-box function approximators
-that neural networks provide.
-The [*equation learner*](http://proceedings.mlr.press/v80/sahoo18a.html) (EQL)
-is one approach that can identify concise equations that describe a given
-dataset.
-
-The EQL is essentially a neural network with different unary or binary
-activation functions at each individual unit. The network weights are
-regularized during training to obtain a sparse model which hopefully results in
-a model that represents a simple equation.
-
-The goal of this project is to implement the EQL, and if there is enough time
-the [*improved equation learner*](https://arxiv.org/abs/2105.06331) (iEQL).
-The equation learners should be tested on a few toy problems (possibly inspired
-by the tasks in the papers).  Finally, you will implement functionality that
-can transform the learned model into a symbolic, human readable, and executable
-Julia expression.
+### Game of Life
+Implement differentiable [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life). While the problem is in its essence discrete, there exist (a biased) approximation of the gradient explained [here](https://hardmath123.github.io/conways-gradient.html). Try to port it from Python to Julia with a nice visualization. Try to make it fast, potentially utilizing GPU.
 
 ### Architecture visualizer
 Create an extension of Flux / Lux and to visualize architecture of a neural network suitable for publication. Something akin [PlotNeuralNet](https://github.com/HarisIqbal88/PlotNeuralNet).
@@ -71,30 +52,15 @@ Implement one of the following algorithms to train neural networks in parallel. 
 
 ## Solve issues in existing projects:
 
-### Address issues in markov decision processes (Mentor: Jan Mrkos)
-
-Fix type stability issue in [MCTS.jl](https://github.com/JuliaPOMDP/MCTS.jl), prepare benchmarks,
-and evaluate the impact of the changes. Details can be found in [this
-issue](https://github.com/JuliaPOMDP/MCTS.jl/issues/59). This project will require learnind a little
-bit about Markov Decision Processes if you don't know them already.
-
-If it sounds interesting, get in touch with lecturer/lab assistant, who will connect you with Jan Mrkos.
-
-### Extend HMil library with Retentative networks (Mentor: Tomas Pevny)
-[Retentative networks](https://arxiv.org/abs/2307.08621) were recently proposed as a low-cost  alternative to Transformer models without sacrificing performance (according to authors). By implementing Retentative Networks, te HMil library will be able to learn sequences (not just sets), which might nicely extend its applicability.
-
 ### Address issues in HMil/JsonGrinder library (Mentor: Simon Mandlik)
 
-These are open source toolboxes that are used internally in Avast. Lots of general functionality is done, but some love is needed in polishing.
+These are open source toolboxes originally develuped at CTU and then made production quality in Avast Lots of general functionality is done, but there is always space for love and polishing. 
+Look at issues at [Mill.jl](https://github.com/CTUAvastLab/Mill.jl/issues) or [JsonGrinder.jl](https://github.com/CTUAvastLab/JsonGrinder.jl/issues) and solve some of them.
 
-- refactor the codebase using package extensions (e.g. for FillArrays)
-- improve compilation time (tracking down bottlenecks with SnoopCompile and using precompile directives from PrecompileTools.jl)
 
-Or study new metric learning approach on application in animation description
-- apply machine learning on slides within presentation provide by PowToon
-
-If it sounds interesting, get in touch with lecturer/lab assistant, who will connect you with Simon Mandlik.
-
+### Study porting adapting Mill.jl to GPU (Mentor: Simon Mandlik)
+[Mill.jl](https://github.com/CTUAvastLab/Mill.jl/issues) is a library which is designed to do
+machine learning over tree-structured data stored in formats like JSON, ProtoBuffer, etc. Try to port the library to run on GPU. The interesting part is schedulling, because the lowest parts can be executed in parallel. Study, if GPU scheduller will reorder operations in order this parallelization happens even though CPU code executes in depth-first order. If not, propose how to change the code.
 
 
 # Project requirements
