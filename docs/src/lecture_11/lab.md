@@ -75,8 +75,8 @@ using Metal
 x = randn(Float32, 60, 60)
 y = randn(Float32, 60, 60)
 
-mx = MtlArray(x)
-my = MtlArray(y)
+mx = CuArray(x)
+my = CuArray(y)
 
 @info "" x*y ≈ Matrix(mx*my)
 
@@ -86,7 +86,7 @@ my = MtlArray(y)
 This may not be anything remarkable, as such functionality is available in many other languages
 albeit usually with a less mathematical notation like `x.dot(y)`. With Julia's multiple dispatch, we
 can simply dispatch the multiplication operator/function `*` to a specific method that works on
-`MtlArray` type. You can check with `@code_typed`:
+`CuArray` type. You can check with `@code_typed`:
 ```julia
 julia> @code_typed mx * my
 CodeInfo(
@@ -124,7 +124,7 @@ Let's now explore what the we can do with this array programming paradigm on som
     # rgb_img = FileIO.load("image.jpeg");
     # gray_img = Float32.(Gray.(rgb_img));
     gray_img = rand(Float32, 10000, 10000)
-    cgray_img = MtlArray(gray_img)
+    cgray_img = CuArray(gray_img)
     ```
 
     **HINTS**:
@@ -222,7 +222,7 @@ In the next example we will try to solve a system of linear equations $Ax=b$, wh
 
     **BONUS 1**: Visualize the solution `x`. What may be the origin of our linear system of equations?
 
-    **BONUS 2**: Use sparse matrix `A` to achieve the same thing. Can we exploit the structure of the matrix for a more effective solution?
+    **BONUS 2**: Use sparse matrix `A` to achieve the same thing. Can we exploit the structure of the matrix for a more effective solution? Be aware though that `\` is not implemented for sparse structures by default.
 
 !!! details "Solution"
     ```julia
@@ -323,14 +323,28 @@ int main() {
 Compared to CUDA C the code is less bloated, while having the same functionality.[^4]
 ```julia
 function vadd(a, b, c)
-    # CUDA.jl
-    # i = (blockIdx().x-1) * blockDim().x + threadIdx().x
-
-    # Metal.jl
-    i = thread_position_in_grid_1d()
+    i = (blockIdx().x-1) * blockDim().x + threadIdx().x
 	c[i] = a[i] + b[i]
-
 	return
+end
+
+len = 100
+a = rand(Float32, len)
+b = rand(Float32, len)
+d_a = CuArray(a)
+d_b = CuArray(b)
+d_c = similar(d_a)
+@cuda threads = len vadd(d_a, d_b, d_c)
+c = Array(d_c)
+```
+
+In `Metal.jl` for Apple silicon
+```julia
+function vadd(a, b, c)
+    i = thread_position_in_grid_1d()
+    c[i] = a[i] + b[i]
+
+    return
 end
 
 len = 100
@@ -451,7 +465,8 @@ It's important to stress that we only schedule the kernel to run, however in ord
 - or a command to copy result to host (`Array(c)`), which always synchronizes kernels beforehand
 
 !!! warning "Exercise"
-    Fix the `vadd` kernel such that it can work with different launch configurations, such as
+    Fix the `vadd` kernel such that it can work with different launch configurations, i.e. even if the launch configuration does not correspond to the length of arrays, it will not crash.
+
     ```julia
     @cuda threads=64 blocks=2 vadd(d_a, d_b, d_c)
     @cuda threads=32 blocks=4 vadd(d_a, d_b, d_c)
@@ -732,8 +747,8 @@ end
 using Metal
 a = rand(Float32, 1000, 1000)
 b = rand(Float32, 1000, 1000)
-ag = a |> MtlArray
-bg = b |> MtlArray
+ag = a |> CuArray
+bg = b |> CuArray
 c = similar(ag)
 matmul!(ag,bg,c)
 
