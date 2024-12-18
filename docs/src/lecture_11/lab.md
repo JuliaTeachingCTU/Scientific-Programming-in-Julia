@@ -150,7 +150,7 @@ Let's now explore what the we can do with this array programming paradigm on som
 	julia> cimg;
 	```
 
-!!! details "Summary"
+!!! details "Solution"
     ```julia
     negative(i) = 1.0f0 .- i
     darken(i) = i .* 0.5f0
