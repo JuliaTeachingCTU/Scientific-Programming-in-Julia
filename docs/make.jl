@@ -74,7 +74,7 @@ makedocs(;
 )
 
 DocumenterVitepress.deploydocs(;
-    repo=Remotes.repourl(repo),
+    repo=replace(Remotes.repourl(repo), "https://" => ""),
     target=joinpath(@__DIR__, "build"),
     devbranch="2025W",
     branch="gh-pages",
