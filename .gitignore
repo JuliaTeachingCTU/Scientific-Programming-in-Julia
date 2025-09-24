@@ -14,3 +14,8 @@
 /docs/src/assets/favicon.ico
 /docs/src/assets/logo.svg
 /docs/src/assets/logo-dark.svg
+docs/node_modules/.bin/esbuild
+/docs/node_modules
+interactive_notebooks/.DS_Store
+interactive_notebooks/lab1/.DS_Store
+.DS_Store
