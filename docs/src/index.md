@@ -1,14 +1,26 @@
 ```@raw html
-<img class="docs-light-only"; src="https://raw.githubusercontent.com/JuliaTeachingCTU/JuliaCTUGraphics/master/logo/Scientific-Programming-in-Julia-logo.svg"; alt="Scientific Programming in Julia logo"; max-width: 100%; height: auto>
-<img class="docs-dark-only"; src="https://raw.githubusercontent.com/JuliaTeachingCTU/JuliaCTUGraphics/master/logo/Scientific-Programming-in-Julia-logo-dark.svg"; alt="Scientific Programming in Julia logo"; max-width: 100%; height: auto;>
-```
-
 ---
+# https://vitepress.dev/reference/default-theme-home-page
+layout: home
 
-```@setup grsetup
-using Plots
-ENV["GKSwstype"] = "100"
-gr()
+hero:
+  name: ""
+  text: "Scientific Programming in Julia"
+  image:
+    light: assets/logo.svg
+    dark: assets/logo-dark.svg
+  outline: true
+  actions:
+    - theme: brand
+      text: Lectures
+      link: /lectures/outline
+    - theme: alt
+      text: Tutorials
+      link: /tutorials/installation
+    - theme: alt
+      text: Projects
+      link: /projects/requirements
+---
 ```
 
 Scientific Programming requires the highest performance but we also want to
@@ -21,10 +33,11 @@ course we will show you how to make use of the tools and advantages that
 *jit-compiled* Julia provides over *dynamic*, high-level languages like Python
 or lower level languages like C++.
 
-
-```@raw html
+![](assets/dual.png)
+```html
+# TODO: caption for images not working
 <figure>
-  <img src="assets/dual.png"; max-width: 100%; height: auto;/>
+  <img src="./assets/dual.png"; max-width: 100%; height: auto;/>
   <figcaption>
     Wield the power of abstraction.
     Example: The essence of <a href="https://juliadiff.org/ForwardDiff.jl/dev/dev/how_it_works/">forward mode</a> automatic differentiation.
