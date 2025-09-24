@@ -75,4 +75,8 @@ makedocs(;
 
 deploydocs(;
     repo=repo,
+    target="build",
+    devbranch="main",
+    branch="gh-pages",
+    push_preview=true,
 )
