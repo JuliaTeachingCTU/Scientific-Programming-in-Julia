@@ -1,8 +1,0 @@
-name = "Ecosystem"
-uuid = "e629da61-eb5c-4a46-88f0-e08c691183e3"
-authors = ["Jan Francu <jan.francu@gmail.com>"]
-version = "0.1.0"
-
-[deps]
-EcosystemCore = "3e0d8730-8ea0-4ee2-afe6-c85384c618a2"
-StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
