@@ -7,8 +7,8 @@ hero:
   name: ""
   text: "Scientific Programming in Julia"
   image:
-    light: assets/logo.svg
-    dark: assets/logo-dark.svg
+    light: /logo.svg
+    dark: /logo-dark.svg
   outline: true
   actions:
     - theme: brand
