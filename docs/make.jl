@@ -73,10 +73,10 @@ makedocs(;
     MAKEDOCS_KWARGS...,
 )
 
-deploydocs(;
+DocumenterVitepress.deploydocs(;
     repo=repo,
-    target="build",
-    devbranch="main",
+    target=joinpath(@__DIR__, "build"),
+    devbranch="2025W",
     branch="gh-pages",
     push_preview=true,
 )
