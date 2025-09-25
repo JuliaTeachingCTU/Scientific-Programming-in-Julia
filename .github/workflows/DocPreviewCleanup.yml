@@ -30,13 +30,6 @@ jobs:
           using JSON3
           using Dates
 
-          repo = ENV["GITHUB_REPOSITORY"]
-          retention_days = 14
-
-          pr_previews = map(filter(startswith("PR"), readdir("previews"))) do dir
-              parse(Int, match(r"PR(\d*)", dir)[1])
-          end
-
           function all_prs()
               query_prs(page) = JSON3.read(HTTP.get("https://api.github.com/repos/$repo/pulls?per_page=100;page=$(page)").body)
               prs = []
@@ -49,24 +42,34 @@ jobs:
               end
               return prs
           end
-          prs = all_prs()
-          open_within_threshold = map(x -> x.number, filter(prs) do pr
-              time = DateTime(pr.updated_at[1:19], ISODateTimeFormat)
-              return pr.state == "open" && Dates.days(now() - time) <= retention_days
-          end)
 
-          stale_previews = setdiff(pr_previews, open_within_threshold)
-          @info "Found $(length(stale_previews)) stale previews"
+          repo = ENV["GITHUB_REPOSITORY"]
+          retention_days = 14
 
-          if isempty(stale_previews)
-              @info "No stale previews"
-              exit(1)
-          end
+          if isdir("previews")
+              pr_previews = map(filter(startswith("PR"), readdir("previews"))) do dir
+                  parse(Int, match(r"PR(\d*)", dir)[1])
+              end
 
-          for pr in stale_previews
-              path = joinpath("previews", "PR$pr")
-              @info "Removing $path"
-              run(`git rm -rf $path`)
+              prs = all_prs()
+              open_within_threshold = map(x -> x.number, filter(prs) do pr
+                  time = DateTime(pr.updated_at[1:19], ISODateTimeFormat)
+                  return pr.state == "open" && Dates.days(now() - time) <= retention_days
+              end)
+
+              stale_previews = setdiff(pr_previews, open_within_threshold)
+              @info "Found $(length(stale_previews)) stale previews"
+
+              if isempty(stale_previews)
+                  @info "No stale previews"
+                  exit(1)
+              end
+
+              for pr in stale_previews
+                  path = joinpath("previews", "PR$pr")
+                  @info "Removing $path"
+                  run(`git rm -rf $path`)
+              end
           end
       - name: Push changes
         run: |
