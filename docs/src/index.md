@@ -34,16 +34,6 @@ course we will show you how to make use of the tools and advantages that
 or lower level languages like C++.
 
 ![](assets/dual.png)
-```html
-# TODO: caption for images not working
-<figure>
-  <img src="./assets/dual.png"; max-width: 100%; height: auto;/>
-  <figcaption>
-    Wield the power of abstraction.
-    Example: The essence of <a href="https://juliadiff.org/ForwardDiff.jl/dev/dev/how_it_works/">forward mode</a> automatic differentiation.
-  </figcaption>
-</figure>
-```
 
 Before joining the course, consider reading the following two blog posts to figure out if Julia is
 a language in which you want to invest your time.

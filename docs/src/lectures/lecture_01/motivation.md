@@ -15,17 +15,6 @@ Key requirements for a Scientific programming language:
 2. _**Ease**_ of code reuse / code restructuring.
 
 ![](../../assets/julia-set.png)
-```html
-# TODO: caption for images not working
-<figure>
-  <img src="../../assets/julia-set.png"; max-width: 100%; height: auto;/>
-  <figcaption>
-    <a href="https://en.wikipedia.org/wiki/Julia_set">Julia set</a>.
-    Stolen from
-    <a href="https://juliagraphics.github.io/ColorSchemes.jl/stable/images/">Colorschemes.jl</a>.
-  </figcaption>
-</figure>
-```
 
 In contrast, to general-purpose language Julia has:
 
