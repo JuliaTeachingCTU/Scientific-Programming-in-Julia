@@ -51,6 +51,11 @@ pages = [
             "Lab" => "lab.md",
             "Homework" => "hw.md",
         ]),
+        "2: The power of type system & multiple dispatch" => add_prefix("lecture_02", [
+            "Lecture" => "lecture.md",
+            "Lab" => "lab.md",
+            "Homework" => "hw.md",
+        ])
     ]),
 ]
 
