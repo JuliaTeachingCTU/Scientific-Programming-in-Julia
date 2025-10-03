@@ -36,8 +36,8 @@ end
 This allows us to define functions applicable only to the corresponding type
 
 ```julia
-howl(wolf::Wolf) = println(wolf.name, " has howled.")
-baa(sheep::Sheep) = println(sheep.name, " has baaed.")
+howl(wolf::Wolf) = println(wolf.name, " the wolf has howled.")
+baa(sheep::Sheep) = println(sheep.name, " the sheep has baaed.")
 ```
 
 Therefore the compiler (or interpreter) **enforces** that a wolf can only `howl`
@@ -54,8 +54,8 @@ Notice the type of error of the latter call `baa(Wolf("Karl",3))`. Julia raises 
 For comparison, consider an alternative definition which does not have specified types
 
 ```julia
-bark(animal) = println(animal.name, " has howled.")
-baa(animal)  = println(animal.name, " has baaed.")
+bark(animal) = println(animal.name, " the wolf has howled.")
+baa(animal)  = println(animal.name, " the sheep has baaed.")
 ```
 
 in which case the burden of ensuring that a wolf will never baa rests upon the
@@ -117,6 +117,7 @@ Julia's type system is dynamic, which means that all types are resolved during r
 ```julia
 wolfpack_a =  [Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
 wolfpack_b =  Any[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
+wolfpack_c =  Union{Wolf,Sheep}[Wolf("1", 1), Wolf("2", 2), Wolf("3", 3)]
 ```
 
 `wolfpack_a` carries a type `Vector{Wolf}` while `wolfpack_b` has the type `Vector{Any}`. This means that in the first case, the compiler knows that all items are of the type `Wolf`and it can specialize functions using this information. In case of `wolfpack_b`, it does not know which animal it will encounter (although all are of the same type), and therefore it needs to dynamically resolve the type of each item upon its use. This ultimately leads to less performant code.
