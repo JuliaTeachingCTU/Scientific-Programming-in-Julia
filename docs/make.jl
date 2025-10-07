@@ -55,6 +55,11 @@ pages = [
             "Lecture" => "lecture.md",
             "Lab" => "lab.md",
             "Homework" => "hw.md",
+        ]),
+        "3: Design patterns" => add_prefix("lecture_03", [
+            "Lecture" => "lecture.md",
+            "Lab" => "lab.md",
+            "Homework" => "hw.md",
         ])
     ]),
 ]
