@@ -60,6 +60,11 @@ pages = [
             "Lecture" => "lecture.md",
             "Lab" => "lab.md",
             "Homework" => "hw.md",
+        ]),
+        "4: Package development, unit tests & CI" => add_prefix("lecture_04", [
+            "Lecture" => "lecture.md",
+            "Lab" => "lab.md",
+            "Homework" => "hw.md",
         ])
     ]),
 ]
