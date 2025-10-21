@@ -65,6 +65,11 @@ pages = [
             "Lecture" => "lecture.md",
             "Lab" => "lab.md",
             "Homework" => "hw.md",
+        ]),
+        "5: Performance benchmarking" => add_prefix("lecture_05", [
+            "Lecture" => "lecture.md",
+            "Lab" => "lab.md",
+            "Homework" => "hw.md",
         ])
     ]),
 ]
