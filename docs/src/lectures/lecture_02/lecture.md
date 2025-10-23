@@ -238,6 +238,7 @@ The main role of abstract types allows is in function definitions. They allow to
 
 ```julia
 sgn(x::Real) = x > 0 ? 1 : x < 0 ? -1 : 0
+
 ```
 
 and we know it would be correct for all real numbers. This means that if anyone creates
