@@ -50,7 +50,7 @@ pages = [
         "2: The power of type system & multiple dispatch" => "lecture_02/lecture.md",
         "3: Design patterns" => "lecture_03/lecture.md",
         "4: Package development, unit tests & CI" => "lecture_04/lecture.md",
-        "5: Performance benchmarking" => "lecture_05/lecture.mb"
+        "5: Performance benchmarking" => "lecture_05/lecture.md"
     ]),
      "Labs" => add_prefix("./lectures", [
         "Outline" => "outline.md",
