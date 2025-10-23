@@ -44,73 +44,25 @@ pages = [
             "Motivation" => "motivation.md",
             "Basics" => "basics.md",
             "Examples" => "demo.md",
-            "Lab" => "lab.md",
-            "Homework" => "hw.md",
         ]),
         "2: The power of type system & multiple dispatch" => "lecture_02/lecture.md",
         "3: Design patterns" => "lecture_03/lecture.md",
         "4: Package development, unit tests & CI" => "lecture_04/lecture.md",
         "5: Performance benchmarking" => "lecture_05/lecture.md"
     ]),
-     "Labs" => add_prefix("./lectures", [
-        "Outline" => "outline.md",
-        "1: Introduction" => add_prefix("lecture_01", [
-            "Motivation" => "motivation.md",
-            "Basics" => "basics.md",
-            "Examples" => "demo.md",
-            "Lab" => "lab.md",
-            "Homework" => "hw.md",
-        ]),
-        "2: The power of type system & multiple dispatch" => add_prefix("lecture_02", [
-            "Lecture" => "lecture.md",
-            "Lab" => "lab.md",
-            "Homework" => "hw.md",
-        ]),
-        "3: Design patterns" => add_prefix("lecture_03", [
-            "Lecture" => "lecture.md",
-            "Lab" => "lab.md",
-            "Homework" => "hw.md",
-        ]),
-        "4: Package development, unit tests & CI" => add_prefix("lecture_04", [
-            "Lecture" => "lecture.md",
-            "Lab" => "lab.md",
-            "Homework" => "hw.md",
-        ]),
-        "5: Performance benchmarking" => add_prefix("lecture_05", [
-            "Lecture" => "lecture.md",
-            "Lab" => "lab.md",
-            "Homework" => "hw.md",
-        ])
+    "Labs" => add_prefix("./lectures", [
+        "1: Introduction" => "lecture_01/lab.md"
+        "2: The power of type system & multiple dispatch" => "lecture_02/lab.md",
+        "3: Design patterns" => "lecture_03/lab.md",
+        "4: Package development, unit tests & CI" => "lecture_04/lab.md",
+        "5: Performance benchmarking" => "lecture_05/lab.md"
     ]),
-     "Homeworks" => add_prefix("./lectures", [
-        "Outline" => "outline.md",
-        "1: Introduction" => add_prefix("lecture_01", [
-            "Motivation" => "motivation.md",
-            "Basics" => "basics.md",
-            "Examples" => "demo.md",
-            "Lab" => "lab.md",
-            "Homework" => "hw.md",
-        ]),
-        "2: The power of type system & multiple dispatch" => add_prefix("lecture_02", [
-            "Lecture" => "lecture.md",
-            "Lab" => "lab.md",
-            "Homework" => "hw.md",
-        ]),
-        "3: Design patterns" => add_prefix("lecture_03", [
-            "Lecture" => "lecture.md",
-            "Lab" => "lab.md",
-            "Homework" => "hw.md",
-        ]),
-        "4: Package development, unit tests & CI" => add_prefix("lecture_04", [
-            "Lecture" => "lecture.md",
-            "Lab" => "lab.md",
-            "Homework" => "hw.md",
-        ]),
-        "5: Performance benchmarking" => add_prefix("lecture_05", [
-            "Lecture" => "lecture.md",
-            "Lab" => "lab.md",
-            "Homework" => "hw.md",
-        ])
+    "Labs" => add_prefix("./lectures", [
+        "1: Introduction" => "lecture_01/hw.md"
+        "2: The power of type system & multiple dispatch" => "lecture_02/hw.md",
+        "3: Design patterns" => "lecture_03/hw.md",
+        "4: Package development, unit tests & CI" => "lecture_04/hw.md",
+        "5: Performance benchmarking" => "lecture_05/hw.md"
     ]),
 
     "Projects" => add_prefix("./projects", [
