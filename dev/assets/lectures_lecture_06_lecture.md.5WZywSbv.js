@@ -223,7 +223,7 @@ import{_ as i,c as a,o as n,ai as e}from"./chunks/framework.BHQ3CDIQ.js";const t
 <span class="line"><span></span></span>
 <span class="line"><span>[^2]: Help: [\`Core.Expr\`](https://docs.julialang.org/en/v1/base/base/#Core.Expr)</span></span>
 <span class="line"><span></span></span>
-<span class="line"><span>::: info &quot;\`Symbol\` type&quot;</span></span>
+<span class="line"><span>::: info &quot;Symbol type&quot;</span></span>
 <span class="line"><span>	When manipulations of expressions, we encounter the term \`Symbol\`. \`Symbol\` is the smallest atom from which the program (in AST representation) is built. It is used to identify an element in the language, for example variable, keyword or function name. Symbol is not a string, since string represents itself, whereas \`Symbol\` can represent something else (a variable). An illustrative example[^3] goes as follows.</span></span>
 <span class="line"><span>	\`\`\`julia</span></span>
 <span class="line"><span>	julia&gt; eval(:foo)</span></span>
@@ -266,7 +266,7 @@ import{_ as i,c as a,o as n,ai as e}from"./chunks/framework.BHQ3CDIQ.js";const t
 <span class="line"><span></span></span>
 <span class="line"><span>[^3]: An [example](https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia) provided by Stefan Karpinski.</span></span>
 <span class="line"><span></span></span>
-<span class="line"><span>::: info &quot;\`Expr\`essions&quot;</span></span>
+<span class="line"><span>::: info &quot;Expressions&quot;</span></span>
 <span class="line"><span>	From Julia&#39;s help[^2]:</span></span>
 <span class="line"><span></span></span>
 <span class="line"><span>	\`Expr(head::Symbol, args...)\`</span></span>
