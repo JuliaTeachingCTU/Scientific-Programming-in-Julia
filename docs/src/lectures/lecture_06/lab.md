@@ -20,16 +20,16 @@ using InteractiveUtils #hide
 :([i for i in 1:10]) |> dump
 ```
 #### lowering
-```@repl lab06_intro
+```@ansi lab06_intro
 Meta.@lower debuginfo=:none [i for i in 1:10]
 ```
 #### typing
-```@repl lab06_intro
+```@ansi lab06_intro
 f() = [i for i in 1:10]
 @code_typed debuginfo=:none f()
 ```
 #### LLVM code generation
-```@repl lab06_intro
+```@ansi lab06_intro
 @code_llvm debuginfo=:none f()
 ```
 #### native code generation
