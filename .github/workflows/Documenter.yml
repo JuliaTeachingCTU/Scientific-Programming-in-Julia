@@ -45,6 +45,7 @@ jobs:
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # For authentication with SSH deploy key
           GKSwstype: "100" # for Plots.jl plots (if you have them)
           JULIA_DEBUG: "Documenter"
+          JULIA_COLORS: 0
           DATADEPS_ALWAYS_ACCEPT: true
       - name: Save Julia depot cache on cancel or failure
         id: julia-cache-save
