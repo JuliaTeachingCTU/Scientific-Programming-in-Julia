@@ -46,7 +46,7 @@ pages = [
         "2: The power of type system & multiple dispatch" => "lecture_02/lecture.md",
         "3: Design patterns" => "lecture_03/lecture.md",
         "4: Package development, unit tests & CI" => "lecture_04/lecture.md",
-        "5: Performance benchmarking" => "lecture_05/lecture.md"
+        "5: Performance benchmarking" => "lecture_05/lecture.md",
         "6: Language introspection" => "lecture_06/lecture.md"
     ]),
     "Labs" => add_prefix("./lectures", [
@@ -54,7 +54,7 @@ pages = [
         "2: The power of type system & multiple dispatch" => "lecture_02/lab.md",
         "3: Design patterns" => "lecture_03/lab.md",
         "4: Package development, unit tests & CI" => "lecture_04/lab.md",
-        "5: Performance benchmarking" => "lecture_05/lab.md"
+        "5: Performance benchmarking" => "lecture_05/lab.md",
         "6: Language introspection" => "lecture_06/lab.md"
     ]),
     "Labs" => add_prefix("./lectures", [
@@ -62,7 +62,7 @@ pages = [
         "2: The power of type system & multiple dispatch" => "lecture_02/hw.md",
         "3: Design patterns" => "lecture_03/hw.md",
         "4: Package development, unit tests & CI" => "lecture_04/hw.md",
-        "5: Performance benchmarking" => "lecture_05/hw.md"
+        "5: Performance benchmarking" => "lecture_05/hw.md",
         "6: Language introspection" => "lecture_06/hw.md"
     ]),
 
