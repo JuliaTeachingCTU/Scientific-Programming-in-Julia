@@ -35,9 +35,7 @@ end
 # pages
 pages = [
     "Home" => "index.md",
-    "Tutorials" => add_prefix("./tutorials", [
-        "Installation" => "installation.md",
-    ]),
+    "Installation" => "tutorials/installation.md",
     "Lectures" => add_prefix("./lectures", [
         "Outline" => "outline.md",
         "1: Introduction" => add_prefix("lecture_01", [
