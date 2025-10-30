@@ -57,7 +57,7 @@ pages = [
         "5: Performance benchmarking" => "lecture_05/lab.md",
         "6: Language introspection" => "lecture_06/lab.md"
     ]),
-    "Labs" => add_prefix("./lectures", [
+    "Homeworks" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/hw.md",
         "2: The power of type system & multiple dispatch" => "lecture_02/hw.md",
         "3: Design patterns" => "lecture_03/hw.md",
