@@ -174,6 +174,7 @@ or alternatively `lowered_fib = Meta.lower(@__MODULE__, parsed_fib)`.
 We can see that 
 - compiler has introduced a lot of variables 
 - `while` (and `for`) loops has been replaced by a `goto`, where `goto` can be conditional
+- From Julia 1.12, julia tags if call is dynamically resolved (goes through dynamic dispatch) `dynamic`. The code shown by `@code_lowered` is untyped, and therefore everything goes through dynamic dispatch. Once the code is typed, we will also see `intrinsic`, which are calls which are "baked" into the langauge, i.e. not defined in julia.
 
 For inserted debugging information, there is an option to pass keyword argument `debuginfo=:source`.  
 ```julia
