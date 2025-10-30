@@ -316,12 +316,12 @@ and the output is used mainly for debugging / inspection.
 ## Looking around
 Language introspection is very convenient for investigating, how things are implemented and how they are optimized / compiled to the native code.
 
-!!! note "Reminder `@which`"
+::: note "Reminder `@which`"
 	Though we have already used it quite a few times, recall the very useful macro `@which`, which identifies the concrete function called in a function call. For example `@which mapreduce(sin, +, [1,2,3,4])`. Note again that the macro here is a convenience macro to obtain types of arguments from the expression. Under the hood, it calls `InteractiveUtils.which(function_name, (Base.typesof)(args...))`. Funny enough, you can call `@which InteractiveUtils.which(+, (Base.typesof)(1,1))` to inspect, where `which` is defined.
 
     Alternatively, you can invest time in learning `Cthulhu.jl` package, which is a tool for inspecting functions called in a function. In other words it will simplify a recursive call of which when one is interested in how internals of some function are implemented.
 
-!!! note "Effect analysis"
+::: note "Effect analysis"
     The compiler is analysing the code to automatically infer some properties, which can help it to create more efficient code. This is analysis id called effect analysis and you can execute it yourself using `Base.infer_effects`. For example for our `nextfib` we obtain (on 1.11.1)
     ```julia
     julia> Base.infer_effects(nextfib, (Int,))
@@ -398,7 +398,7 @@ unstable_pack = [Wolf("1", 1), Wolf("2", 2), Sheep("3", 3)]
 @code_typed map(sound, stable_pack)
 @code_typed map(sound, unstable_pack)
 ```
-!!! info 
+::: info 
 	## Cthulhu.jl
 	`Cthulhu.jl` is a library (tool) which simplifies the above, where we want to iteratively dive into functions called in some piece of code (typically some function). `Cthulhu` is different from te normal debugger, since the debugger is executing the code, while `Cthulhu` is just lower_typing the code and presenting functions (with type of arguments inferred).
 
@@ -466,7 +466,7 @@ The parsed code `p` is of type `Expr`, which according to Julia's help[^2] is *a
 
 [^2]: Help: [`Core.Expr`](https://docs.julialang.org/en/v1/base/base/#Core.Expr)
 
-!!! info "`Symbol` type"
+::: info "`Symbol` type"
 	When manipulations of expressions, we encounter the term `Symbol`. `Symbol` is the smallest atom from which the program (in AST representation) is built. It is used to identify an element in the language, for example variable, keyword or function name. Symbol is not a string, since string represents itself, whereas `Symbol` can represent something else (a variable). An illustrative example[^3] goes as follows.
 	```julia
 	julia> eval(:foo)
@@ -509,7 +509,7 @@ The parsed code `p` is of type `Expr`, which according to Julia's help[^2] is *a
 
 [^3]: An [example](https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia) provided by Stefan Karpinski.
 
-!!! info "`Expr`essions"
+::: info "`Expr`essions"
 	From Julia's help[^2]:
 
 	`Expr(head::Symbol, args...)`
