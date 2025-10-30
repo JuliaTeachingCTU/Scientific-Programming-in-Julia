@@ -33,7 +33,7 @@ f() = [i for i in 1:10]
 @code_llvm debuginfo=:none f()
 ```
 #### native code generation
-```@repl lab06_intro
+```@ansi lab06_intro
 @code_native debuginfo=:none f()
 ```
 
@@ -124,13 +124,13 @@ In some cases the compiler uses loop unrolling[^1] optimization to speed up loop
     nothing #hide
     ```
 
-    ```@repl lab06_intro
+    ```@ansi lab06_intro
     @code_llvm debuginfo=:none polynomial(a,x)
     @code_llvm debuginfo=:none polynomial(ac,x)
     ```
 
     More than 2x speedup
-    ```@repl lab06_intro
+    ```@ansi lab06_intro
     @btime polynomial($a,$x)
     @btime polynomial($ac,$x)
     ```
@@ -201,7 +201,7 @@ Inlining[^2] is another compiler optimization that allows us to speed up the cod
     nothing #hide
     ```
 
-    ```@repl lab06_intro
+    ```@ansi lab06_intro
     @code_typed debuginfo=:none polynomial(a,x)
     ```
 
@@ -211,7 +211,7 @@ Julia is so called homoiconic language, as it allows the language to reason abou
 
 There are two easy ways to extract/construct the code structure [^5]
 - parsing code stored in string with internal `Meta.parse`
-```@repl lab06_meta
+```@ansi lab06_meta
 code_parse = Meta.parse("x = 2")    # for single line expressions (additional spaces are ignored)
 code_parse_block = Meta.parse("""
 begin
@@ -222,7 +222,7 @@ end
 """) # for multiline expressions
 ```
 - constructing an expression using `quote ... end` or simple `:()` syntax
-```@repl lab06_meta
+```@ansi lab06_meta
 code_expr = :(x = 2)    # for single line expressions (additional spaces are ignored)
 code_expr_block = quote
     x = 2
@@ -290,7 +290,7 @@ Following up on the more general substitution of variables in an expression from
     nothing #hide
     ```
     Given a function `replace_i`, which replaces variables `i` for `k` in an expression like the following
-    ```@repl lab06_meta
+    ```@ansi lab06_meta
     ex = :(i + i*i + y*i - sin(z))
     @test replace_i(ex) == :(k + k*k + y*k - sin(z))
     ```
@@ -305,12 +305,12 @@ Following up on the more general substitution of variables in an expression from
 
 !!! details
     The naive solution
-    ```@repl lab06_meta
+    ```@ansi lab06_meta
     sreplace_i(s) = replace(s, 'i' => 'k')
     @test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
     ```
     does not work in this simple case, because it will replace "i" inside the `sin(z)` expression. We can play with regular expressions to obtain something, that is more robust
-    ```@repl lab06_meta
+    ```@ansi lab06_meta
     sreplace_i(s) = replace(s, r"([^\w]|\b)i(?=[^\w]|\z)" => s"\1k")
     @test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
     ```
