@@ -124,16 +124,18 @@ In some cases the compiler uses loop unrolling[^1] optimization to speed up loop
     nothing #hide
     ```
 
-    ```@ansi lab06_intro
-    @code_llvm debuginfo=:none polynomial(a,x)
-    @code_llvm debuginfo=:none polynomial(ac,x)
-    ```
-
     More than 2x speedup
-    ```@ansi lab06_intro
+    ```@repl lab06_intro
     @btime polynomial($a,$x)
     @btime polynomial($ac,$x)
     ```
+
+```@ansi lab06_intro
+@code_llvm debuginfo=:none polynomial(a,x)
+@code_llvm debuginfo=:none polynomial(ac,x)
+```
+
+
 
 ### Recursion inlining depth
 Inlining[^2] is another compiler optimization that allows us to speed up the code by avoiding function calls. Where applicable compiler can replace `f(args)` directly with the function body of `f`, thus removing the need to modify stack to transfer the control flow to a different place. This is yet another optimization that may improve speed at the expense of binary size.
@@ -201,9 +203,9 @@ Inlining[^2] is another compiler optimization that allows us to speed up the cod
     nothing #hide
     ```
 
-    ```@ansi lab06_intro
-    @code_typed debuginfo=:none polynomial(a,x)
-    ```
+```@ansi lab06_intro
+@code_typed debuginfo=:none polynomial(a,x)
+```
 
 
 ## AST manipulation: The first steps to metaprogramming
@@ -290,7 +292,7 @@ Following up on the more general substitution of variables in an expression from
     nothing #hide
     ```
     Given a function `replace_i`, which replaces variables `i` for `k` in an expression like the following
-    ```@ansi lab06_meta
+    ```@repl lab06_meta
     ex = :(i + i*i + y*i - sin(z))
     @test replace_i(ex) == :(k + k*k + y*k - sin(z))
     ```
@@ -305,16 +307,20 @@ Following up on the more general substitution of variables in an expression from
 
 !!! details
     The naive solution
-    ```@ansi lab06_meta
+    ```@repl lab06_meta
     sreplace_i(s) = replace(s, 'i' => 'k')
-    @test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
     ```
-    does not work in this simple case, because it will replace "i" inside the `sin(z)` expression. We can play with regular expressions to obtain something, that is more robust
-    ```@ansi lab06_meta
-    sreplace_i(s) = replace(s, r"([^\w]|\b)i(?=[^\w]|\z)" => s"\1k")
-    @test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
-    ```
-    however the code may now be harder to read. Thus it is preferable to use the parsed AST when manipulating Julia's code.
+
+```@ansi lab06_meta
+@test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
+```
+does not work in this simple case, because it will replace "i" inside the `sin(z)` expression. We can play with regular expressions to obtain something, that is more robust
+
+```@ansi lab06_meta
+sreplace_i(s) = replace(s, r"([^\w]|\b)i(?=[^\w]|\z)" => s"\1k")
+@test Meta.parse(sreplace_i(s)) == replace_i(Meta.parse(s))
+```
+however the code may now be harder to read. Thus it is preferable to use the parsed AST when manipulating Julia's code.
 
 If the exercises so far did not feel very useful let's focus on one, that is similar to a part of the [`IntervalArithmetics.jl`](https://github.com/JuliaIntervals/IntervalArithmetic.jl) pkg.
 
