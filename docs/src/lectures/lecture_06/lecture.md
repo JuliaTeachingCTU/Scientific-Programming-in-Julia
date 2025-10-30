@@ -466,7 +466,7 @@ The parsed code `p` is of type `Expr`, which according to Julia's help[^2] is *a
 
 [^2]: Help: [`Core.Expr`](https://docs.julialang.org/en/v1/base/base/#Core.Expr)
 
-::: info "`Symbol` type"
+::: info "Symbol type"
 	When manipulations of expressions, we encounter the term `Symbol`. `Symbol` is the smallest atom from which the program (in AST representation) is built. It is used to identify an element in the language, for example variable, keyword or function name. Symbol is not a string, since string represents itself, whereas `Symbol` can represent something else (a variable). An illustrative example[^3] goes as follows.
 	```julia
 	julia> eval(:foo)
@@ -509,7 +509,7 @@ The parsed code `p` is of type `Expr`, which according to Julia's help[^2] is *a
 
 [^3]: An [example](https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia) provided by Stefan Karpinski.
 
-::: info "`Expr`essions"
+::: info "Expressions"
 	From Julia's help[^2]:
 
 	`Expr(head::Symbol, args...)`
