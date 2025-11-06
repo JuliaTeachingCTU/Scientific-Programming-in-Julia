@@ -48,6 +48,7 @@ pages = [
         "4: Package development, unit tests & CI" => "lecture_04/lecture.md",
         "5: Performance benchmarking" => "lecture_05/lecture.md",
         "6: Language introspection" => "lecture_06/lecture.md"
+        "7: Macros" => "lecture_07/lecture.md"
     ]),
     "Labs" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/lab.md",
@@ -56,6 +57,7 @@ pages = [
         "4: Package development, unit tests & CI" => "lecture_04/lab.md",
         "5: Performance benchmarking" => "lecture_05/lab.md",
         "6: Language introspection" => "lecture_06/lab.md"
+        "7: Macros" => "lecture_07/lab.md"
     ]),
     "Homeworks" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/hw.md",
@@ -64,6 +66,7 @@ pages = [
         "4: Package development, unit tests & CI" => "lecture_04/hw.md",
         "5: Performance benchmarking" => "lecture_05/hw.md",
         "6: Language introspection" => "lecture_06/hw.md"
+        "7: Macros" => "lecture_07/hw.md"
     ]),
 
     "Projects" => add_prefix("./projects", [
