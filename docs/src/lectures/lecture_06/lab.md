@@ -71,17 +71,17 @@ We will start with a question: Can we spot internally some difference between ty
 
 !!! details
     ```julia
-    @code_warntype explicit_sum(x)
-    @code_warntype implicit_sum()
+    @code_warntype explicit_len(x)
+    @code_warntype implicit_len()
 
-    @code_typed debuginfo=:none explicit_sum(x)
-    @code_typed debuginfo=:none implicit_sum()
+    @code_typed debuginfo=:none explicit_len(x)
+    @code_typed debuginfo=:none implicit_len()
 
-    @code_llvm debuginfo=:none explicit_sum(x)
-    @code_llvm debuginfo=:none implicit_sum()
+    @code_llvm debuginfo=:none explicit_len(x)
+    @code_llvm debuginfo=:none implicit_len()
 
-    @code_native debuginfo=:none explicit_sum(x)
-    @code_native debuginfo=:none implicit_sum()
+    @code_native debuginfo=:none explicit_len(x)
+    @code_native debuginfo=:none implicit_len()
     ```
 
     In this case we see that the generated code for such a simple operation is much longer in the type unstable case resulting in longer run times. However in the next example we will see that having longer code is not always a bad thing.
@@ -155,6 +155,13 @@ Inlining[^2] is another compiler optimization that allows us to speed up the cod
     end
     ```
 
+    **HINTS**:
+    - define two methods `_polynomial!(ac, x, a...)` and `_polynomial!(ac, x, a)` for the case of ≥2 coefficients and the last coefficient
+    - use splatting together with range indexing `a[1:end-1]...`
+    - the correctness can be checked using the built-in `evalpoly`
+    - recall that these kind of optimization are possible just around the type inference stage
+    - use container of known length to store the coefficients
+
     !!! info "Splatting/slurping operator `...`"
         The operator `...` serves two purposes inside function calls [^3][^4]:
         - combines multiple arguments into one
@@ -180,12 +187,6 @@ Inlining[^2] is another compiler optimization that allows us to speed up the cod
         [^3]: [https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?](https://docs.julialang.org/en/v1/manual/faq/#What-does-the-...-operator-do?)
         [^4]: [https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions](https://docs.julialang.org/en/v1/manual/functions/#Varargs-Functions)
 
-    **HINTS**:
-    - define two methods `_polynomial!(ac, x, a...)` and `_polynomial!(ac, x, a)` for the case of ≥2 coefficients and the last coefficient
-    - use splatting together with range indexing `a[1:end-1]...`
-    - the correctness can be checked using the built-in `evalpoly`
-    - recall that these kind of optimization are possible just around the type inference stage
-    - use container of known length to store the coefficients
 
 !!! details
     ```@example lab06_intro
