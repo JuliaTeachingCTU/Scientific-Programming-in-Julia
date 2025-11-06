@@ -89,6 +89,7 @@ CodeInfo(
     0
     ```
 
+:::
 
 Macros are quite tricky to debug. Macro `@macroexpand` allows to observe the expansion of macros. Observe the effect as
 ```julia
@@ -233,6 +234,7 @@ The error code snippet errors telling us that the expression `"$"` is outside of
     end
     ```
     or `@benchmark` support interpolation of values. This interpolation needs to be handled by the logic of the macro and is not automatically handled by Julia language.
+:::
 
 Macros do not know about runtime values, they only know about syntax trees. When a macro receives an expression with a `$x` in it, it can't interpolate the value of x into the syntax tree because it reads the syntax tree before `x` ever has a value! 
 
@@ -250,6 +252,7 @@ Instead, when a macro is given an expression with `$` in it, it assumes you're g
 	filename = "/tmp/test_of_interpolation"
 	run(`touch $(filename)`)
 	```
+:::
 
 ## [Macro hygiene](@id lec7_hygiene)
 Macro hygiene is a term coined in 1986 addressing the following problem: if you're automatically generating code, it's possible that you will introduce variable names in your generated code that will clash with existing variable names in the scope in which a macro is called. These clashes might cause your generated code to read from or write to variables that you should not be interacting with. A macro is hygienic when it does not interact with existing variables, which means that when macro is evaluated, it should not have any effect on the surrounding code. 
@@ -475,7 +478,7 @@ module Exfiltrator
 const environment = Dict{Symbol, Any}()
 
 function copy_variables!(d::Dict)
-	foreach(k -> delete!(environment, k), keys(environment))
+	empty!(environment)
 	for (k, v) in d
 		environment[k] = v
 	end
