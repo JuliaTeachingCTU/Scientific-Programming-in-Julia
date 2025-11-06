@@ -251,7 +251,7 @@ run(`touch $(filename)`)
 ```
 :::
 
-## [Macro hygiene](@id lec7_hygiene)
+## Macro hygiene
 Macro hygiene is a term coined in 1986 addressing the following problem: if you're automatically generating code, it's possible that you will introduce variable names in your generated code that will clash with existing variable names in the scope in which a macro is called. These clashes might cause your generated code to read from or write to variables that you should not be interacting with. A macro is hygienic when it does not interact with existing variables, which means that when macro is evaluated, it should not have any effect on the surrounding code. 
 
 By default, all macros in Julia are hygienic which means that variables introduced in the macro have automatically generated names, where Julia ensures they will not collide with user's variable. These variables are created by `gensym` function / macro. 
