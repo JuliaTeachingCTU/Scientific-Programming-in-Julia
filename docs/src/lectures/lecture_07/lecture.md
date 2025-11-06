@@ -75,20 +75,19 @@ CodeInfo(
 ```
 
 ::: info Scope of eval
-    `eval` function is always evaluated in the global scope of the `Module` in which it is called (note that there is that by default you operate in the `Main` module). Moreover, `eval` takes effect **after** the function has been has been executed. This can be demonstrated as 
-    ```julia
-    add1(x) = x + 1
-    function redefine_add(x)
-        eval(:(add1(x) = x - 1))
-        add1(x)
-    end
-    julia> redefine_add(1)
-    2
-    
-    julia> redefine_add(1)
-    0
-    ```
+`eval` function is always evaluated in the global scope of the `Module` in which it is called (note that there is that by default you operate in the `Main` module). Moreover, `eval` takes effect **after** the function has been has been executed. This can be demonstrated as 
+```julia
+add1(x) = x + 1
+function redefine_add(x)
+    eval(:(add1(x) = x - 1))
+    add1(x)
+end
+julia> redefine_add(1)
+2
 
+julia> redefine_add(1)
+0
+```
 :::
 
 Macros are quite tricky to debug. Macro `@macroexpand` allows to observe the expansion of macros. Observe the effect as
@@ -103,7 +102,6 @@ function cosp2(x)
 	@replace_sin 2 + sin(x)
 end
 ```
-
 First, Julia parses the code into the AST as
 ```julia
 ex = Meta.parse("""
