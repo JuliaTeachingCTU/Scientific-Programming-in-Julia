@@ -74,22 +74,21 @@ CodeInfo(
 )
 ```
 
-::: info 
-    ### Scope of eval
-    `eval` function is always evaluated in the global scope of the `Module` in which the macro is called (note that there is that by default you operate in the `Main` module). Moreover, `eval` takes effect **after** the function has been has been executed. This can be demonstrated as 
-    ```julia
-    add1(x) = x + 1
-    function redefine_add(x)
-        eval(:(add1(x) = x - 1))
-        add1(x)
-    end
-    julia> redefine_add(1)
-    2
-    
-    julia> redefine_add(1)
-    0
-    
-    ```
+::: info Scope of eval
+`eval` function is always evaluated in the global scope of the `Module` in which it is called (note that there is that by default you operate in the `Main` module). Moreover, `eval` takes effect **after** the function has been has been executed. This can be demonstrated as 
+```julia
+add1(x) = x + 1
+function redefine_add(x)
+    eval(:(add1(x) = x - 1))
+    add1(x)
+end
+julia> redefine_add(1)
+2
+
+julia> redefine_add(1)
+0
+```
+:::
 
 Macros are quite tricky to debug. Macro `@macroexpand` allows to observe the expansion of macros. Observe the effect as
 ```julia
@@ -103,7 +102,6 @@ function cosp2(x)
 	@replace_sin 2 + sin(x)
 end
 ```
-
 First, Julia parses the code into the AST as
 ```julia
 ex = Meta.parse("""
@@ -160,7 +158,6 @@ end
 @showarg 1 + 1  1 + 3
 ```
 (the `@showarg(1 + 1, :x)` raises an error, since `:(:x)` is of Type `QuoteNode`). 
-
 
 Observe that macro dispatch is based on the types of AST that are handed to the macro, not the types that the AST evaluates to at runtime.
 
@@ -228,44 +225,44 @@ end
 The error code snippet errors telling us that the expression `"$"` is outside of a quote block. This is because the macro `@no_quote` has returned a block with `$` occuring outside of `quote` or string definition.
 
 ::: info
-    Some macros like `@eval` (recall last example)
-    ```julia
-    for f in [:setindex!, :getindex, :size, :length]
-        @eval $(f)(A::MyMatrix, args...) = $(f)(A.x, args...)
-    end
-    ```
-    or `@benchmark` support interpolation of values. This interpolation needs to be handled by the logic of the macro and is not automatically handled by Julia language.
+Some macros like `@eval` (recall last example)
+```julia
+for f in [:setindex!, :getindex, :size, :length]
+    @eval $(f)(A::MyMatrix, args...) = $(f)(A.x, args...)
+end
+```
+or `@benchmark` support interpolation of values. This interpolation needs to be handled by the logic of the macro and is not automatically handled by Julia language.
+:::
 
 Macros do not know about runtime values, they only know about syntax trees. When a macro receives an expression with a `$x` in it, it can't interpolate the value of x into the syntax tree because it reads the syntax tree before `x` ever has a value! 
 
 Instead, when a macro is given an expression with `$` in it, it assumes you're going to give your own meaning to `$x`. In the case of BenchmarkTools.jl they return code that has to wait until runtime to receive the value of `x` and then splice that value into an expression which is evaluated and benchmarked. Nowhere in the actual body of the macro do they have access to the value of `x` though.
 
 
-::: info 
-	### Why `$` for interpolation?
-	The `$` string for interpolation was used as it identifies the interpolation inside the string and inside the command. For example
-	```julia
-	a = 5
-	s = "a = $(a)"
-	typoef(s)
-	println(s)
-	filename = "/tmp/test_of_interpolation"
-	run(`touch $(filename)`)
-	```
+::: info Why `$` for interpolation?
+The `$` string for interpolation was used as it identifies the interpolation inside the string and inside the command. For example
+```julia
+a = 5
+s = "a = $(a)"
+typoef(s)
+println(s)
+filename = "/tmp/test_of_interpolation"
+run(`touch $(filename)`)
+```
+:::
 
-## [Macro hygiene](@id lec7_hygiene)
+## Macro hygiene
 Macro hygiene is a term coined in 1986 addressing the following problem: if you're automatically generating code, it's possible that you will introduce variable names in your generated code that will clash with existing variable names in the scope in which a macro is called. These clashes might cause your generated code to read from or write to variables that you should not be interacting with. A macro is hygienic when it does not interact with existing variables, which means that when macro is evaluated, it should not have any effect on the surrounding code. 
 
 By default, all macros in Julia are hygienic which means that variables introduced in the macro have automatically generated names, where Julia ensures they will not collide with user's variable. These variables are created by `gensym` function / macro. 
 
-::: info 
-    ### gensym
-    
-    `gensym([tag])` Generates a symbol which will not conflict with other variable names.
-    ```julia
-    julia> gensym("hello")
-    Symbol("##hello#257")
-    ```
+::: info gensym
+`gensym([tag])` Generates a symbol which will not conflict with other variable names.
+```julia
+julia> gensym("hello")
+Symbol("##hello#257")
+```
+:::
 
 Let's demonstrate it on our own version of an macro `@elapsed` which will return the time that was needed to evaluate the block of code.
 ```julia
@@ -477,7 +474,7 @@ module Exfiltrator
 const environment = Dict{Symbol, Any}()
 
 function copy_variables!(d::Dict)
-	foreach(k -> delete!(environment, k), keys(environment))
+	empty!(environment)
 	for (k, v) in d
 		environment[k] = v
 	end

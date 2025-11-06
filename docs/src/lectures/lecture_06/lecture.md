@@ -318,17 +318,19 @@ and the output is used mainly for debugging / inspection.
 Language introspection is very convenient for investigating, how things are implemented and how they are optimized / compiled to the native code.
 
 ::: note "Reminder `@which`"
-	Though we have already used it quite a few times, recall the very useful macro `@which`, which identifies the concrete function called in a function call. For example `@which mapreduce(sin, +, [1,2,3,4])`. Note again that the macro here is a convenience macro to obtain types of arguments from the expression. Under the hood, it calls `InteractiveUtils.which(function_name, (Base.typesof)(args...))`. Funny enough, you can call `@which InteractiveUtils.which(+, (Base.typesof)(1,1))` to inspect, where `which` is defined.
+Though we have already used it quite a few times, recall the very useful macro `@which`, which identifies the concrete function called in a function call. For example `@which mapreduce(sin, +, [1,2,3,4])`. Note again that the macro here is a convenience macro to obtain types of arguments from the expression. Under the hood, it calls `InteractiveUtils.which(function_name, (Base.typesof)(args...))`. Funny enough, you can call `@which InteractiveUtils.which(+, (Base.typesof)(1,1))` to inspect, where `which` is defined.
 
-    Alternatively, you can invest time in learning `Cthulhu.jl` package, which is a tool for inspecting functions called in a function. In other words it will simplify a recursive call of which when one is interested in how internals of some function are implemented.
+Alternatively, you can invest time in learning `Cthulhu.jl` package, which is a tool for inspecting functions called in a function. In other words it will simplify a recursive call of which when one is interested in how internals of some function are implemented.
+:::
 
 ::: note "Effect analysis"
-    The compiler is analysing the code to automatically infer some properties, which can help it to create more efficient code. This is analysis id called effect analysis and you can execute it yourself using `Base.infer_effects`. For example for our `nextfib` we obtain (on 1.11.1)
-    ```julia
-    julia> Base.infer_effects(nextfib, (Int,))
-    (+c,+e,+n,!t,+s,+m,+u,+o,+r)
-    ```
-    See the documentation for (Base.@assume_effects)[https://docs.julialang.org/en/v1/base/base/#Base.@assume_effects] for details of individual fields.
+The compiler is analysing the code to automatically infer some properties, which can help it to create more efficient code. This is analysis id called effect analysis and you can execute it yourself using `Base.infer_effects`. For example for our `nextfib` we obtain (on 1.11.1)
+```julia
+julia> Base.infer_effects(nextfib, (Int,))
+(+c,+e,+n,!t,+s,+m,+u,+o,+r)
+```
+See the documentation for (Base.@assume_effects)[https://docs.julialang.org/en/v1/base/base/#Base.@assume_effects] for details of individual fields.
+:::
 
 ### Broadcasting
 Broadcasting is not a unique concept in programming languages (Python/Numpy, MATLAB), however its implementation in Julia allows to easily fuse operations. For example 
@@ -399,9 +401,9 @@ unstable_pack = [Wolf("1", 1), Wolf("2", 2), Sheep("3", 3)]
 @code_typed map(sound, stable_pack)
 @code_typed map(sound, unstable_pack)
 ```
-::: info 
-	## Cthulhu.jl
-	`Cthulhu.jl` is a library (tool) which simplifies the above, where we want to iteratively dive into functions called in some piece of code (typically some function). `Cthulhu` is different from te normal debugger, since the debugger is executing the code, while `Cthulhu` is just lower_typing the code and presenting functions (with type of arguments inferred).
+::: info Cthulhu.jl
+`Cthulhu.jl` is a library (tool) which simplifies the above, where we want to iteratively dive into functions called in some piece of code (typically some function). `Cthulhu` is different from te normal debugger, since the debugger is executing the code, while `Cthulhu` is just lower_typing the code and presenting functions (with type of arguments inferred).
+:::
 
 ```julia
 using Cthulhu
@@ -468,57 +470,59 @@ The parsed code `p` is of type `Expr`, which according to Julia's help[^2] is *a
 [^2]: Help: [`Core.Expr`](https://docs.julialang.org/en/v1/base/base/#Core.Expr)
 
 ::: info "Symbol type"
-	When manipulations of expressions, we encounter the term `Symbol`. `Symbol` is the smallest atom from which the program (in AST representation) is built. It is used to identify an element in the language, for example variable, keyword or function name. Symbol is not a string, since string represents itself, whereas `Symbol` can represent something else (a variable). An illustrative example[^3] goes as follows.
-	```julia
-	julia> eval(:foo)
-	ERROR: foo not defined
+When manipulations of expressions, we encounter the term `Symbol`. `Symbol` is the smallest atom from which the program (in AST representation) is built. It is used to identify an element in the language, for example variable, keyword or function name. Symbol is not a string, since string represents itself, whereas `Symbol` can represent something else (a variable). An illustrative example[^3] goes as follows.
+```julia
+julia> eval(:foo)
+ERROR: foo not defined
 
-	julia> foo = "hello"
-	"hello"
+julia> foo = "hello"
+"hello"
 
-	julia> eval(:foo)
-	"hello"
+julia> eval(:foo)
+"hello"
 
-	julia> eval("foo")
-	"foo"
-	```
-	which shows that what the symbol `:foo` evaluates to depends on what – if anything – the variable `foo` is bound to, whereas "foo" always just evaluates to "foo".
+julia> eval("foo")
+"foo"
+```
+which shows that what the symbol `:foo` evaluates to depends on what – if anything – the variable `foo` is bound to, whereas "foo" always just evaluates to "foo".
 
-	Symbols can be constructed either by prepending any string with `:` or by calling `Symbol(...)`, which concatenates the arguments and create the symbol out of it. All of the following are symbols
-	```julia
-	julia> :+
-	:+
+Symbols can be constructed either by prepending any string with `:` or by calling `Symbol(...)`, which concatenates the arguments and create the symbol out of it. All of the following are symbols
+```julia
+julia> :+
+:+
 
-	julia> :function
-	:function
+julia> :function
+:function
 
-	julia> :call
-	:call
+julia> :call
+:call
 
-	julia> :x
-	:x
+julia> :x
+:x
 
-	julia> Symbol(:Very,"_twisted_",:symbol,"_definition")
-	:Very_twisted_symbol_definition
+julia> Symbol(:Very,"_twisted_",:symbol,"_definition")
+:Very_twisted_symbol_definition
 
-	julia> Symbol("Symbol with blanks")
-	Symbol("Symbol with blanks")
-	```
-	Symbols therefore allows us to operate with a piece of code without evaluating it.
+julia> Symbol("Symbol with blanks")
+Symbol("Symbol with blanks")
+```
+Symbols therefore allows us to operate with a piece of code without evaluating it.
 
-	In Julia, symbols are "interned strings", which means that compiler attaches each string a unique identifier (integer), such that it can quickly compare them. Compiler uses Symbols exclusively and the important feature is that they can be quickly compared. This is why people like to use them as keys in `Dict`.
+In Julia, symbols are "interned strings", which means that compiler attaches each string a unique identifier (integer), such that it can quickly compare them. Compiler uses Symbols exclusively and the important feature is that they can be quickly compared. This is why people like to use them as keys in `Dict`.
+:::
 
 [^3]: An [example](https://stackoverflow.com/questions/23480722/what-is-a-symbol-in-julia) provided by Stefan Karpinski.
 
 ::: info "Expressions"
-	From Julia's help[^2]:
+From Julia's help[^2]:
 
-	`Expr(head::Symbol, args...)`
+`Expr(head::Symbol, args...)`
 
-	A type representing compound expressions in parsed julia code (ASTs). Each expression consists of a head `Symbol` identifying which kind of expression it is (e.g. a call, for loop, conditional statement, etc.), and subexpressions (e.g. the arguments of a call).
-	The subexpressions are stored in a `Vector{Any}` field called args. 
+A type representing compound expressions in parsed julia code (ASTs). Each expression consists of a head `Symbol` identifying which kind of expression it is (e.g. a call, for loop, conditional statement, etc.), and subexpressions (e.g. the arguments of a call).
+The subexpressions are stored in a `Vector{Any}` field called args. 
 
-	The expression is simple yet very flexible. The head `Symbol` tells how the expression should be treated and arguments provide all needed parameters. Notice that the structure is also type-unstable. This is not a big deal, since the expression is used to generate code, hence it is not executed repeatedly.
+The expression is simple yet very flexible. The head `Symbol` tells how the expression should be treated and arguments provide all needed parameters. Notice that the structure is also type-unstable. This is not a big deal, since the expression is used to generate code, hence it is not executed repeatedly.
+:::
 
 ## Construct code from scratch
 Since `Expr` is a Julia structure, we can construct it manually as we can construct any other structure
