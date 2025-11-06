@@ -74,8 +74,7 @@ CodeInfo(
 )
 ```
 
-::: info 
-    ### Scope of eval
+::: info Scope of eval
     `eval` function is always evaluated in the global scope of the `Module` in which the macro is called (note that there is that by default you operate in the `Main` module). Moreover, `eval` takes effect **after** the function has been has been executed. This can be demonstrated as 
     ```julia
     add1(x) = x + 1
