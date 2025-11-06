@@ -75,7 +75,7 @@ CodeInfo(
 ```
 
 ::: info Scope of eval
-    `eval` function is always evaluated in the global scope of the `Module` in which the macro is called (note that there is that by default you operate in the `Main` module). Moreover, `eval` takes effect **after** the function has been has been executed. This can be demonstrated as 
+    `eval` function is always evaluated in the global scope of the `Module` in which it is called (note that there is that by default you operate in the `Main` module). Moreover, `eval` takes effect **after** the function has been has been executed. This can be demonstrated as 
     ```julia
     add1(x) = x + 1
     function redefine_add(x)
@@ -87,8 +87,8 @@ CodeInfo(
     
     julia> redefine_add(1)
     0
-    
     ```
+
 
 Macros are quite tricky to debug. Macro `@macroexpand` allows to observe the expansion of macros. Observe the effect as
 ```julia
@@ -159,7 +159,6 @@ end
 @showarg 1 + 1  1 + 3
 ```
 (the `@showarg(1 + 1, :x)` raises an error, since `:(:x)` is of Type `QuoteNode`). 
-
 
 Observe that macro dispatch is based on the types of AST that are handed to the macro, not the types that the AST evaluates to at runtime.
 
