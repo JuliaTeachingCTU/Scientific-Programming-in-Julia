@@ -66,7 +66,6 @@ end
 
 We can remove this boilerplate code by creating a very simple macro that does this for us.
 !!! warning "Exercise"
-    ```
     Define macro `@repeat` that takes two arguments, first one being the number of times a code is to be run and the other being the actual code.
     ```julia
     julia> @repeat 3 println("Hello!")
