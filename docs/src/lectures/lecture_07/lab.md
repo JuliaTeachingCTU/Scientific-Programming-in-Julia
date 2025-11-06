@@ -65,7 +65,7 @@ end
 ```
 
 We can remove this boilerplate code by creating a very simple macro that does this for us.
-::: warning "Exercise"
+!!! warning "Exercise"
     ```
     Define macro `@repeat` that takes two arguments, first one being the number of times a code is to be run and the other being the actual code.
     ```julia
@@ -88,7 +88,7 @@ We can remove this boilerplate code by creating a very simple macro that does th
     What happens if we call `@repeat 3 x = 2`? Is `x` defined?
 
 
-::: details
+!!! details
     ```@repl lab07_repeat
     macro repeat(n::Int, ex)
         return _repeat(n, ex)
@@ -125,7 +125,7 @@ p = @poly 3 2 10
 p(2)
 ```
 
-::: warning "Exercise"
+!!! warning "Exercise"
     Create macro `@poly` that takes multiple arguments and creates an anonymous function that constructs the unrolled code. Instead of directly defining the macro inside the macro body, create helper function `_poly` with the same signature that can be reused outside of it.
 
     Recall Horner's method polynomial evaluation from previous [labs](@ref horner):
@@ -154,7 +154,7 @@ p(2)
 
 [^1]: Explanation of the Horner schema can be found on [https://en.wikipedia.org/wiki/Horner%27s\_method](https://en.wikipedia.org/wiki/Horner%27s_method).
 
-::: details
+!!! details
     ```@repl lab07_poly
     using InteractiveUtils #hide
     macro poly(a...)
@@ -177,7 +177,7 @@ p(2)
 
 Moving on to the first/harder case, where we need to parse the mathematical expression.
 
-::: warning "Exercise"
+!!! warning "Exercise"
     Create macro `@poly` that takes two arguments first one being the independent variable and second one being the polynomial written in mathematical notation. As in the previous case this macro should define an anonymous function that constructs the unrolled code. 
     ```julia
     julia> p = @poly x 3x^2+2x^1+10x^0  # the first argument being the independent variable to match
@@ -190,7 +190,7 @@ Moving on to the first/harder case, where we need to parse the mathematical expr
         1. get maximal rank of the polynomial
         2. get coefficient for each power
 
-    ::: note "`MacroTools.jl`"
+    !!! note "`MacroTools.jl`"
         Though not the most intuitive, [`MacroTools.jl`](https://fluxml.ai/MacroTools.jl/stable/) pkg help us with writing custom macros. We will use two utilities
         #### `@capture`
         This macro is used to match a pattern in a *single* expression and return values of particular spots. For example
@@ -221,7 +221,7 @@ Moving on to the first/harder case, where we need to parse the mathematical expr
         Note that the `x` or the iteration is required, because by default postwalk/prewalk replaces currently read expression with the output of the body of `do` block.
 
 
-::: details
+!!! details
     ```@example lab07_poly
     using MacroTools
     using MacroTools: postwalk, prewalk
@@ -314,7 +314,7 @@ Our goal is to be able to define new plants and animal species, while having a c
 ```
 Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already contains some definitions of species such as `Sheep`, `Wolf` and `Mushroom`, which may collide with definitions during prototyping, therefore we have created a modified version of those pkgs, which will be provided in the lab.
 
-::: note "Testing relations"
+!!! note "Testing relations"
     We can test the current definition with the following code that constructs "eating matrix"
     ```julia
     using Ecosystem
@@ -350,7 +350,7 @@ Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already co
      🐑  ❌  ❌  ✅  ✅
      🐺  ✅  ❌  ❌  ❌
     ```
-::: warning "Exercise"
+!!! warning "Exercise"
     Based on the following example syntax, 
     ```julia
     @species Plant Broccoli 🥦
@@ -368,7 +368,7 @@ Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already co
     _species(:Animal, :Rabbit, :🐇)
     ```
 
-::: warning "Exercise"
+!!! warning "Exercise"
     Based on the following example syntax, 
     ```julia
     @species Plant Broccoli 🥦
@@ -396,7 +396,7 @@ Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already co
     **BONUS**:
     Based on `@species` define also macros `@animal` and `@plant` with two arguments instead of three, where the species type is implicitly carried in the macro's name.
 
-::: details
+!!! details
     Macro `@species`
     ```julia
     macro species(typ, name, icon)
@@ -428,7 +428,7 @@ Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already co
 
 The next exercise applies macros to the agents eating behavior.
 
-::: warning "Exercise"
+!!! warning "Exercise"
     Define macro `@eats` inside `Ecosystem` pkg that assigns particular species their eating habits via `eat!` and `eats` functions. The macro should process the following example syntax
     ```julia
     @eats Rabbit [Grass => 0.5, Broccoli => 1.0],
@@ -441,7 +441,7 @@ The next exercise applies macros to the agents eating behavior.
     - you can create an empty `quote end` block with `code = Expr(:block)` and push new expressions into its `args` incrementally
     - use dispatch to create specific code for the different combinations of agents eating other agents (there may be catch in that we have to first `eval` the symbols before calling in order to know if they are animals or plants)
 
-    ::: note "Reminder of `EcosystemCore` `eat!` and `eats` functionality"
+    !!! note "Reminder of `EcosystemCore` `eat!` and `eats` functionality"
         In order to define that an `Wolf` eats `Sheep`, we have to define two methods
         ```
         EcosystemCore.eats(::Animal{Wolf}, ::Animal{Sheep}) = true
@@ -464,7 +464,7 @@ The next exercise applies macros to the agents eating behavior.
 **BONUS**:
 You can try running the simulation with the newly added agents.
 
-::: details
+!!! details
     ```julia
     macro eats(species::Symbol, foodlist::Expr)
         return esc(_eats(species, foodlist))
