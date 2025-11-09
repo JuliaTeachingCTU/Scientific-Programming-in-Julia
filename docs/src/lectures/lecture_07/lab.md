@@ -50,7 +50,7 @@ In this "simple" example, we had to use the following concepts mentioned already
 - `local value = ` is used in order to return back the result after evaluation
 
 Lastly, let's mention that we can use `@macroexpand` to see how the code is manipulated in the `@myshow` macro
-```@repl lab07_show
+```@ansi lab07_show
 @macroexpand @show x + 1
 ```
 
@@ -104,7 +104,7 @@ We can remove this boilerplate code by creating a very simple macro that does th
     ```
     Even if we had used escaping the expression `x = 2` won't get evaluated properly due to the induced scope of the for loop. In order to resolve this we would have to specially match that kind of expression and generate a proper syntax withing the for loop `global $ex`. However we may just warn the user in the docstring that the usage is disallowed. 
 
-Note that this kind of repeat macro is also defined in the [`Flux.jl`](https://fluxml.ai/) machine learning framework, wherein it's called `@epochs` and is used for creating training [loop](https://fluxml.ai/Flux.jl/stable/training/training/#Datasets).
+Note that this kind of repeat macro is also defined in the [`Flux.jl`](https://fluxml.ai/) machine learning framework, wherein it's called `@epochs` and is used for creating training [loop](https://fluxml.ai/Flux.jl/stable/training/training/#Datasets). #TODO fix me
 
 ## [Polynomial macro](@id lab07_polymacro)
 This is probably the last time we are rewriting the `polynomial` function, though not quite in the same way. We have seen in the last [lab](@ref introspection_lab), that some optimizations occur automatically, when the compiler can infer the length of the coefficient array, however with macros we can *generate* optimized code directly (not on the same level - we are essentially preparing already unrolled/inlined code).
