@@ -220,7 +220,7 @@ plot!(0.1:0.01:2, forward_dsqrt, label="Dual Forward Mode f'", lw=3, ls=:dash)
 3. For vector valued function we can use [**_Hyperduals_**](http://adl.stanford.edu/hyperdual/)
 5. Forward diff can differentiation through the `setindex!` (called each time an element is assigned to a place in array, e.g. `x = [1,2,3]; x[2] = 1`)
 6. ForwardDiff is implemented in [`ForwardDiff.jl`](https://github.com/JuliaDiff/ForwardDiff.jl), which might appear to be neglected, but the truth is that it is very stable and general implementation.
-7. ForwardDiff does not have to be implemented through Dual numbers. It can be implemented similarly to ReverseDiff through multiplication of Jacobians, which is what is the community work on now (in [`Diffractor`](https://github.com/JuliaDiff/Diffractor.jl), [`Zygote`](https://github.com/FluxML/Zygote.jl) with rules defined in [`ChainRules`](https://github.com/JuliaDiff/ChainRules.jl)).
+7. ForwardDiff does not have to be implemented through Dual numbers. It can be implemented similarly to ReverseDiff through multiplication of Jacobians, which is what is the community work on now (in [`Mooncake`](https://github.com/JuliaDiff/Diffractor.jl), [`Zygote`](https://github.com/FluxML/Zygote.jl) with rules defined in [`ChainRules`](https://github.com/JuliaDiff/ChainRules.jl)).
 ---
 
 ## Reverse mode
@@ -249,7 +249,7 @@ The need to store intermediate outs has a huge impact on memory requirements, wh
 - When differentiating **Invertible functions**, calculate intermediate outputs from the output. This can lead to huge performance gain, as all data needed for computations are in caches.  
 - **Checkpointing** does not store intermediate ouputs after larger sequence of operations. When they are needed for forward pass, they are recalculated on demand.
 
-Most reverse mode AD engines does not support mutating values of arrays (`setindex!` in julia). This is related to the memory consumption, where after every `setindex!` you need in theory save the full matrix. [`Enzyme`](https://github.com/wsmoses/Enzyme.jl) differentiating directly LLVM code supports this, since in LLVM every variable is assigned just once. ForwardDiff methods does not suffer this problem, as the gradient is computed at the time of the values.
+Most reverse mode AD engines does not support mutating values of arrays (`setindex!` in julia). This is related to the memory consumption, where after every `setindex!` you need in theory save the full matrix. [`Enzyme`](https://github.com/wsmoses/Enzyme.jl) differentiating directly LLVM code supports this, since in LLVM every variable is assigned just once. [`Mooncake`](https://github.com/chalk-lab/Mooncake.jl) supports this by saving values needed to reconstruct the arrays. ForwardDiff methods does not suffer this problem, as the gradient is computed at the time of the values.
 
 !!! info
     Reverse mode AD was first published in 1976 by Seppo Linnainmaa[^1], a finnish computer scientist. It was popularized in the end of 80s when applied to training multi-layer perceptrons, which gave rise to the famous **backpropagation** algorithm[^2], which is a special case of reverse mode AD.
@@ -293,7 +293,7 @@ We continue with the same process with ``\frac{\partial h_3}{\partial h_1}``, wh
 
 containing the desired nodes ``\frac{\partial z}{\partial x}`` and ``\frac{\partial z}{\partial y}``. This computational graph can be passed to the compiler to compute desired values.
 
-This approach to AD has been taken for example by [Theano](https://github.com/Theano/Theano) and by [TensorFlow](https://www.tensorflow.org/). In Tensorflow when you use functions like `tf.mul( a, b )` or `tf.add(a,b)`, you are not performing the computation in Python, but you are building the computational graph shown as above. You can then compute the values using `tf.run` with a desired inputs, but you are in fact computing the values in a different interpreter / compiler then in python.
+This approach to AD has been taken for example by [Theano](https://github.com/Theano/Theano), [TensorFlow](https://www.tensorflow.org/), and [JAX](https://github.com/jax-ml/jax). In Tensorflow when you use functions like `tf.mul( a, b )` or `tf.add(a,b)`, you are not performing the computation in Python, but you are building the computational graph shown as above. You can then compute the values using `tf.run` with a desired inputs, but you are in fact computing the values in a different interpreter / compiler then in python. PyTorch now does this in compiled mode.
 
 Advantages:
 - Knowing the computational graph in advance is great, as you can do expensive optimization steps to simplify the graph. 
