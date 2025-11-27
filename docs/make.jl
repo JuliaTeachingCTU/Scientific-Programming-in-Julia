@@ -49,7 +49,8 @@ pages = [
         "5: Performance benchmarking" => "lecture_05/lecture.md",
         "6: Language introspection" => "lecture_06/lecture.md",
         "7: Macros" => "lecture_07/lecture.md",
-        "8: Automatic differentiation 1" => "lecture_08/lecture.md"
+        "8: Automatic differentiation 1" => "lecture_08/lecture.md",
+        "9: Manipulating Intermediate Represenation (IR)" => "lecture_09/lecture.md"
     ]),
     "Labs" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/lab.md",
@@ -59,7 +60,8 @@ pages = [
         "5: Performance benchmarking" => "lecture_05/lab.md",
         "6: Language introspection" => "lecture_06/lab.md",
         "7: Macros" => "lecture_07/lab.md",
-        "8: Automatic differentiation 1" => "lecture_08/lab.md"
+        "8: Automatic differentiation 1" => "lecture_08/lab.md",
+        "9: Custom Rules For Differentiation" => "lecture_09/lab.md"
     ]),
     "Homeworks" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/hw.md",
