@@ -14,7 +14,7 @@ In our research, we often find that the bottleneck in experiments lies in the pe
 ChainRules is an AD-independent. The most widely used AD packages like `Zygote.jl`, `Diffractor.jl`, `Enzyme.jl` , and etc. automatically load `rule`s or at least support using them. 
 
 # Key distinction between rules
-In a relationship $ y=f(x) $, where $ f $ is a function, computing $ y $ from $ x $ is known as the primal computation. ChainRules focuses on propagating tangents of primal inputs to outputs (with `frule` for forward-mode AD) and cotangents of outputs to inputs (with `rrule` for reverse-mode AD).
+In a relationship $y=f(x)$, where $f$ is a function, computing $y$ from $x$ is known as the primal computation. ChainRules focuses on propagating tangents of primal inputs to outputs (with `frule` for forward-mode AD) and cotangents of outputs to inputs (with `rrule` for reverse-mode AD).
 
 ## Forward-mode AD rule (`frule`)
 The `frule` for $f$ encodes how to propagate the tangent of the primal input $\dot{x} = \frac{dx}{da}$ to the tangent of the primal output $\dot{y} = \frac{dy}{dx}$, i.e., $\dot{y} = \frac{dy}{dx}\dot{x}$.
@@ -130,6 +130,7 @@ pool_native(x::AbstractArray, seg₁::AUR, seg₂::AUR) = [sum(x[sᵢ, sⱼ]) fo
 Calling `gradient` on `pool_naive` shows that the output gradient is a matrix of ones with the same size as `x`, which confirms its correctness. Note that, since the pooling function outputs a matrix, we sum this output to compute derivatives with `gradient`. Because the derivative of addition is one, this result aligns with our expectations.
 
 ```@repl lab09
+using Zygote
 gradient(a->sum(pool_native(a, s1, s2)), x)[1]
 ```
 The `pool_naive` function is concise, but we could write it in a more structured way, as shown in `pool_sum` below.
