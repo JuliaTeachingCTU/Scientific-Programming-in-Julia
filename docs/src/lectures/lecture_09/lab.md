@@ -59,7 +59,7 @@ end
 The types of tangents and cotangents depend on the types of the primals. However, sometimes our functions may have arguments which derivatives we can not compute or do not need. In that case, we represent it as `NoTangent`. `ZeroTangent` is used when tangent is equal to zero.
 
 
-::: warning "Exercise"
+!!! warning "Exercise"
     ```@example lab09
     using ChainRulesCore, ChainRules, ChainRulesTestUtils
     ```
@@ -87,7 +87,7 @@ julia> gradient((a,b)->f1(a,b), 2f0, 4f0)
 
 For the function in this exercise, writing a custom rrule isn’t necessary; the composition of existing rrules in the ChainRules package will be just as fast as your implementation. But in case, where you work for example with indexing in loops, writing your own rule make computations much faster and lower number of allocations.
 
-::: warning "Exercise"
+!!! warning "Exercise"
     Write your custom `rrule` for function `mymaximum` that finds maximal value of vector or matrix.
     ```@example lab09 
     mymaximum(x) = maximum(x)
@@ -147,7 +147,7 @@ end
 ```
 The functions `pool_naive` and `pool_sum` perform the same operation with the same performance and memory usage. However, the structured approach in `pool_sum` will be more convenient when writing a custom `rrule` for this pooling operation.
 
-::: warning "Excercise"
+!!! warning "Excercise"
     Finish `rrule` function for sum pooling by implementing body of `pool_sum_pullback(ȳ)`.  After that test its functionality by `test_rrule` and measure speedup that you gaind using `@benchmark` on  larger matrix (100x100).
 
     ```julia
@@ -161,6 +161,43 @@ The functions `pool_naive` and `pool_sum` perform the same operation with the sa
     end
 
     ```
+!!! note "Hint"
+    1) 
+    Let's work through a concrete example to build intuition. Suppose we have a simple 2×2 input matrix and we pool it into a single scalar by summing all elements.
+
+    **Concrete example: sum of 2×2 matrix**
+    
+    ```julia
+    x = [x₁₁  x₁₂]
+        [x₂₁  x₂₂]
+    
+    y = sum(x) = x₁₁ + x₁₂ + x₂₁ + x₂₂
+    ```
+
+    Forward pass: `y` is the sum of all elements.
+    
+    Backward pass: if we receive a cotangent `ȳ` (scalar), we need to propagate it back to each element of `x`. Since each `xᵢⱼ` appears exactly once in the sum:
+    
+    ```julia
+    ∂y/∂x₁₁ = 1
+    ∂y/∂x₁₂ = 1
+    ∂y/∂x₂₁ = 1
+    ∂y/∂x₂₂ = 1
+    
+    x̄ᵢᵢ = ȳ * ∂y/∂xᵢᵢ = ȳ
+    ```
+
+    2) You can test is on following functions
+    ```julia
+
+    using BenchmarkTools, Test
+
+    @benchmark gradient(a->sum(pool_native(a, s1, s2)), x)
+    @benchmark gradient(a->sum(pool_sum(a, s1, s2)), x)
+
+    @test gradient(a->sum(pool_native(a, s1, s2)), x) == gradient(a->sum(pool_sum(a, s1, s2)), x)
+    ```
+
 
 # Hausdorff distance example
 While sum pooling or finding the maximum may seem straightforward, combining concepts from these examples enables us to write efficient rrules for more complex tasks, such as computing Chamfer or Hausdorff distances. These metrics are highly relevant to our research, and creating custom rules for them significantly accelerated our experiments.
@@ -184,7 +221,7 @@ function ChainRulesCore.rrule(::typeof(pool), x::AbstractArray, seg₁::AUR, seg
 end
 ```
 
-::: warning "Bonus Excercise (hard)"
+!!! warning "Bonus Excercise (hard)"
     Implement functions `forward_pool_hausdorff` and `backward_pool_hausdorff`.
     The key is to identify the indices within each segment that contribute to the Hausdorff distance calculation, then propagate gradients only through these indices in the backward pass.
     *HINT*
