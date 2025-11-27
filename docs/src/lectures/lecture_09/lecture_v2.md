@@ -1,5 +1,21 @@
 # Source-to-Source Automatic Differentiation
 
+This lecture was tested with Julia version 1.7
+```julia
+julia> versioninfo()
+Julia Version 1.11.7
+Commit f2b3dbda30a (2025-09-08 12:10 UTC)
+Build Info:
+  Official https://julialang.org/ release
+Platform Info:
+  OS: macOS (arm64-apple-darwin24.0.0)
+  CPU: 14 × Apple M4 Pro
+  WORD_SIZE: 64
+  LLVM: libLLVM-16.0.6 (ORCJIT, apple-m1)
+Threads: 1 default, 0 interactive, 1 GC (on 10 virtual cores)
+```
+Importantly, it does not work with 1.12 due to changes in the compiler.
+
 Before diving into the next adventure in automatic differentiation (AD), we spent some time exploring the role of *rules* in AD.
 
 The automatic differention libraries consists of two parts.
@@ -137,14 +153,14 @@ ir, _ = only(Base.code_ircode(foo, (Float64, Float64); optimize_until = "compact
 
 We can ask for different level of optimization, but such a simple function, it will not make much difference:
 ```julia
-   @pass "convert"   ir = convert_to_ircode(ci, sv)
-   @pass "slot2reg"  ir = slot2reg(ir, ci, sv)
-   @pass "compact 1" ir = compact!(ir)
-   @pass "Inlining"  ir = ssa_inlining_pass!(ir, sv.inlining, ci.propagate_inbounds)
-   @pass "compact 2" ir = compact!(ir)
-   @pass "SROA"      ir = sroa_pass!(ir, sv.inlining)
-   @pass "ADCE"      ir = adce_pass!(ir, sv.inlining)
-   @pass "compact 3" ir = compact!(ir)
+   CC.@pass "convert"   ir = convert_to_ircode(ci, sv)
+   CC.@pass "slot2reg"  ir = slot2reg(ir, ci, sv)
+   CC.@pass "compact 1" ir = compact!(ir)
+   CC.@pass "Inlining"  ir = ssa_inlining_pass!(ir, sv.inlining, ci.propagate_inbounds)
+   CC.@pass "compact 2" ir = compact!(ir)
+   CC.@pass "SROA"      ir = sroa_pass!(ir, sv.inlining)
+   CC.@pass "ADCE"      ir = adce_pass!(ir, sv.inlining)
+   CC.@pass "compact 3" ir = compact!(ir)
 ```
 
 
@@ -164,10 +180,11 @@ The code is stored in `IRCode` data structure.
          stmts::InstructionStream
          argtypes::Vector{Any}
          sptypes::Vector{VarState}
-         linetable::Vector{LineInfoNode}
+         debuginfo::Compiler.DebugInfoStream
          cfg::CFG
          new_nodes::NewNodeStream
          meta::Vector{Expr}
+         valid_worlds::Compiler.WorldRange
     end
     ```
     
@@ -175,16 +192,17 @@ The code is stored in `IRCode` data structure.
     * `stmts` is a stream of instruction (more in this below)
     * `argtypes` holds types of arguments of the function whose `IRCode` we have obtained
     * `sptypes` is a vector of `VarState`. It seems to be related to parameters of types
-    * `linetable` is a table of unique lines in the source code from which statement came from
+    * `debuginfo` is a table of unique lines in the source code from which statement came from
     * `cfg` holds control flow graph, which contains building blocks and jumps between them
     * `new_nodes` is an infrastructure that can be used to insert new instructions to the existing `IRCode` . The idea behind is that since insertion requires a renumbering all statements, they are put in a separate queue. They are put to correct position with a correct `SSANumber`  by calling `compact!`.
     * `meta` is something.
+    * `valid_worlds` specify a "time" span in which the world is valid
 
     **InstructionStream**
 
     ```julia
     struct InstructionStream
-        inst::Vector{Any}
+        stmt::Vector{Any}
         type::Vector{Any}
         info::Vector{CallInfo}
         line::Vector{Int32}
@@ -192,7 +210,7 @@ The code is stored in `IRCode` data structure.
     end
     ```
     where
-    * `inst` is a vector of instructions, stored as `Expr`essions. The allowed fields in `head` are described [here](https://docs.julialang.org/en/v1/devdocs/ast/#Expr-types)
+    * `stmt` is a vector of instructions, stored as `Expr`essions. The allowed fields in `head` are described [here](https://docs.julialang.org/en/v1/devdocs/ast/#Expr-types)
     * `type` is the type of the value returned by the corresponding statement
     * `CallInfo` is ???some info???
     * `line` is an index into `IRCode.linetable` identifying from which line in source code the statement comes from
@@ -208,15 +226,16 @@ The code is stored in `IRCode` data structure.
     For the above `foo` function, the InstructionStream looks like
 
     ```julia
-    julia   DataFrame(flag = ir.stmts.flag, info = ir.stmts.info, inst = ir.stmts.inst, line = ir.stmts.line, type = ir.stmts.type)
+    julia   DataFrame(flag = ir.stmts.flag, info = ir.stmts.info, stmt = ir.stmts.stmt, type = ir.stmts.type)
     4×5 DataFrame
-     Row │ flag   info                               inst          line   type
-         │ UInt8  CallInfo                           Any           Int32  Any
-    ─────┼────────────────────────────────────────────────────────────────────────
-       1 │   112  MethodMatchInfo(MethodLookupResu…  _2 * _3           1  Float64
-       2 │    80  MethodMatchInfo(MethodLookupResu…  Main.sin(_2)      2  Float64
-       3 │   112  MethodMatchInfo(MethodLookupResu…  %1 + %2           2  Float64
-       4 │     0  NoCallInfo()                       return %3         2  Any
+     Row │ flag    info                               stmt          type
+         │ UInt32  CallInfo                           Any           Any
+    ─────┼──────────────────────────────────────────────────────────────────
+       1 │   9336  ConstCallInfo(MethodMatchInfo(Me…                Float64
+       2 │   9336  MethodMatchInfo(MethodLookupResu…  _2 * _3       Float64
+       3 │   9304  MethodMatchInfo(MethodLookupResu…  Main.sin(_2)  Float64
+       4 │   9336  MethodMatchInfo(MethodLookupResu…  %2 + %3       Float64
+       5 │ 131072  NoCallInfo()                       return %4     Any
     ```
     We can index into the statements as `ir.stmts[1]`, which provides a "view" into the vector. To obtain the first instruction, we can do `ir.stmts[1][:inst]`.
 
@@ -231,7 +250,7 @@ Let's now go back to the problem of automatic differentiation. Recall the IRCode
   └──      return %3
    => Float64
 ```
-The forward part needs to replace each call of the function by a call to `rrule` and stode pullbacks.
+The forward part needs to replace each call of the function by a call to `rrule` and store pullbacks.
 So in pseudocode, we want something like
 ```julia
 (%1, %2) = rrule(*, _2, _3)
@@ -249,7 +268,7 @@ To implement the code performing the above transformation, we initiate few varia
 ```julia
 adinfo = []             # storage for informations about pullbacks, needed for the construction of the reverse pass
 new_insts = Any[]       # storate for instructions
-new_line = Int32[]      # Index of instruction we are differentiating
+new_line =  Int32[]      # Index of instruction we are differentiating
 ssamap = Dict{SSAValue,SSAValue}() # this maps old SSA values to new SSA values, since they need to be linearly ordered.
 ```
 
@@ -274,7 +293,7 @@ The main loop transforming the function looks like foollows
 
 ```julia
 for (i, stmt) in enumerate(ir.stmts)
-   inst = stmt[:inst]
+   inst = stmt[:stmt]
    if inst isa Expr && inst.head == :call
         new_inst = Expr(:call, GlobalRef(ChainRules, :rrule), remap_ssa(ssamap, inst.args)...)
         push!(new_insts, new_inst)
@@ -306,6 +325,13 @@ for (i, stmt) in enumerate(ir.stmts)
         push!(new_line, stmt[:line])
         continue
     end
+
+    if inst isa Nothing
+        push!(new_insts, nothing)
+        new_ssa = SSAValue(length(new_insts))
+        push!(new_line, stmt[:line])
+        continue
+    end
    error("unknown node $(i)")
 end
 ```
@@ -317,11 +343,11 @@ constructing Instruction stream as
 
 ```julia
 stmts = CC.InstructionStream(
-    new_insts,
-    fill(Any, length(new_insts)),
-    fill(CC.NoCallInfo(), length(new_insts)),
-    new_line,
-    fill(CC.IR_FLAG_REFINED, length(new_insts)),
+   new_insts,
+   fill(Any, length(new_insts)),
+   fill(CC.NoCallInfo(), length(new_insts)),
+   new_line,
+   fill(CC.IR_FLAG_REFINED, length(new_insts)),
 )
 ```
 
@@ -371,7 +397,7 @@ pullback[1](1.0) == (ChainRules.NoTangent(), 1.0, 1.0)
 
     Given some IR, generates a MethodInstance suitable for passing to infer_ir!, if you don't
     already have one with the right argument types. [Credit to@oxinabox:
-    (https://gist.github.com/oxinabox/cdcffc1392f91a2f6d80b2524726d802#file-example-jl-L54)
+    (https://gist.github.com/oxinabox/cdcffc1392f91a2f6d80b2524726d802)
 
     ```julia
     _type(x::Type) = x
@@ -493,6 +519,12 @@ function construct_forward(ir)
 end
 ```
 
+We can try to run the above as 
+```julia
+oc = Core.OpaqueClosure(forward_ir)
+value, pullback = oc(1.0, 1.0)
+```
+
 ### Implementing reverse pass
 The reverse parts of a linear IR is relatively simple. In a nutshell, the code
 code needs to iterate over the pullbacks in the reverse order, execute them, and
@@ -597,6 +629,11 @@ end
 bar(x) = 5 * x
 ```
 
+Test as
 
+```julia
+ gradient(CachedGrad(foo, 1.0, 1.0), 1.0, 1.0)
+ gradient(CachedGrad(bar, 1.0), 1.0)
+ ```
 
 [1] [Autodiff by G. Dalle](https://gdalle.github.io/JuliaOptimizationDays2024-AutoDiff/#/)
