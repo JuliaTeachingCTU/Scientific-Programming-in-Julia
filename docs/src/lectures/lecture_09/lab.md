@@ -67,7 +67,6 @@ The types of tangents and cotangents depend on the types of the primals. However
     Minimal template:
 
     ```julia
-    # ...existing code...
     function ChainRulesCore.rrule(::typeof(f), arg1::A, arg2::B) where {A,B}
         # 1) primal
         y = f(arg1, arg2)
@@ -86,16 +85,16 @@ The types of tangents and cotangents depend on the types of the primals. However
 
         return y, pullback
     end
-    # ...existing code...
+
     ```
 
 !!! note "General Hints for rrules"
-    - Always return NoTangent() as the first element in the pullback tuple (it denotes the function object).
-    - Use similar(x) or zeros(eltype(x), size(x)) for cotangent buffers to preserve type/shape.
-    - Use .+= when writing into x̄ if segments can overlap (prevents losing accumulated contributions).
-    - Watch out for shapes: Δy passed to pullback has exactly the same shape as y.
-    - For reductions (sum/maximum), think which inputs share the same contribution and broadcast the cotangent accordingly.
-    - For maxima/argmax: decide tie semantics (equal split vs first index) and document your choice.
+    - Always return `NoTangent()` as the first element in the pullback tuple (it denotes the function object).
+    - Use `similar(x)` or `zeros(eltype(x), size(x))` for cotangent buffers to preserve type/shape.
+    - Use `.+=` when writing into `x̄` if segments can overlap (prevents losing accumulated contributions).
+    - Watch out for shapes: `Δy` passed to pullback has exactly the same shape as `y`.
+    - For reductions (`sum/maximum`), think which inputs share the same contribution and broadcast the cotangent accordingly.
+    - For `maxima/argmax`: decide tie semantics (equal split vs first index) and document your choice.
     - Mutating primals inside pullbacks breaks the purity assumption — avoid it.
 
 
