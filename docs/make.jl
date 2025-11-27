@@ -50,7 +50,8 @@ pages = [
         "6: Language introspection" => "lecture_06/lecture.md",
         "7: Macros" => "lecture_07/lecture.md",
         "8: Automatic differentiation 1" => "lecture_08/lecture.md",
-        "9: Manipulating Intermediate Represenation (IR)" => "lecture_09/lecture.md"
+        "9: Automatic differentiation 2" => "lecture_09/lecture_v2.md"
+        "X: Manipulating Intermediate Represenation (IR)" => "lecture_09/lecture_v1.md"
     ]),
     "Labs" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/lab.md",
