@@ -103,7 +103,7 @@ But, can we do better? Recall that in `NamedTuple`s, we exactly know the positio
 
 Since creation (and debugging) of generated functions is difficult, we start with a single-argument unrolled map.
 
-```@repl
+```@ansi
 @generated function unrolled_map(f, x::NamedTuple{KX}) where {KX} 
     vals = [:(f(getfield(x, $(QuoteNode(k))))) for k in KX]
     :(($(vals...),))
@@ -227,7 +227,7 @@ ci = @code_lowered foo(1.0, 1.0)
 
 which returns an object of type `CodeInfo` containing many fields [docs](https://docs.julialang.org/en/v1/devdocs/ast/#Lowered-form). To make the investigation slightly more interesting, we modify the function a bit to have local variables:
 
-```@repl lec09
+```@ansi lec09
 function foo(x,y) 
   z = x * y 
   z + sin(x)
