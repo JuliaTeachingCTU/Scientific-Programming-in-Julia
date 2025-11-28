@@ -58,6 +58,45 @@ end
 ### Tangent types
 The types of tangents and cotangents depend on the types of the primals. However, sometimes our functions may have arguments which derivatives we can not compute or do not need. In that case, we represent it as `NoTangent`. `ZeroTangent` is used when tangent is equal to zero.
 
+!!! note "Quick rrule recipe (template)"
+    1. Compute the primal output `y = f(args...)`.
+    2. Capture any intermediate values you need for the backward pass.
+    3. Return `(y, pullback)` where `pullback(ȳ)` returns a tuple of tangents for `(f, args...)`.
+    4. Use `NoTangent()` for arguments that are not differentiable and `ZeroTangent()` when appropriate.
+
+    Minimal template:
+
+    ```julia
+    function ChainRulesCore.rrule(::typeof(f), arg1::A, arg2::B) where {A,B}
+        # 1) primal
+        y = f(arg1, arg2)
+
+        # 2) capture intermediates if needed
+        # e.g. cached = some_intermediate(arg1, arg2)
+
+        # 3) define pullback
+        function pullback(ȳ)
+            # compute cotangents for args; shapes must match original args
+            ∂arg1 = ...   # same shape/type as arg1
+            ∂arg2 = ...   # same shape/type as arg2
+            # first return value corresponds to the function object itself
+            return NoTangent(), ∂arg1, ∂arg2
+        end
+
+        return y, pullback
+    end
+
+    ```
+
+!!! note "General Hints for rrules"
+    - Always return `NoTangent()` as the first element in the pullback tuple (it denotes the function object).
+    - Use `similar(x)` or `zeros(eltype(x), size(x))` for cotangent buffers to preserve type/shape.
+    - Use `.+=` when writing into `x̄` if segments can overlap (prevents losing accumulated contributions).
+    - Watch out for shapes: `Δy` passed to pullback has exactly the same shape as `y`.
+    - For reductions (`sum/maximum`), think which inputs share the same contribution and broadcast the cotangent accordingly.
+    - For `maxima/argmax`: decide tie semantics (equal split vs first index) and document your choice.
+    - Mutating primals inside pullbacks breaks the purity assumption — avoid it.
+
 
 !!! warning "Exercise"
     ```@example lab09
