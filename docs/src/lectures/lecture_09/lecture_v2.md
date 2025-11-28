@@ -103,7 +103,7 @@ using Zygote
 @benchmark gradient(sin ∘ σ2, 1.0)
 @benchmark gradient(sin ∘ σ, 1.0)
 ```
-Note that we add since to prevent compiler to optimize the code to be equivalent. The difference between both executions is tiny, becuase the overhead of AD is non-trivial. You can compare it to `@benchmark gradient(σ, 1.0)` and also observe `@code_native(σ, 1.0)`
+Note that we add since to prevent compiler to optimize the code to be equivalent. The difference between both executions is tiny, because the overhead of AD is non-trivial. You can compare it to `@benchmark gradient(σ, 1.0)` and also observe `@code_native(σ, 1.0)`
 
 
 ## Source-to-Source Automatic Differentiation with IRCode
@@ -180,11 +180,10 @@ The code is stored in `IRCode` data structure.
          stmts::InstructionStream
          argtypes::Vector{Any}
          sptypes::Vector{VarState}
-         debuginfo::Compiler.DebugInfoStream
+         lineinfo::Vector{Core.LineInfoNode}
          cfg::CFG
          new_nodes::NewNodeStream
          meta::Vector{Expr}
-         valid_worlds::Compiler.WorldRange
     end
     ```
     
@@ -192,11 +191,10 @@ The code is stored in `IRCode` data structure.
     * `stmts` is a stream of instruction (more in this below)
     * `argtypes` holds types of arguments of the function whose `IRCode` we have obtained
     * `sptypes` is a vector of `VarState`. It seems to be related to parameters of types
-    * `debuginfo` is a table of unique lines in the source code from which statement came from
+    * `lineinfo` is a table of unique lines in the source code from which statement came from
     * `cfg` holds control flow graph, which contains building blocks and jumps between them
     * `new_nodes` is an infrastructure that can be used to insert new instructions to the existing `IRCode` . The idea behind is that since insertion requires a renumbering all statements, they are put in a separate queue. They are put to correct position with a correct `SSANumber`  by calling `compact!`.
     * `meta` is something.
-    * `valid_worlds` specify a "time" span in which the world is valid
 
     **InstructionStream**
 
@@ -322,13 +320,6 @@ for (i, stmt) in enumerate(ir.stmts)
         push!(new_line, stmt[:line])
 
         push!(new_insts, ReturnNode(returned_tuple))
-        push!(new_line, stmt[:line])
-        continue
-    end
-
-    if inst isa Nothing
-        push!(new_insts, nothing)
-        new_ssa = SSAValue(length(new_insts))
         push!(new_line, stmt[:line])
         continue
     end
