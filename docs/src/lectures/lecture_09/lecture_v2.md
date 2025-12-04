@@ -625,6 +625,6 @@ Test as
 ```julia
  gradient(CachedGrad(foo, 1.0, 1.0), 1.0, 1.0)
  gradient(CachedGrad(bar, 1.0), 1.0)
- ```
+```
 
 [1] [Autodiff by G. Dalle](https://gdalle.github.io/JuliaOptimizationDays2024-AutoDiff/#/)
