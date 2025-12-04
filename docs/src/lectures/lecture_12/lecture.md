@@ -113,7 +113,7 @@ g(x)\sim N(g(\mu),g'(\mu)*\sigma)
 
 This can be efficienty implemented in Julia:
 ```julia
-struct GNum{T} where T<:Real
+struct GaussNum{T<:Real}
   μ::T
   σ::T
 end
@@ -140,7 +140,7 @@ Following the principle of defining the necessary functions on the type, we can 
 - it is necessary to define new initialization (functions `zero`)
 - define nice-looking constructor (``±``)
   ```julia
-  ±(a::T,b::T) where T:<Real =GaussNum(a,b)
+  ±(a::T,b::T) where T<:Real =GaussNum(a,b)
   ```
 
 ```julia
@@ -215,7 +215,7 @@ For Gaussian distribution, we can use a smarter integration rule, called the Gau
 ```math
 \mu_g = \int g(x) p(x) dx \approx \sum_{j=1}^J w_j g(x_j)
 ```
-where ``x_j`` are prescribed quadrature points (see e.g. ![online tables](https://www.efunda.com/math/num_integration/findgausshermite.cfm))
+where ``x_j`` are prescribed quadrature points.
 
 In multivariate setting, the same problem is typically solved with the aim to reduce the computational cost to linear complexity with dimension. Most often aimimg at ``O(2d)`` complexity where ``d`` is the  dimension of vector ``x``.
 
@@ -301,30 +301,18 @@ Essentially an ensemble of ODEs where their mean values form a representation of
 
 
 ```julia
-struct CubODEProblem{ODE::ODEProblem}
-    odes
-    function CubODEProbelm(O::ODEProblem)
-      odes = ntuple(I->O)
-      new(odes)
-    end
+struct GaussianVector{T <: Real, V <: AbstractVector{T}, M <: AbstractMatrix{T}}
+    mean::V      
+    covariance::M 
 end
 
-  #  function RemoteMVGauss(C::CubODEProbelm)
-  #   points = 
+# define operations on GaussianVector
 
-
-struct CubMVGauss:<AbstractMvNormal
-   points
+# dispatch solve for GaussianVector
+function solve(prob::ODEProblem{F, Tspan, X0<:GaussianVector, P}; kwargs...)
+  # implemnet the solver
 end
 
-function reshape(R::CubMVGauss) end
-function mean(R::CubMVGauss) end
-function cov(R::CubMVGauss) end
-
-
-function CubMVGauss(C::CubODEProblem)
-  CubMVNormal(ntuple(i-> C.odes[i].X0)
-end
 
 ```
 
