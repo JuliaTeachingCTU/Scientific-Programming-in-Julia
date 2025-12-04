@@ -52,7 +52,7 @@ pages = [
         "8: Automatic differentiation 1" => "lecture_08/lecture.md",
         "9: Automatic differentiation 2" => "lecture_09/lecture_v2.md",
         "X: Manipulating Intermediate Represenation (IR)" => "lecture_09/lecture_v1.md",
-        "10: Uncertainty propagation" => "lecture_10/lecture.md"
+        "10: Uncertainty propagation" => "lecture_12/lecture.md"
     ]),
     "Labs" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/lab.md",
