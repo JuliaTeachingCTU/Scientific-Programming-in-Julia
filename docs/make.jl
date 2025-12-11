@@ -52,7 +52,8 @@ pages = [
         "8: Automatic differentiation 1" => "lecture_08/lecture.md",
         "9: Automatic differentiation 2" => "lecture_09/lecture_v2.md",
         "X: Manipulating Intermediate Represenation (IR)" => "lecture_09/lecture_v1.md",
-        "10: Uncertainty propagation" => "lecture_12/lecture.md"
+        "10: Uncertainty propagation" => "lecture_12/lecture.md",
+        "11: Parallel programming" => "lecture_10/lecture.md"
     ]),
     "Labs" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/lab.md",
@@ -64,7 +65,8 @@ pages = [
         "7: Macros" => "lecture_07/lab.md",
         "8: Automatic differentiation 1" => "lecture_08/lab.md",
         "9: Custom Rules For Differentiation" => "lecture_09/lab.md",
-        "10: Uncertainty propagation" => "lecture_12/lab.md"
+        "10: Uncertainty propagation" => "lecture_12/lab.md",
+        "11: Parallel programming" => "lecture_10/lab.md"
     ]),
     "Homeworks" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/hw.md",
@@ -75,7 +77,8 @@ pages = [
         "6: Language introspection" => "lecture_06/hw.md",
         "7: Macros" => "lecture_07/hw.md",
         "8: Automatic differentiation 1" => "lecture_08/hw.md",
-        "10: Uncertainty propagation" => "lecture_12/hw.md"
+        "10: Uncertainty propagation" => "lecture_12/hw.md",
+        "11: Parallel programming" => "lecture_10/hw.md"
     ]),
 
     "Projects" => add_prefix("./projects", [
