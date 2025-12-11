@@ -746,7 +746,87 @@ files = filter(isfile, readdir("/Users/tomas.pevny/Downloads/", join = true))
 ```
 is much better.
 
+## Thread local storage
+Based on [https://julialang.org/blog/2023/07/PSA-dont-use-threadid/](https://julialang.org/blog/2023/07/PSA-dont-use-threadid/)
 
+Imagine a case where you want to use a local variable inside the threads. It is tempting to allocate them and access them based on `threadid`. A prototypical wrong code (but correct on older versions of Julia) is 
+
+```julia
+using Base.Threads: nthreads, @threads, threadid
+
+states = [some_initial_value for _ in 1:nthreads()]
+@threads for x in some_data
+    tid = threadid()
+    old_val = states[tid]
+    new_val = some_operator(old_val, f(x))
+    states[tid] = new_val
+end
+do_something(states)
+```
+
+The above code is incorrect because the tasks spawned by `@threads` are allowed to yield to other tasks during their execution. This means that between reading `old_val` and storing `new_val` in the storage, the task could be paused and a new task running on the same thread with the same `threadid()`` could concurrently write to `states[tid]``, causing a race condition and thus work being lost.
+
+This is not actually a problem with multithreading specifically, but really a concurrency problem, and it can be demonstrated even with a single thread. For example:
+
+```julia
+$ julia --threads=1
+
+julia> f(i) = (sleep(0.001); i);
+
+julia> let state = [0], N=100
+           @sync for i ∈ 1:N
+               Threads.@spawn begin
+                   tid = Threads.threadid()  # Each task gets `tid = 1`.
+                   old_var = state[tid]      # Each task reads the current value, which for
+                                             # all is 0 (!) because...
+                   new_var = old_var + f(i)  # ...the `sleep` in `f` causes all tasks to pause
+                                             # *simultaneously* here (all loop iterations start,
+                                             # but do not yet finish).
+                   state[tid] = new_var      # After being released from the `sleep`, each task
+                                             # sets `state[1]` to `i`.
+               end
+           end
+           sum(state), sum(1:N)
+       end
+(100, 5050)
+```
+
+In the above snippet, we purposefully over-subscribed the CPU with 100 separate tasks in order to make the bug more likely to manifest, but the problem can arise even without spawning very many tasks.
+
+If you want a recipe that can replace the above buggy one with something that can be written using only the `Base.Threads `module, we recommend moving away from `@threads`, and instead working directly with `@spawn` to create and manage tasks. The reason is that `@threads` does not have any builtin mechanisms for managing and merging the results of work from different threads, whereas tasks can manage and return their own state in a safe way.
+
+Tasks creating and returning their own state is inherently safer than the spawner of parallel tasks setting up state for spawned tasks to read from and write to.
+
+Code which replaces the incorrect code pattern shown above can look like this:
+
+```julia
+using Base.Threads: nthreads, @threads, @spawn
+using Base.Iterators: partition
+
+tasks_per_thread = 2 # customize this as needed. More tasks have more overhead, but better
+                     # load balancing
+
+chunk_size = max(1, length(some_data) ÷ (tasks_per_thread * nthreads()))
+data_chunks = partition(some_data, chunk_size) # partition your data into chunks that
+                                               # individual tasks will deal with
+#See also ChunkSplitters.jl and SplittablesBase.jl for partitioning data
+
+tasks = map(data_chunks) do chunk
+    # Each chunk of your data gets its own spawned task that does its own local, sequential work
+    # and then returns the result
+    @spawn begin
+        state = some_initial_value
+        for x in chunk
+            state = some_operator(state, f(x))
+        end
+        return state
+    end
+end
+states = fetch.(tasks) # get all the values returned by the individual tasks. fetch is type
+                       # unstable, so you may optionally want to assert a specific return type.
+
+do_something(states)
+```
 ## Locks / lock-free multi-threadding
 Avoid locks.
 
