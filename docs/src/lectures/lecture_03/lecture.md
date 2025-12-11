@@ -91,6 +91,7 @@ There are many discussions how to make Julia to behave like an OOP. The best imp
 With fields of data structure freely accessible, the information may become inconsistent.
 
 ```julia
+abstract type Plant end
 mutable struct Grass <: Plant
     id::Int
     size::Int
