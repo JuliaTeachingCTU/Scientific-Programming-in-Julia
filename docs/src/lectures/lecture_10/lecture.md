@@ -348,6 +348,7 @@ julia> @btime t();
   17.697 ms (776 allocations: 1.94 MiB)
 ```
 with which we obtain the comparable speed to the `pmap` approach.
+
 ::: info 
 
 "`remote_do` vs `remote_call`"
