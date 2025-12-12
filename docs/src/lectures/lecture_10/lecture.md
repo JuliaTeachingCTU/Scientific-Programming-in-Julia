@@ -348,12 +348,18 @@ julia> @btime t();
   17.697 ms (776 allocations: 1.94 MiB)
 ```
 with which we obtain the comparable speed to the `pmap` approach.
-::: info "`remote_do` vs `remote_call`"
+::: info 
+
+"`remote_do` vs `remote_call`"
     Instead of `@spawnat` (`remote_call`) we can also use `remote_do` as foreach`(p -> remote_do(juliaset_channel_worker, p, instructions, results), workers)`, which executes the function `juliaset_channel_worker` at worker `p` with parameters `instructions` and `results` but does not return `Future` handle to receive the future results.
+
 :::
 
-::: info "`Channel` and `RemoteChannel`""
+::: info 
+
+"`Channel` and `RemoteChannel`""
     `AbstractChannel` has to implement the interface `put!`, `take!`, `fetch`, `isready` and `wait`, i.e. it should behave like a queue. `Channel` is an implementation if an `AbstractChannel` that facilitates a communication within a single process (for the purpose of multi-threadding and task switching). Channel can be easily created by `Channel{T}(capacity)`, which can be infinite. The storage of a channel can be seen in `data` field, but a direct access will of course break all guarantees like atomicity of `take!` and `put!`.  For communication between proccesses, the `<:AbstractChannel` has to be wrapped in `RemoteChannel`. The constructor for `RemoteChannel(f::Function, pid::Integer=myid())` has a first argument a function (without arguments) which constructs the `Channel` (or something like that) on the remote machine identified by `pid` and returns the `RemoteChannel`. The storage thus resides on the machine specified by `pid` and the handle provided by the `RemoteChannel` can be freely passed to any process. (For curious, `ProcessGroup` `Distributed.PGRP` contains an information about channels on machines.) 
+
 :::
 
 In the above example, `juliaset_channel_worker` defined as 
