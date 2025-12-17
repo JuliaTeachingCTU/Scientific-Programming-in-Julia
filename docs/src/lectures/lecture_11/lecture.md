@@ -225,7 +225,6 @@ img = juliaset_pixel.(cuis, cujs, n);
 
 === Metal
 
-
 ```julia
 using Metal
 using BenchmarkTools
@@ -290,6 +289,11 @@ is about `315` μs, which still 160x faster.
 In the output of the profiler we see that there is a lot of overhead caused by launching the kernel itself and then, the execution is relatively fast. 
 
 While Julia's JAoT greatly enhances the power of prepared kernels, you might quickly run into a case, when you are able to perform the operation on GPU, but it is very slow. Sometimes, it might be just faster to move the array to CPU, perform the operation there and move it back to GPU. Although this sounds like a pretty bad idea, it actually works very well see below.
+
+:::tabs
+
+== CUDA
+
 ```julia
 using Mill
 using Random
@@ -325,6 +329,48 @@ naive(cx, bags, cz);
 @btime CUDA.@sync naive(cx, bags, cz);
 @btime CUDA.@sync CuArray(builtin(Array(cx), bags, Array(cz)));
 ```
+
+== Metal
+
+
+```julia
+using Mill
+using Random
+using CUDA
+using BenchmarkTools
+n = vcat(rand(1:10,1000), rand(11:100, 100), rand(101:1000,10))
+x = randn(Float32, 128, sum(n))
+z = zeros(Float32, 128, 1)
+bags = Mill.length2bags(n)
+
+builtin(x, bags, z) = Mill.segmented_sum_forw(x, vec(z), bags, nothing)
+
+function naive(x, bags, z)
+  o = similar(x, size(x,1), length(bags))
+  foreach(enumerate(bags)) do (i,b)
+    if isempty(b)
+      o[:,i] .= z
+    else
+      @inbounds o[:,i] = sum(@view(x[:,b]), dims = 2)
+    end
+  end
+  o
+end
+
+builtin(x, bags, z) ≈ naive(x, bags, z)
+@btime builtin(x, bags, z);
+@btime naive(x, bags, z);
+
+
+cx = CuArray(x);
+cz = CuArray(z);
+naive(cx, bags, cz);
+@btime CUDA.@sync naive(cx, bags, cz);
+@btime CUDA.@sync CuArray(builtin(Array(cx), bags, Array(cz)));
+```
+
+:::
+
 
 ## [Writing own CUDA kernels](@id gpu_lecture_yes_kernel)
 Before diving into details, let's recall some basic from the above HW section:
