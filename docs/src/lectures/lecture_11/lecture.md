@@ -336,7 +336,7 @@ naive(cx, bags, cz);
 ```julia
 using Mill
 using Random
-using CUDA
+using Metal
 using BenchmarkTools
 n = vcat(rand(1:10,1000), rand(11:100, 100), rand(101:1000,10))
 x = randn(Float32, 128, sum(n))
@@ -362,11 +362,11 @@ builtin(x, bags, z) ≈ naive(x, bags, z)
 @btime naive(x, bags, z);
 
 
-cx = CuArray(x);
-cz = CuArray(z);
+cx = MtlArray(x);
+cz = MtlArray(z);
 naive(cx, bags, cz);
-@btime CUDA.@sync naive(cx, bags, cz);
-@btime CUDA.@sync CuArray(builtin(Array(cx), bags, Array(cz)));
+@btime Metal.@sync naive(cx, bags, cz);
+@btime Metal.@sync MtlArray(builtin(Array(cx), bags, Array(cz)));
 ```
 
 :::
@@ -383,6 +383,11 @@ Before diving into details, let's recall some basic from the above HW section:
 where `threadIdx().x` is the index of the thread within the block, `blockDim().x` is the total number of threads in the block, and `blockIdx().x` is the index of the block within the grid. `x` property suggest that you can partition the execution along three-dimensional cube (three nested for loops), which might be sometimes useful.
 
 The most trivial example of a kernel is addition as 
+
+::: tabs
+
+== CUDA
+
 ```julia
 function vadd!(c, a, b, n)
     i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
@@ -396,8 +401,32 @@ a = CuArray(Float32.(1:10000))
 b = CuArray(Float32.(2:2:20000))
 c = similar(a)
 @cuda threads=1024 blocks=cld(length(a), 1024) vadd!(c, a, b, length(a))
-c
 ```
+
+== KernelAbstractions
+
+```julia
+using Metal
+import KernelAbstractions as KA
+@kernel function vadd!(c, a, b, n)
+    i = @index(Global)
+    if i ≤ n
+      @inbounds c[i] = a[i] + b[i]
+    end
+end
+
+a = MtlArray(Float32.(1:10000))
+b = MtlArray(Float32.(2:2:20000))
+c = similar(a)
+
+backend = KA.get_backend(a)
+vadd!(backend, 64)(c, a, b, length(a), ndrange=size(a))
+synchronize(backend)
+all(@. c == a + b)
+```
+
+:::
+
 where
 * we have defined a kernel function `vadd` which looks more or less like normal Julia function, except it returns nothing and it contains identification of an item within loop `i = threadIdx().x + (blockIdx().x - 1) * blockDim().x`.
 * we have pre-allocated space to store results for `vadd` in `c`
