@@ -113,7 +113,7 @@ cx * cy
 x * y ≈ Matrix(cx * cy)
 ```
 
-=== Metal
+== Metal
 
 ```julia
 using Metal
@@ -223,7 +223,7 @@ img = juliaset_pixel.(cuis, cujs, n);
 @btime CUDA.@sync juliaset_pixel.(cuis, cujs, n);
 ```
 
-=== Metal
+== Metal
 
 ```julia
 using Metal
