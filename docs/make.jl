@@ -53,7 +53,8 @@ pages = [
         "9: Automatic differentiation 2" => "lecture_09/lecture_v2.md",
         "X: Manipulating Intermediate Represenation (IR)" => "lecture_09/lecture_v1.md",
         "10: Uncertainty propagation" => "lecture_12/lecture.md",
-        "11: Parallel programming" => "lecture_10/lecture.md"
+        "11: Parallel programming" => "lecture_10/lecture.md",
+        "12: GPU programming" => "lecture_11/lecture.md"
     ]),
     "Labs" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/lab.md",
@@ -66,7 +67,8 @@ pages = [
         "8: Automatic differentiation 1" => "lecture_08/lab.md",
         "9: Custom Rules For Differentiation" => "lecture_09/lab.md",
         "10: Uncertainty propagation" => "lecture_12/lab.md",
-        "11: Parallel programming" => "lecture_10/lab.md"
+        "11: Parallel programming" => "lecture_10/lab.md",
+        "12: GPU programming" => "lecture_11/lab.md"
     ]),
     "Homeworks" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/hw.md",
