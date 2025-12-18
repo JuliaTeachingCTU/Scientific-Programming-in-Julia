@@ -943,10 +943,10 @@ When we wish to launch kernel using `@cuda (config...) function(args...)`, the j
 * [SIMD < SIMT < SMT: parallelism in NVIDIA GPUs](http://yosefk.com/blog/simd-simt-smt-parallelism-in-nvidia-gpus.html)
 * [Blog by Mike Innes on GPU programming and gradients for free](http://mikeinnes.github.io/2017/08/24/cudanative.html)
 * [Tutorial on GPU programming at JuliaCon 2021](https://www.youtube.com/watch?v=Hz9IMJuW5hU)
-* [Materials for tutorial on GPU programming at JuliaCon 2021](https://github.com/maleadt/juliacon21-gpu_workshop/blob/main/deep_dive/CUDA.ipynb)
 * [Using CUDA Warp-Level Primitives](https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/)
 * https://juliagpu.org/post/2020-11-05-oneapi_0.1/
 * https://www.youtube.com/watch?v=aKRv-W9Eg8g
+* [GPU vs TPU](https://jax-ml.github.io/scaling-book/gpus/)
 * [Kernels without borders: Parallel programming with KernelAbstractions.jl, Tim Bessard, 2015](https://www.youtube.com/watch?v=F4S6LpLPO7A&list=PLP8iPy9hna6TJMLEiZZiWAXlyGtOyJSL7&index=21)
 
 [^bpf]: https://ebpf.io/
