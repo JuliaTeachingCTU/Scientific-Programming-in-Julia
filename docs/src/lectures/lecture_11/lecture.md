@@ -650,28 +650,28 @@ To extend the above for multiple blocks, we need to add reduction over blocks. T
 using CUDA, BenchmarkTools
 
 function reduce_grid_atomic(op, a, b)
-    elements = 2*blockDim().x
-    offset = 2*(blockIdx().x - 1) * blockDim().x
-    thread = threadIdx().x
+  elements = 2*blockDim().x
+  offset = 2*(blockIdx().x - 1) * blockDim().x
+  thread = threadIdx().x
 
-    # parallel reduction of values within the single block
-    d = 1
-    while d < elements
-        sync_threads()
-        index = 2 * d * (thread-1) + 1
-        @inbounds if index <= elements && index+d+offset <= length(a)
-        	index += offset
-            a[index] = op(a[index], a[index+d])
-        end
-        d *= 2
+  # parallel reduction of values within the single block
+  d = 1
+  while d < elements
+    sync_threads()
+    index = 2 * d * (thread-1) + 1
+    @inbounds if index <= elements && index+d+offset <= length(a)
+      index += offset
+      a[index] = op(a[index], a[index+d])
     end
-    
-    # atomic reduction of this block's value
-    if thread == 1
-        CUDA.@atomic b[] = op(b[], a[offset + 1])
-    end
+    d *= 2
+  end
 
-    return
+  # atomic reduction of this block's value
+  if thread == 1
+    CUDA.@atomic b[] = op(b[], a[offset + 1])
+  end
+
+  return
 end
 
 x = rand(Float32, 1024, 1024)
@@ -688,27 +688,27 @@ sum(x)
 using Atomix, Metal, KernelAbstractions, BenchmarkTools
 
 @kernel function reduce_grid_atomic(a, b)
-    block_dim = prod(@groupsize())
-    elements = 2*block_dim
-    offset = 2*(@index(Group) - 1) * block_dim
-    thread = @index(Local)
+  block_dim = prod(@groupsize())
+  elements = 2*block_dim
+  offset = 2*(@index(Group) - 1) * block_dim
+  thread = @index(Local)
 
-    # parallel reduction of values within the single block
-    d = 1
-    while d < elements
-        @synchronize()
-        index = 2 * d * (thread-1) + 1
-        if  index <= elements && index+d+offset <= length(a)
-            index += offset
-            @inbounds a[index] += a[index+d]
-        end
-        d *= 2
+  # parallel reduction of values within the single block
+  d = 1
+  while d < elements
+    @synchronize()
+    index = 2 * d * (thread-1) + 1
+    if  index <= elements && index+d+offset <= length(a)
+      index += offset
+      @inbounds a[index] += a[index+d]
     end
-    
-    # atomic reduction of this block's value
-    if thread == 1
-        Atomix.@atomic b[] += a[offset + 1]
-    end
+    d *= 2
+  end
+
+  # atomic reduction of this block's value
+  if thread == 1
+    Atomix.@atomic b[] += a[offset + 1]
+  end
 end
 
 x = rand(Float32, 1024, 1024)
@@ -729,30 +729,30 @@ Recall that each block is executed on a separate SM, each equipped with the loca
 
 ```julia
 function reduce_grid_localmem(op, a::AbstractArray{T}, b) where {T}
-    elements = 2*blockDim().x
-    offset = 2*(blockIdx().x - 1) * blockDim().x
-    thread = threadIdx().x
+  elements = 2*blockDim().x
+  offset = 2*(blockIdx().x - 1) * blockDim().x
+  thread = threadIdx().x
 
-    shared = @cuStaticSharedMem(T, (2048,))
-    @inbounds shared[thread] = a[offset+thread]
-    @inbounds shared[thread+blockDim().x] = a[offset+thread+blockDim().x]
+  shared = @cuStaticSharedMem(T, (2048,))
+  @inbounds shared[thread] = a[offset+thread]
+  @inbounds shared[thread+blockDim().x] = a[offset+thread+blockDim().x]
 
-    # parallel reduction of values within the single block
-    d = 1
-    while d < elements
-        sync_threads()
-        index = 2 * d * (thread-1) + 1
-        @inbounds if index <= elements && index+d+offset <= length(a)
-            shared[index] = op(shared[index], shared[index+d])
-        end
-        d *= 2
+  # parallel reduction of values within the single block
+  d = 1
+  while d < elements
+    sync_threads()
+    index = 2 * d * (thread-1) + 1
+    if index <= elements && index+d+offset <= length(a)
+      @inbounds shared[index] = op(shared[index], shared[index+d])
     end
-    
-    # atomic reduction of this block's value to the global accumulator
-    if thread == 1
-        CUDA.@atomic b[] = op(b[], a[offset + 1])
-    end
-    return
+    d *= 2
+  end
+
+  # atomic reduction of this block's value to the global accumulator
+  if thread == 1
+    CUDA.@atomic b[] = op(b[], a[offset + 1])
+  end
+  return
 end
 
 x = rand(Float32, 1024, 1024)
@@ -769,30 +769,30 @@ sum(x)
 
 ```julia
 @kernel function reduce_grid_localmem(a, b)
-    block_dim = prod(@groupsize())
-    elements = 2*block_dim
-    offset = 2*(@index(Group) - 1) * block_dim
-    thread = @index(Local)
+  block_dim = prod(@groupsize())
+  elements = 2*block_dim
+  offset = 2*(@index(Group) - 1) * block_dim
+  thread = @index(Local)
 
-    shmem = @localmem eltype(a) 2048
-    @inbounds shmem[thread] = offset+thread ≤ length(a) ? a[offset+thread] : 0
-    @inbounds shmem[thread+block_dim] =  offset+thread+block_dim ≤ length(a) ? a[offset+thread+block_dim] : 0
+  shmem = @localmem eltype(a) 2048
+  @inbounds shmem[thread] = offset+thread ≤ length(a) ? a[offset+thread] : 0
+  @inbounds shmem[thread+block_dim] =  offset+thread+block_dim ≤ length(a) ? a[offset+thread+block_dim] : 0
+  @synchronize()
+  # parallel reduction of values within the single block
+  d = 1
+  while d < elements
+    index = 2 * d * (thread-1) + 1
+    if index + d <= elements
+      @inbounds shmem[index] += shmem[index+d]
+    end
+    d *= 2
     @synchronize()
-    # parallel reduction of values within the single block
-    d = 1
-    while d < elements
-        index = 2 * d * (thread-1) + 1
-        if index + d <= elements
-            @inbounds shmem[index] += shmem[index+d]
-        end
-        d *= 2
-        @synchronize()
-    end
-    
-    # atomic reduction of this block's value to the global accumulator
-    if thread == 1
-        Atomix.@atomic b[] += shmem[1]
-    end
+  end
+
+  # atomic reduction of this block's value to the global accumulator
+  if thread == 1
+    Atomix.@atomic b[] += shmem[1]
+  end
 end
 ```
 
