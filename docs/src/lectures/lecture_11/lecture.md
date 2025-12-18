@@ -498,6 +498,8 @@ For the sake of completness, we benchmark the speed of the kernel for comparison
 @benchmark Metal.@sync  reduce_singlethread(backend, 64)(+, cx, cb, ndrange=(1,))
 ```
 
+:::
+
 We can use **atomic** operations to mark that the reduction operation has to be performed exclusively. This have the advantage that we can do some operation while fetching the data, but it is still a very bad idea.
 
 ::: tabs
@@ -893,13 +895,13 @@ Let's now compare different versions and tabulate the results
 
 | kernel version                                       |    min time |
 |:-----------------------------------------------------|:-----------:|
-| single thread                                        |   56.399 ms |
-| multiple threads with atomic reduction               |    1.772 ms |
-| parallel reduction                                   |   33.381 μs |
-| parallel reduction with local mem                    |   34.261 μs |
-| parallel reduction with warps                        |   26.890 μs |
-| default sum on GPU                                   |   31.960 μs |
-| default sum on CPU                                   |   82.391 μs |
+| single thread                                        |   71.780 ms |
+| multiple threads with atomic reduction               |    2.197 ms |
+| parallel reduction                                   |   29.300 μs |
+| parallel reduction with local mem                    |   26.764 μs |
+| parallel reduction with warps                        |   25.063 μs |
+| default sum on GPU                                   |   47.090 μs |
+| default sum on CPU                                   |  165.697 μs |
 
 
 What we have missed to optimize:
