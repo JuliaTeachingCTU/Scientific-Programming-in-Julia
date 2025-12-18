@@ -791,6 +791,9 @@ sum(x)
     end
 end
 ```
+
+:::
+
 The performance improvement is negligible, but that's because we have a relatively new GPU with lots of global memory bandwith. On older or lower-end GPUs, using shared memory would be valuable. But at least, we are not modifying the original array. 
 
 If we inspect the above kernel in profiler, we can read that it uses 32 registers per thread. But if the SM has 16384 registers, then block of size 1024 will have to share registers, which might lead to poor utilization. Changing the blocksize to 512 improves the throughput a bit as can be seen from below
