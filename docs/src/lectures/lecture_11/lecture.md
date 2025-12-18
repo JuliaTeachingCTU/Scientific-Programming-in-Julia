@@ -307,15 +307,15 @@ bags = Mill.length2bags(n)
 builtin(x, bags, z) = Mill.segmented_sum_forw(x, vec(z), bags, nothing)
 
 function naive(x, bags, z)
-	o = similar(x, size(x,1), length(bags))
-	foreach(enumerate(bags)) do (i,b)
-		if isempty(b)
-			o[:,i] .= z
-		else
-			@inbounds o[:,i] = sum(@view(x[:,b]), dims = 2)
-		end
-	end
-	o
+  o = similar(x, size(x,1), length(bags))
+  foreach(enumerate(bags)) do (i,b)
+    if isempty(b)
+      o[:,i] .= z
+    else
+      @inbounds o[:,i] = sum(@view(x[:,b]), dims = 2)
+    end
+  end
+  o
 end
 
 builtin(x, bags, z) ≈ naive(x, bags, z)
@@ -389,39 +389,39 @@ The most trivial example of a kernel is addition as
 == CUDA
 
 ```julia
+using CUDA
 function vadd!(c, a, b, n)
-    i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
-    if i <= n
-	    c[i] = a[i] + b[i]
-    end
-    return
+  i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
+  if i <= n
+    c[i] = a[i] + b[i]
+  end
+  return
 end
 
 a = CuArray(Float32.(1:10000))
 b = CuArray(Float32.(2:2:20000))
 c = similar(a)
 @cuda threads=1024 blocks=cld(length(a), 1024) vadd!(c, a, b, length(a))
+all(@. c == a + b)
 ```
 
 == KernelAbstractions with Metal
 
 ```julia
-using Metal
-import KernelAbstractions as KA
+using Metal, KernelAbstractions
 @kernel function vadd!(c, a, b, n)
-    i = @index(Global)
-    if i ≤ n
-      @inbounds c[i] = a[i] + b[i]
-    end
+  i = @index(Global)
+  if i ≤ n
+    @inbounds c[i] = a[i] + b[i]
+  end
 end
 
 a = MtlArray(Float32.(1:10000))
 b = MtlArray(Float32.(2:2:20000))
 c = similar(a)
 
-backend = KA.get_backend(a)
+backend = KernelAbstractions.get_backend(a)
 vadd!(backend, 64)(c, a, b, length(a), ndrange=size(a))
-synchronize(backend)
 all(@. c == a + b)
 ```
 
@@ -507,12 +507,14 @@ We can use **atomic** operations to mark that the reduction operation has to be 
 == Cuda
 
 ```julia
+using CUDA, BenchmarkTools
+
 function reduce_atomic(op, a, b)
-    i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
-    if i <= length(a)
-	    CUDA.@atomic b[] = op(b[], a[i])
-    end
-    return
+  i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
+  if i <= length(a)
+    CUDA.@atomic b[] = op(b[], a[i])
+  end
+  return
 end
 
 x = rand(Float32, 1024, 1024)
@@ -528,16 +530,16 @@ sum(x)
 == KernelAbstractions with Metal
 
 ```julia
-using Atomix
+using Atomix, Metal, KernelAbstractions, BenchmarkTools
 
 @kernel function reduce_atomic(a, b)
-    i = @index(Global)
-    Atomix.@atomic b[] += a[i]
+  i = @index(Global)
+  Atomix.@atomic b[] += a[i]
 end
 
 x = rand(Float32, 1024, 1024);
 cx = MtlArray(x);
-backend = KA.get_backend(cx);
+backend = KernelAbstractions.get_backend(cx);
 # cb = zeros(backend, Float32, 1)
 cb = MtlArray([0f0]);
 reduce_atomic(backend, 64)(+, cx, cb, ndrange=size(cx))
@@ -563,28 +565,30 @@ The parallel reduction is tricky. **Let's assume that we are allowed to overwrit
 == CUDA
 
 ```julia
-function reduce_block(op, a, b)
-    elements = 2* blockDim().x
-    thread = threadIdx().x
+using CUDA, BenchmarkTools
 
-    # parallel reduction of values in a block
-    d = 1
-    while d < elements
-        sync_threads()
-        index = 2 * d * (thread-1) + 1
-        @inbounds if index <= elements && index+d <= length(a)
-            @cuprintln "thread $thread: a[$index] + a[$(index+d)] = $(a[index]) + $(a[index+d]) = $(op(a[index], a[index+d]))"
-            a[index] = op(a[index], a[index+d])
-        end
-        d *= 2
-        thread == 1 && @cuprintln()
+function reduce_block(op, a, b)
+  elements = 2* blockDim().x
+  thread = threadIdx().x
+
+  # parallel reduction of values in a block
+  d = 1
+  while d < elements
+    sync_threads()
+    index = 2 * d * (thread-1) + 1
+    @inbounds if index <= elements && index+d <= length(a)
+      @cuprintln "thread $thread: a[$index] + a[$(index+d)] = $(a[index]) + $(a[index+d]) = $(op(a[index], a[index+d]))"
+      a[index] = op(a[index], a[index+d])
     end
-    
-    if thread == 1
-        b[] = a[1]
-    end
-    
-    return
+    d *= 2
+    thread == 1 && @cuprintln()
+  end
+
+  if thread == 1
+    b[] = a[1]
+  end
+
+  return
 end
 
 a = CuArray(1:16);
@@ -597,32 +601,29 @@ CUDA.@allowscalar b[]
 == KernelAbstractions with Metal
 
 ```julia
-using Metal, BenchmarkTools
-using KernelAbstractions
-import KernelAbstractions as KA
-using Atomix
+using Atomix, Metal, KernelAbstractions, BenchmarkTools
 
 
 @kernel function reduce_block(a, b)
-    elements = 2 * prod(@groupsize())
-    thread = @index(Local)
+  elements = 2 * prod(@groupsize())
+  thread = @index(Local)
 
-    # parallel reduction of values in a block
-    d = 1
-    while d < elements
-        index = 2 * d * (thread-1) + 1
-        if index <= elements && index+d <= length(a)
-            KA.@print "thread $thread: a[$index] + a[$(index+d)] = $(a[index]) + $(a[index+d]) = $(a[index] + a[index+d]))"
-            a[index] += a[index+d]
-        end
-        d *= 2
-        thread == 1 && KA.@print "\n"
-        @synchronize
+  # parallel reduction of values in a block
+  d = 1
+  while d < elements
+    index = 2 * d * (thread-1) + 1
+    if index <= elements && index+d <= length(a)
+      KA.@print "thread $thread: a[$index] + a[$(index+d)] = $(a[index]) + $(a[index+d]) = $(a[index] + a[index+d]))"
+      a[index] += a[index+d]
     end
-    
-    if thread == 1
-        b[] = a[1]
-    end
+    d *= 2
+    thread == 1 && KA.@print "\n"
+    @synchronize
+  end
+
+  if thread == 1
+    b[] = a[1]
+  end
 end
 
 a = MtlArray(1:16);
@@ -646,6 +647,8 @@ To extend the above for multiple blocks, we need to add reduction over blocks. T
 == Cuda
 
 ```julia
+using CUDA, BenchmarkTools
+
 function reduce_grid_atomic(op, a, b)
     elements = 2*blockDim().x
     offset = 2*(blockIdx().x - 1) * blockDim().x
@@ -682,6 +685,7 @@ sum(x)
 == KernelAbstractions with Metal
 
 ```julia
+using Atomix, Metal, KernelAbstractions, BenchmarkTools
 
 @kernel function reduce_grid_atomic(a, b)
     block_dim = prod(@groupsize())
