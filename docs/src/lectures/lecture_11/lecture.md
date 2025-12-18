@@ -403,7 +403,7 @@ c = similar(a)
 @cuda threads=1024 blocks=cld(length(a), 1024) vadd!(c, a, b, length(a))
 ```
 
-== KernelAbstractions
+== KernelAbstractions with Metal
 
 ```julia
 using Metal
@@ -437,6 +437,11 @@ where
 While the `vadd` example is nice, it is trivial and can be achieved by `map` as shown above. A simple operation that is everything but trivial to implement is *reduction*, since it ends up in a single operation. It also allows to demonstrate, why efficient kernels needs to be written at three levels: warp, block, and grid. The exposition below is based on [JuliaCon tutorial on GPU programming](https://github.com/maleadt/juliacon21-gpu_workshop/blob/main/deep_dive/CUDA.ipynb).
 
 The first naive implementation might looks like
+
+::: tabs
+
+== Cuda
+
 ```julia
 function reduce_singlethread(op, a, b)
     for i in 1:length(a)
@@ -452,16 +457,53 @@ cb = CUDA.zeros(1)
 CUDA.@allowscalar cb[]
 sum(x)
 ```
+
+== KernelAbstractions with Metal
+
+```julia
+@kernel function reduce_singlethread(op, a, b)
+    for i in 1:length(a)
+        @inbounds b[] = op(b[], a[i])
+    end
+end
+
+x = rand(Float32, 1024, 1024)
+cx = MtlArray(x)
+cb = MtlArray([0f0])
+backend = KA.get_backend(cx)
+reduce_singlethread(backend, 64)(+, cx, cb, ndrange=(1,))
+Metal.GPUArraysCore.@allowscalar cb[]
+sum(x)
+```
+
+:::
+
 and it is pretty terrible, because all the hard work is done by a single thread. The result of the kernel is different from that of `sum` operation. Why is that? This discrepancy is caused by the order of the arithmetic operations, which can be verified by computing the sum as in the kernel as
 ```julia 
 foldl(+, x, init=0f0)
 ```
 For the sake of completness, we benchmark the speed of the kernel for comparison later on
+
+::: tabs
+
+== Cuda
+
 ```julia
 @benchmark CUDA.@sync @cuda threads=1 reduce_singlethread(+, $(CUDA.rand(1024,1024)), $(CUDA.zeros(1)))
 ```
 
+== KernelAbstractions with Metal
+
+```julia
+@benchmark Metal.@sync  reduce_singlethread(backend, 64)(+, cx, cb, ndrange=(1,))
+```
+
 We can use **atomic** operations to mark that the reduction operation has to be performed exclusively. This have the advantage that we can do some operation while fetching the data, but it is still a very bad idea.
+
+::: tabs
+
+== Cuda
+
 ```julia
 function reduce_atomic(op, a, b)
     i = threadIdx().x + (blockIdx().x - 1) * blockDim().x
@@ -480,6 +522,31 @@ sum(x)
 
 @benchmark CUDA.@sync @cuda threads=1024 blocks=1024 reduce_atomic(+, $(CUDA.rand(1024,1024)), $(CUDA.zeros(1)))
 ```
+
+== KernelAbstractions with Metal
+
+```julia
+using Atomix
+
+@kernel function reduce_atomic(a, b)
+    i = @index(Global)
+    Atomix.@atomic b[] += a[i]
+end
+
+x = rand(Float32, 1024, 1024);
+cx = MtlArray(x);
+backend = KA.get_backend(cx);
+# cb = zeros(backend, Float32, 1)
+cb = MtlArray([0f0]);
+reduce_atomic(backend, 64)(+, cx, cb, ndrange=size(cx))
+Metal.GPUArraysCore.@allowscalar cb[]
+sum(x)
+
+@benchmark Metal.@sync reduce_atomic(backend, 64)(cx, cb, ndrange=size(cx))
+```
+
+:::
+
 This solution is better then the single-threadded version, but still very poor.
 
 Let's take the problem seriously. If we want to use paralelism in reduction, we need to perform parallel reduction as shown in the figure below[^2]
@@ -488,6 +555,10 @@ Let's take the problem seriously. If we want to use paralelism in reduction, we 
 [^2]: Taken from [url](https://riptutorial.com/cuda/topic/6566/parallel-reduction--e-g--how-to-sum-an-array-)
 
 The parallel reduction is tricky. **Let's assume that we are allowed to overwrite the first argument a**. This is relatively safe assumption, since we can always create a copy of `a` before launching the kernel.
+
+::: tabs
+
+== CUDA
 
 ```julia
 function reduce_block(op, a, b)
@@ -520,6 +591,46 @@ b = CuArray([0]);
 CUDA.@allowscalar b[]
 
 ```
+
+== KernelAbstractions with Metal
+
+```julia
+using Metal, BenchmarkTools
+using KernelAbstractions
+import KernelAbstractions as KA
+using Atomix
+
+
+@kernel function reduce_block(a, b)
+    elements = 2 * prod(@groupsize())
+    thread = @index(Local)
+
+    # parallel reduction of values in a block
+    d = 1
+    while d < elements
+        index = 2 * d * (thread-1) + 1
+        if index <= elements && index+d <= length(a)
+            KA.@print "thread $thread: a[$index] + a[$(index+d)] = $(a[index]) + $(a[index+d]) = $(a[index] + a[index+d]))"
+            a[index] += a[index+d]
+        end
+        d *= 2
+        thread == 1 && KA.@print "\n"
+        @synchronize
+    end
+    
+    if thread == 1
+        b[] = a[1]
+    end
+end
+
+a = MtlArray(1:16);
+b = MtlArray([0]);
+backend = KA.get_backend(a);
+reduce_block(backend, 64)(a, b, ndrange = size(a));
+Metal.GPUArraysCore.@allowscalar b[]
+```
+
+:::
 * The while loop iterates over the levels of the reduction, performing $$2^{\log(\textrm{blockDim}) - d + 1})$$ reductions.
 * We need to sychronize threads by `sync_threads`, such that all reductions on the level below are finished
 * The output of the reduction will be stored in `a[1]`
@@ -527,6 +638,11 @@ CUDA.@allowscalar b[]
 * Notice how the number of threads doing some work decreases, which unfortunately inevitable consequence of `reduce` operation.
 
 To extend the above for multiple blocks, we need to add reduction over blocks. The idea would be to execute the above loop for each block independently, and then, on the end, the first thread would do the reduction over blocks, as 
+
+::: tabs
+
+== Cuda
+
 ```julia
 function reduce_grid_atomic(op, a, b)
     elements = 2*blockDim().x
@@ -561,7 +677,50 @@ CUDA.@allowscalar cb[]
 sum(x)
 ```
 
+== KernelAbstractions with Metal
+
+```julia
+
+@kernel function reduce_grid_atomic(a, b)
+    block_dim = prod(@groupsize())
+    elements = 2*block_dim
+    offset = 2*(@index(Group) - 1) * block_dim
+    thread = @index(Local)
+
+    # parallel reduction of values within the single block
+    d = 1
+    while d < elements
+        @synchronize()
+        index = 2 * d * (thread-1) + 1
+        if  index <= elements && index+d+offset <= length(a)
+            index += offset
+            @inbounds a[index] += a[index+d]
+        end
+        d *= 2
+    end
+    
+    # atomic reduction of this block's value
+    if thread == 1
+        Atomix.@atomic b[] += a[offset + 1]
+    end
+end
+
+x = rand(Float32, 1024, 1024)
+cx = MtlArray(x)
+cb = MtlArray([0f0])
+reduce_grid_atomic(backend, 64)(cx, cb, ndrange = size(cx));
+Metal.GPUArraysCore.@allowscalar cb[]
+sum(x)
+```
+
+:::
+
 Recall that each block is executed on a separate SM, each equipped with the local memory. So far, we have been doing all computations in the global memory, which is slow. So how about to copy everything to the local memory and then perform the reduction. This would also have the benefit of not modifying the original arrays. 
+
+::: tabs
+
+== CUDA 
+
 ```julia
 function reduce_grid_localmem(op, a::AbstractArray{T}, b) where {T}
     elements = 2*blockDim().x
@@ -578,8 +737,7 @@ function reduce_grid_localmem(op, a::AbstractArray{T}, b) where {T}
         sync_threads()
         index = 2 * d * (thread-1) + 1
         @inbounds if index <= elements && index+d+offset <= length(a)
-        	index += offset
-            a[index] = op(a[index], a[index+d])
+            shared[index] = op(shared[index], shared[index+d])
         end
         d *= 2
     end
@@ -599,6 +757,37 @@ CUDA.@allowscalar cb[]
 sum(x)
 
 @benchmark CUDA.@sync @cuda threads=1024 blocks=512 reduce_grid_localmem(+, $(CUDA.rand(1024,1024)), $(CUDA.zeros(1)))
+```
+
+== Metal
+
+```julia
+@kernel function reduce_grid_localmem(a, b)
+    block_dim = prod(@groupsize())
+    elements = 2*block_dim
+    offset = 2*(@index(Group) - 1) * block_dim
+    thread = @index(Local)
+
+    shmem = @localmem eltype(a) 2048
+    @inbounds shmem[thread] = offset+thread ≤ length(a) ? a[offset+thread] : 0
+    @inbounds shmem[thread+block_dim] =  offset+thread+block_dim ≤ length(a) ? a[offset+thread+block_dim] : 0
+    @synchronize()
+    # parallel reduction of values within the single block
+    d = 1
+    while d < elements
+        index = 2 * d * (thread-1) + 1
+        if index + d <= elements
+            @inbounds shmem[index] += shmem[index+d]
+        end
+        d *= 2
+        @synchronize()
+    end
+    
+    # atomic reduction of this block's value to the global accumulator
+    if thread == 1
+        Atomix.@atomic b[] += shmem[1]
+    end
+end
 ```
 The performance improvement is negligible, but that's because we have a relatively new GPU with lots of global memory bandwith. On older or lower-end GPUs, using shared memory would be valuable. But at least, we are not modifying the original array. 
 
@@ -753,6 +942,7 @@ When we wish to launch kernel using `@cuda (config...) function(args...)`, the j
 * [Using CUDA Warp-Level Primitives](https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/)
 * https://juliagpu.org/post/2020-11-05-oneapi_0.1/
 * https://www.youtube.com/watch?v=aKRv-W9Eg8g
+* [Kernels without borders: Parallel programming with KernelAbstractions.jl, Tim Bessard, 2015](https://www.youtube.com/watch?v=F4S6LpLPO7A&list=PLP8iPy9hna6TJMLEiZZiWAXlyGtOyJSL7&index=21)
 
 [^bpf]: https://ebpf.io/
 [^bessard18]: Besard, Tim, Christophe Foket, and Bjorn De Sutter. "Effective extensible programming: unleashing Julia on GPUs." IEEE Transactions on Parallel and Distributed Systems 30.4 (2018): 827-841.
