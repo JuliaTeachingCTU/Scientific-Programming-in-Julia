@@ -43,7 +43,7 @@ where the computation of intensities `compute_insity(i, j)` does not contain man
 3. Each streaming multi-processors (SM) has one instruction fetch and decode unit, which means that *all* CUDA cores of that SM *has to* execute the same instruction at a given cycle. This simplifies the design. The execution model therefore roughly corresponds to vector (SIMD) registers in normal CPU, but CUDA cores are not as restricted as SIMD registers. NVidia therefore calls this computation model single instruction multiple threads (SIMT). Main differences:
     1. SIMD requires the memory to be continuous while SIMT does not. 
     2. The programming model of SIMT is explicitly scalar while that of SIMD is explicitly vector. 
-32 CUDA cores each operating over 32bit registers would be equal to 1024bit long vector (SIMD) registers. Modern AMD and Intel processors has 256 bit / 512 bit long registers, which seems similar, as said above in order to use them the data has to be aligned in memory and sometimes they has to be on a particular offset, which might be difficult to achieve in practice (but to be fair, if the data are not aligned in GPU, the loading of data is very inefficient).
+32 CUDA cores each operating over 32bit registers would be equal to 1024bit long vector (SIMD) registers. Modern AMD and Intel processors has 512 bit long registers, which seems similar, as said above in order to use them the data has to be aligned in memory and sometimes they has to be on a particular offset, which might be difficult to achieve in practice (but to be fair, if the data are not aligned in GPU, the loading of data is very inefficient).
 4. 16k registers per SM might seem like a lot, but they are shared between all threads. In modern GPUs, each SM supports up to 2048 threads, which means there might be just 8 32-bit registers per thread.
 5. GPUs do not have virtual memory, interrupts, and cannot address external devices like keyboard and mouse.
 6. GPUs can switch execution contexts of "set of threads" at no cost. In comparison the context switch in CPU is relatively expensive (we need to at least save the content of registers, which is usually sped up by having two sets of registers). This helps to hide latencies, when a set of threads is stalled (they wait for memory access, synchronizing with others).
@@ -92,7 +92,7 @@ A thread can stall, because the instruction it depends on has not finished yet, 
 [image taken from](https://iq.opengenus.org/key-ideas-that-makes-graphics-processing-unit-gpu-so-fast/)
 
 ## [using GPU without writing kernels](@id gpu_lecture_no_kernel)
-Julia, as many other languages, allows to perform certain operations on GPU as you would do on CPU. Thanks to Julia's multiple dispatch, this is almost invisible and it is sufficient to convert the `Array` to `CuArray` to notify the system that array is in GPU's memory.
+Julia, as many other languages, allows to perform certain operations on GPU as you would do on CPU. Thanks to Julia's multiple dispatch, this is almost invisible and it is sufficient to convert the `Array` to `CuArray` (CUDA) / `MtlArray` (Metal) / `oneArray` (OneAPI) / `RocArray` (AMD / ROCm) to notify the system that array is in GPU's memory.
 
 For many widely used operations, we have available kernels, for example below, we use multiplication.
 
@@ -203,13 +203,13 @@ using CUDA
 using BenchmarkTools
 
 function juliaset_pixel(i, j, n)
-	c = ComplexF32(-0.79f0, 0.15f0);
-    z = ComplexF32(-2f0 + (j-1)*4f0/(n-1), -2f0 + (i-1)*4f0/(n-1))
-	for i in UnitRange{Int32}(0:255)
-        abs2(z)> 4.0 && return(i%UInt8)
-        z = z*z + c
-	end
-    return(i%UInt8)
+  c = ComplexF32(-0.79f0, 0.15f0);
+  z = ComplexF32(-2f0 + (j-1)*4f0/(n-1), -2f0 + (i-1)*4f0/(n-1))
+  for i in UnitRange{Int32}(0:255)
+    abs2(z)> 4.0 && return(i%UInt8)
+    z = z*z + c
+  end
+  return(i%UInt8)
 end
 
 n = Int32(1000);
@@ -231,12 +231,12 @@ using BenchmarkTools
 
 function juliaset_pixel(i, j, n)
   c = ComplexF32(-0.79f0, 0.15f0);
-    z = ComplexF32(-2f0 + (j-1)*4f0/(n-1), -2f0 + (i-1)*4f0/(n-1))
+  z = ComplexF32(-2f0 + (j-1)*4f0/(n-1), -2f0 + (i-1)*4f0/(n-1))
   for i in UnitRange{Int32}(0:255)
-        abs2(z)> 4.0 && return(i%UInt8)
-        z = z*z + c
+    abs2(z)> 4.0 && return(i%UInt8)
+    z = z*z + c
   end
-    return(i%UInt8)
+  return(i%UInt8)
 end
 
 n = Int32(1000);
