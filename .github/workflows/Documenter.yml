@@ -3,10 +3,10 @@
 name: Documenter
 
 on:
-  # Runs on pushes targeting the `2025W` branch
+  # Runs on pushes targeting the `2026W` branch
   push:
     branches:
-      - 2025W
+      - 2026W
     tags: ['*']
   pull_request:
 

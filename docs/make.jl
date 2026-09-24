@@ -43,44 +43,12 @@ pages = [
             "Basics" => "basics.md",
             "Examples" => "demo.md",
         ]),
-        "2: The power of type system & multiple dispatch" => "lecture_02/lecture.md",
-        "3: Design patterns" => "lecture_03/lecture.md",
-        "4: Package development, unit tests & CI" => "lecture_04/lecture.md",
-        "5: Performance benchmarking" => "lecture_05/lecture.md",
-        "6: Language introspection" => "lecture_06/lecture.md",
-        "7: Macros" => "lecture_07/lecture.md",
-        "8: Automatic differentiation 1" => "lecture_08/lecture.md",
-        "9: Automatic differentiation 2" => "lecture_09/lecture_v2.md",
-        "X: Manipulating Intermediate Represenation (IR)" => "lecture_09/lecture_v1.md",
-        "10: Uncertainty propagation" => "lecture_12/lecture.md",
-        "11: Parallel programming" => "lecture_10/lecture.md",
-        "12: GPU programming" => "lecture_11/lecture.md"
     ]),
     "Labs" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/lab.md",
-        "2: The power of type system & multiple dispatch" => "lecture_02/lab.md",
-        "3: Design patterns" => "lecture_03/lab.md",
-        "4: Package development, unit tests & CI" => "lecture_04/lab.md",
-        "5: Performance benchmarking" => "lecture_05/lab.md",
-        "6: Language introspection" => "lecture_06/lab.md",
-        "7: Macros" => "lecture_07/lab.md",
-        "8: Automatic differentiation 1" => "lecture_08/lab.md",
-        "9: Custom Rules For Differentiation" => "lecture_09/lab.md",
-        "10: Uncertainty propagation" => "lecture_12/lab.md",
-        "11: Parallel programming" => "lecture_10/lab.md",
-        "12: GPU programming" => "lecture_11/lab.md"
     ]),
     "Homeworks" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/hw.md",
-        "2: The power of type system & multiple dispatch" => "lecture_02/hw.md",
-        "3: Design patterns" => "lecture_03/hw.md",
-        "4: Package development, unit tests & CI" => "lecture_04/hw.md",
-        "5: Performance benchmarking" => "lecture_05/hw.md",
-        "6: Language introspection" => "lecture_06/hw.md",
-        "7: Macros" => "lecture_07/hw.md",
-        "8: Automatic differentiation 1" => "lecture_08/hw.md",
-        "10: Uncertainty propagation" => "lecture_12/hw.md",
-        "11: Parallel programming" => "lecture_10/hw.md"
     ]),
 
     "Projects" => add_prefix("./projects", [
@@ -112,7 +80,7 @@ makedocs(;
 DocumenterVitepress.deploydocs(;
     repo=replace(Remotes.repourl(repo), "https://" => ""),
     target=joinpath(@__DIR__, "build"),
-    devbranch="2025W",
+    devbranch="2026W",
     branch="gh-pages",
     push_preview=true,
 )

@@ -1,3 +1,0 @@
-ForwardDiff.jl: 215920.0
-ReverseDiff.jl: 794220.7
-Zygote.jl:  20034.84
