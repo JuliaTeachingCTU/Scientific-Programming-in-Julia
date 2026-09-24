@@ -79,7 +79,7 @@ Would this work with `scipy.integrate.solve_ivp`?
 ## Back to the optimization example
 
 ```julia
-optimize(z -> P(z...), z₀, Newton(); autodiff = :forward)
+optimize(z -> P(z...), z₀, Newton(); autodiff = AutoForwardDiff())
 ```
 
 How does Optim get the gradient of `P`? 
@@ -90,11 +90,11 @@ Hint: ForwardDiff defines a new number type, just like Measurements.
 
  1. **compilation** of everything to as specialized as possible
     + ✅ very fast code
-    - ❌ slow interaction (caching...)
+    - ❌ slow interaction (caching..., much improved since 1.9)
     - ❌ generating libraries is harder 
         - think of ```fsum```, 
         - everything is ".h"  (Eigen library)
-        - less concern with standalone executable/library compilation, Application binary interface (ABI)
+        - less concern with standalone executable/library compilation, Application binary interface (ABI), experimental `--trim` since 1.12
     - ❌ debugging is different to matlab/python
 
  2. **extensibility**, Multiple dispatch = multi-functions
@@ -102,4 +102,4 @@ Hint: ForwardDiff defines a new number type, just like Measurements.
     - ❌ not (yet) mainstream thinking
     - ❌ Julia is not Object-oriented
     - ❌ Julia is (not pure) functional language
-    - ❌ less concern with public/private separation
+    - ❌ less concern with public/private separation (`public` keyword since 1.11)

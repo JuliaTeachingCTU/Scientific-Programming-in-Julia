@@ -4,7 +4,7 @@ versioninfo()
 println("-------------------------------------------------------------------------")
 println("Julia started from terminal without args: ", length(ARGS) == 0 ? "✔" : "✗")
 println("Running from the same folder as this script: ", isfile("./test_setup.jl") ? "✔" : "✗")
-println("Running Julia 1.6.0 or above: ", VERSION >= v"1.6.0" ? "✔" : "✗")
+println("Running Julia 1.13.0 or above: ", VERSION >= v"1.13.0" ? "✔" : "✗")
 
 name = try
 	readchomp(`git config user.name`)

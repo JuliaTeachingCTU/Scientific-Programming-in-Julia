@@ -6,7 +6,7 @@ coding. For more detailed introduction you can check out Lectures 1-3 of the bac
 
 ## Testing Julia installation (custom setup)
 
-In order to proceed further let's run a simple [script](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/master/docs/src/lecture_01/test_setup.jl) to see, that the setup described in chapter [Installation](@ref install) is working properly.
+In order to proceed further let's run a simple [script](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2026W/docs/src/lectures/lecture_01/test_setup.jl) to see, that the setup described in chapter [Installation](@ref install) is working properly.
 After spawning a terminal/cmdline run this command:
 
 ```bash
@@ -22,7 +22,7 @@ The script does the following
 - Creates an environment configuration files
 - Installs a basic pkg called BenchmarkTools, which we will use for benchmarking a simple function later in the labs.
 
-There are some quality of life improvements over long term support versions of Julia and thus throughout this course we will use the latest stable release of Julia 1.6.x.
+There are some quality of life improvements over long term support versions of Julia and thus throughout this course we will use the latest stable release of Julia 1.13.x.
 
 ## Polynomial evaluation example
 
@@ -606,10 +606,10 @@ The output of such command usually indicates the general environment located at 
 
 ```julia
 pkg> status
-Status `~/.julia/environments/v1.6/Project.toml` (empty project)
+Status `~/.julia/environments/v1.13/Project.toml` (empty project)
 ```
 
-Generally one should avoid working in the general environment, with the exception of some generic pkgs, such as `PkgTemplates.jl`, which is used for generating library templates/folder structure like the one above ([link](https://github.com/invenia/PkgTemplates.jl)), more on this in the lecture on pkg development. 
+Generally one should avoid working in the general environment, with the exception of some generic pkgs, such as `PkgTemplates.jl`, which is used for generating library templates/folder structure like the one above ([link](https://github.com/JuliaCI/PkgTemplates.jl)), more on this in the lecture on pkg development. 
 
 
 ::: warning Exercise
@@ -674,10 +674,10 @@ With the next lecture focused on typing in Julia, it is worth noting that polyno
 
 ```julia
 struct Polynom{C}
-    coefficients::{C}
+    coefficients::C
 end
 
-function (p:Polynom)(x)
+function (p::Polynom)(x)
     polynomial(p.coefficients, x)
 end
 ```
@@ -772,7 +772,7 @@ Unless there is variable `I_am_not_defined` in the global scope, the following s
 I_am_not_defined
 ```
 
-Often these kind of errors arise as a result of bad code practices, such as long running sessions of Julia having long forgotten global variables, that do not exist upon new execution (this one in particular has been addressed by the authors of the reactive Julia notebooks [Pluto.jl](https://github.com/fonsp/Pluto.jl)).
+Often these kind of errors arise as a result of bad code practices, such as long running sessions of Julia having long forgotten global variables, that do not exist upon new execution (this one in particular has been addressed by the authors of the reactive Julia notebooks [Pluto.jl](https://github.com/JuliaPluto/Pluto.jl)).
 
 For more details on code scoping we recommend particular places in the bachelor course lectures [here](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/lecture_02/scope/#Soft-local-scope) and [there](https://juliateachingctu.github.io/Julia-for-Optimization-and-Learning/stable/lecture_03/scope/#Scope-of-variables).
 

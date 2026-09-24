@@ -6,14 +6,14 @@ of creating/testing and distributing your own Julia code, for which we will requ
 account.
 
 We recommend to install Julia via [`juliaup`](https://github.com/JuliaLang/juliaup). We are using
-the latest, *stable* version of Julia (which at the time of this writing is `v1.9`). Once you have
+the latest, *stable* version of Julia (which at the time of this writing is `v1.13`). Once you have
 installed `juliaup` you can get any Julia version you want via:
 
 ```bash
 $ juliaup add $JULIA_VERSION
 
 # or more concretely:
-$ juliaup add 1.9
+$ juliaup add 1.13
 
 # but please, just use the latest, stable version
 ```
@@ -27,7 +27,7 @@ $ julia
   (_)     | (_) (_)    |
    _ _   _| |_  __ _   |  Type "?" for help, "]?" for Pkg help.
   | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 1.9.2 (2023-07-05)
+  | | |_| | | | (_| |  |  Version 1.13.0 (2026-09-09)
  _/ |\__'_|_|_|\__'_|  |  Official https://julialang.org/ release
 |__/                   |
 

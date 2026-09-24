@@ -51,7 +51,7 @@ Install `GraphRecipes` and `Plots` packages into the environment defined during 
 
 **HINTS**:
 - There is help command inside the the pkg mod of the REPL. Type `? add` to find out how to install a package. Note that both pkgs are registered.
-- Follow a guide in the `Plots` pkg's documentation, which is accessible through `docs` icon on top of the README in the GitHub [repository](https://github.com/JuliaPlots/Plots.jl). Direct [link](http://docs.juliaplots.org/latest/graphrecipes/introduction/#GraphRecipes).
+- Follow a guide in the `Plots` pkg's documentation, which is accessible through `docs` icon on top of the README in the GitHub [repository](https://github.com/JuliaPlots/Plots.jl). Direct [link](https://docs.juliaplots.org/stable/GraphRecipes/introduction/).
 
 :::
 

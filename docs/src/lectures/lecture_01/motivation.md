@@ -22,6 +22,7 @@ In many applications, we encounter the task of optimization a function given by 
 
 ```julia
 using Optim
+using ADTypes: AutoForwardDiff
 
 P(x,y) = x^2 - 3x*y + 5y^2 - 7y + 3 # user defined function
 
@@ -29,7 +30,7 @@ z₀ = [0.0, 0.0] # starting point
 
 optimize(z -> P(z...), z₀, ConjugateGradient())
 optimize(z -> P(z...), z₀, Newton())
-optimize(z -> P(z...), z₀, Newton(); autodiff = :forward)
+optimize(z -> P(z...), z₀, Newton(); autodiff = AutoForwardDiff())
 ```
 
 :::
