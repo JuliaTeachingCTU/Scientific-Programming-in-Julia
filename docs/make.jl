@@ -40,8 +40,8 @@ pages = [
         "Outline" => "outline.md",
         "1: Introduction" => add_prefix("lecture_01", [
             "Motivation" => "motivation.md",
-            "Basics" => "basics.md",
             "Examples" => "demo.md",
+            "Basics" => "basics.md",
         ]),
     ]),
     "Labs" => add_prefix("./lectures", [

@@ -59,15 +59,47 @@ plot(sol,denseplot=false)
 - passes all grid refinement techniques
 - plot uses the correct  plotting for intervals
 
+Who wrote the code connecting Measurements and DifferentialEquations?
+
+Would this work with `scipy.integrate.solve_ivp`?
+
 ## Integration with other toolkits
 
 **Flux:** toolkit for modelling Neural Networks. Neural network is a function.
 
 - integration with Measurements,
-- Integration with ODE (think of NN as part of the ODE)
+- integration with ODE (think of NN as part of the ODE)
 
 **Turing:** Probabilistic modelling toolkit
 
-- integration with FLux (NN)
-- interation with ODE
+- integration with Flux (NN)
+- integration with ODE
 - using arbitrary bijective transformations, Bijectors.jl
+
+## Back to the optimization example
+
+```julia
+optimize(z -> P(z...), z₀, Newton(); autodiff = :forward)
+```
+
+How does Optim get the gradient of `P`? 
+
+Hint: ForwardDiff defines a new number type, just like Measurements.
+
+## Julia from user's point of view
+
+ 1. **compilation** of everything to as specialized as possible
+    + ✅ very fast code
+    - ❌ slow interaction (caching...)
+    - ❌ generating libraries is harder 
+        - think of ```fsum```, 
+        - everything is ".h"  (Eigen library)
+        - less concern with standalone executable/library compilation, Application binary interface (ABI)
+    - ❌ debugging is different to matlab/python
+
+ 2. **extensibility**, Multiple dispatch = multi-functions
+    + ✅ allows great extensibility and code composition
+    - ❌ not (yet) mainstream thinking
+    - ❌ Julia is not Object-oriented
+    - ❌ Julia is (not pure) functional language
+    - ❌ less concern with public/private separation

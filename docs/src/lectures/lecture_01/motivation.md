@@ -16,13 +16,6 @@ Key requirements for a Scientific programming language:
 
 ![](../../assets/julia-set.png)
 
-In contrast, to general-purpose language Julia has:
-
-- less concern with standalone executable/libraby compilation 
-- less concern with Application binary interface (ABI)
-- less concern with business models (library + header files)
-- less concern with public/private separation
-
 ::: tip Example of a scientific task
 
 In many applications, we encounter the task of optimization a function given by a routine (e.g. engineering, finance, etc.)
@@ -45,6 +38,8 @@ Very simple for a user, very complicated for a programmer. The program should:
  - pick the right optimization method (easy by config-like approach)
  - compute gradient (Hessian) of a *user* function
 
+How can a library compute the gradient of a function it has never seen?
+
 ## Classical approach: create a fast library and flexible calling environment
 
 Crucial algorithms (sort, least squares...) are relatively small and well defined. Application of these algorithms to real-world problem is typically not well defined and requires more code. Iterative development. 
@@ -57,7 +52,7 @@ Think of a problem of repeated execution of similar jobs with different options.
 
 It is not a strict boundary, increasing expressivity of the configuration file will create a new scripting language.
 
-Ending up in the *2 language problem*. 
+::: danger Two language problem
 
 1. Low-level programming = computer centric
     - close to the hardware
@@ -66,6 +61,8 @@ Ending up in the *2 language problem*.
 1. High-level programming = user centric
     - running code with many different modifications as easily as possible
     - allowing high level of abstraction
+
+:::
 
 In scientific programming, the most well known scripting languages are: Python,  Matlab, R
 
@@ -80,22 +77,18 @@ The scripting language typically makes decisions (```if```) at runtime. Becomes 
 1. Matlab and Mex (C with pointer arithmetics)
 1. Python with transcription to C (Cython)
 
+Back to the gradient: which side of the boundary is the optimizer, which side is the user function?
 
 ### Convergence efforts
 
 1. Just-in-time compilation (understands high level and converts to low-level)
+    - Numba, JAX, `torch.compile`
 1. automatic typing (auto in C++) (extends low-level with high-level concepts)
+1. new languages on top of Python (Mojo)
+
+What subset of the language can they compile?
 
 # Julia approach: fresh thinking
-
-![](julia-scope.svg)
-
-A dance between specialization and abstraction. 
-
-- **Specialization**  allows for custom treatment. The right algorithm for the right circumstance is obtained by *Multiple dispatch*,
-- **Abstraction** recognizes what remains the same after differences are stripped away. Abstractions in mathematics are captured as code through *generic programming*.
-
-Why a new language?
 
 ## Challenge
 
@@ -122,8 +115,16 @@ In the first case it works, in the second throws an error.
 Simple solution
 
 - Solved by different floating and integer division operation ```/,÷```
-- Not so simple with complex objects, e.g. triangular matrices
+- Not so simple with complex objects, e.g. triangular matrices. Why?
 
+## Why a new language?
+
+![](julia-scope.svg)
+
+A dance between specialization and abstraction. 
+
+- **Specialization**  allows for custom treatment. The right algorithm for the right circumstance is obtained by *Multiple dispatch*,
+- **Abstraction** recognizes what remains the same after differences are stripped away. Abstractions in mathematics are captured as code through *generic programming*.
 
 Julia was designed as a high-level language that allows very high level abstract concepts but *propagates* as much information about the specifics as possible to help the compiler to generate as fast code as possible. Taking lessons from the inability to achieve fast code compilation (mostly from python).
 
@@ -216,59 +217,9 @@ using StatsPlots
     x ~ Normal(m, sqrt(s²))
     y ~ Normal(m, sqrt(s²))
 end
+
+chain = sample(gdemo(1.5, 2.0), NUTS(), 1000)
+plot(chain)
 ```
-  
 
 Such tools allow building a very convenient user experience on abstract level, and reaching very efficient code.
-
-## Reproducible research
-
-Think about a code that was written some time ago. To run it, you often need to be able to have the same version of the language it was written for. 
-
-- **Standard way** language freezes syntax and guarantees some back-ward compatibility (Matlab), which prevents future improvements
-
-- **Julia approach** allows easy recreation of the *environment* in which the code was developed. Every project (e.g. directory) can have its own environment
-
-::: tip Environment
-
-Is an independent set of packages that can be local to an individual project or shared and selected by name.
-
-:::
-
-::: tip Package
-
-A package is a source tree with a standard layout providing functionality that can be reused by other Julia projects.
-
-:::
-
-This allows  Julia to be a  rapidly evolving ecosystem with frequent changes due to:
-
-- built-in package manager
-- switching between multiple versions of packages
-
-
-### Package manager
-
-- implemented by Pkg.jl
-- source tree have their structure defined by a convention
-- have its own mode in REPL
-- allows adding packages for using (```add```) or development (```dev```)
-- supporting functions for creation (```generate```) and activation (```activate```) and many others
-
-
-## Julia from user's point of view
-
- 1. **compilation** of everything to as specialized as possible
-    + ✅ very fast code
-    - ❌ slow interaction (caching...)
-    - ❌ generating libraries is harder 
-        - think of ```fsum```, 
-        - everything is ".h"  (Eigen library)
-    - ❌ debugging is different to matlab/python
-
- 2. **extensibility**, Multiple dispatch = multi-functions
-    + ✅ allows great extensibility and code composition
-    - ❌ not (yet) mainstream thinking
-    - ❌ Julia is not Object-oriented
-    - ❌ Julia is (not pure) functional language
-
