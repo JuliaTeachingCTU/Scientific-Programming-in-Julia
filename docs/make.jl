@@ -44,20 +44,20 @@ pages = [
             "Basics" => "basics.md",
         ]),
         "2: The power of type system & multiple dispatch" => "lecture_02/lecture.md",
-    
         "3: Design patterns" => "lecture_03/lecture.md",
+        "4: Package development, unit tests & CI" => "lecture_04/lecture.md",
     ]),
     "Labs" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/lab.md",
         "2: The power of type system & multiple dispatch" => "lecture_02/lab.md",
         "3: Design patterns" => "lecture_03/lab.md",
+        "4: Package development, unit tests & CI" => "lecture_04/lab.md",
     ]),
     "Homeworks" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/hw.md",
         "2: The power of type system & multiple dispatch" => "lecture_02/hw.md",
         "3: Design patterns" => "lecture_03/hw.md",
-        "3: Design patterns" => "lecture_03/hw.md",
-
+        "4: Package development, unit tests & CI" => "lecture_04/hw.md",
     ]),
 
     "Projects" => add_prefix("./projects", [
