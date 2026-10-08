@@ -99,7 +99,7 @@ Hint: ForwardDiff defines a new number type, just like Measurements.
 
  2. **extensibility**, Multiple dispatch = multi-functions
     + ✅ allows great extensibility and code composition
-    - ❌ not (yet) mainstream thinking
-    - ❌ Julia is not Object-oriented
-    - ❌ Julia is (not pure) functional language
-    - ❌ less concern with public/private separation (`public` keyword since 1.11)
+    - not (yet) mainstream thinking
+    - Julia is not Object-oriented
+    - Julia is (not pure) functional language
+    - less concern with public/private separation (`public` keyword since 1.11)
