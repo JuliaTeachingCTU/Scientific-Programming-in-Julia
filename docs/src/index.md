@@ -96,12 +96,13 @@ the standard grading scale below.
 
 ## [Teachers](@id emails)
 
-| --          | E-mail                                                     | Room     | Role           |
-| :--         | :--                                                        | :--      | :--            |
-| Tomáš Pevný | [pevnak@protonmail.ch](mailto:pevnak@protonmail.ch)        | KN:E-406 | Lecturer       |
-| Vašek Šmídl | [smidlva1@fjfi.cvut.cz](mailto:smidlva1@fjfi.cvut.cz)      | KN:E-333 | Lecturer       |
-| Matěj Zorek  | [zorekmat@fel.cvut.cz](mailto:zorekmat@fel.cvut.cz)       | KN:E-333 | Lab Instructor |
-| Niklas Heim | [heimnikl@fel.cvut.cz](mailto:heimnikl@fel.cvut.cz)        | KN:E-333 | Lab Instructor |
+| --           | E-mail                                                    | Room     | Role           |
+| :--          | :--                                                       | :--      | :--            |
+| Tomáš Pevný  | [pevnak@protonmail.ch](mailto:pevnak@protonmail.ch)       | KN:E-406 | Lecturer       |
+| Vašek Šmídl  | [smidlva1@fjfi.cvut.cz](mailto:smidlva1@fjfi.cvut.cz)     | KN:E-333 | Lecturer       |
+| Armin Hadžić | [hadziarm@fel.cvut.cz](mailto:hadziarm@fel.cvut.cz)       | KN:E-302 | Lab Instructor |
+| Matěj Zorek  | [zorekmat@fel.cvut.cz](mailto:zorekmat@fel.cvut.cz)       | KN:E-333 | Previous Lab Instructor |
+
 
 
 ## Prerequisites
