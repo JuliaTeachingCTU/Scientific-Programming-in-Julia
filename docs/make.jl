@@ -70,6 +70,7 @@ makedocs(;
     sitename="Scientific Programming in Julia",
     format=DocumenterVitepress.MarkdownVitepress(;
         repo=Remotes.repourl(repo),
+        devbranch="2026W",
         VITREPRESS_KWARGS...,
     ),
     pages=pages,
