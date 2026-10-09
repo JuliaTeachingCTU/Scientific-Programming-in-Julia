@@ -6,7 +6,7 @@ coding. For more detailed introduction you can check out Lectures 1-3 of the bac
 
 ## Testing Julia installation (custom setup)
 
-In order to proceed further let's run a simple [script](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2026W/docs/src/lectures/lecture_01/test_setup.jl) to see, that the setup described in chapter [Installation](@ref install) is working properly.
+In order to proceed further let's run a simple <a href="../../assets/test_setup.jl" download="test_setup.jl">script</a> to see that the setup described in chapter [Installation](@ref install) is working properly.
 After spawning a terminal/cmdline run this command:
 
 ```bash
