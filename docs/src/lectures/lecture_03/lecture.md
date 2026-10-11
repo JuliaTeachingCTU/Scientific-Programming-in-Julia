@@ -6,8 +6,7 @@ to improve system performance. A desire to design software that is easy to maint
 Design patterns are recommendations and good practices accumulating knowledge of experienced  programmers.
 
 The highest level of experience contains the design guiding principles:
-- **SOLID:** Single Responsibility, Open/Closed, Liskov Substitution, Interface
-- Segregation, Dependency Inversion
+- **SOLID:** Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion
 - **DRY:** Don't Repeat Yourself
 - **KISS:** Keep It Simple, Stupid!
 - **POLA:** Principle of Least Astonishment
@@ -20,7 +19,7 @@ More detailed patterns arise for programming paradigms (declarative, imperative)
 
 The concept of design patterns originates in the OOP paradigm. OOP defines a strict way how to write software. Sometimes it is not clear how to squeeze real world problems into those rules.  Cookbook for many practical situations
 
-- Gamma, E., Johnson, R., Helm, R., Johnson, R. E., & Vlissides, J. (1995). Design patterns: elements of reusable object-oriented software. Pearson Deutschland GmbH.
+- Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1995). Design patterns: elements of reusable object-oriented software. Addison-Wesley.
 
 Defining 23 design patterns in three categories. Became extremely popular.
 
@@ -60,7 +59,6 @@ Provides few simple concepts that allow to construct design patterns common in o
 - lots of features can be added by Julia packages (with various level of comfort)
     - macros
 
-Read: 
 
 ## Design Patterns of OOP from the Julia viewpoint
 
@@ -123,13 +121,14 @@ When defined, Julia does not provide the default outer constructor.
 But fields are still accessible:
 
 ```julia
-grass.size = 10000
+grass2 = Grass2(1,5,5)
+grass2.size = 10000
 ```
 
-Recall that `grass.size=1000` is a syntax of `setproperty!(grass,:size,1000)`, which can be redefined:
+Recall that `grass2.size=10000` is a syntax of `setproperty!(grass2,:size,10000)`, which can be redefined:
 
 ```julia
-function Base.setproperty!(obj::Grass, sym::Symbol, val)
+function Base.setproperty!(obj::Grass2, sym::Symbol, val)
     if sym==:size
         @assert val<=obj.max_size "size have to be lower than max_size!"
     end
@@ -139,7 +138,21 @@ end
 
 Function `setfield!` can not be overloaded.
 
+Some fields should never change. Since Julia 1.8, fields of a mutable struct can be `const`:
+
+```julia
+mutable struct Grass3 <: Plant
+    const id::Int
+    size::Int
+    const max_size::Int
+end
+```
+
+`grass3.id = 2` is an error, `grass3.size = 2` is fine.
+
 Julia has *partial encapsulation* via a mechanism for consistency checks. 
+
+Similarly for modules: since Julia 1.11, keyword `public` marks the API of a module without exporting it. Everything else is still accessible, by convention not used.
 
 ::: warning Array in imutable struct can be mutated
 
@@ -270,7 +283,7 @@ class Sheep(Animal):
 
     # hard, if not impossible to add behaviour for a new type of food
     def eat(self, a: Agent, w: World):
-        if isinstance(a, Grass)
+        if isinstance(a, Grass):
             self.energy += a.size * self.denergy
             a.size = 0
         else:
@@ -366,7 +379,7 @@ With parametric types, unions and other construction, subtype resolution may bec
 :::
 
 ### Sharing of data field via composition
-Composition is also recommended in OOP: [Composition over ingeritance](https://en.wikipedia.org/wiki/Composition_over_inheritance)
+Composition is also recommended in OOP: [Composition over inheritance](https://en.wikipedia.org/wiki/Composition_over_inheritance)
 
 ```julia 
 struct ⚥Sheep <: Animal
@@ -381,152 +394,13 @@ If we want our new ⚥Sheep to behave like the original Sheep, we need to *forwa
 eat!(a::⚥Sheep, b::Grass, w::World)=eat!(a.sheep, b, w)
 ```
 and all other methods. Routine work. Boring!  
-The whole process can be automated using macros ```@forward``` from Lazy.jl.
-
-
-Why so complicated? Wasn't the original inheritance tree structure better?
-
-- multiple inheritance:
-    - you just compose two different "trees".
-    - common example with ArmoredVehicle = Vehicle + Weapon
-- Do you think there is only one sensible inheritance tree?
-
-::: tip Animal World
-
-Think of an inheritance tree of a full scope Animal world.
-
-Idea #1: Split animals by biological taxonomy
-![](animals.jpg)
-
-Hold on. 
-- Sharks and dolphins can swim very well!
-- Both bats and birds fly similarly!
-
-Idea #2: Split by the way they move!
-
-Idea #3: Split by way of ...
-
-:::
-
-In fact, we do not have a tree, but more like a matrix/tensor:
-
-|        | swims       | flies | walks      |
-| :--    | ---         |  ---  | ---        | 
-| birds  | penguin     | eagle | kiwi       |
-| mammal | dolphin     | bat   | sheep, wolf|
-| insect | backswimmer | fly   | beetle     |
-
-Single type hierarchy will not work. Other approaches:
-
- - interfaces
- - parametric types
-
- Analyze what features of animals are common and *compose* the animal:
-```julia
-abstract type HeatType end
-abstract type MovementType end
-abstract type ChildCare end
-
-mutable struct Animal{H<:HeatType,M<:MovementType,C<:ChildCare} 
-    id::Int
-    ...
-end
-```
-
-Now, we can define methods dispatching on parameters of the main type.
-
-Composition is simpler in such a general case. Composition over inheritance. 
-
-A simple example of parametric approach will be demonstarted in the lab.
-
-## Interfaces: inheritance/subtyping without a hierarchy tree
-
-In OOP languages such as Java, interfaces have a dedicated keyword such that compiler can check correctness of the interface implementation. 
-
-In Julia, interfaces can be achieved by defining ordinary functions.  Not so strict validation by the compiler as in other languages. Freedom...
-
-### Example: Iterators
-
-Many fundamental objects can be iterated: Arrays, Tuples, Data collections...
-
-- They do not have any common "predecessor". They are almost "primitive" types.
-- they share just the property of being iterable
-- we do not want to modify them in any way
-
-Example: of interface ```Iterators```
-defined by "duck typing" via two functions.
-
-|Required methods     | Brief description                                                                    |
-| ---                 | ---                                                                                  |
-|iterate(iter)        | Returns either a tuple of the first item and initial state or nothing if empty       |
-|iterate(iter, state) |	Returns either a tuple of the next item and next state or nothing if no items remain |
-
-Defining these two methods for any object/collection ```C``` will make the following work:
+The whole process can be automated using macro ```@forward``` from MacroTools.jl (we will write it ourselves in lecture 6):
 
 ```julia
-for o in C
-   # do something
-end
+using MacroTools: @forward
+@forward ⚥Sheep.sheep eat!, reproduce!
 ```
 
-- The compiler will not check if both functions exist.
-- If one is missing, it will complain about it when it needs it
-- The error message may be less informative than in the case of formal definition
-
-Note:
-
-- even iterators may have different features: they can be finite or infinite
-- for finite iterators we can define useful functions (```collect```)
-- how to pass this information in an extensible way?
-
-Poor solution: if statements.
-
-```julia
-function collect(iter)
- if iter isa Tuple...
-
-end
-```
-
-The compiler can do that for us.
-
-## Traits: cherry picking subtyping
-
-Trait mechanism in Julia is build using the existing tools: Type System and Multiple Dispatch.
-
-Traits have a few key parts:
-
-- Trait types: the different traits a type can have.
-- Trait function: what traits a type has.
-- Trait dispatch: using the traits.
-
-From iterators:
-
-```julia
-# trait types:
-
-abstract type IteratorSize end
-struct SizeUnknown <: IteratorSize end
-struct HasLength <: IteratorSize end
-struct IsInfinite <: IteratorSize end
-
-# Trait function: Input is a Type, output is a Type
-IteratorSize(::Type{<:Tuple}) = HasLength()
-IteratorSize(::Type) = HasLength()  # HasLength is the default
-
-# ...
-
-# Trait dispatch
-BitArray(itr) = gen_bitarray(IteratorSize(itr), itr)
-gen_bitarray(isz::IteratorSize, itr) = gen_bitarray_from_itr(itr)
-gen_bitarray(::IsInfinite, itr) =  throw(ArgumentError("infinite-size iterable used in BitArray constructor"))
-```
-
-What is needed to define for a new type that I want to iterate over? 
-
-Do you still miss inheritance in the OOP style?
-
-Many packages automating this with more structure: [Traitor.jl](https://github.com/andyferris/Traitor.jl), [SimpleTraits.jl](https://github.com/mauro3/SimpleTraits.jl), [BinaryTraits.jl](https://github.com/tk3369/BinaryTraits.jl)
 
 ## Functional tools: Partial evaluation
 
@@ -537,7 +411,68 @@ _prod(x) = reduce(*,x)
 _sum(x) = reduce(+,x)
 ``` 
 
+Base has a type for fixing an argument:
+
+```julia
+half = Base.Fix2(/, 2)        # x -> x / 2
+half(10)
+map(Base.Fix1(+, 1), [1,2,3])
+Base.Fix{3}(clamp, 1.0)       # fix any argument, since Julia 1.12
+```
+
+Why a type and not just an anonymous function?
+
 ## Functional tools: Closures
+
+### Motivation: talking to a library
+
+Recall the optimization from lecture 1:
+
+```julia
+using Optim
+
+P(x,y) = x^2 - 3x*y + 5y^2 - 7y + 3
+f(z) = P(z...)
+
+optimize(f, [0.0, 0.0], BFGS(), Optim.Options(callback = cb))
+```
+
+Optim calls *our* function after every iteration, `callback(state)`, return `true` to stop.
+
+How to store the history of the objective? `optimize` knows nothing about our storage.
+
+```julia
+trace = Float64[]
+function cb(state)
+    push!(trace, state.f_x)
+    return false
+end
+
+optimize(f, [0.0, 0.0], BFGS(), Optim.Options(callback = cb))
+trace
+```
+
+Stop early, when the objective is below a threshold:
+
+```julia
+stop_below(t) = state -> state.f_x < t
+
+optimize(f, [0.0, 0.0], BFGS(), Optim.Options(callback = stop_below(0.0)))
+```
+
+`stop_below(0.0)` returns a function of `state` only. Where is `t` stored?
+
+The same pattern for the objective itself. Fitting a line to data: the library wants `f(θ)`, we have `loss(θ, xs, ys)`:
+
+```julia
+loss(θ, xs, ys) = sum(abs2, θ[1] .* xs .+ θ[2] .- ys)
+
+optimize(θ -> loss(θ, xs, ys), [0.0, 0.0], BFGS())
+```
+
+Note that function ```optimize``` does not need to know about the data. The important variables exist in the scope from which the function was invoked.
+
+### Closure
 
 ::: tip Closure (lexical closure, function closure)
 
@@ -592,18 +527,49 @@ end
 is lowered to (roughly):
 
 ```julia
-struct ##1{T}
+struct var"#adder##0#adder##1"{T} <: Function
     x::T
 end
 
-(_::##1)(y) = _.x + y
+(f::var"#adder##0#adder##1")(y) = f.x + y
 
 function adder(x)
-    return ##1(x)
+    return %new(var"#adder##0#adder##1"{typeof(x)}, x)   # no constructor, internal %new
 end
 ```
 
-Note that the structure ##1 is not directly accessible. Try ```f.x``` and ```g.x```.
+The struct is created when `adder` is *defined*. It is visible when lowering the definition:
+
+```julia
+Meta.@lower function adder(x)
+    return y -> x + y
+end
+```
+
+```julia
+Core._structtype(Main, Symbol("#adder##0#adder##1"), svec(T), svec(:x), ...)
+Core._setsuper!(%5, Core.Function)
+...
+%new(var"#adder##0#adder##1"{typeof(x)}, x)
+```
+
+and in the body of the compiled method, `@code_lowered adder(5)` or `@code_typed adder(5)`.
+
+The name changes with every definition.
+
+Try ```f.x``` and ```g.x```:
+
+```julia
+f.x        # 10
+typeof(f)  # var"#adder##0#adder##1"{Int64}
+dump(f)
+
+g.x        # FieldError: ... has no fields at all
+```
+
+- `f` stores `x`, the struct is a real object with a field
+- the struct has no constructor, it cannot be created except by `adder`
+- `g` stores nothing: global `x` is read when `g` is called. Change `x = 40` and call `g(1)` again.
 
 ### Functor = Function-like structure
 
@@ -615,34 +581,7 @@ Each structure can have a method that is invoked when called as a function.
 ```
 You can think of it as ```sheep.default_method()```.
 
-
-### Coding style
-
-From ```Flux.jl```:
-
-```julia
-function train!(loss, ps, data, opt; cb = () -> ())
-  ps = Params(ps)
-  cb = runall(cb)
-  @progress for d in data
-      gs = gradient(ps) do
-        loss(batchmemaybe(d)...)
-      end
-      update!(opt, ps, gs)
-      cb()
-  end
-end
-```
-
-Is this confusing? What can ```cb()``` do and what it can not?
-
-Note that function ```train!``` does not have many local variables. The important ones are arguments, i.e. exist in the scope from which the function was invoked.
-
-```julia
-loss(x,y)=mse(model(x),y)
-cb() = @info "training" loss(x,y)
-train!(loss, ps, data, opt; cb=cb)
-```
+A closure is a functor generated by the compiler.
 
 ## Usage
 
@@ -655,7 +594,43 @@ Usage of closures:
 
 Inference of types may be difficult in closures: https://github.com/JuliaLang/julia/issues/15276    
 
+```julia
+function counter()
+    n = 0
+    return () -> (n += 1)
+end
+c = counter()
+c(); c()
+typeof(c.n)   # Core.Box
+```
+
+A captured variable that is reassigned is stored in a `Core.Box`, its type is unknown to the compiler.
+
+Fixes:
+
+- the variable has to change: keep the binding, mutate a typed container
+  ```julia
+  function counter()
+      n = Ref(0)
+      return () -> (n[] += 1)   # captures RefValue{Int}, no Box
+  end
+  ```
+- the variable is reassigned only before the closure: rebind with `let`
+  ```julia
+  function abmult(r::Int)
+      if r < 0
+          r = -r
+      end
+      return let r = r
+          x -> x * r            # captures Int, no Box
+      end
+  end
+  ```
+- type annotation `n::Int = 0` keeps the Box, but its content is known (partial fix)
+
+Detect with `@code_warntype` (look for `Core.Box`).
+
 :::
 
-## Aditional materials
+## Additional materials
  * [Functional design patterns](https://www.youtube.com/watch?v=srQt1NAHYC0)
