@@ -304,6 +304,12 @@ eat!(w1::Sheep, a::PoisonousGrass, w::World)=
 
 Boiler-plate code can be automated by macros / meta programming.
 
+Methods tile the space of argument types (ignoring `w::World`): rows are the 1st argument, columns the 2nd.
+
+![](dispatch_grid.svg)
+
+What happens with `meet(Wolf(), Sheep())` in the middle panel?
+
 ## Inheritance
 
 ::: tip Inheritance
@@ -633,4 +639,5 @@ Detect with `@code_warntype` (look for `Core.Box`).
 :::
 
 ## Additional materials
+ * [The Art of Multiple Dispatch](https://scientificcoder.com/the-art-of-multiple-dispatch) by Matthijs Cox: dispatch as slices of the type space, the idea behind the grid above
  * [Functional design patterns](https://www.youtube.com/watch?v=srQt1NAHYC0)
