@@ -1,0 +1,8 @@
+[deps]
+Ecosystem = "3e3f0c30-c3a5-4f54-9c50-c7da69a06d96"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+
+[sources]
+Ecosystem = {path = "../../../lab4"}
