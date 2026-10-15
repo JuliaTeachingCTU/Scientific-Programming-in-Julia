@@ -430,15 +430,29 @@ Usually placed in `test/runtests.jl`.
 
 JET uses the type inference of the compiler to find errors.
 
+Why not just run the code? A typo in an edge case of `CircleMat`:
+
+```julia
+function Base.getindex(A::CircleMat, i::Int, j::Int)
+    A.n == 1 && return A.nn                 # edge case 1×1, typo
+    (abs(i - j) == 1 || abs(i - j) == A.n - 1) ? 1 : 0
+end
+
+sum(CircleMat(5))                           # 10, the tests above pass
+```
+
 ```julia
 using JET
 
-total_energy(w::World) = sum(a.enrgy for a in w if a isa Animal)   # typo
-
-@report_call total_energy(world)
-# FieldError: type Animal has no field `enrgy`, available fields: `id`, `energy`, ...
-# may throw: ArgumentError("reducing over an empty collection is not allowed ...")
+@report_call sum(CircleMat(5))
+# FieldError: type CircleMat has no field `nn`, available fields: `n`
 ```
+
+- JET checks every path the types allow, not only the one taken by this input
+- found through `sum`, deep in generic code of Base, down to our method of the interface
+- think of a typo in the function saving results after a three-hour simulation
+
+Tools:
 
 - `@report_call f(args...)`: possible errors in one call
 - `report_package(MyPackage)`: all methods of a package
@@ -446,8 +460,12 @@ total_energy(w::World) = sum(a.enrgy for a in w if a isa Animal)   # typo
 
 JET sees only what the types tell it:
 
-- `sum(a.energy for a in w)` on a `World{Agent}`: nothing reported. Why?
-- the same on a world with only plants: `FieldError: type Plant has no field energy`
+```julia
+trace(A::AbstractMatrix) = sum(A[i, i] for i in 1:size(A, 1))
+
+report_call(trace, (CircleMat,))            # FieldError: type CircleMat has no field `nn`
+report_call(trace, (AbstractMatrix{Int},))  # No errors detected. Why?
+```
 
 ## Precompilation
 
