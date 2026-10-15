@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1114 200" width="1114" height="200" role="img">
+<title>An abstract type of a single type tree selects a row (taxonomy) or a column (movement), not both.</title>
+<defs><pattern id="conflict" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#d0d4da"/><rect width="3" height="8" fill="#9aa1ab"/></pattern></defs>
+<rect width="1114" height="200" rx="8" fill="#ffffff"/>
+<text x="214.0" y="22" text-anchor="middle" font-family="JuliaMono, Menlo, monospace" font-size="14" fill="#1f2328">f(::Bird)</text>
+<text x="116.0" y="49" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">swims</text>
+<text x="212.0" y="49" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">flies</text>
+<text x="308.0" y="49" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">walks</text>
+<text x="62" y="77.0" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">birds</text>
+<rect x="70" y="56" width="92" height="34" rx="3" fill="#8fd16a"/>
+<text x="116.0" y="77.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">penguin</text>
+<rect x="166" y="56" width="92" height="34" rx="3" fill="#8fd16a"/>
+<text x="212.0" y="77.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">eagle</text>
+<rect x="262" y="56" width="92" height="34" rx="3" fill="#8fd16a"/>
+<text x="308.0" y="77.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">kiwi</text>
+<text x="62" y="115.0" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">mammals</text>
+<rect x="70" y="94" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="116.0" y="115.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">dolphin</text>
+<rect x="166" y="94" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="212.0" y="115.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">bat</text>
+<rect x="262" y="94" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="308.0" y="115.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">sheep, wolf</text>
+<text x="62" y="153.0" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">insects</text>
+<rect x="70" y="132" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="116.0" y="153.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">backswimmer</text>
+<rect x="166" y="132" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="212.0" y="153.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">fly</text>
+<rect x="262" y="132" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="308.0" y="153.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">beetle</text>
+<text x="214.0" y="186" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-style="italic" fill="#6e7781">tree by taxonomy: a row</text>
+<text x="580.0" y="22" text-anchor="middle" font-family="JuliaMono, Menlo, monospace" font-size="14" fill="#1f2328">f(::Flyer)</text>
+<text x="482.0" y="49" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">swims</text>
+<text x="578.0" y="49" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">flies</text>
+<text x="674.0" y="49" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">walks</text>
+<text x="428" y="77.0" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">birds</text>
+<rect x="436" y="56" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="482.0" y="77.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">penguin</text>
+<rect x="532" y="56" width="92" height="34" rx="3" fill="#f6a96b"/>
+<text x="578.0" y="77.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">eagle</text>
+<rect x="628" y="56" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="674.0" y="77.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">kiwi</text>
+<text x="428" y="115.0" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">mammals</text>
+<rect x="436" y="94" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="482.0" y="115.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">dolphin</text>
+<rect x="532" y="94" width="92" height="34" rx="3" fill="#f6a96b"/>
+<text x="578.0" y="115.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">bat</text>
+<rect x="628" y="94" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="674.0" y="115.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">sheep, wolf</text>
+<text x="428" y="153.0" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">insects</text>
+<rect x="436" y="132" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="482.0" y="153.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">backswimmer</text>
+<rect x="532" y="132" width="92" height="34" rx="3" fill="#f6a96b"/>
+<text x="578.0" y="153.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">fly</text>
+<rect x="628" y="132" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="674.0" y="153.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">beetle</text>
+<text x="580.0" y="186" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-style="italic" fill="#6e7781">tree by movement: a column</text>
+<text x="946.0" y="22" text-anchor="middle" font-family="JuliaMono, Menlo, monospace" font-size="14" fill="#1f2328">f(::Bird) and f(::Flyer)?</text>
+<text x="848.0" y="49" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">swims</text>
+<text x="944.0" y="49" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">flies</text>
+<text x="1040.0" y="49" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">walks</text>
+<text x="794" y="77.0" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">birds</text>
+<rect x="802" y="56" width="92" height="34" rx="3" fill="#8fd16a"/>
+<text x="848.0" y="77.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">penguin</text>
+<rect x="898" y="56" width="92" height="34" rx="3" fill="url(#conflict)"/>
+<text x="944.0" y="77.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#1f2328">eagle ?</text>
+<rect x="994" y="56" width="92" height="34" rx="3" fill="#8fd16a"/>
+<text x="1040.0" y="77.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">kiwi</text>
+<text x="794" y="115.0" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">mammals</text>
+<rect x="802" y="94" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="848.0" y="115.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">dolphin</text>
+<rect x="898" y="94" width="92" height="34" rx="3" fill="#f6a96b"/>
+<text x="944.0" y="115.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">bat</text>
+<rect x="994" y="94" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="1040.0" y="115.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">sheep, wolf</text>
+<text x="794" y="153.0" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e7781">insects</text>
+<rect x="802" y="132" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="848.0" y="153.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">backswimmer</text>
+<rect x="898" y="132" width="92" height="34" rx="3" fill="#f6a96b"/>
+<text x="944.0" y="153.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">fly</text>
+<rect x="994" y="132" width="92" height="34" rx="3" fill="#e4e7eb"/>
+<text x="1040.0" y="153.0" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#1f2328">beetle</text>
+<text x="946.0" y="186" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-style="italic" fill="#6e7781">one parent: is eagle a Bird or a Flyer?</text>
+</svg>
