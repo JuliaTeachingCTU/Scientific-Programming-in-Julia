@@ -38,14 +38,131 @@ In fact, we do not have a tree, but more like a matrix/tensor:
 | mammal | dolphin     | bat   | sheep, wolf|
 | insect | backswimmer | fly   | beetle     |
 
+An abstract type of a tree dispatches a whole row, or a whole column, depending on which tree we choose:
+
+![](dispatch_tree.svg)
+
 A bat and an eagle both fly, but they do not share a parent type. How do we dispatch on *can fly*?
 
-Two tools, both built from types and multiple dispatch only:
+The answer is a *trait*: a property of a type that dispatch can read. Later we will see that Julia itself uses the same trick to organize *interfaces*.
 
-- **interfaces**: a set of functions a type has to implement,
-- **traits**: properties of a type that dispatch can read.
+## Traits: cherry picking subtyping
 
-## Interfaces you already know
+Option 1: analyze what features of animals are common and *compose* the animal with type parameters (as `Animal{Sheep}` in lab 3):
+
+```julia
+abstract type HeatType end
+abstract type MovementType end
+abstract type ChildCare end
+
+mutable struct Animal{H<:HeatType,M<:MovementType,C<:ChildCare} 
+    id::Int
+    ...
+end
+```
+
+Now, we can define methods dispatching on parameters of the main type.
+
+- all features have to be known when `Animal` is defined
+- a new feature changes the type, and all methods written for it
+- is movement a property of the *individual* or of the *species*?
+
+Option 2: keep the biological tree and add the features later, as traits:
+
+```julia
+abstract type Animal end
+abstract type Bird <: Animal end
+abstract type Mammal <: Animal end
+struct Eagle <: Bird end
+struct Penguin <: Bird end
+struct Bat <: Mammal end
+struct Dolphin <: Mammal end
+struct Sheep <: Mammal end
+```
+
+Trait mechanism in Julia is built using the existing tools: Type System and Multiple Dispatch.
+
+Traits have a few key parts:
+
+- Trait types: the different traits a type can have.
+- Trait function: what traits a type has.
+- Trait dispatch: using the traits.
+
+Add movement as a trait:
+
+```julia
+# trait types
+abstract type Movement end
+struct Flies <: Movement end
+struct Swims <: Movement end
+struct Walks <: Movement end
+
+# trait function: input is a Type, output is an instance of a trait type
+Movement(a::Animal) = Movement(typeof(a))
+Movement(::Type{<:Animal}) = Walks()    # default
+Movement(::Type{Eagle}) = Flies()
+Movement(::Type{Bat}) = Flies()
+Movement(::Type{Penguin}) = Swims()
+Movement(::Type{Dolphin}) = Swims()
+
+# trait dispatch
+move(a::Animal) = move(Movement(a), a)
+move(::Flies, a) = "flies"
+move(::Swims, a) = "swims"
+move(::Walks, a) = "walks"
+```
+
+- `Bat` and `Eagle` share behavior without sharing a parent.
+- The trait was added *after* the types were defined, without touching them.
+- Should there be a default? What happens without it?
+
+Two traits at once, a second axis of the table:
+
+```julia
+abstract type Diet end
+struct Carnivore <: Diet end
+struct Herbivore <: Diet end
+
+Diet(a::Animal) = Diet(typeof(a))
+Diet(::Type{<:Animal}) = Herbivore()
+Diet(::Type{Eagle}) = Carnivore()
+Diet(::Type{Bat}) = Carnivore()
+Diet(::Type{Dolphin}) = Carnivore()
+
+hunts(a::Animal) = hunts(Movement(a), Diet(a))
+hunts(::Flies, ::Carnivore) = "hunts from the air"
+hunts(::Swims, ::Carnivore) = "hunts under water"
+hunts(::Movement, ::Herbivore) = "grazes"
+```
+
+What happens with a walking carnivore? Is it a bug or a feature?
+
+Can you do this with a single type hierarchy?
+
+### Traits are free
+
+```julia
+@code_llvm debuginfo=:none move(Bat())
+```
+
+```llvm
+define nonnull ptr @julia_move_1323() {
+top:
+  ret ptr @"jl_global#1325.jit"
+}
+```
+
+- The trait function is evaluated at compile time.
+- Nothing is left at runtime, the function returns a constant.
+- Same as `fsum` in lecture 1.
+
+Compare with `if a isa Eagle || a isa Bat ...`: also fast, but who can extend it?
+
+## Interfaces: Julia uses the same trick
+
+Traits are not a toy. The core library is built from them, mostly to organize *interfaces*.
+
+### Interfaces you already know
 
 In the bachelor course, you implemented currencies:
 
@@ -101,7 +218,60 @@ collect(Countdown(3))
 - The compiler did not check if all functions exist.
 - `collect` asked for `length`. Why? We never promised a length.
 
-Iterators differ: finite, infinite, with unknown length. `collect` needs to know which case it is. Keep this question for later.
+Iterators differ: finite, infinite, with unknown length. `collect` needs to know which case it is: a trait.
+
+```julia
+# in Base (simplified), the same three parts as Movement
+abstract type IteratorSize end
+struct HasLength <: IteratorSize end
+struct SizeUnknown <: IteratorSize end
+struct IsInfinite <: IteratorSize end
+
+IteratorSize(x) = IteratorSize(typeof(x))
+IteratorSize(::Type) = HasLength()      # the default, a promise we did not make
+IteratorSize(::Type{<:Iterators.Count}) = IsInfinite()
+```
+
+Trait dispatch, a simplified `collect`:
+
+```julia
+mycollect(itr) = _collect(Base.IteratorSize(itr), itr)
+
+function _collect(::Union{Base.HasLength, Base.HasShape}, itr)
+    v = Vector{eltype(itr)}(undef, length(itr))   # allocate once
+    for (i, x) in enumerate(itr)
+        v[i] = x
+    end
+    v
+end
+
+function _collect(::Base.SizeUnknown, itr)
+    v = eltype(itr)[]                             # grow
+    for x in itr
+        push!(v, x)
+    end
+    v
+end
+
+_collect(::Base.IsInfinite, itr) = throw(ArgumentError("cannot collect an infinite iterator"))
+```
+
+```julia
+mycollect(1:3)
+mycollect(Countdown(3))
+mycollect(Iterators.countfrom(1))
+```
+
+Two fixes for `Countdown`:
+
+```julia
+Base.length(c::Countdown) = c.n                        # keep the promise
+Base.IteratorSize(::Type{Countdown}) = Base.SizeUnknown()  # change the promise
+```
+
+Which one is better here?
+
+What is needed to define for a new type that I want to iterate over?
 
 ### Example: AbstractArray
 
@@ -141,8 +311,6 @@ Recall lecture 1: *Not so simple with complex objects, e.g. triangular matrices.
 
 Wait: which `getindex` do I need?
 
-## From interface to trait
-
 The array interface does not have a single list of required methods. It depends on a *property* of the array:
 
 ```julia
@@ -157,7 +325,7 @@ A[2]                   # works anyway
 Base.IndexStyle(::Type{<:MyVectorLikeArray}) = IndexLinear()
 ```
 
-This is a **trait**. It is not stored in the data, it is not a supertype. It is a function from a type to a type.
+Again a **trait**: not stored in the data, not a supertype, a function from a type to a trait value.
 
 Which style is faster for `sum` on a `Matrix`? On a `CircleMat`?
 
@@ -169,173 +337,6 @@ Which style is faster for `sum` on a `Matrix`? On a `CircleMat`?
 | `IteratorSize` | `HasLength`, `HasShape{N}`, `SizeUnknown`, `IsInfinite` | `collect`, `zip`, ... |
 | `IteratorEltype` | `HasEltype`, `EltypeUnknown`                  | `collect`               |
 | `BroadcastStyle` | `DefaultArrayStyle`, ...                      | broadcasting            |
-
-Back to `collect(Countdown(3))`. The default is `IteratorSize(::Type) = HasLength()`. Two fixes:
-
-```julia
-Base.length(c::Countdown) = c.n                        # keep the promise
-Base.IteratorSize(::Type{Countdown}) = Base.SizeUnknown()  # change the promise
-```
-
-Which one is better here?
-
-## Traits: cherry picking subtyping
-
-Trait mechanism in Julia is build using the existing tools: Type System and Multiple Dispatch.
-
-Traits have a few key parts:
-
-- Trait types: the different traits a type can have.
-- Trait function: what traits a type has.
-- Trait dispatch: using the traits.
-
-From iterators:
-
-```julia
-# trait types:
-abstract type IteratorSize end
-struct SizeUnknown <: IteratorSize end
-struct HasLength <: IteratorSize end
-struct IsInfinite <: IteratorSize end
-
-# trait function: input is a Type, output is an instance of a trait type
-IteratorSize(x) = IteratorSize(typeof(x))
-IteratorSize(::Type) = HasLength()  # HasLength is the default
-IteratorSize(::Type{<:Iterators.Count}) = IsInfinite()
-```
-
-Trait dispatch, a simplified `collect`:
-
-```julia
-mycollect(itr) = _collect(Base.IteratorSize(itr), itr)
-
-function _collect(::Union{Base.HasLength, Base.HasShape}, itr)
-    v = Vector{eltype(itr)}(undef, length(itr))   # allocate once
-    for (i, x) in enumerate(itr)
-        v[i] = x
-    end
-    v
-end
-
-function _collect(::Base.SizeUnknown, itr)
-    v = eltype(itr)[]                             # grow
-    for x in itr
-        push!(v, x)
-    end
-    v
-end
-
-_collect(::Base.IsInfinite, itr) = throw(ArgumentError("cannot collect an infinite iterator"))
-```
-
-```julia
-mycollect(1:3)
-mycollect(Countdown(3))
-mycollect(Iterators.countfrom(1))
-```
-
-What is needed to define for a new type that I want to iterate over?
-
-## Back to the animals
-
-Option 1: analyze what features of animals are common and *compose* the animal with type parameters (as `Animal{Sheep}` in lab 3):
-
-```julia
-abstract type HeatType end
-abstract type MovementType end
-abstract type ChildCare end
-
-mutable struct Animal{H<:HeatType,M<:MovementType,C<:ChildCare} 
-    id::Int
-    ...
-end
-```
-
-Now, we can define methods dispatching on parameters of the main type.
-
-- all features have to be known when `Animal` is defined
-- a new feature changes the type, and all methods written for it
-- is movement a property of the *individual* or of the *species*?
-
-Option 2: keep the biological tree and add the features later, as traits:
-
-```julia
-abstract type Animal end
-abstract type Bird <: Animal end
-abstract type Mammal <: Animal end
-struct Eagle <: Bird end
-struct Penguin <: Bird end
-struct Bat <: Mammal end
-struct Dolphin <: Mammal end
-struct Sheep <: Mammal end
-```
-
-Add movement as a trait:
-
-```julia
-abstract type Movement end
-struct Flies <: Movement end
-struct Swims <: Movement end
-struct Walks <: Movement end
-
-Movement(a::Animal) = Movement(typeof(a))
-Movement(::Type{<:Animal}) = Walks()    # default
-Movement(::Type{Eagle}) = Flies()
-Movement(::Type{Bat}) = Flies()
-Movement(::Type{Penguin}) = Swims()
-Movement(::Type{Dolphin}) = Swims()
-
-move(a::Animal) = move(Movement(a), a)
-move(::Flies, a) = "flies"
-move(::Swims, a) = "swims"
-move(::Walks, a) = "walks"
-```
-
-- `Bat` and `Eagle` share behavior without sharing a parent.
-- The trait was added *after* the types were defined, without touching them.
-- Should there be a default? What happens without it?
-
-Two traits at once, a second axis of the table:
-
-```julia
-abstract type Diet end
-struct Carnivore <: Diet end
-struct Herbivore <: Diet end
-
-Diet(a::Animal) = Diet(typeof(a))
-Diet(::Type{<:Animal}) = Herbivore()
-Diet(::Type{Eagle}) = Carnivore()
-Diet(::Type{Bat}) = Carnivore()
-Diet(::Type{Dolphin}) = Carnivore()
-
-hunts(a::Animal) = hunts(Movement(a), Diet(a))
-hunts(::Flies, ::Carnivore) = "hunts from the air"
-hunts(::Swims, ::Carnivore) = "hunts under water"
-hunts(::Movement, ::Herbivore) = "grazes"
-```
-
-What happens with a walking carnivore? Is it a bug or a feature?
-
-Can you do this with a single type hierarchy?
-
-## Traits are free
-
-```julia
-@code_llvm debuginfo=:none move(Bat())
-```
-
-```llvm
-define nonnull ptr @julia_move_1323() {
-top:
-  ret ptr @"jl_global#1325.jit"
-}
-```
-
-- The trait function is evaluated at compile time.
-- Nothing is left at runtime, the function returns a constant.
-- Same as `fsum` in lecture 1.
-
-Compare with `if a isa Eagle || a isa Bat ...`: also fast, but who can extend it?
 
 ## When to use what
 
