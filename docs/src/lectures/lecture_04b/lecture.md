@@ -1,11 +1,5 @@
 # Design patterns II: interfaces and traits
 
-::: warning Draft
-
-Draft of the new lecture 4 (2026W). Not linked from the menu.
-
-:::
-
 Composition (last lecture) needed forwarding of all methods. Why so complicated? Wasn't the original inheritance tree structure better?
 
 - multiple inheritance:

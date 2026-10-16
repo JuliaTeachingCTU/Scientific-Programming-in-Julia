@@ -1,11 +1,5 @@
 # Lab 04b: Interfaces, traits and checking the Ecosystem
 
-::: warning Draft
-
-Draft of the new lab 4 (2026W). Not linked from the menu.
-
-:::
-
 ```@setup block
 using StatsBase
 include("../lecture_03/Lab03Ecosystem.jl")

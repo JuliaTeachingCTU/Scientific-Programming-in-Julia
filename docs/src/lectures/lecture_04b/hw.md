@@ -1,11 +1,5 @@
 # Homework 4
 
-::: warning Draft
-
-Draft of the new homework 4 (2026W). Not linked from the menu.
-
-:::
-
 In this homework you will extend the `Diet` trait from the [lab](lab.md) by omnivores and make the
 `Ecosystem.jl` package pass automated quality checks. Start from your package from the lab,
 including the `Diet` trait with `Herbivore` and `Carnivore`.
