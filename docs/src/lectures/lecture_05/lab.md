@@ -381,7 +381,7 @@ end
 
 ::: warning Exercise
 
-1. Run the benchmark script provided [here](ecosystems/lab04/bench.jl) to get
+1. Run the benchmark script provided [here](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/blob/2026W/docs/src/lectures/lecture_05/ecosystems/lab04/bench.jl) to get
     timings for `find_food` and `reproduce!` for the original ecosystem.
 2. Run the same benchmark with the modified `World` constructor.
 
