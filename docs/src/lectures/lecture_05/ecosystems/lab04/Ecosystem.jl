@@ -127,7 +127,7 @@ function reproduce!(a::Animal{A}, w::World) where A
         ŝ = Animal{A}(new_id, vals..., randsex())
         w.agents[ŝ.id] = ŝ
         w.max_id = new_id
-        return ŝ
+        return ŝ
     end
 end
 

@@ -1,0 +1,5 @@
+[deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+Profile = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
+ProfileSVG = "132c30aa-f267-4189-9183-c8a63c7e05e6"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
