@@ -10,6 +10,7 @@ JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 LiveServer = "16fef848-5104-11e9-1b77-fb7a48bbb589"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+ProfileSVG = "132c30aa-f267-4189-9183-c8a63c7e05e6"
 Scientific_Programming_in_Julia = "ff288558-a322-4c39-84bc-85bf6acf7e03"
 SoftPosit = "0775deef-a35f-56d7-82da-cfc52f91364d"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
@@ -17,8 +18,8 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Umlaut = "92992a2b-8ce5-4a9c-bb9d-58be9a7dc841"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
-[compat]
-julia = "1"
-
 [sources]
 Scientific_Programming_in_Julia = {path = ".."}
+
+[compat]
+julia = "1"
