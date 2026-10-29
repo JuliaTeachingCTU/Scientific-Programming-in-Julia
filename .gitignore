@@ -16,3 +16,4 @@ docs/node_modules/.bin/esbuild
 interactive_notebooks/.DS_Store
 interactive_notebooks/lab1/.DS_Store
 .DS_Store
+interactive_notebooks/lab6/lab6_explanations.md

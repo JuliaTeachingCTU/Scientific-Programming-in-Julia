@@ -47,6 +47,7 @@ pages = [
         "3: Design patterns" => "lecture_03/lecture.md",
         "4: Design patterns II: interfaces and traits" => "lecture_04b/lecture.md",
         "5: Benchmarking, profiling, and performance gotchas" => "lecture_05/lecture.md",
+        "6: Language introspection" => "lecture_06/lecture.md",
     ]),
     "Labs" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/lab.md",
@@ -54,6 +55,7 @@ pages = [
         "3: Design patterns" => "lecture_03/lab.md",
         "4: Design patterns II: interfaces and traits" => "lecture_04b/lab.md",
         "5: Benchmarking, profiling, and performance gotchas" => "lecture_05/lab.md",
+        "6: Language introspection" => "lecture_06/lab.md",
     ]),
     "Homeworks" => add_prefix("./lectures", [
         "1: Introduction" => "lecture_01/hw.md",
@@ -61,6 +63,7 @@ pages = [
         "3: Design patterns" => "lecture_03/hw.md",
         "4: Design patterns II: interfaces and traits" => "lecture_04b/hw.md",
         "5: Benchmarking, profiling, and performance gotchas" => "lecture_05/hw.md",
+        "6: Language introspection" => "lecture_06/hw.md",
     ]),
 
     "Projects" => add_prefix("./projects", [
