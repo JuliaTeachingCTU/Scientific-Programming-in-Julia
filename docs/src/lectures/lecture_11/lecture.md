@@ -613,11 +613,11 @@ using Atomix, Metal, KernelAbstractions, BenchmarkTools
   while d < elements
     index = 2 * d * (thread-1) + 1
     if index <= elements && index+d <= length(a)
-      KA.@print "thread $thread: a[$index] + a[$(index+d)] = $(a[index]) + $(a[index+d]) = $(a[index] + a[index+d]))"
+      KernelAbstractions.@print "thread $thread: a[$index] + a[$(index+d)] = $(a[index]) + $(a[index+d]) = $(a[index] + a[index+d]))"
       a[index] += a[index+d]
     end
     d *= 2
-    thread == 1 && KA.@print "\n"
+    thread == 1 && KernelAbstractions.@print "\n"
     @synchronize
   end
 
@@ -797,9 +797,6 @@ end
 ```
 
 :::
-
-The performance improvement is negligible, but that's because we have a relatively new GPU with lots of global memory bandwith. On older or lower-end GPUs, using shared memory would be valuable. But at least, we are not modifying the original array. 
-
 If we inspect the above kernel in profiler, we can read that it uses 32 registers per thread. But if the SM has 16384 registers, then block of size 1024 will have to share registers, which might lead to poor utilization. Changing the blocksize to 512 improves the throughput a bit as can be seen from below
 ```julia
 @benchmark CUDA.@sync @cuda threads=512 blocks=1024 reduce_grid_localmem(+, $(CUDA.rand(1024,1024)), $(CUDA.zeros(1)))
@@ -900,15 +897,15 @@ Let's now compare different versions and tabulate the results
 @benchmark sum($(rand(Float32, 1024,1024)))
 ```
 
-| kernel version                                       |    min time |
-|:-----------------------------------------------------|:-----------:|
-| single thread                                        |   71.780 ms |
-| multiple threads with atomic reduction               |    2.197 ms |
-| parallel reduction                                   |   29.300 μs |
-| parallel reduction with local mem                    |   26.764 μs |
-| parallel reduction with warps                        |   25.063 μs |
-| default sum on GPU                                   |   47.090 μs |
-| default sum on CPU                                   |  165.697 μs |
+| kernel version                                       |    CUDA     |  CUDA by KA |
+|:-----------------------------------------------------|:-----------:|:-----------:|
+| single thread                                        |   71.780 ms |   71.780 ms |
+| multiple threads with atomic reduction               |    2.197 ms |    2.200 ms |
+| parallel reduction                                   |   29.300 μs |      ---    |
+| parallel reduction with local mem                    |   26.764 μs |   47.288μs  |
+| parallel reduction with warps                        |   25.063 μs |      ---    |
+| default sum on GPU                                   |   47.090 μs |   47.090 μs |
+| default sum on CPU                                   |  165.697 μs |  165.697 μs |
 
 
 What we have missed to optimize:
