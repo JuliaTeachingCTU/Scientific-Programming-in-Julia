@@ -1,0 +1,59 @@
+	.file	"polynomial"
+	.section	.ltext,"axl",@progbits
+	.globl	julia_polynomial_11604          # -- Begin function julia_polynomial_11604
+	.p2align	4
+	.type	julia_polynomial_11604,@function
+julia_polynomial_11604:                 # @julia_polynomial_11604
+; Function Signature: polynomial(NTuple{21, Int64}, Int64)
+# %bb.0:                                # %top
+	#DEBUG_VALUE: polynomial:a <- [$rdi+0]
+	#DEBUG_VALUE: polynomial:x <- $rsi
+	push	rbp
+	mov	rbp, rsp
+	mov	rax, qword ptr [rdi + 160]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 152]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 144]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 136]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 128]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 120]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 112]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 104]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 96]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 88]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 80]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 72]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 64]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 56]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 48]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 40]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 32]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 24]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 16]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi + 8]
+	imul	rax, rsi
+	add	rax, qword ptr [rdi]
+	pop	rbp
+	ret
+.Lfunc_end0:
+	.size	julia_polynomial_11604, .Lfunc_end0-julia_polynomial_11604
+                                        # -- End function
+	.section	".note.GNU-stack","",@progbits
