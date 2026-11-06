@@ -311,7 +311,7 @@ Our goal is to be able to define new plants and animal species, while having a c
 @species Animal Rabbit 🐇
 @eats Rabbit [Grass => 0.5, Broccoli => 1.0, Mushroom => -1.0]
 ```
-Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already contains some definitions of species such as `Sheep`, `Wolf` and `Mushroom`, which may collide with definitions during prototyping, therefore we have created a modified version of those pkgs, which will be provided in the lab.
+Unfortunately the current version of `Ecosystem` and `EcosystemCore`, already contains some definitions of species such as `Sheep`, `Wolf` and `Mushroom`, which may collide with definitions during prototyping, therefore we have created a modified version of those pkgs, which is available in the [lecture 07 `Ecosystem.jl` GitHub directory](https://github.com/JuliaTeachingCTU/Scientific-Programming-in-Julia/tree/2026W/docs/src/lectures/lecture_07/Ecosystem.jl).
 
 !!! note "Testing relations"
     We can test the current definition with the following code that constructs "eating matrix"
