@@ -1,11 +1,9 @@
 # [Homework 7: Creating world in 3 days/steps](@id hw07)
 
 ## How to submit
-Put all the code of inside `hw.jl`. Zip only this file (not its parent folder) and upload it to BRUTE. You should assume that only
-```julia
-using Ecosystem
-```
-will be put before your file is executed, but do not include them in your solution. The version of `Ecosystem` pkg should be the same as in [HW4](@ref hw4).
+When solving and testing the homework locally, make sure the HW4 `Ecosystem` package is available and loaded. You can load it with `using Ecosystem`, or use the provided local test runner, which loads the course copy from `Homework07/OurEcosystem` as a local module.
+
+Put all your solution code in `hw.jl`; the submitted file must not include `using Ecosystem`. Zip only `hw.jl` (without its parent folder) and upload the zip to BRUTE. Before executing `hw.jl`, BRUTE loads the same HW4 version of `Ecosystem` described in [HW4](@ref hw4).
 
 ```@raw html
 <div class="admonition is-category-homework">
