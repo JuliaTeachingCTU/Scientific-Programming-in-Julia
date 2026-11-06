@@ -29,6 +29,7 @@ notice the following
 - the definition of the macro is similar to the definition of the function with the exception that instead of the keyword `function` we use keyword `macro`
 - when calling the macro, we signal to the compiler our intention by prepending the name of the macro with `@`. 
 - the macro receives the expression(s) as the argument instead of the evaluated argument and also returns an expression that is placed on the position where the macro has been called
+- macro can be therefore seen as a function `Expr -> Expr`. 
 - when you are using macro, you should be as a user aware that the code you are entering can be arbitrarily modified and you can receive something completely different. This meanst that `@` should also serve as a warning that you are leaving Julia's syntax. In practice, it make sense to make things akin to how they are done in Julia or to write Domain Specific Language with syntax familiar in that domain.
 Inspecting the lowered code
 ```julia
@@ -171,7 +172,7 @@ In the previous lecture we have seen that we can *quote a block of code*, which 
 1. `:(quoted code)`
 2. `Meta.parse(input_string)`
 3. `quote ... end`
-The truth is that Julia does not do full quotation, but a *quasiquotation* as it allows you to **interpolate** expressions inside the quoted code using `$` symbol similar to the string. This is handy, as sometimes, when we want to insert into the quoted code an result of some computation / preprocessing.
+The difference between them is that `:(...)` is syntatctic sugar fro `Meta.parse` and that `quote ... end` wraps the parse code in `:block` and retains `LineNumberNodes`. Julia does not do full quotation, but a *quasiquotation* as it allows you to **interpolate** expressions inside the quoted code using `$` symbol similar to the string. This is handy, as sometimes, when we want to insert into the quoted code an result of some computation / preprocessing. Quasiquotation can be therefore seen as a template: the quoted structure is the fixed part, and `$` marks the free variables.
 Observe the following difference in returned code
 ```julia
 a = 5
@@ -213,7 +214,7 @@ end
 At first glance, `QuoteNode` wrapper seems to be useless. But `QuoteNode` has clear value when it's used inside a macro to indicate that something should stay quoted even after the macro finishes its work. Also notice that the expression received by macro are quoted, not quasiquoted, since in the latter case `$y` would be replaced. 
 
 We can demonstrate it by defining a new macro `no_quote` which will just return the expression as is 
-```
+```julia
 macro no_quote(ex)
     ex
 end
@@ -223,6 +224,13 @@ let y = :x
 end
 ```
 The error code snippet errors telling us that the expression `"$"` is outside of a quote block. This is because the macro `@no_quote` has returned a block with `$` occuring outside of `quote` or string definition.
+
+Fun trivia: What the following two blocks will return?
+```julia
+dump(:(x + $(1+2)))
+dump(:(x + (1+2)))
+```
+
 
 ::: info
 Some macros like `@eval` (recall last example)
